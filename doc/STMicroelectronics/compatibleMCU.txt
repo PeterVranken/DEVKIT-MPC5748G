@@ -1,0 +1,6 @@
+STMicroelectronics have MCUs, which are obviously based on the same source
+as the Freescale MPC series. This opens a new source of sample code and
+documentation.
+
+Note, the license agreement of STMicroelectronics restricts their code to
+the execution on their own chips only.
