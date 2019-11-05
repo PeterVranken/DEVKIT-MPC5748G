@@ -1,2 +1,40 @@
-# DEVKIT-MPC5748G
-Software support for low cost PowerPC evaluation board DEVKIT-MPC5748G by NXP
+= DEVKIT-MPC5748G -- Open Source Toolchain Support for a low-cost PowerPC Evaluation Board
+:Author:            Peter Vranken
+:Email:             mailto:Peter_Vranken@Yahoo.de
+:toc:               left
+//:toclevels:         3
+//:numbered:
+//:xrefstyle:         short
+//:sectanchors:       // Have URLs for chapters (http://.../#section-name)
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+
+
+== Introduction
+
+Software support for low cost PowerPC evaluation board DEVKIT-MPC5748G by NXP.
+
+An initial code sample offers:
+
+* Clean, well-documented assembly startup code for all cores (together
+  with related linker script)
+* Clock settings for cores and peripherals
+* Generally usable crossbar configuration
+* Interrupt handling
+* SMPU settings suitable for all cores and to support communication between them
+* Generally usable low level synchronization primitives for communication
+  between cores (using the Protected Storage Controller)
+* C lib support with printf via serial interface and USB connection
+* Trivial application code:
+ ** LEDs individually controlled from all three cores
+ ** Shared counters to demonstrate cross-core communication
+ ** Progress and status messages on serial interface - just open a
+    terminal on your development host machine and select 115200 Bd, 8 Bit,
+    1 stop bit, no parity bit
+* Makefile based compilation plus integration into S32 Design Studio
+* Debugger support to debug all cores - either from S32 Design Studio or
+  from shell windows
