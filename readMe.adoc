@@ -35,6 +35,10 @@ An initial code sample offers:
  ** Progress and status messages on serial interface - just open a
     terminal on your development host machine and select 115200 Bd, 8 Bit,
     1 stop bit, no parity bit
-* Makefile based compilation plus integration into S32 Design Studio
+* Makefile based compilation
+ ** Build from shell window for automation purpose
+ ** Integration into S32 Design Studio for interactive use
+* A single image (load file) for all cores
+* Debugger support to flash the code from S32 Design Studio
 * Debugger support to debug all cores - either from S32 Design Studio or
   from shell windows
