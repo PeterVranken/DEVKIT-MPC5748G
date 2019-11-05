@@ -1,0 +1,10 @@
+This folder contains those source files, which implement code that is
+going to run solely on the Z4 cores. The makefile recognizes the syllable
+"Z4" in the file path and will select the e200z4 target settings.
+
+The most relevant difference between the two cores Z2 and Z4 is
+availability of the floating point instructions for Z4. A source file,
+which uses floating point instructions is a likely candidate for a Z4
+compilation. If compiled for Z2 it can still be run on the Z4 cores but
+the performance is strongly degraded due to the use of floating point
+emulation code.
