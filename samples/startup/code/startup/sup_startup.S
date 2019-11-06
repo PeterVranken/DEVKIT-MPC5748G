@@ -1,6 +1,6 @@
 /**
  * @file sup_startup.S
- * VLE assembler implementation of startup code for MPC5758G. The code has been designed
+ * VLE assembler implementation of startup code for MPC5748G. The code has been designed
  * for use with GCC for PowerPC EABI.\n
  *   On core 0, the startup code:\n
  *   - Zeroizes all GPR\n
