@@ -60,7 +60,7 @@ attribName ::= [ "sendMode": "GenMsgSendType"
 attribVal ::= [ "sigInitVal": {<if(signal.isVoidScaling)><signal.attribMap.(attribName.sigInitVal).n; format="%.0f"><else><signal.attribMap.(attribName.sigInitVal).n><endif>}
               , "sendMode": {<symbol.enumSendMode>_<frame.attribMap.(attribName.sendMode).n>_<frame.attribMap.(attribName.sendMode).str>}
               , "sendModeRegular": {<frame.attribMap.(attribName.sendMode).is.cyclic>}
-              , "sendModeMixed": {<frame.attribMap.(attribName.sendMode).is.cyclicXOrEvent>}
+              , "sendModeMixed": {<frame.attribMap.(attribName.sendMode).is.cyclicOrEvent>}
               , "sendModeEvent": {<frame.attribMap.(attribName.sendMode).is.event>}
               , "sendPeriod": {<frame.attribMap.(attribName.sendPeriod)>}
               , "eventMinDistance": {<frame.attribMap.(attribName.eventMinDistance)>}

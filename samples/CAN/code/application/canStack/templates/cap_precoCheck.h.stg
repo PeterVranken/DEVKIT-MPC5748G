@@ -190,7 +190,7 @@ checkAttribSignalInitVal(attribDef) ::= <<
 valDef(def) ::= "<[def.i0, \"_\", def.name]>"
 valDefOkay ::= [ "0_cyclic": true
                , "1_event": true
-               , "2_cyclicXOrEvent": true
+               , "2_cyclicOrEvent": true
                , default: false
                ]
 checkAttribFrameSendMode(sm) ::= <<
@@ -208,6 +208,8 @@ checkAttribFrameSendMode(sm) ::= <<
 >
 <! TODO In a true project, you would probably want to raise the severity of the issue.
    Change info.warn into info.error !>
+<! TODO Maintain the error message always in sync with the actual check condition, found
+   above !>
 <info.warn.({<info.templateFile>: Input file <bus.networkFile.Name>, frame attribute <\\>
              <attribName.sendMode>: Expect a frame related attribute with enum values <\\>
              cyclic (0), event (1) and cyclicOrEvent (2)})>

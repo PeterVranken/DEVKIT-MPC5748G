@@ -26,7 +26,7 @@
  * This file has been created with comFramework - codeGenerator version 1.10.4,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -70,7 +70,6 @@
 # error Bad template configuration: Mismatch of module suffix, see cap_ but require cap_
 #endif
 #undef CAP_TMP_DEF_STRCMP_cap_
-
 
 
 /* For each bus, there should be at least one affected message, received or sent. There a
