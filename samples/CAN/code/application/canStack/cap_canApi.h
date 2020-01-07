@@ -690,8 +690,18 @@
 
 /** The enumeration of supported message send patterns. */
 typedef enum cap_enumSendMode_t
-    { cap_enumSendMode_regular = 0, cap_enumSendMode_event = 1, cap_enumSendMode_mixed = 2
-    } cap_enumSendMode_t;
+{
+    cap_enumSendMode_0_cyclic = 0,
+    cap_enumSendMode_1_event = 1,
+    cap_enumSendMode_2_cyclicOrEvent = 2,
+    cap_enumSendMode_3_reserved = 3,
+    cap_enumSendMode_4_reserved = 4,
+    cap_enumSendMode_5_reserved = 5,
+    cap_enumSendMode_6_reserved = 6,
+    cap_enumSendMode_7_reserved = 7,
+    cap_enumSendMode_8_noMsgSendType = 8,
+
+} cap_enumSendMode_t;
 
 /** The different status bits of the CAN transmission status word. */
 typedef enum cap_enumStsTransmission_t

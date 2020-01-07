@@ -180,14 +180,14 @@ static void onFrameReception(const cde_callbackContext_t *pContext)
 
     /* Some transmission pattern have a timeout supervision. Retrigger the timer and clear
        a possibly set timeout error bit. */
-    if(pFrDescCde->sendMode != cap_enumSendMode_event)
+    if(pFrDescCde->sendMode != CAN_ENUM_SEND_MODE_EVENT)
     {
         unsigned int idxHandlerCtxData;
-        if(pFrDescCde->sendMode == cap_enumSendMode_regular)
+        if(pFrDescCde->sendMode == CAN_ENUM_SEND_MODE_REGULAR)
             idxHandlerCtxData = pFrDescCde->idxHandlerCtxData;
         else
         {
-            assert(pFrDescCde->sendMode == cap_enumSendMode_mixed);
+            assert(pFrDescCde->sendMode == CAN_ENUM_SEND_MODE_MIXED);
 
             /* Both transmission patterns share the same handler context data. The entries
                for mode mixed are placed behind those of mode regular. */
@@ -275,7 +275,7 @@ static void onFrameInTimeout(const cde_callbackContext_t *pContext)
     assert(cde_getCanId(pContext) == pFrDescCde->canId
            &&  cde_getIdxBus(pContext) == pFrDescCde->idxCanBus
            &&  pFrDescCde->isReceived
-           &&  pFrDescCde->sendMode != cap_enumSendMode_event
+           &&  pFrDescCde->sendMode != CAN_ENUM_SEND_MODE_EVENT
            &&  pFrDescCde->pInfoTransmission != NULL
           );
 
@@ -318,14 +318,14 @@ static void onInitReceivedFrames(const cde_callbackContext_t *pContext)
        since the timer requires retriggering on reception. We use handler context data,
        which can be implemented by direct array lookup using the information in the
        auto-coded CDE data tables. */
-    if(pFrDescCde->sendMode != cap_enumSendMode_event)
+    if(pFrDescCde->sendMode != CAN_ENUM_SEND_MODE_EVENT)
     {
         unsigned int idxHandlerCtxData;
-        if(pFrDescCde->sendMode == cap_enumSendMode_regular)
+        if(pFrDescCde->sendMode == CAN_ENUM_SEND_MODE_REGULAR)
             idxHandlerCtxData = pFrDescCde->idxHandlerCtxData;
         else
         {
-            assert(pFrDescCde->sendMode == cap_enumSendMode_mixed);
+            assert(pFrDescCde->sendMode == CAN_ENUM_SEND_MODE_MIXED);
 
             /* Both transmission patterns share the same handler context data. The entries
                for mode mixed are placed behind those of mode regular. */
@@ -506,7 +506,7 @@ static void onDueCheckMixedFrame(const cde_callbackContext_t *pContext)
     /* Double-check that this callback is called from an expected context. */
     assert(!cde_isInboundTransmission(pContext)
            &&  cde_getKindOfEvent(pContext) == CDE_TIMER_ELAPSED
-           &&  pFrDescCde->sendMode == cap_enumSendMode_mixed
+           &&  pFrDescCde->sendMode == CAN_ENUM_SEND_MODE_MIXED
           );
 
     /* Get access to the handler's context data related to the frame under progress. */
@@ -577,7 +577,7 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
 
     switch(pFrDescCde->sendMode)
     {
-        case cap_enumSendMode_regular:
+        case CAN_ENUM_SEND_MODE_REGULAR:
         {
             /* Regular frames are most simple. We apply a regular timer. */
             assert((int)pFrDescCde->tiCycle > 0);
@@ -592,7 +592,7 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
             assert(hTimer != CDE_INVALID_TIMER_HANDLE);
             break;
         }
-        case cap_enumSendMode_event:
+        case CAN_ENUM_SEND_MODE_EVENT:
         {
             /* Event frames can become due in every tic. We set a timer of minimum elapse
                time and will check the send condition in the callback. The repetition of
@@ -612,7 +612,7 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
             assert(hTimer != CDE_INVALID_TIMER_HANDLE);
             break;
         }
-        case cap_enumSendMode_mixed:
+        case CAN_ENUM_SEND_MODE_MIXED:
         {
             /* Event frames with fallback can become due in every tic. We set a timer of
                minimum elapse time and will check the send condition in the callback. The

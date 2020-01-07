@@ -590,7 +590,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </li>
 <li>
-<p>Attribute <code>frameSendMode</code></p>
+<p>Attribute <code>GenMsgSendType</code></p>
 <div class="ulist">
 <ul>
 <li>
@@ -601,20 +601,38 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Type Enum</p>
 </li>
 <li>
-<p>Range: [0..2]</p>
+<p>Range: [0..8]</p>
 </li>
 <li>
 <p>Name, value pairs:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>regular: 0</p>
+<p>cyclic: 0</p>
 </li>
 <li>
 <p>event: 1</p>
 </li>
 <li>
-<p>mixed: 2</p>
+<p>cyclicOrEvent: 2</p>
+</li>
+<li>
+<p>reserved: 3</p>
+</li>
+<li>
+<p>reserved: 4</p>
+</li>
+<li>
+<p>reserved: 5</p>
+</li>
+<li>
+<p>reserved: 6</p>
+</li>
+<li>
+<p>reserved: 7</p>
+</li>
+<li>
+<p>noMsgSendType: 8</p>
 </li>
 </ul>
 </div>
@@ -623,13 +641,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </li>
 <li>
-<p>Default value: regular (0)</p>
+<p>Default value: cyclic (0)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>Attribute <code>sendPeriod</code></p>
+<p>Attribute <code>GenMsgCycleTime</code></p>
 <div class="ulist">
 <ul>
 <li>
@@ -675,7 +693,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </li>
 <li>
-<p>Attribute <code>eventMinDistance</code></p>
+<p>Attribute <code>GenMsgDelayTime</code></p>
 <div class="ulist">
 <ul>
 <li>
@@ -698,7 +716,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </li>
 <li>
-<p>Attribute <code>initialValue</code></p>
+<p>Attribute <code>GenSigStartValue</code></p>
 <div class="ulist">
 <ul>
 <li>
@@ -743,27 +761,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>eventMinDistance: 20 (default)</p>
+<p>GenMsgCycleTime: 10</p>
 </li>
 <li>
-<p>frameSendMode: regular (0)</p>
+<p>GenMsgDelayTime: 20 (default)</p>
 </li>
 <li>
 <p>checksumStartValue: 17</p>
 </li>
 <li>
-<p>sendPeriod: 10</p>
+<p>GenMsgSendType: cyclic (0)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>SendMode: Regular</p>
+<p>Unknown transmission mode! Please, double-check your code generator configuration!</p>
 <div class="ulist">
 <ul>
-<li>
-<p>Period: 10 ms</p>
-</li>
 <li>
 <p>Filtered special signals:</p>
 </li>
@@ -889,27 +904,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>eventMinDistance: 20 (default)</p>
+<p>GenMsgCycleTime: 25</p>
 </li>
 <li>
-<p>frameSendMode: regular (0)</p>
+<p>GenMsgDelayTime: 20 (default)</p>
 </li>
 <li>
 <p>checksumStartValue: 218</p>
 </li>
 <li>
-<p>sendPeriod: 25</p>
+<p>GenMsgSendType: cyclic (0)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>SendMode: Regular</p>
+<p>Unknown transmission mode! Please, double-check your code generator configuration!</p>
 <div class="ulist">
 <ul>
-<li>
-<p>Period: 25 ms</p>
-</li>
 <li>
 <p>Filtered special signals:</p>
 </li>
@@ -1035,30 +1047,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>eventMinDistance: 65</p>
+<p>GenMsgCycleTime: 10 (default)</p>
 </li>
 <li>
-<p>frameSendMode: event (1)</p>
+<p>GenMsgDelayTime: 65</p>
 </li>
 <li>
 <p>checksumStartValue: 119</p>
 </li>
 <li>
-<p>sendPeriod: 10 (default)</p>
+<p>GenMsgSendType: event (1)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>SendMode: Data change driven, regular if there are no changes</p>
+<p>Unknown transmission mode! Please, double-check your code generator configuration!</p>
 <div class="ulist">
 <ul>
-<li>
-<p>Period: 10 ms</p>
-</li>
-<li>
-<p>Minimum distance in time: 65 ms</p>
-</li>
 <li>
 <p>Filtered special signals:</p>
 </li>
@@ -1235,27 +1241,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>eventMinDistance: 20 (default)</p>
+<p>GenMsgCycleTime: 30</p>
 </li>
 <li>
-<p>frameSendMode: regular (0)</p>
+<p>GenMsgDelayTime: 20 (default)</p>
 </li>
 <li>
 <p>checksumStartValue: 112</p>
 </li>
 <li>
-<p>sendPeriod: 30</p>
+<p>GenMsgSendType: cyclic (0)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>SendMode: Regular</p>
+<p>Unknown transmission mode! Please, double-check your code generator configuration!</p>
 <div class="ulist">
 <ul>
-<li>
-<p>Period: 30 ms</p>
-</li>
 <li>
 <p>Filtered special signals:</p>
 </li>
@@ -1398,27 +1401,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>eventMinDistance: 50</p>
+<p>GenMsgCycleTime: 1000</p>
 </li>
 <li>
-<p>frameSendMode: mixed (2)</p>
+<p>GenMsgDelayTime: 50</p>
 </li>
 <li>
 <p>checksumStartValue: 113</p>
 </li>
 <li>
-<p>sendPeriod: 1000</p>
+<p>GenMsgSendType: cyclicOrEvent (2)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>SendMode: Data change driven</p>
+<p>Unknown transmission mode! Please, double-check your code generator configuration!</p>
 <div class="ulist">
 <ul>
-<li>
-<p>Minimum distance in time: 50 ms</p>
-</li>
 <li>
 <p>Filtered special signals:</p>
 </li>
@@ -1578,30 +1578,24 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p>eventMinDistance: 20</p>
+<p>GenMsgCycleTime: 10 (default)</p>
 </li>
 <li>
-<p>frameSendMode: event (1)</p>
+<p>GenMsgDelayTime: 20</p>
 </li>
 <li>
 <p>checksumStartValue: 0 (default)</p>
 </li>
 <li>
-<p>sendPeriod: 10 (default)</p>
+<p>GenMsgSendType: event (1)</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>SendMode: Data change driven, regular if there are no changes</p>
+<p>Unknown transmission mode! Please, double-check your code generator configuration!</p>
 <div class="ulist">
 <ul>
-<li>
-<p>Period: 10 ms</p>
-</li>
-<li>
-<p>Minimum distance in time: 20 ms</p>
-</li>
 <li>
 <p>Filtered special signals:</p>
 </li>
@@ -1747,7 +1741,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-01-05 20:33:08 +0100
+Last updated 2021-01-08 11:24:29 +0100
 </div>
 </div>
 </body>

@@ -6,7 +6,7 @@
 // and execution of the generated code.\n
 //   See template moduleDescription for more details.
 //
-// Copyright (C) 2015-2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -113,16 +113,19 @@ checkAttribs(bus) ::= <<
 <checkAttribSignalInitVal(bus.attribDefMap.(attribName.sigInitVal))>
 <else>
 <! Don't generate a compilation error, the initial value of signals is not mandatory !>
-<info.warn.({Input file <bus.networkFile> doesn't contain signal attribute <\\>
-             <attribName.sigInitVal>. All initial values will be zero. Check code <\\>
-             generation configuration in template group file attributes.stg}
+<info.warn.({<info.templateFile>: Input file <bus.networkFile> doesn't contain signal <\\>
+             attribute <attribName.sigInitVal>. All initial values will be zero. Check <\\>
+             code generation configuration in template group file attributes.stg}
            )
 >
 <endif>
 <if(bus.attribDefMap.(attribName.sendMode))>
 <checkAttribFrameSendMode(bus.attribDefMap.(attribName.sendMode))>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.sendMode>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <\\>
+             <attribName.sendMode>}
+           )
+>
 #error Input file <bus.networkFile.Name>\
  does not contain frame attribute <attribName.sendMode>. Check code generation\
  configuration in template group file attributes.stg
@@ -134,7 +137,10 @@ checkAttribs(bus) ::= <<
  to be a frame related attribute of type integer
 <endif>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.sendPeriod>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <\\>
+             <attribName.sendPeriod>}
+           )
+>
 #error Input file <bus.networkFile.Name> does not contain frame attribute\
  <attribName.sendPeriod>. Check code generation configuration in template group file\
  attributes.stg
@@ -145,7 +151,10 @@ checkAttribs(bus) ::= <<
 #error Input file <bus.networkFile.Name>, <attribName.eventMinDistance> needs to be a frame related attribute of type integer
 <endif>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.eventMinDistance>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <\\>
+             <attribName.eventMinDistance>}
+           )
+>
 #error Input file <bus.networkFile.Name> does not contain frame attribute\
  <attribName.eventMinDistance>. Check code generation configuration in template group file\
  attributes.stg
@@ -178,23 +187,30 @@ checkAttribSignalInitVal(attribDef) ::= <<
 // expected number of enum values. The test could actually be less strict. If the expected
 // value's are present but had other numeric values it wouldn't really harm. However it
 // points to some kind of inconsistency, worth to be double-checked.
-valDef(def) ::= "<[def.i, \"_\", def.name]>"
-valDefOkay ::= [ "1_regular": true
-               , "2_event": true
-               , "3_mixed": true
+valDef(def) ::= "<[def.i0, \"_\", def.name]>"
+valDefOkay ::= [ "0_cyclic": true
+               , "1_event": true
+               , "2_cyclicXOrEvent": true
                , default: false
                ]
 checkAttribFrameSendMode(sm) ::= <<
+<! TODO In a true project, you would probably want to extend the next condition such that
+   it reports further, unexpected and in the C code not supported transmission modes. Add
+   this clause to the end of the if's expression:
+    || !!rest(rest(rest(sm.enumValAry)))
+!>
 <if(!sm.isFrame 
     || !sm.isEnum 
     || !valDefOkay.(valDef(first(sm.enumValAry)))
     || !valDefOkay.(valDef(first(rest(sm.enumValAry))))
     || !valDefOkay.(valDef(first(rest(rest(sm.enumValAry)))))
-    || !!rest(rest(rest(sm.enumValAry)))
    )
 >
-#error Input file <bus.networkFile.Name>, frame attribute <attribName.sendMode>: <\\>
-       Expect a frame related attribute with enum values regular (1), event (2) and mixed (3)
+<! TODO In a true project, you would probably want to raise the severity of the issue.
+   Change info.warn into info.error !>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile.Name>, frame attribute <\\>
+             <attribName.sendMode>: Expect a frame related attribute with enum values <\\>
+             cyclic (0), event (1) and cyclicOrEvent (2)})>
 <endif>
 >>
 

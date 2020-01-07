@@ -8,7 +8,7 @@
 //
 // See template moduleDescription for more details.
 //
-// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -144,8 +144,9 @@ canApiDecl(cluster, info) ::= <<
 
 /** The enumeration of supported message send patterns. */
 typedef enum <symbol.enumSendMode_t>
-    { <first(cluster.busAry).attribDefMap.(attribName.sendMode).enumValAry:{val|<symbol.enumSendMode>_<val.name> = <val.i0>}; separator=", ", wrap="\n      ">
-    } <symbol.enumSendMode_t>;
+{
+    <first(cluster.busAry).attribDefMap.(attribName.sendMode).enumValAry:{val|<symbol.enumSendMode>_<val.i0>_<val.name> = <val.i0>,<\n>}>
+} <symbol.enumSendMode_t>;
 
 <typedefStsTransmission()>
 <listOfTypedefsStructFrameAndBus(cluster)>

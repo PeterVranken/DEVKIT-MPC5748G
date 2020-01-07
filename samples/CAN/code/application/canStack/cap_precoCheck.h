@@ -72,6 +72,7 @@
 #undef CAP_TMP_DEF_STRCMP_cap_
 
 
+
 /* For each bus, there should be at least one affected message, received or sent. There a
    typical mistakes in configuration of the code generator, which lead to not considering
    any message from the DBC file. These kind of mistakes are address by this check. */

@@ -41,23 +41,26 @@ import "symbols.stg"
 // value will be used in the CAN API until the frame, which the signal belongs to, is
 // received the first time. For outbound signals, this value will be used until the APSW
 // updates the API accordingly.
-attribName ::= [ "sendMode": "frameSendMode"
-               , "sendPeriod": "sendPeriod"
-               , "eventMinDistance": "eventMinDistance"
+attribName ::= [ "sendMode": "GenMsgSendType"
+               , "sendPeriod": "GenMsgCycleTime"
+               , "eventMinDistance": "GenMsgDelayTime"
                , "chksumDataId": "crcStartValue"
-               , "sigInitVal": "initialValue"
+               , "sigInitVal": "GenSigStartValue"
                , default: "codeGenerationError_badAttributeName"
                ]
 
 // The other templates access a user attribute's value through this dictionary. The value
 // is not retrieved directly from the net object (which needs to be in scope) but
 // indirectly through the other dictionary attribName: That dictionary can be easily
-// customized, when the code generation needs to be applied to another environment with
+// customized if the code generation needs to be applied to another environment with
 // other attribute definitions.
+//   Note: Changes made here, which relate to the enumeration values actually seen in a
+// project's DBC file will normally require an according change in the template group file
+// cap_precoCheck.h.stg, which generates the compile-time checks for made presumptions.
 attribVal ::= [ "sigInitVal": {<if(signal.isVoidScaling)><signal.attribMap.(attribName.sigInitVal).n; format="%.0f"><else><signal.attribMap.(attribName.sigInitVal).n><endif>}
-              , "sendMode": {<symbol.enumSendMode>_<frame.attribMap.(attribName.sendMode)>}
-              , "sendModeRegular": {<frame.attribMap.(attribName.sendMode).is.regular>}
-              , "sendModeMixed": {<frame.attribMap.(attribName.sendMode).is.mixed>}
+              , "sendMode": {<symbol.enumSendMode>_<frame.attribMap.(attribName.sendMode).n>_<frame.attribMap.(attribName.sendMode).str>}
+              , "sendModeRegular": {<frame.attribMap.(attribName.sendMode).is.cyclic>}
+              , "sendModeMixed": {<frame.attribMap.(attribName.sendMode).is.cyclicXOrEvent>}
               , "sendModeEvent": {<frame.attribMap.(attribName.sendMode).is.event>}
               , "sendPeriod": {<frame.attribMap.(attribName.sendPeriod)>}
               , "eventMinDistance": {<frame.attribMap.(attribName.eventMinDistance)>}
@@ -66,7 +69,7 @@ attribVal ::= [ "sigInitVal": {<if(signal.isVoidScaling)><signal.attribMap.(attr
               ]
 
 // This is a helper to avoid the repeated use of lengthy template expressions. Template
-// expression often have the form that a (deeply nested) element of the data structure
+// expressions often have the form that a (deeply nested) element of the data structure
 // yields a Boolean result and an <if()> expression is applied to decide code generation
 // based on the expression's Boolean value.
 //   A sub-template returns its result as a string. If we try to put the Boolean

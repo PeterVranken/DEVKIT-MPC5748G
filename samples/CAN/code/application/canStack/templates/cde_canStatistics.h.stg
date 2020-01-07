@@ -156,16 +156,16 @@ countBusObjects(frame) ::= <<
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.noFramesInRegularOfBus_add_1><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.noFramesInEventOfBus_add_1><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.noFramesInMixedOfBus_add_1><\\>
-<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
 <elseif(frame.isSent)><\\>
 <info.calc.noFramesSentOfBus_add_1><\\>
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.noFramesOutRegularOfBus_add_1><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.noFramesOutEventOfBus_add_1><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.noFramesOutMixedOfBus_add_1><\\>
-<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
-<else><info.error.({Unexpected transmission direction})><\\>
+<else><info.error.({<info.templateFile>: Unexpected transmission direction})><\\>
 <endif>
 <endif>
 >>

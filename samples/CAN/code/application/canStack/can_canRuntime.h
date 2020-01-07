@@ -34,6 +34,17 @@
  * Defines
  */
 
+/** The configuration of the supported transmission modes for CAN frames is highly
+    dependent on the definition of attributes in the particular CAN database (*.dbc file).
+    This requires some adaptations of CAN code generation templates and C source code. You
+    need to specify the name of the enumeration values, which distinguish the transmission
+    modes. The names in use depend in turn on the configuration of the CAN code generator
+    (compare with attributes.stg).\n
+      Here is how the transmission mode of ordinary, regular frames is named. */
+#define CAN_ENUM_SEND_MODE_REGULAR cap_enumSendMode_0_cyclic
+#define CAN_ENUM_SEND_MODE_EVENT cap_enumSendMode_1_event /// Send mode event triggered
+#define CAN_ENUM_SEND_MODE_MIXED cap_enumSendMode_2_cyclicOrEvent /// Send mode event+cyclic
+
 /** The size of the heap memory, which is statically allocated for the CAN interface. The
     value should be set as little as possible; if set too little then the application will
     abort with an assertion. This is safe due to the static, deterministic memory

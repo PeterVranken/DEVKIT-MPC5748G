@@ -39,16 +39,22 @@
  ** Object Type: bus
   *** Type String
  ** Default value: peter_vranken@yahoo.de
-2. Attribute `frameSendMode`
+2. Attribute `GenMsgSendType`
  ** Object Type: frame
   *** Type Enum
-  *** Range: [0..2]
+  *** Range: [0..8]
   *** Name, value pairs:
-   **** regular: 0
+   **** cyclic: 0
    **** event: 1
-   **** mixed: 2
- ** Default value: regular (0)
-3. Attribute `sendPeriod`
+   **** cyclicOrEvent: 2
+   **** reserved: 3
+   **** reserved: 4
+   **** reserved: 5
+   **** reserved: 6
+   **** reserved: 7
+   **** noMsgSendType: 8
+ ** Default value: cyclic (0)
+3. Attribute `GenMsgCycleTime`
  ** Object Type: frame
   *** Type Int
   *** Range: [5..10000]
@@ -58,12 +64,12 @@
   *** Type Int
   *** Range: [0..255]
  ** Default value: 0
-5. Attribute `eventMinDistance`
+5. Attribute `GenMsgDelayTime`
  ** Object Type: frame
   *** Type Int
   *** Range: [5..10000]
  ** Default value: 20
-6. Attribute `initialValue`
+6. Attribute `GenSigStartValue`
  ** Object Type: signal
   *** Type Float
   *** Range: [-1.0E99..1.0E99]
@@ -77,14 +83,13 @@
 * Size: 4 Byte
 * Sender: `ECU`
 * Attribute values:
- ** eventMinDistance: 20 (default)
- ** frameSendMode: regular (0)
+ ** GenMsgCycleTime: 10
+ ** GenMsgDelayTime: 20 (default)
  ** checksumStartValue: 17
- ** sendPeriod: 10
+ ** GenMsgSendType: cyclic (0)
 
 
-* SendMode: Regular
- ** Period: 10 ms
+* Unknown transmission mode! Please, double-check your code generator configuration!
  ** Filtered special signals:
   * SQC: sequenceCounter
   * checksum: checksum
@@ -102,14 +107,13 @@
 * Size: 4 Byte
 * Sender: `ECU`
 * Attribute values:
- ** eventMinDistance: 20 (default)
- ** frameSendMode: regular (0)
+ ** GenMsgCycleTime: 25
+ ** GenMsgDelayTime: 20 (default)
  ** checksumStartValue: 218
- ** sendPeriod: 25
+ ** GenMsgSendType: cyclic (0)
 
 
-* SendMode: Regular
- ** Period: 25 ms
+* Unknown transmission mode! Please, double-check your code generator configuration!
  ** Filtered special signals:
   * SQC: sequenceCounter
   * checksum: checksum
@@ -127,15 +131,13 @@
 * Size: 8 Byte
 * Sender: `ECU`
 * Attribute values:
- ** eventMinDistance: 65
- ** frameSendMode: event (1)
+ ** GenMsgCycleTime: 10 (default)
+ ** GenMsgDelayTime: 65
  ** checksumStartValue: 119
- ** sendPeriod: 10 (default)
+ ** GenMsgSendType: event (1)
 
 
-* SendMode: Data change driven, regular if there are no changes
- ** Period: 10 ms
- ** Minimum distance in time: 65 ms
+* Unknown transmission mode! Please, double-check your code generator configuration!
  ** Filtered special signals:
   * SQC: sequenceCounter
   * checksum: checksum
@@ -156,14 +158,13 @@
 * Size: 6 Byte
 * Sender: `PowerDisplay`
 * Attribute values:
- ** eventMinDistance: 20 (default)
- ** frameSendMode: regular (0)
+ ** GenMsgCycleTime: 30
+ ** GenMsgDelayTime: 20 (default)
  ** checksumStartValue: 112
- ** sendPeriod: 30
+ ** GenMsgSendType: cyclic (0)
 
 
-* SendMode: Regular
- ** Period: 30 ms
+* Unknown transmission mode! Please, double-check your code generator configuration!
  ** Filtered special signals:
   * SQC: sequenceCounter
   * checksum: checksum
@@ -182,14 +183,13 @@
 * Size: 6 Byte
 * Sender: `PowerDisplay`
 * Attribute values:
- ** eventMinDistance: 50
- ** frameSendMode: mixed (2)
+ ** GenMsgCycleTime: 1000
+ ** GenMsgDelayTime: 50
  ** checksumStartValue: 113
- ** sendPeriod: 1000
+ ** GenMsgSendType: cyclicOrEvent (2)
 
 
-* SendMode: Data change driven
- ** Minimum distance in time: 50 ms
+* Unknown transmission mode! Please, double-check your code generator configuration!
  ** Filtered special signals:
   * SQC: sequenceCounter
   * checksum: checksum
@@ -209,15 +209,13 @@
 * Size: 1 Byte
 * Sender: `PowerDisplay`
 * Attribute values:
- ** eventMinDistance: 20
- ** frameSendMode: event (1)
+ ** GenMsgCycleTime: 10 (default)
+ ** GenMsgDelayTime: 20
  ** checksumStartValue: 0 (default)
- ** sendPeriod: 10 (default)
+ ** GenMsgSendType: event (1)
 
 
-* SendMode: Data change driven, regular if there are no changes
- ** Period: 10 ms
- ** Minimum distance in time: 20 ms
+* Unknown transmission mode! Please, double-check your code generator configuration!
  ** Filtered special signals:
   * SQC: sequenceCounter
 * 5 Signals (plus 0 multiplexed signal sets):

@@ -6,7 +6,7 @@
 // The information from the DBC files about frames is provided throughthese (constant)
 // tables to the callback implementation.
 //
-// Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -305,15 +305,15 @@ idxHandlerContextData(pdu) ::= <<
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataInRegular><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataInEvent><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataInMixed><\\>
-<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
 <elseif(pdu.isSent)><\\>
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataOutRegular><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataOutEvent><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataOutMixed><\\>
-<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
-<else><info.error.({Unexpected transmission direction})><\\>
+<else><info.error.({<info.templateFile>: Unexpected transmission direction})><\\>
 <endif>
 >>
 
