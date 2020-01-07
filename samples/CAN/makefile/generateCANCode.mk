@@ -45,9 +45,7 @@ generateCanInterface: $(genDir)makeTag_generateCode
 # both lines result in one invalid command. It's unclear if this is a problem in make or in
 # the shell itself. The explicit $(EOL) is a workaround to separate the lines.
 $(genDir)makeTag_generateCode: $(templateList) $(databaseList) $(genDir)generateCode.cmd
-	cd $(call u2w,$(dir $@)) $(EOL)
-#	pwd
-	call generateCode.cmd -v WARN
+	cd $(call u2w,$(dir $@)) & call generateCode.cmd -v WARN $(EOL)
 	echo Make tag for rule generateCanInterface. Do not delete this file > $(notdir $@)
     
 # clean: We can't delete all produced file as they are output of the external shell script
