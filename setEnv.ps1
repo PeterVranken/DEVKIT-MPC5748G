@@ -17,13 +17,13 @@ if ("$env:S32DS_HOME" -eq "")
 {
     # TODO Adjust the path to the installation of the NXP S32 Design Studion and remove
     # this comment and the next three commands. The installation folder is the very one,
-    # which contains e.g. folders Cross_Tools, Drivers and eclipse.
+    # which contains e.g. folders S32DS, Drivers and eclipse.
     write-host ('setEnv.ps1: You need to configure this script prior to first use:' `
                 + ' Specify location of NXP S32 Design Studio')
     write-host 'Press any key to continue ...';
     $null = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 
-    $env:S32DS_HOME = 'C:\ProgramFiles\NXP\S32DS_Power_v2017.R1'
+    $env:S32DS_HOME = 'C:\ProgramFiles\NXP\S32DS_Power_v2.1'
     write-host ("Environment variable S32DS_HOME is set to $env:S32DS_HOME")
 }
 else
@@ -37,7 +37,7 @@ else
 # inside the Design Studio installation.
 if ("$env:GCC_POWERPC_HOME" -eq "")
 {
-    $env:GCC_POWERPC_HOME = "$env:S32DS_HOME\Cross_Tools\powerpc-eabivle-4_9"
+    $env:GCC_POWERPC_HOME = "$env:S32DS_HOME\S32DS\build_tools\powerpc-eabivle-4_9"
     write-host ("Environment variable GCC_POWERPC_HOME is set to $env:GCC_POWERPC_HOME")
 }
 else
@@ -53,8 +53,11 @@ set-alias -Name "make" `
                         + ' software for the DEVKIT-MPC5748G board')
 
 # Prepare the Windows search path for the run of the compilation tools.
-$env:PATH = "bin" `
+$env:PATH = "$PSScriptRoot\bin" `
             + ";$env:GCC_POWERPC_HOME\bin" `
-            + ";$env:S32DS_HOME\utils\msys32\usr\bin" `
-            + ";$env:S32DS_HOME\eclipse\plugins\com.pemicro.debug.gdbjtag.ppc_1.7.2.201709281658\win32" `
+            + ";$env:S32DS_HOME\S32DS\build_tools\msys32\usr\bin" `
+            + ";$env:S32DS_HOME\eclipse\plugins\com.pemicro.debug.gdbjtag.ppc_1.9.9.201907200403\win32" `
             + ";$env:PATH"
+
+write-host ("Environment prepared for GCC toolchain powerpc-eabivle-4.9.4.
+  To start, cd into a sample's root folder (where GNUmakefile resides) and type 'make help'.")
