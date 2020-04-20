@@ -267,7 +267,7 @@ productionCodeOptimization := -O3
 # Choose C library.
 ifeq ($(filter USE_EWL2,$(defineList)),USE_EWL2)
     cClibSpec := -specs=ewl_c9x_noio.specs                                                  \
-                 --sysroot=$(call w2u,$(S32DS_HOME))/S32DS/e200_ewl2
+                 --sysroot=$(call w2u,$(S32DS_HOME))/S32DS/build_tools/e200_ewl2
     ifeq ($(MAKELEVEL),0)
         incDirList += $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include)   \
                       $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include/pa)
