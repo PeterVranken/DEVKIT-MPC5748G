@@ -89,7 +89,7 @@ projectExe := $(target).s19
 h help targets usage:
 	$(info Usage: make [-s] [-k] [CONFIG=<configuration>] [SAVE_TMP=1] {<target>})
 	$(info CONFIG: <configuration> is one out of DEBUG (default) or PRODUCTION.)
-	$(info SAVE_TMP set to one will make the preprocessed C(++) sources and the assembler \
+	$(info SAVE_TMP: Set to one will make the preprocessed C(++) sources and the assembler \
            files appear in the target directory bin/ppc/<configuration>/obj/)
 	$(info Available targets are:)
 	$(info - build: Build the executable)
@@ -99,7 +99,7 @@ h help targets usage:
              statements or file renaming)
 	$(info - rebuild: Same as clean and build together)
 	$(info - bin/ppc/<configuration>/obj/<cFileName>.o: Compile a single C(++) or \
-             assembler module)
+             assembler module, e.g. $(targetDir)obj/mai_main.o)
 	$(info - <cFileName>.i: Preprocess a single C(++) or assembler module. Build product \
              is sibling of source file)
 	$(info - <cFileName>.asm: Generate an assembler listing for a single C(++) or \
@@ -240,7 +240,6 @@ VPATH := $(srcDirListExpanded) $(targetDir)
 # Code size and CPU load grow a bit. This may become an issue if the small data areas of
 # 64k each (RAM and ROM) become too small to hold all "small" data objects. Prior to
 # disabling the mode you should first try to reduce the size limit to 4 or 2 Byte.
-# TODO check availability of isel for Z4 and Z2 cores
 targetFlagsZ2 := -mcpu=e200z2
 targetFlagsZ4 := -mcpu=e200z4
 targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8 -mregnames          \
@@ -261,7 +260,7 @@ endif
     # O3: 41%
     # O2: 41%
     # O1: 52%
-    # Os: 50%, requires linkage of crtsavres.S
+    # Os: 50%
     # Ofast: 41%, likely same as -O3
 productionCodeOptimization := -O3
 
@@ -270,8 +269,8 @@ ifeq ($(filter USE_EWL2,$(defineList)),USE_EWL2)
     cClibSpec := -specs=ewl_c9x_noio.specs                                                  \
                  --sysroot=$(call w2u,$(S32DS_HOME))/S32DS/e200_ewl2
     ifeq ($(MAKELEVEL),0)
-        incDirList += C:/ProgramFiles/NXP/S32DS_Power_v2017.R1/S32DS/e200_ewl2/EWL_C/include \
-                      C:/ProgramFiles/NXP/S32DS_Power_v2017.R1/S32DS/e200_ewl2/EWL_C/include/pa
+        incDirList += $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include)   \
+                      $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include/pa)
     endif
 else ifeq ($(filter USE_NEWLIB,$(defineList)),USE_NEWLIB)
     # The switch -specs=nosys.specs links the generically implemented C library against a
@@ -307,8 +306,6 @@ $(targetDir)obj/%.o: %.S
 
 # Pattern rules for compilation of, C and C++ source files.
 
-# TODO Remove absolute installation path. Introduce path variable to S32DS in locateTools.mk?
-# TODO Add -Werror=missing-declarations, -Werror=missing-prototypes, again after dumping S32DS sample code
 # TODO Consider adding -fno-asynchronous-unwind-tables to compile switches
 cFlags = $(targetFlags)                                                                     \
          $(if $(call isTargetArchitectureZ4,$<),$(targetFlagsZ4),$(targetFlagsZ2))          \
@@ -316,7 +313,7 @@ cFlags = $(targetFlags)                                                         
          -fno-common -fno-exceptions -ffunction-sections -fdata-sections                    \
          -fshort-enums -fdiagnostics-show-option -finline-functions -fmessage-length=0      \
          -fzero-initialized-in-bss -fno-tree-loop-optimize                                  \
-         -Wall -Wno-main -Wno-old-style-declaration -Winline -Wextra -Wstrict-overflow=4    \
+         -Wall -Wno-main -Wno-old-style-declaration -Wextra -Wstrict-overflow=4             \
          -Wmissing-declarations -Wno-parentheses -Wdiv-by-zero -Wcast-align -Wformat        \
          -Wformat-security -Wignored-qualifiers -Wsign-conversion -Wsign-compare            \
          -Werror=missing-declarations -Werror=implicit-function-declaration                 \
@@ -329,13 +326,16 @@ cFlags = $(targetFlags)                                                         
 ifeq ($(SAVE_TMP),1)
     # Debugging the build: Put preprocessed C file and assembler listing in the output
     # directory
-    cFlags += -save-temps=obj -fverbose-asm 
+    cFlags += -save-temps=obj -fverbose-asm
 endif
 # Debug settings see https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging-Options
 ifeq ($(CONFIG),DEBUG)
-    cFlags += -g3 -gdwarf-2 -Og
+    cFlags += -g3 -gdwarf-2 -Og -Winline
 else
     cFlags += -g1 -gdwarf-2 $(productionCodeOptimization)
+    ifneq ($(productionCodeOptimization),-Os)
+        cflags += -Winline
+    endif
 endif
 #$(info cFlags := $(cFlags))
 
@@ -376,7 +376,7 @@ $(targetDir)obj/%.o: %.c
 # will only pass the name of this file to the linker.
 $(targetDir)obj/listOfObjFiles.txt: $(objListWithPath)
 	$(info Create linker input file $@)
-	$(file >$@,$^)
+	$(file >$@,$(sort $^))
 
 # Let the linker create the flashable binary file.
 #   CAUTION: An unsolved problem with GCC 4.9.4 is the switch -fshort-double, which is

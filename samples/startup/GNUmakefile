@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -64,13 +64,6 @@
 
 # The name of the project is used for several build products.
 project := DEVKIT-MPC5748G-startup
-
-# The directory, from where to run the compiled target when yielding target run. Defaults
-# to the directory, where the compiled target is located.
-#targetRunDir :=
-
-# A list of arguments passed to the compiled target when yielding target run.
-targetRunArgs := $(ARG)
 
 # Specify a blank separated list of directories holding source files. The directories are
 # searched recursively for C/C++ and assembler source files.

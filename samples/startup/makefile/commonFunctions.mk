@@ -82,35 +82,12 @@ w2u = $(subst \,/,$(1))
 # $(info mkdir $(call u2w,c:/00_HybridMaster/Components))
 
 
-# A list of file names is written linewise into a text file. The file can be used as input
-# to other tools, like a linker or archiver.
-# Return value: undefined. The caller should invalidate the return value by putting the
-# call of the macro into a string eating expression, e.g. $(and $(call ...),)
-# $(1): Name of generated file
-# $(2): List of file names
-# Usage:
-#   The macro can be called inside the recipe of a rule or unconditionally in the global
-# part of a makefile. To do so assign the undefined return value to a dummy variable.
-# Implementation hints:
-#   Using the stupid Windows shell we can write to a file only by appending line by line to
-# an existing file. In order to get a defined starting point we need to delete any exiting
-# file of given name in the first line.
-#   The next lines write the lines of the file as a kind of side effect of the text
-# macro expansions.
-define createFileList
-    $(shell $(echo) $(firstword $(2)) > $(1))
-    $(foreach srcFile,$(wordlist 2,$(words $(2)),$(2)),$(shell $(echo) $(srcFile) >> $(1)))
-endef # createFileList
-#   Example (note that the example won't run here, because the order of includes of *.mk
-# $(echo) is not set yet):
-#$(info Create file tmp.lst$(and $(call createFileList,tmp.lst,file1.c file2.c file3.c),))
 
 # Test for equality: A wrapper around the required ugly string comparison operations.
-#   This code downloaded from
-# http://stackoverflow.com/questions/7324204/how-to-check-if-a-variable-is-equal-to-one-of-two-values-using-the-if-or-and-fun
-# on March 22, 2017.
-eq = $(and $(findstring $(1),$(2)),$(findstring $(2),$(1)))
-
+#   The macro returns either the empty string (condition is false) or the string "true".
+#   $(1) and $(2) are the two compared strings.
+eq = $(if $(1)$(2),$(and $(findstring $(1),$(2)),$(findstring $(2),$(1)),true),true)
+#$(info 2==3: $(call eq,2,3), 2==2: $(call eq,2,2), ""=="": $(call eq,,), 1=="": $(call eq,1,),""==1: $(call eq,,1))
 
 
 # Test if a file is in a list of such. Can be used in conditional expressions to handle
