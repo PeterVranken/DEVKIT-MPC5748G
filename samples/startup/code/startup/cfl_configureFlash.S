@@ -65,24 +65,23 @@
  * Likely, we can still improve system performance by enabling it. Compare with MPC5643L
  * settings.
  */
-    .type   cfl_configureFlash, @function
-    .global cfl_configureFlash
+    .global     cfl_configureFlash
 cfl_configureFlash:
-    e_stwu  sp, -24(sp) /* We need 20 Byte but stack frame must be multiple of 8 (EABI) */
-    mflr    r0
-    e_stw   r0, 28(sp)
+    e_stwu      sp, -24(sp) /* We need 20 Byte but stack frame must be multiple of 8 (EABI) */
+    mflr        r0
+    e_stw       r0, 28(sp)
     
     /* Load the required four movable instructions into r8..r10. */
-    e_lis   r10, cfl_movalbeMachineCode@ha
-    e_add16i r10, r10, cfl_movalbeMachineCode@l
-    e_lwz   r8, 0(r10)
-    e_lwz   r9, 4(r10)
-    e_lwz   r10, 8(r10)
+    e_lis       r10, cfl_movalbeMachineCode@ha
+    e_add16i    r10, r10, cfl_movalbeMachineCode@l
+    e_lwz       r8, 0(r10)
+    e_lwz       r9, 4(r10)
+    e_lwz       r10, 8(r10)
     
     /* Store moveable sub-routine in the stack area. */
-    e_stw   r8, 8(sp)
-    e_stw   r9, 12(sp)
-    e_stw   r10, 16(sp)
+    e_stw       r8, 8(sp)
+    e_stw       r9, 12(sp)
+    e_stw       r10, 16(sp)
     
     /* @todo We need a memory barrier here to have everything in RAM before we branch
        there. For the same reason we need an isync before we branch but not where we branch
@@ -93,42 +92,42 @@ cfl_configureFlash:
        for RWSC and APC can be set in a read-modify-write access, but here we simply write
        the aimed value; nobody else has changed the register since reset yet.
          @todo This code needs revision to consider the prefetching, too. */
-    e_rlwinm r3, r3, 8, 19, 23  /* r3=RWSC: Mask with 0x1f, shift 8 Bits left */
-    e_rlwimi r3, r4, 13, 16, 18 /* r4=APC: Mask with 0x7, shift 13 Bits left, insert */
-    se_addi  r3, 0x15           /* +10101b: P0_BFEN=1 (line buffer enable), P0_PFLIM=10b,
-                                   prefetch on miss or hit, P0_IPFEN=1 (prefetch on
-                                   instruction fetch) P0_DPFEN=0 (no prefetch on data
-                                   fetch) */
-    e_or2is  r3, 0x0001         /* P0_M0PFE=1 (Master 0=Z4A triggers prefetch), all other
-                                   P0_MnPFE=0 (no other masters trigger prefetch) */
+    e_rlwinm    r3, r3, 8, 19, 23  /* r3=RWSC: Mask with 0x1f, shift 8 Bits left */
+    e_rlwimi    r3, r4, 13, 16, 18 /* r4=APC: Mask with 0x7, shift 13 Bits left, insert */
+    se_addi     r3, 0x15           /* +10101b: P0_BFEN=1 (line buffer enable), P0_PFLIM=10b,
+                                      prefetch on miss or hit, P0_IPFEN=1 (prefetch on
+                                      instruction fetch) P0_DPFEN=0 (no prefetch on data
+                                      fetch) */
+    e_or2is     r3, 0x0001         /* P0_M0PFE=1 (Master 0=Z4A triggers prefetch), all other
+                                      P0_MnPFE=0 (no other masters trigger prefetch) */
 
     /* Load register address */
-    e_lis   r4, 0xfc03          /* PFLASH_BASE: 0xFC030000, PFCR1: Offset 0 */
+    e_lis       r4, 0xfc03          /* PFLASH_BASE: 0xFC030000, PFCR1: Offset 0 */
 
     /* Call sub-routine, which is in the stack area. */
-    e_la    r9, 8(sp)
-    mtctr   r9
+    e_la        r9, 8(sp)
+    mtctr       r9
     se_bctrl
     
     /* Write 0x00020015 to register PFCR2 in order to enable prefetch on second port, too.
        Here, we allow instruction prefetch by Z4B, whose address bus is connected to port
        2. */
-    e_lis   r3, 0x00020015@h    
-    e_or2i  r3, 0x00020015@l    /* P1_M1PFE=1 (Master 0=Z4B triggers prefetch), all other
-                                   P1_MnPFE=0 (no other masters trigger prefetch),
-                                   P1_IPFEN=1 (prefetch on instruction fetch) P1_DPFEN=0
-                                   (no prefetch on data fetch), P1_PFLIM=10b, prefetch on
-                                   miss or hit, P1_BFEN=1 (line buffer enable) */
-    se_addi r4, 4               /* PFLASH_BASE: 0xFC030000, PFCR2: Offset 4 */
+    e_lis       r3, 0x00020015@h    
+    e_or2i      r3, 0x00020015@l    /* P1_M1PFE=1 (Master 0=Z4B triggers prefetch), all other
+                                       P1_MnPFE=0 (no other masters trigger prefetch),
+                                       P1_IPFEN=1 (prefetch on instruction fetch) P1_DPFEN=0
+                                       (no prefetch on data fetch), P1_PFLIM=10b, prefetch on
+                                       miss or hit, P1_BFEN=1 (line buffer enable) */
+    se_addi     r4, 4               /* PFLASH_BASE: 0xFC030000, PFCR2: Offset 4 */
     
     /* Call sub-routine, which is in the stack area. */
-    e_la    r9, 8(sp)
-    mtctr   r9
+    e_la        r9, 8(sp)
+    mtctr       r9
     se_bctrl
     
-    e_lwz   r0, 28(sp)
-    mtlr    r0
-    e_la    sp, 24(sp)
+    e_lwz       r0, 28(sp)
+    mtlr        r0
+    e_la        sp, 24(sp)
     se_blr
 
     .align  2
@@ -137,11 +136,10 @@ cfl_movalbeMachineCode:
                                because the instructions appeared in RAM only a few cycles
                                ago. Look-ahead instruction fetching may have picked other
                                bytes. */
-    e_stw   r3, 0(r4)
+    e_stw       r3, 0(r4)
     msync                   /* Accomplish transaction before return to flash. */
     se_blr
 
-    .size   cfl_configureFlash, .-cfl_configureFlash
 /* End of cfl_configureFlash */
 
 
