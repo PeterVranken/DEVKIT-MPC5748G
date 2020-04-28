@@ -2,7 +2,7 @@
  * @file inc_initMcuCoreHW.c
  * The interrupt controller is configured and enabled here.
  *
- * Copyright (C) 2017-2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -64,7 +64,9 @@ void inc_dummyINTCInterruptHandler(void);
     assembler code (There we have better control of the required alignment constraints.)\n
       Note, the entries in the table are normal, proper C functions; no considerations
     about specific calling conventions (e.g. without stack frame) or according type
-    decorations need to be made. */
+    decorations need to be made.
+      @todo CAUTION, the macro NUMBER_OF_INT_VECTORS in MPC5748G.h is defined to be 85
+    only! We must not use it. */
 extern void (*int_INTCInterruptHandlerAry[753])(void);
 
 #if DEBUG
@@ -129,7 +131,10 @@ void inc_dummyINTCInterruptHandler(void)
     case 2 /* Z2 */:
         IACKR = INTC->IACKR2;
         break;
+        
     default:
+    case STD_MAX_NO_CORES:
+        assert(false);
         IACKR = 0;
     }
     
@@ -319,7 +324,9 @@ void inc_installINTCInterruptHandler( void (*interruptHandler)(void)
                                     , bool isPreemptable
                                     )
 {
-    assert(processorID <= 2  &&  vectorNum < sizeOfAry(int_INTCInterruptHandlerAry));
+    assert(processorID < STD_MAX_NO_CORES
+           &&  vectorNum < sizeOfAry(int_INTCInterruptHandlerAry)
+          );
     
     /* Compute the function pointer in the ISR Handler table. We use the uppermost bit of
        the address to store the preemption information. This convention is known and

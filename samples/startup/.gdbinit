@@ -7,7 +7,7 @@ set remotetimeout 60
 #set $elf-file = bin/ppc/DEBUG/DEVKIT-MPC5748G-startup.elf
 symbol-file bin/ppc/DEBUG/DEVKIT-MPC5748G-startup.elf
 !echo Type either core0, core1 or core2 to connect to the Z4A, Z4B or Z2,
-!echo respectively. (The GDB server need to run and need to have successfully
+!echo respectively. (The GDB server needs to run and needs to have successfully
 !echo connected to the DEVKIT-MPC5748G.)
 !echo   Before switching from the selected core to another one use: detach. Or
 !echo open one or two other shell windows and run the gdb client, there

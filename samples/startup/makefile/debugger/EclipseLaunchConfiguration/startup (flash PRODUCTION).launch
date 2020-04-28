@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="com.pemicro.debug.gdbjtag.ppc.launchConfigurationType">
 <listAttribute key="com.pemicro.debug.gdbjtag.ppc.ELVES"/>
+<listAttribute key="com.pemicro.debug.gdbjtag.ppc.ELVES_OFFSET"/>
 <intAttribute key="com.pemicro.debug.gdbjtag.ppc.NUMBER_ELVES" value="0"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.PE.DEVICE_NAME" value="MPC5748G"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.PE.GDB_OPTIONS" value="-verbose"/>
@@ -89,7 +90,7 @@
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.preserveMemoryTo2" value="3"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.CYCLONE_IP" value=""/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.DO_RESET_DELAY" value="false"/>
-<intAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.INTERFACE_PORT" value="-1"/>
+<intAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.INTERFACE_PORT" value="0"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.INTERFACE_PORT_STRING" value="USB1"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.NETWORK_CARD_IP" value=""/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.POWER_DOWN_DELAY" value=""/>
