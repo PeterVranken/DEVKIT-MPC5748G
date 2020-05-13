@@ -1,0 +1,21 @@
+= Scheduler Test "Round Robin" of safe-RTOS
+
+This folder contains test code for the RTOS's scheduler.
+
+Three events of same priority are created. They have one task associated
+each. Each of the tasks triggers the event of the next task such that we
+get a cyclic task activation.
+
+The test aims at double-checking the correct behavior of the scheduler for
+events of same priority. All events need to be processed and non of the
+tasks need to preempt another one. They need to be cyclically executed
+like in a round robin scheduler. However, no time slices can be defined in
+a BCC scheduler so that the three tasks need to consume all computation
+time remaining at their priority level. (The idle task won't be served any
+more and the tasks of higher priority need to preempt the three.)
+
+Status of the test is printed to the serial port of the evaluation board.
+Open a terminal on the host machine to read the output: 115200 Bd, 8 Bit,
+1 Stop bit, no parity. Additionally, the successfully running test enables
+a blinking green LED on the board. It would turn red or stop blinking in
+case of a recognized problem (or even a crashing system).

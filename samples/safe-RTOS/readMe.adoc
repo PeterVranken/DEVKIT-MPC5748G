@@ -1,0 +1,39 @@
+- floating point: emulation lib or only on Z4, makefile setting
+- Library selection: either Z2 or Z4, Z4 if Z2 no float? TBC: What is
+  said/done in linker script?
+- Devices supported. Global sharing like PIT and DMA channels
+  - Clocks: full speed, all peripherals clocked
+  - SMPU (all open, one uncached chunk)
+  - PBridge (TBC: All open?)
+  - DMA, LINFlex for serial
+  - Watchdogs off
+  - Reset escalation: off
+  - SIUL2 as far as ports are required
+- Basic intercore communication support:
+  - Cache-inhibited data area
+  - Decorated store
+  - Memory barrier
+  - mutex, nestable mutex and intercore critical section
+  - no effective synchronization because no kernel
+  - TODO thread-safe queue
+  - Cross-core interrupts (two lines of code!)
+- Serial
+  - Unclear status of context-safe use (how is the new-lib library compiled?)
+  - Use sio_write or restrict printf to a single core
+- Debugger scripts: Pros & cons
+  - The scripts are not a substitute for the IDE, they are not generally
+    better but they have advantages in certain situations and are a
+    valuable add-on
+  - Can handle reset escalation. Even if switched off: Regular (not
+    escalated) reset made IDE fail to coennect to target for setting break
+    points and stepping through the code (re-flash of healthy SW was
+    however possible)
+  - Can speed-up the flash procedure, can beintegrated into makefile after
+    build
+  - Easier access to MCU registers, since the Embedded Sys plugin in the
+    IDE is not working at all. We need to use the console window in the
+    IDE instaeda nd this is much less convenient than a GDB in a normal
+    shell window (IDE has no  commmand completion and with respect to
+    repetition and modification of previously submitted commands)
+  - Struggles with switching between cores and restart of MCU after reset.
+    Mostly the server needs to be restarted

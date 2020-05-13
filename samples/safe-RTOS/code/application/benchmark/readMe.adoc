@@ -1,0 +1,46 @@
+= Sample application "benchmark" of safe-RTOS
+
+This folder contains test code for the RTOS's scheduler.
+
+The sample application simulates a true RTOS application with respect to
+scheduling and task timing so that it can make a statement about the
+overhead imposed by the kernel -- at least in direct comparison of
+different kernels. (The absolute result figures are rather meaningless.)
+
+The application does do nothing but incrementing some task counters in
+order to get an alive indication of the tasks. The rest of the task bodies
+is busy waiting. The configured tasks and their individual busy wait times
+are chosen as considered realistic for a true embedded application.
+
+A typical inter-task communication pattern has been simulated: Mutual
+exclusion with a subset of other tasks is implemented at entry and on exit
+from a task. This simulates a data flow based task interface: Input data
+is copied from some shared area at the beginning of the task execution.
+Then the task spends most of its execution time with computation of its
+results and at the end it again uses a critical section with mutual
+exclusion to copy its results to some other shared areas.
+
+A relative high interrupt load has been configured, too. The interrupts
+have different priorities and preempt each other. The application tasks
+are frequently preempted by the interrupts.
+
+None of the actual operations of a true application has been simulated,
+just the timing. But due to the significant interrupt load and the
+splitting of the busy times into phases of mutual exclusion with other
+tasks and pure, autonomous computations the timing and activity of the
+kernel should resemble a true application.
+
+The application regularly reports the averaged total CPU load and the
+portion, which is spent in the kernel.
+
+The reported kernel CPU times have been computed as difference of the
+overall CPU load and the sum of applied busy wait times. The reported
+value therefore includes everything but busy waiting, e.g. the call of the
+nearly empty ISRs, the call of the task functions and incrementing of the
+alive counters. So it's not only the time spent in actual kernel
+functions.
+
+The reported value has not particular meaning on an absolute scale but it
+can be useful to compare different revisions or variants of the RTOS, like
+with/without safety support or HW versus SW scheduler. It may also be
+useful to compare with other RTOSs, if they offer a similar API.

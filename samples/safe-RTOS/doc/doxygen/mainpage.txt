@@ -1,0 +1,17 @@
+/*! @mainpage safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L
+
+@section secIntro Introduction
+
+safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L
+
+This is not the manual. The purpose of this documentation is to be a kind
+of API browser to support the implementation of the software, which is
+going to integrate the RTOS. Get a quick overview on the user accessible API
+functions of the RTOS and the applied data
+types. Use it as a reference book while working on your embedding
+software.
+
+For everything else, please refer to the <a
+href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE/">safe-RTOS (VLE) GitHub project</a>.
+
+*/
