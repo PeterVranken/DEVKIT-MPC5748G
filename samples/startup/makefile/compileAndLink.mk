@@ -262,7 +262,7 @@ endif
     # O1: 52%
     # Os: 50%
     # Ofast: 41%, likely same as -O3
-productionCodeOptimization := -O3
+productionCodeOptimization := -Ofast
 
 # Choose C library.
 ifeq ($(filter USE_EWL2,$(defineList)),USE_EWL2)

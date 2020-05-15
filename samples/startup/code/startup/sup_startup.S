@@ -119,13 +119,13 @@
       Declaration in C code:\n
       extern void (*volatile sup_main_Z4B)(signed int noArgs, const char *argAry[]);\n
       extern void (*volatile sup_main_Z2)(signed int noArgs, const char *argAry[]); */
-    .global sup_main_Z4B, sup_main_Z2
-    .section .bss.startup
-    .align  2
+    .global     sup_main_Z4B, sup_main_Z2
+    .section    .bss.startup
+    .p2align    2
 sup_main_Z4B:
-    .ds.l   1
+    .ds.l       1
 sup_main_Z2:
-    .ds.l   1
+    .ds.l       1
 
 
 /*
@@ -142,24 +142,24 @@ sup_main_Z2:
  * And indeed, if we don't enable Z4B and Z2 here in the boot sector they still startup
  * properly, when Z4A initiates their startup.
  */
-    .section .bafData, "a"
-    .global sup_bafData         /* Nice to have this in the map file */ 
+    .section    .bafData, "a"
+    .global     sup_bafData         /* Nice to have this in the map file */
 sup_bafData:
     /* MCU specific magic word at beginning of boot sector. */
-    .dc.w   RCHW_VALUE
-    .dc.w   ENABLE_CPU0 | ENABLE_CPU1 | ENABLE_CPU2
+    .dc.w       RCHW_VALUE
+    .dc.w       ENABLE_CPU0 | ENABLE_CPU1 | ENABLE_CPU2
 
     /* Reset vector for core 2. */
-    .org    sup_bafData + 0x04, 0xff
-    .dc.l   sup_startUp
-    
+    .org        sup_bafData + 0x04, 0xff
+    .dc.l       sup_startUp
+
     /* Reset vector for core 0. */
-    .org    sup_bafData + 0x10, 0xff
-    .dc.l   sup_startUp
+    .org        sup_bafData + 0x10, 0xff
+    .dc.l       sup_startUp
 
     /* Reset vector for core 1. */
-    .org    sup_bafData + 0x14, 0xff
-    .dc.l   sup_startUp
+    .org        sup_bafData + 0x14, 0xff
+    .dc.l       sup_startUp
 
 
 /**
@@ -168,23 +168,22 @@ sup_bafData:
  * specified in the BAF data block in the boot sector to make this happen after reset.
  */
 
-    .section .text.startup, "ax"
+    .section    .text.startup, "ax"
 
     .extern     ld_stackStart       /* Absolute start of all stack memory. */
     .extern     ld_stackSize        /* Total size of all stack memory. */
     .extern     ld_stackEndCore0    /* End of stack memory for core 0. */
     .global     sup_startUp
-    .type       sup_startUp, @function
-    .align      2
+    .p2align    2
 sup_startUp:
     e_bl        zeroizeRegisters    /* Clear all GPR and all relevant SPR */
     
     mfspr       r3, 286             /* SPR 286 = PIR, processor ID */
     e_bl        initExceptionHandlers   /* Register all IVOR exceptions of the core in r3 */
-    
+
     se_cmpli    r3, 1               /* Next steps only once by first core, which is 0 */
     se_bge      su_endInitWDAndRam
-    
+
 #ifdef DEBUG
     /* Disable the destructive reset for development. */
     e_lis       r4, 0xfffa8608@ha   /* fffa8608 = 'Destructive' Reset Escalation Threshold */
@@ -201,10 +200,10 @@ su_endInitWDAndRam:
        the problem to the SW developer.
          Note, the external interrupts are not enabled yet. They are entirely managed by
        the application software. */
-    mfmsr           r0
-    e_or2is         r0, 0x0002      /* CE: Critical interrupts */
-    e_or2i          r0, 0x1000      /* ME: Machine check */
-    mtmsr           r0
+    mfmsr       r0
+    e_or2is     r0, 0x0002      /* CE: Critical interrupts */
+    e_or2i      r0, 0x1000      /* ME: Machine check */
+    mtmsr       r0
 
     /* Enable the Branch Target Buffer (BTB) for branch prediction. Clear all buffer
        entries, which might be arbitrarily set after reset, and enable all branch
@@ -220,7 +219,7 @@ su_endInitWDAndRam:
     se_cmpli    r31, 2
     se_beq      su_noInitCacheForZ2 /* Core 2 (Z2) has no caches, skip initialization */
     se_bgt      .           /* assert(PID <= 2) */
-    
+
     /* Enable instruction and data caches. The procedure is described in the e200z4 Power
        Architecture Core Reference Manual, section 9.6, p. 552ff. 9.6.1 Cache
        Enable/Disable and 9.6.5 Cache Invalidation apply. */
@@ -245,7 +244,7 @@ su_icache_waitForInvalidation:
 su_icache_noAbort:
     se_btsti    r0, 30      /* Test still busy flag */
     se_bne      su_icache_waitForInvalidation   /* Busy wait for completion. */
-    
+
     /* Core RM, 9.6.1: Data cache enabling */
     se_bseti    r0, 31      /* Set bit L1CSR1[CDE], data cache enable */
     se_isync
@@ -345,7 +344,7 @@ sub_endCore0InitStack:
 
     /* Load r2 and r13 for small, fast data access */
     e_bl        initSDataRegisters
-    
+
     /* Core 0 only: Copy the mirror of the initialized RAM sections from flash ROM to the
        RAM - all global C data will have the wanted initial values. */
     se_cmpli    r31, 1
@@ -376,7 +375,7 @@ su_main4zBOrZ2:
     e_lis       r5, sup_main_Z4B@ha
     e_lwz       r5, sup_main_Z4B@l(r5)
     se_mtlr     r5
-    se_blrl     
+    se_blrl
     se_b        su_endMain
 su_mainZ2:
     e_lis       r5, sup_main_Z2@ha
@@ -401,16 +400,15 @@ su_argv:
 
 su_argv_z40:
     .ascii      "Z4A\0"
-        
+
 su_argv_z41:
     .ascii      "Z4B\0"
-    
+
 su_argv_z2:
     .ascii      "Z2\0"
 
     .section    .text.startup
-    
-    .size   sup_startUp, .-sup_startUp
+
 /* End of sup_startUp */
 
 
@@ -420,7 +418,6 @@ su_argv_z2:
  * First step of MCU startup is to bring all relevant registers into a defined state. We
  * set all of them to zero.
  */
-    .type   zeroizeRegisters, @function
 zeroizeRegisters:
 
     /* Initialize the 32-bits of GPR0 to GPR31.
@@ -464,13 +461,14 @@ zeroizeRegisters:
     mtctr   r0          /* SPR9 */
 
     mtspr   272, r0     /* SPRG0-3 */
-    mtspr   273, r0 
-    mtspr   274, r0 
-    mtspr   275, r0 
+    mtspr   273, r0
+    mtspr   274, r0
+    mtspr   275, r0
+    mtspr   256, r0     /* USPRG0  */
     mtspr   26, r0      /* SRR0-1  */
-    mtspr   27, r0 
+    mtspr   27, r0
     mtspr   58, r0      /* CSRR0-1 */
-    mtspr   59, r0 
+    mtspr   59, r0
     mtspr   570, r0     /* MCSRR0-1 */
     mtspr   571, r0
     mtspr   574, r0     /* DSRR0-1 */
@@ -480,18 +478,16 @@ zeroizeRegisters:
     mtspr   61, r0      /* DEAR    */
     mtspr   62, r0      /* ESR     */
     mtspr   63, r0      /* IVPR    */
-    mtspr   256, r0     /* USPRG0  */
     mtspr   308, r0     /* DBCR0-2 and 4-8 */
-    mtspr   309, r0 
-    mtspr   310, r0 
-    mtspr   563, r0 
-    mtspr   564, r0 
+    mtspr   309, r0
+    mtspr   310, r0
+    mtspr   563, r0
+    mtspr   564, r0
     mtspr   603, r0
     mtspr   596, r0
     mtspr   597, r0
 
     se_blr
-.size   zeroizeRegisters, .-zeroizeRegisters
 
 /* End of zeroizeRegisters */
 
@@ -502,19 +498,18 @@ zeroizeRegisters:
  * Disable the watchdogs (external SWT and core internal, TCR). Actually, out of reset only
  * one is running and this one is disabled.
  */
-    .type   disableWatchdogs, @function
 disableWatchdogs:
     /* Load base address of SWT_0, see RM, section 52, p. 2745ff. */
     e_lis   r3, 0xfc05
     //e_or2i  r3, 0x0000
-    
+
     /* Write magic sequence 0xc520, 0xd928 to service register to unlock the soft lock
        (locked on reset). This permits to access the control register. */
     e_li    r4, 0xc520
     e_stw   r4, 16(r3)
     e_li    r4, 0xd928
     e_stw   r4, 16(r3)
-    
+
     /* Write to control register. In particular, reset bit 0, WEN, Watchdog ENable.
          0xff000000: Retain reset setting, all masters are allowed to access the SWT
          0x100: RIA, retain reset setting, reset device if invalid access to register
@@ -524,10 +519,9 @@ disableWatchdogs:
     e_lis   r4, 0xff00
     e_or2i  r4, 0x010a
     e_stw   r4, 0(r3)
-    
+
     se_blr
 
-    .size   disableWatchdogs, .-disableWatchdogs
 /* End of disableWatchdogs */
 
 
@@ -535,8 +529,8 @@ disableWatchdogs:
 /**
  *   @func initExceptionHandlers
  * Set up the MCU's interrupt table. This relates to the 12 built-in exception handlers,
- * not to the external interrupts the application code will mainly use. (The external
- * interrupts are one of the 12 exceptions set here.) We assign empty handlers to most
+ * not to the External Interrupts the application code will mainly use. (The External
+ * Interrupts are one of the 12 exceptions set here.) We assign empty handlers to most
  * exceptions. These handlers loop infinitely so that you will see a caught exception in
  * the debugger.
  *   @return
@@ -544,7 +538,6 @@ disableWatchdogs:
  *   @param r3
  * r3 contains the processor ID in the range of 0..2.
  */
-    .type   initExceptionHandlers, @function
 initExceptionHandlers:
     
     /* Write the common most significant 24 bits of all the exception handler addresses. */
@@ -569,7 +562,6 @@ ieh_writeIVPR:
 
     se_blr
 
-    .size   initExceptionHandlers, .-initExceptionHandlers
 /* End of initExceptionHandlers */
 
 
@@ -588,28 +580,26 @@ ieh_writeIVPR:
  * additional fault recognition: A read access to an unused memory address would be
  * reported as ECC error.
  */
-    .type   zeroizeSRAM, @function
-    .extern ld_memRamStart, ld_memRamSize
+    .extern     ld_memRamStart, ld_memRamSize
 zeroizeSRAM:
-    e_lis   r3, ld_memRamStart@h
-    e_or2i  r3, ld_memRamStart@l
-    e_lis   r4, ld_memRamSize@h
-    e_or2i  r4, ld_memRamSize@l
-    se_srwi r4, 3           /* Divide length in Byte by 2^3=8 */
-    se_mtctr r4
-    se_li   r31, 0
-    se_li   r30, 0
+    e_lis       r3, ld_memRamStart@h
+    e_or2i      r3, ld_memRamStart@l
+    e_lis       r4, ld_memRamSize@h
+    e_or2i      r4, ld_memRamSize@l
+    se_srwi     r4, 3       /* Divide length in Byte by 2^3=8 */
+    se_mtctr    r4
+    se_li       r31, 0
+    se_li       r30, 0
 
 zreg_loop:
     /* RM, 72.5: ECC SRAM must be initialized with 64-bit writes on 64-bit aligned
        addresses; the use of e_stmw is recommended for this purpose. */
-    e_stmw  r30, 0(r3)      /* Write registers 30 and 31 in one instruction, thus 8 Byte */
-    se_addi r3, 8
-    e_bdnz  zreg_loop
+    e_stmw      r30, 0(r3)  /* Write registers 30 and 31 in one instruction, thus 8 Byte */
+    se_addi     r3, 8
+    e_bdnz      zreg_loop
 
     se_blr
 
-    .size   zeroizeSRAM, .-zeroizeSRAM
 /* End of zeroizeSRAM */
 
 
@@ -619,15 +609,13 @@ zreg_loop:
  * Prepare some registers as required by the PowerPC eabi for the implementation of fast
  * small data access.
  */
-    .extern _SDA_BASE_, _SDA2_BASE_
-    .type   initSDataRegisters, @function
+    .extern     _SDA_BASE_, _SDA2_BASE_
 initSDataRegisters:
-    e_lis   r13, _SDA_BASE_@h       /* Load .sdata base into r13 */
-    e_or2i  r13, _SDA_BASE_@l
-    e_lis   r2, _SDA2_BASE_@h       /* Load .sdata2 base into r2 */
-    e_or2i  r2, _SDA2_BASE_@l
+    e_lis       r13, _SDA_BASE_@h       /* Load .sdata base into r13 */
+    e_or2i      r13, _SDA_BASE_@l
+    e_lis       r2, _SDA2_BASE_@h       /* Load .sdata2 base into r2 */
+    e_or2i      r2, _SDA2_BASE_@l
 
     se_blr
 
-    .size   initSDataRegisters, .-initSDataRegisters
 /* End of initSDataRegisters */

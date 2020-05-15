@@ -4,7 +4,7 @@
  * @file ccl_configureClocks.h
  * Definition of global interface of module ccl_configureClocks.c
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -31,6 +31,19 @@
 /*
  * Defines
  */
+
+/** The core clock rate PHI_0 in Hz. See MCU reference manual, section 9.9.1, Figure
+    9-16, p. 223f, and 9.9.1.2. */
+#define CCL_PHI_0_CLK   160000000u
+
+/** The system or CPU core clock. */
+#define CCL_CORE_CLK    CCL_PHI_0_CLK
+
+/** The core clock rate PHI_1 in Hz. See MCU reference manual, section 9.9.1, Figure
+    9-16, p. 223f, and 9.9.1.2. */
+#define CCL_PHI_1_CLK   (CCL_PHI_0_CLK/2u)
+
+/// @todo Complete the clock rate definitions
 
 
 /*

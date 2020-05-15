@@ -92,9 +92,6 @@ static void interruptPIT3Handler()
 {
     ++ mzb_cntIntPIT3;
 
-    /* Acknowledge the interrupt in the causing HW device. */
-    PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
-    
     unsigned int u;
     for(u=0; u<25; ++u)
     {
@@ -151,6 +148,9 @@ static void interruptPIT3Handler()
     if(++cntIsOn >= 500)
         cntIsOn = -500;
     lbd_setLED(mza_ledCore1IrqPit3, /* isOn */ cntIsOn >= 0);
+    
+    /* Acknowledge the interrupt in the causing HW device. */
+    PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
     
 } /* End of interruptPIT3Handler */
 
@@ -239,9 +239,13 @@ void _Noreturn mzb_main_Z4B( signed int noArgs TYP_DBG_ONLY
         {
             /* ++mzb_cntMainLoopsCore1 implemented with atomic read and write. Actually
                useless, there's no other core looking at the variable. */
-            const uint32_t newVal = std_loadWordAtomic(/* address */ &mzb_cntMainLoopsCore1)+1;
-            std_storeWordAtomic(/* word */  newVal, /* address */ &mzb_cntMainLoopsCore1);
-            
+            const uint32_t newVal = std_loadWordAtomic
+                                        (/* address */ (uint32_t*)&mzb_cntMainLoopsCore1)
+                                    + 1;
+            std_storeWordAtomic( /* word */  newVal
+                               , /* address */ (uint32_t*)&mzb_cntMainLoopsCore1
+                               );
+
             /* Test of mutual exclusion of cores. */
             mtx_acquireNestedMutex(&mzt_mtxDataMutexTest);
             inc_suspendAllInterrupts();

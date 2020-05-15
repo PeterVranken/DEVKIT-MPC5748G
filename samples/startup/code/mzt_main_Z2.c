@@ -194,9 +194,6 @@ void mzt_interruptPIT4Handler(void)
 {
     ++ mzt_cntIntPIT4;
 
-    /* Acknowledge the interrupt in the causing HW device. */
-    PIT->TIMER[4].TFLG = PIT_TFLG_TIF(1);
-    
     unsigned int u;
     for(u=0; u<25; ++u)
     {
@@ -221,6 +218,9 @@ void mzt_interruptPIT4Handler(void)
     if(++cntIsOn >= 500)
         cntIsOn = -500;
     lbd_setLED(mza_ledCore2IrqPit4, /* isOn */ cntIsOn >= 0);
+    
+    /* Acknowledge the interrupt in the causing HW device. */
+    PIT->TIMER[4].TFLG = PIT_TFLG_TIF(1);
     
 } /* End of mzt_interruptPIT4Handler */
 
@@ -284,11 +284,11 @@ void _Noreturn mzt_main_Z2(signed int noArgs TYP_DBG_ONLY, const char *argAry[] 
          variant
        - since the linker needs to select the Z2 variant of the clib all Z4 code will be
          degraded with respect to floating point performance - it'll use the Z2 emulation
-         libaries, too, for all computations, which cannot be implement by raw floating
+         libraries, too, for all computations, which cannot be implement by raw floating
          point instructions directly by the compiler. This holds e.g. for all calls from
          the math lib, like sinf, etc.
        All in all, the best decision for a project is not at all to use floating point on
-       the Z2 so that the project can link the Z4 libraries. This gurantees full floating
+       the Z2 so that the project can link the Z4 libraries. This guarantees full floating
        point power on the two Z4 cores but will lead to an exception if the Z2 tries
        floating point computations. */
 #if defined(USE_Z2_CLIB) || defined(USE_FP_EMULATION_CLIB) 

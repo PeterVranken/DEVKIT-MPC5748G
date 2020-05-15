@@ -28,7 +28,7 @@
  * be reserved for the C lib. See comments here in the implementation and in the linker
  * file for more details.
  *
- * Copyright (C) 2017-2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -95,7 +95,7 @@
  */
 
 /** Debug support for adjusting the memory allocation to your needs. The number of
-    invokations of the low level memmory allocation function \a sbrk are counted. */
+    invokations of the low level memory allocation function \a sbrk are counted. */
 unsigned long nwl_sbrk_noRequests = 0;
  
 /** Debug support for adjusting the memory allocation to your needs. The total number of
@@ -303,7 +303,6 @@ off_t lseek(int fildes TYP_UNUSED, off_t offset TYP_UNUSED, int whence TYP_UNUSE
  */
 signed int write(int file, const void *msg, size_t noBytes)
 {
-
     if(noBytes == 0  ||  msg == NULL  ||  (file != stdout->_file  &&  file != stderr->_file))
         return 0;
     else

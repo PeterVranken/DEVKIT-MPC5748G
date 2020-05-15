@@ -83,10 +83,17 @@ cfl_configureFlash:
     e_stw       r9, 12(sp)
     e_stw       r10, 16(sp)
     
-    /* @todo We need a memory barrier here to have everything in RAM before we branch
-       there. For the same reason we need an isync before we branch but not where we branch
-       in the RAM. */
-
+    /* mbar: We need a memory barrier here to have everything in RAM before we branch
+       there and before we read any code from there.
+         isync: Force re-reading instructions after changeing code. Required because
+       look-ahead instruction fetching may have picked other bytes. */
+    mbar
+    se_isync
+    
+    /* Load pointer to function on the stack into the counter register. */
+    e_la        r9, 8(sp)
+    mtctr       r9
+    
     /* Combine the function arguments to the complete register content. See RM, section
        73.5.1, Platform Flash Configuration Register 1 (PFLASH_PFCR1), p. 3595. The bits
        for RWSC and APC can be set in a read-modify-write access, but here we simply write
@@ -105,10 +112,16 @@ cfl_configureFlash:
     e_lis       r4, 0xfc03          /* PFLASH_BASE: 0xFC030000, PFCR1: Offset 0 */
 
     /* Call sub-routine, which is in the stack area. */
-    e_la        r9, 8(sp)
-    mtctr       r9
     se_bctrl
     
+    /** @todo Weakness of implementation: After writing of each register we return to the
+        flash ROM for reading next instructions. This makes it impossible to specify a
+        register configuration, where several registers need to be set consistantly in a
+        certain way to make it run. We are restricted to configurations, why are still
+        runnable after each register change. We could first load all register contents in
+        as may GPRs and then have a routine in RAM, which writes all of them into the
+        controller. */
+
     /* Write 0x00020015 to register PFCR2 in order to enable prefetch on second port, too.
        Here, we allow instruction prefetch by Z4B, whose address bus is connected to port
        2. */
@@ -121,8 +134,6 @@ cfl_configureFlash:
     se_addi     r4, 4               /* PFLASH_BASE: 0xFC030000, PFCR2: Offset 4 */
     
     /* Call sub-routine, which is in the stack area. */
-    e_la        r9, 8(sp)
-    mtctr       r9
     se_bctrl
     
     e_lwz       r0, 28(sp)
@@ -130,14 +141,13 @@ cfl_configureFlash:
     e_la        sp, 24(sp)
     se_blr
 
-    .align  2
+    .p2align    2
 cfl_movalbeMachineCode:
-    se_isync                /* Force re-reading instructions after leaving flash. Required
-                               because the instructions appeared in RAM only a few cycles
-                               ago. Look-ahead instruction fetching may have picked other
-                               bytes. */
     e_stw       r3, 0(r4)
     msync                   /* Accomplish transaction before return to flash. */
+    se_isync                /* Force re-reading instructions after changeing flash
+                               controller settings. Read next instuctions using new
+                               settings. */
     se_blr
 
 /* End of cfl_configureFlash */

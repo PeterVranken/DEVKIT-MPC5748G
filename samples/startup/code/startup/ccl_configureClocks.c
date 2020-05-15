@@ -20,7 +20,6 @@
 /* Module interface
  *   ccl_triggerTransitionToModeDRUN
  *   ccl_configureClocks
- *
  * Local functions
  */
 
@@ -113,9 +112,13 @@ void ccl_triggerTransitionToModeDRUN(void)
 void ccl_configureClocks(void)
 {
     /* The RAM controller operates without wait states after reset. To safely enable the
-       maximum system clock of 160 MHz we first change to the 1-wait state mode. This
-       is requested by RM 10.2.1, SRAM Controller (PRAMC). We repeat the operation for all
-       three controllers. 
+       maximum system clock of 160 MHz we first change to the 1-wait state mode. This is
+       requested by RM 10.2.1, SRAM Controller (PRAMC). The same hint is given in RM 6.2.
+       We repeat the operation for all three controllers.
+         Caution, we didn't find a recommendation for the read burst optimization. It is
+       turned on after reset and we leave it in this state. No statement has been found
+       whether this setting is clock frequency dependent, i.e. whether we should better
+       disable the optimization for our high clock speed. See RM 72.3.1.
          Note, PRAMCx_PRCR1, is 0x200 after reset (see RM 72.1) */
     PRAMC_0->PRCR1 = PRAMC_0->PRCR1 | PRAMC_PRCR1_FT_DIS(1);
     PRAMC_1->PRCR1 = PRAMC_1->PRCR1 | PRAMC_PRCR1_FT_DIS(1);
@@ -179,18 +182,32 @@ void ccl_configureClocks(void)
        become the system and peripheral clock. Our crystal frequency is 40 Mhz*/
     MC_CGM->AC5_SC = MC_CGM_AC5_SC_SELCTL(1u);
 
-    /* The PLL is configured. The VCO needs to be in the range 600-1200MHz. We use 40 MHz
-       crystal by 2 (PREDIV) times 32 (MFD), yielding a VCO frequency output of
-       40Mhz/2*32=640MHz. The output divider RFDPHI is chosen to be 4 so that we eventually
-       have 160Mhz system clock. */
-    PLLDIG->PLLDV = PLLDIG_PLLDV_PREDIV(2 /* TBC in RM and documented */)
-                    | PLLDIG_PLLDV_MFD(32u)
-                    | PLLDIG_PLLDV_RFDPHI1(1u /* div by 2^(n+1) */)
-                    | PLLDIG_PLLDV_RFDPHI(1u /* div by 2^(n+1) */);
+    /* Some preprocessor check will help to keep the static definitions in the header file
+       consistent with the actual configuration made here. */
+#if CCL_CORE_CLK != 160000000u  ||  CCL_CORE_CLK != CCL_PHI_0_CLK \
+    ||  CCL_PHI_1_CLK != 80000000u
+# error Inconsistencies found between public header file and actual clock configuration
+#endif
 
-    /* Sigma delta modulation is disabled. Write MFN. */
-/// @todo Check source: Mismatch between register name and field macro. Comment doesn't fit to MFN but value would fit to register PLLFM. What's meant? What's correct?
-    PLLDIG->PLLFM = PLLDIG_PLLFD_MFN(0u);
+    /* RM 25.5.4: The PLL is configured. The VCO needs to be in the range 600-1200MHz. We
+       use 40 MHz crystal by 2 (PREDIV) times 32 (MFD), yielding a VCO frequency output of
+       40Mhz/2*32=640MHz. The output divider RFDPHI is chosen to be 4 so that we eventually
+       have 160MHz system clock.
+         The secondary PLL output, PHI_1 or PLL_CLOCKOUT2, must not be greater than 80MHz
+       (RM 9.9.1.2) and we set the divider to 8. Note, we have not found barely any
+       reference to PHI_1 in the RM, it seems to be widely unused. The only found use case
+       is the optional routing of the signal to the external signals CLOCKOUT0/1. */
+    PLLDIG->PLLDV = PLLDIG_PLLDV_PREDIV(2 /* div by n, n=1..6 */)
+                    | PLLDIG_PLLDV_MFD(32u /* times n, n=10..150 */)
+                    | PLLDIG_PLLDV_RFDPHI1(2u /* div by 2^(n+1), n=0..4 */)
+                    | PLLDIG_PLLDV_RFDPHI(1u /* div by 2^(n+1), n=0..4 */);
+
+    /* Sigma delta modulation is disabled or "bypassed". We set the bypass bit. */
+    PLLDIG->PLLFM = PLLDIG_PLLFM_SSCGBYP(1u);
+    PLLDIG->PLLFD = PLLDIG_PLLFD_SMDEN(0u)
+                    | PLLDIG_PLLFD_SDM2(0u)
+                    | PLLDIG_PLLFD_SDM3(0u)
+                    | PLLDIG_PLLFD_DTHDIS(1u /* 0: enable, 1: disabled */);
 
     /* Write denominator fractional loop divider */
     PLLDIG->PLLCAL3 = PLLDIG_PLLCAL3_MFDEN(9999u /* TBC */);
@@ -224,7 +241,7 @@ void ccl_configureClocks(void)
     MC_CGM->SC_DC2 = MC_CGM_SC_DC2_DIV(3u /* divide by n+1 */)
                      | MC_CGM_SC_DC2_DE(1u /* enable */);
 
-    /* F40, F80 and FS80 are not configurable. */
+    /* F80, F40 and F20 are not configurable. */
 
     /* FS80 clock */
     MC_CGM->SC_DC5 = MC_CGM_SC_DC5_DIV(1u /* divide by n+1 */)
@@ -238,7 +255,10 @@ void ccl_configureClocks(void)
     /* Secure Digital Host Controller (uSDHC) clock. See RM 31.3.32 and 49. */
     MC_CGM->AC4_SC = MC_CGM_AC4_SC_SELCTL(0u /* 0: F40, 1: external clock */);
 
-    /* CLKOUT_0, RM 31.2 */
+    /* CLKOUT_0, RM 31.2. The selector of the signal is ambiguously documented. In RM
+       31.3.34 we sse the choice of PLL_CLKOUT1 and PLL_CLOCKOUT2, while figure 31-9 names
+       the same signals PHI_0 and PHI_1. The latter naming is found back in section 9,
+       where the PLL and its outputs are shown in the clocking overview. */
     MC_CGM->AC6_SC = MC_CGM_AC6_SC_SELCTL(3u /* S160 clock. See RM 31.3.34 */);
     MC_CGM->AC6_DC0 = MC_CGM_AC6_DC0_DIV(15u /* divide by n+1, RM 31.3.36 */)
                       | MC_CGM_AC6_DC0_DE(1u /* 1: enable */);
@@ -248,7 +268,10 @@ void ccl_configureClocks(void)
          0 FXOSC
          2: SXOSC
          6: Z2 clock
-         14: PLL 1 */
+         14: PLL_CLOCKOUT1
+         Caution, see before, CLKOUT_0, the description of the selector for the other
+       clockout signal makes use of ambiguous names for the PLL output signals. If we
+       compare, then it's most likely, that choice 14, "PLL_CLOCKOUT1", means PHI_0. */
     MC_CGM->CLKOUT1_SC = MC_CGM_CLKOUT1_SC_SELCTL(0u /*  See RM 31.3.1 */);
     MC_CGM->CLKOUT1_DC = MC_CGM_CLKOUT1_DC_DIV(79u /* divide by n+1 */)
                          | MC_CGM_CLKOUT1_DC_DE(1u /* 1: enable */);
@@ -276,7 +299,7 @@ void ccl_configureClocks(void)
        MHz system clock can be found in the MPC5748G Microcontroller Data Sheet, section
        6.3.6, Flash read wait state and address pipeline control settings, Table 34.
          Note, these changes can't be done by normal register writes. The code execution
-       must itself not depend on the flash, we call a routine, which is running in some RAM
+       must itself not depend on the flash. We call a routine, which is running in some RAM
        area. */
     cfl_configureFlash(/* RWSC_waitStates */ 4, /* APC_pipelining */ 1);
 

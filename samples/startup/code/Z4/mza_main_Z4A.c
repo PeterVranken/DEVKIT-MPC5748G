@@ -70,18 +70,18 @@
 /*
  * Defines
  */
- 
+
 
 /*
  * Local type definitions
  */
- 
- 
+
+
 /*
  * Local prototypes
  */
-  
- 
+
+
 /*
  * Data definitions
  */
@@ -150,19 +150,19 @@ void mza_testZ4FloatingPointConfiguration(void)
     x = y / 3;
     x = y / 3.0f;
     x = y / 3.0;
-    
+
     z = y / x;
     z = y * x;
     z = y + x;
     z = y - x;
     z = y + 56ul;
-    
+
     x = 3.1415f / 4.0f;
     y = sin(x);
     y = sinf(x);
     y = cos(x);
     y = cosf(x);
-    
+
     x = 1.0f;
     y = exp(x);
     y = expf(x);
@@ -183,25 +183,25 @@ void mza_testZ4FloatingPointConfiguration(void)
     x = -1.0;
     y = sqrt(x);
     y = sqrtf(x);
-    
+
     volatile double a, b = 99.0f, c;
     a = x + z;
     a = b / 3;
     a = b / 3.0f;
     a = b / 3.0;
-    
+
     c = b / a;
     c = b * a;
     c = b + a;
     c = b - a;
     c = b + 56ul;
-    
+
     a = 3.1415f / 4.0f;
     b = sin(a);
     b = sinf(a);
     b = cos(a);
     b = cosf(a);
-    
+
     a = 1.0;
     b = exp(a);
     b = expf(a);
@@ -213,7 +213,7 @@ void mza_testZ4FloatingPointConfiguration(void)
 #else
     b = pow10(a);
     b = pow10f(a);
-#endif    
+#endif
 
     a = 0.0f;
     b = c / a;
@@ -222,7 +222,7 @@ void mza_testZ4FloatingPointConfiguration(void)
     a = -1.0;
     b = sqrt(a);
     b = sqrtf(a);
-    
+
     /* Give us a chance to see the last result in the debugger prior to leaving scope. */
     b = 0.0;
 
@@ -240,13 +240,7 @@ static void interruptPIT1Handler()
 {
     ++ mza_cntIntPIT1;
 
-    /* Acknowledge the interrupt in the causing HW device. */
-    PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
-    
     const uint32_t tiStart = stm_getTimerValue(/* idxTimer */ 0);
-    
-    unsigned int u;
-    //for(u=0; u<25; ++u)
     do
     {
         /* The nested mutex only handles the competition of different cores. We need
@@ -259,7 +253,7 @@ static void interruptPIT1Handler()
            then this can be catastrophic. */
         mtx_acquireNestedMutex(&mzt_mtxDataMutexTest);
         inc_suspendAllInterrupts();
-        
+
         assert(mzt_dataMutexTest.cntCore0Success
                + mzt_dataMutexTest.cntCore1Success
                + mzt_dataMutexTest.cntCore2Success
@@ -270,11 +264,11 @@ static void interruptPIT1Handler()
 
         inc_resumeAllInterrupts();
         mtx_releaseNestedMutex(&mzt_mtxDataMutexTest);
-        
+
     } /* End for(All cycles of mutex test) */
 /// @todo Cleanup code, no literals. Consider: The times of all cores can sum up
     while(stm_getTimerValue(/* idxTimer */ 0) - tiStart < 16000u);
-    
+
     /* Test of intercore critical section. This code is running on core 0. */
     unsigned int u1 TYP_DBG_ONLY, u2 TYP_DBG_ONLY;
     mtx_enterIntercoreCriticalSection(&mza_csTestOfCriticalSection);
@@ -285,7 +279,7 @@ static void interruptPIT1Handler()
     assert(u1 == u2);
 
     /* Here, a lock free inter-core communication pattern is demonstrated. It works only
-       with a peer-to-peer communication; exactely one execution context on either of two
+       with a peer-to-peer communication; exactly one execution context on either of two
        of cores is involved. We send a value to core Z4B and let it respond. The received
        values are incremented by one in each cycle, this is additional redundancy, which
        can be used for test result evaluation. */
@@ -297,23 +291,26 @@ static void interruptPIT1Handler()
                                                      inconsistent data. */
         mza_msgZ4AToZ4B.msgAry[1] = -dataToBeSent;/* Now, the receiver would see consistent
                                                      data again. */
-                                                     
+
         /* Test only: We can double-check that the flag always changes by one. */
         assert(mza_msgZ4AToZ4B.dataAcknowledge == (uint8_t)(dataAcknowledge_lastVal + 1));
-        
+
         std_fullMemoryBarrier();    /* Ensure completion of write message payload data. */
         ++ mza_msgZ4AToZ4B.newDataAvailable; /* Signal the data update */
-        
+
         /* Be prepared for next cycle. This can be done already in parallel with the
            consumer. */
         ++ dataAcknowledge_lastVal;
         ++ dataToBeSent;
     }
-    
+
     static int cntIsOn = 0;
     if(++cntIsOn >= 500)
         cntIsOn = -500;
     lbd_setLED(mza_ledCore0IrqPit1, /* isOn */ cntIsOn >= 0);
+
+    /* Acknowledge the interrupt in the causing HW device. */
+    PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of interruptPIT1Handler */
 
@@ -329,12 +326,7 @@ static void interruptPIT2Handler()
 {
     ++ mza_cntIntPIT2;
 
-    /* Acknowledge the interrupt in the causing HW device. */
-    PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
-    
     const uint32_t tiStart = stm_getTimerValue(/* idxTimer */ 0);
-    unsigned int u;
-//    for(u=0; u<5; ++u)
     {
 
         /* Test of nested mutex. This is the ISR of highest priority among those that
@@ -352,7 +344,7 @@ static void interruptPIT2Handler()
     } /* End for(All cycles of mutex test) */
 /// @todo Cleanup code, no literals
     while(stm_getTimerValue(/* idxTimer */ 0) - tiStart < 4000u);
-  
+
     /* Test of intercore critical section. This code is running on core 0. */
     unsigned int u1 TYP_DBG_ONLY, u2 TYP_DBG_ONLY;
     mtx_enterIntercoreCriticalSection(&mza_csTestOfCriticalSection);
@@ -365,7 +357,10 @@ static void interruptPIT2Handler()
     if(++cntIsOn >= 5000)
         cntIsOn = -5000;
     lbd_setLED(mza_ledCore0IrqPit2, /* isOn */ cntIsOn >= 0);
-    
+
+    /* Acknowledge the interrupt in the causing HW device. */
+    PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
+
 } /* End of interruptPIT2Handler */
 
 
@@ -406,7 +401,7 @@ static void initPIT(void)
     PIT->TIMER[2].LDVAL = 4001-1;  /* Interrupt rate chosen higher and mutually prime with
                                       the other timer on the same core and the timers on
                                       the other cores. This makes the tests more
-                                      meaningful. */ 
+                                      meaningful. */
 
     /* Enable timer operation.
          PIT_MCR_FRZ: For this multi-core MCU it is not so easy to decide whether or not to
@@ -415,11 +410,11 @@ static void initPIT(void)
        debugger know...). Both possibilities can be annoying or advantageous, depending on
        the situation. */
     PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(0);
-    
+
     /* Clear possibly pending interrupt flags. */
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
-    
+
     /* Enable interrupts by the timers and start them. See RM 51.4.10. */
     PIT->TIMER[1].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
@@ -427,7 +422,7 @@ static void initPIT(void)
 } /* End of initPIT */
 
 
- 
+
 
 /**
  * Start a secondary core. The initial core is already started and it is the one, which will
@@ -461,7 +456,7 @@ static void startSecondaryCore( unsigned int idxCore
        startup code.): The entry point into code execution after reset. Common for all
        three cores. */
     extern void _Noreturn sup_startUp(void);
-    
+
     /* Prepare core start: Enter code start address and set allowed run modes. */
     switch(idxCore)
     {
@@ -486,7 +481,7 @@ static void startSecondaryCore( unsigned int idxCore
 
     case 2 /* Z2 */:
         /* Pass the pointer to the C code entry to the assembly startup code being executed
-           on the other core. See case Z4B for details. */ 
+           on the other core. See case Z4B for details. */
         sup_main_Z2 = main;
         std_fullMemoryBarrier();
 
@@ -520,19 +515,19 @@ static void startSecondaryCore( unsigned int idxCore
  * Array of string arguments to the function. Actually, always a single string which equals
  * the name of the core, which is started.
  */
-int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
+int /*_Noreturn*/ main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
 {
     assert(noArgs == 1  && strcmp(argAry[0], "Z4A") == 0);
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* Interrupts become usable and configurable by SW. */
     inc_initINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -551,10 +546,10 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
 
     /* The core is now running in the desired state. I/O driver initialization follows to
        the extend required by this simple sample. */
-    
+
     /* Shape access to the eight user LEDs. */
     lbd_initLEDAndButtonDriver();
-    
+
     /* Route the CLOCKOUTs 0 and 1 from the clock generation module to the external pins
        PG7 and PG6, respectively. They are available at connector J3-16 and J3-14. The
        devided core clocks should be visible as a 10 and a 1 MHz signal. */
@@ -585,7 +580,7 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
 
     /* Start the system timers for execution time measurement. */
     stm_initSystemTimers();
-    
+
     /* Initialize the serial interface. */
     sio_initSerialInterface(/* baudRate */ 115200);
 
@@ -604,11 +599,11 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
     puts("puts saying " GREETING);
     printf("printf saying %s", GREETING);
     #undef GREETING
-    
+
     /* Configure interrupt source and start interrupt servicing on core 0. */
     initPIT();
     inc_resumeAllInterrupts();
-    
+
     /* Floating point operation is always possible on this core. However, it depends on a
        makefile setting, whether the non basic operations like sinf, powf use pure
        emulation code or if their implementation builds on floating point machine
@@ -629,17 +624,21 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
             else
                 break;
         }
-        
-        unsigned long u;
-        
+
+        //unsigned long u;
+
         /* A fast loop, accessing some data, which is shared between different cores and
            different execution contexts on the cores. Redundant data makes this a test of
            the synchronization: As soon as some inconsistencies are recognized the code
            execution is halted in an assertion and one or more LEDs stop blinking. */
-        for(u=0; u<2000000; ++u)
+#define TI_REPORT_IN_S  3.0f
+        const uint32_t tiNextReport = stm_getTimerValue(/* idxTimer */ 0)
+                                      + (uint32_t)(TI_REPORT_IN_S/12.5e-9f + 0.5f);
+#undef TI_REPORT_IN_S
+        while((signed int)(stm_getTimerValue(/* idxTimer */ 0) - tiNextReport) <= 0)
         {
             ++ mza_cntMainLoopsCore0;
-            
+
             /* The nested mutex only handles the competition of different cores. We need to
                apply a second means (suspension of interrupt handling, see below) to
                protect our resource against interference from another execution context on
@@ -653,7 +652,7 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
                involves the risk of starvation. The unpredictable, theoretically unbounded
                wait time prolongs the suspension time of the local interrupts. */
             mtx_acquireNestedMutex(&mzt_mtxDataMutexTest);
-            
+
             inc_suspendAllInterrupts();
             assert(mzt_dataMutexTest.cntCore0Success
                    + mzt_dataMutexTest.cntCore1Success
@@ -671,16 +670,18 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
             ++ mzt_dataMutexTest.cntCore0Success;
             ++ mzt_dataMutexTest.totalCntSuccess;
             inc_resumeAllInterrupts();
-            
+
             mtx_releaseNestedMutex(&mzt_mtxDataMutexTest);
         }
-        
+
         /* The variables counted by the other core reside in cached memory and the value
            changes are not easily visible by this core. We use a function from our tiny
            decorated store library to read them. */
-        const uint32_t cntMainLoopsCore1 = std_loadWordAtomic(&mzb_cntMainLoopsCore1)
-                     , cntMainLoopsCore2 = std_loadWordAtomic(&mzt_cntMainLoopsCore2);
-        
+        const uint32_t cntMainLoopsCore1 = std_loadWordAtomic
+                                                    ((uint32_t*)&mzb_cntMainLoopsCore1)
+                     , cntMainLoopsCore2 = std_loadWordAtomic
+                                                    ((uint32_t*)&mzt_cntMainLoopsCore2);
+
         /* Display progress. */
         printf( "Core 0: %u, Core 1: %u, Core 2: %u\r\n"
               , mza_cntMainLoopsCore0
@@ -690,10 +691,10 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
 
         inc_suspendAllInterrupts();
         mtx_acquireNestedMutex(&mzt_mtxDataMutexTest);
-        
+
         /* Copy all data to not block test during very slow printf. */
         mzt_dataMutexTest_t testDataMutex = mzt_dataMutexTest;
-        
+
         mtx_releaseNestedMutex(&mzt_mtxDataMutexTest);
         inc_resumeAllInterrupts();
 
@@ -703,8 +704,7 @@ int _Noreturn main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONLY)
                == testDataMutex.totalCntSuccess
               );
 
-const uint32_t tiStart = stm_getTimerValue(/* idxTimer */ 0);
-
+        const uint32_t tiStart = stm_getTimerValue(/* idxTimer */ 0);
         printf( "Mutex test:\r\n"
                 "  %lu successful cycles, (%.1f%%, %.1f%%, %.1f%%)\r\n"
               , testDataMutex.totalCntSuccess
@@ -712,9 +712,13 @@ const uint32_t tiStart = stm_getTimerValue(/* idxTimer */ 0);
               , f2d(100.0f*(float)testDataMutex.cntCore1Success/testDataMutex.totalCntSuccess)
               , f2d(100.0f*(float)testDataMutex.cntCore2Success/testDataMutex.totalCntSuccess)
               );
-
-const uint32_t tiPrintf = stm_getTimerValue(/* idxTimer */ 0) - tiStart;
-printf("Times for printf: %u\r\n", tiPrintf);
+        const unsigned int tiPrintfInNs = (unsigned int)
+                                          ((float)(stm_getTimerValue(/* idxTimer */ 0)
+                                                   - tiStart
+                                                  )
+                                           * 12.5f
+                                          );
+        printf("Time for printf: %u ns\r\n", tiPrintfInNs);
 
         /* Test of intercore critical section. This code is running on core 0. */
         unsigned int u1 TYP_DBG_ONLY, u2 TYP_DBG_ONLY;
@@ -726,5 +730,9 @@ printf("Times for printf: %u\r\n", tiPrintf);
 
         /* Toggle the bottom most LED. */
         lbd_setLED(mza_ledCore0Main, isOn=!isOn);
-    }
+
+    } /* End while(forever) */
+
+    /* We never get here. */
+
 } /* End of main */
