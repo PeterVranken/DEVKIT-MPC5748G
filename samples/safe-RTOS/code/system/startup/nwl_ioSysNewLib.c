@@ -155,7 +155,7 @@ void *sbrk(ptrdiff_t increment)
     
     static mtx_mutex_t DATA_P1(mutex_) = MTX_MUTEX_INITIALLY_RELEASED;
     mtx_acquireMutex(&mutex_, /* wait */ true);
-    
+
     /* Record the use of this function. The information retrieved from these variables may
        help adjusting the size of the linker reserved memory chunk. */
     ++ nwl_sbrk_noRequests;

@@ -112,9 +112,13 @@ void ccl_triggerTransitionToModeDRUN(void)
 void ccl_configureClocks(void)
 {
     /* The RAM controller operates without wait states after reset. To safely enable the
-       maximum system clock of 160 MHz we first change to the 1-wait state mode. This
-       is requested by RM 10.2.1, SRAM Controller (PRAMC). We repeat the operation for all
-       three controllers. 
+       maximum system clock of 160 MHz we first change to the 1-wait state mode. This is
+       requested by RM 10.2.1, SRAM Controller (PRAMC). The same hint is given in RM 6.2.
+       We repeat the operation for all three controllers.
+         Caution, we didn't find a recommendation for the read burst optimization. It is
+       turned on after reset and we leave it in this state. No statement has been found
+       whether this setting is clock frequency dependent, i.e. whether we should better
+       disable the optimization for our high clock speed. See RM 72.3.1.
          Note, PRAMCx_PRCR1, is 0x200 after reset (see RM 72.1) */
     PRAMC_0->PRCR1 = PRAMC_0->PRCR1 | PRAMC_PRCR1_FT_DIS(1);
     PRAMC_1->PRCR1 = PRAMC_1->PRCR1 | PRAMC_PRCR1_FT_DIS(1);
@@ -295,7 +299,7 @@ void ccl_configureClocks(void)
        MHz system clock can be found in the MPC5748G Microcontroller Data Sheet, section
        6.3.6, Flash read wait state and address pipeline control settings, Table 34.
          Note, these changes can't be done by normal register writes. The code execution
-       must itself not depend on the flash, we call a routine, which is running in some RAM
+       must itself not depend on the flash. We call a routine, which is running in some RAM
        area. */
     cfl_configureFlash(/* RWSC_waitStates */ 4, /* APC_pipelining */ 1);
 
