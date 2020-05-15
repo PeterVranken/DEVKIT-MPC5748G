@@ -339,6 +339,10 @@ sub_endInitRam:
 
     /* Load the pointer to the core instance pointer, i.e. the pointer to the data, which
        is individual to each core. */
+#if SIZE_OF_INSTANCE_DATA >= 0x8000
+# error Invalid implementation
+#endif
+/// @todo Support flexible assignment of cores to instance data sets
     .extern     rtos_kernelInstanceDataAry
     mfspr       r3, SPR_PIR
     e_mull2i    r3, SIZE_OF_INSTANCE_DATA   /* Requires SIZE_OF_INSTANCE_DATA < 0x8000 */
@@ -537,17 +541,17 @@ initExceptionHandlers:
 # if RTOS_NO_CORES >= 1
 #  define CORE0_IVOR_TABLE  rtos_ivorVectorTableRTOS
 # else
-#  define CORE0_IVOR_TABLE  ivo_IVOR0trapCore0
+#  define CORE0_IVOR_TABLE  rtos_ivorVectorTableCore0
 # endif
 # if RTOS_NO_CORES >= 2
 #  define CORE1_IVOR_TABLE  rtos_ivorVectorTableRTOS
 # else
-#  define CORE1_IVOR_TABLE  ivo_IVOR0trapCore1
+#  define CORE1_IVOR_TABLE  rtos_ivorVectorTableCore1
 # endif
 # if RTOS_NO_CORES >= 3
 #  define CORE2_IVOR_TABLE  rtos_ivorVectorTableRTOS
 # else
-#  define CORE2_IVOR_TABLE  ivo_IVOR0trapCore2
+#  define CORE2_IVOR_TABLE  rtos_ivorVectorTableCore2
 # endif
 #endif
 

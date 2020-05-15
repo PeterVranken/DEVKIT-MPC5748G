@@ -206,7 +206,6 @@ int_INTCInterruptHandlerAry:
     .section .text.ivor4Handler.\core\()/* Load this section close to IVOR handler table of
                                            same core; se_b becomes possible to jump here. */
     .globl      int_INTCInterruptHandler\core\()
-    .type       int_INTCInterruptHandler\core\(), @function
     .align      2
 int_INTCInterruptHandler\core\():
 
@@ -270,12 +269,17 @@ int_endIfPreemptable\core\():
     /* End of interrupt, restore MSR and PC from the SRR0/1. */
     se_rfi
     
-    .size   int_INTCInterruptHandler\core\(), .-int_INTCInterruptHandler\core\()
 /* End of int_INTCInterruptHandlerCoreN */
     .endm
     
     /* Instantiate the macro up to three times to have an individual implementation for
        each core, which is not running safe-RTOS (safe-RTOS has its own IVOR #4 handler). */
-//    macroINTCInterruptHandler Core0, INTC_IACKR0, INTC_EOIR0
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0_Z4A == 0
+    macroINTCInterruptHandler Core0, INTC_IACKR0, INTC_EOIR0
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1_Z4B == 0
     macroINTCInterruptHandler Core1, INTC_IACKR1, INTC_EOIR1
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2_Z2 == 0
     macroINTCInterruptHandler Core2, INTC_IACKR2, INTC_EOIR2
+#endif

@@ -1,14 +1,10 @@
 /**
- * @file ivo_ivorTrapsCore0.S
- * Part of startup code for MPC5748G: The table of IVOR exception handlers for core 0, Z4A.
- * The default handlers implemented here implement an infinite loop, a branch in itself.
- * This reports an unexpected exception to the debugger.\n
- *   Implemented exceptions are hard-coded in this file: The handler implementation jumps
- * unconditionally to the intended true function. If a new handler is installed or if an
- * existing handler is replaced then the code here has to be changed by hard-coding the name
- * of the new intended handler.
+ * @file rtos_ivorVectorTable.S
+ * Part of startup code for MPC5748G: The table of IVOR exception handlers for all cores
+ * running the RTOS. The table entries implement a branch into the implementation of the
+ * kernel.
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -62,7 +58,7 @@
  * distinct exceptions but it makes use a solid table of handlers, where an entry has a
  * size of 16 Byte. The IVOR table has an alignment of 8 Bit.
  */
-    .section    .text.ivorTable.rtos, "ax"
+    .section    .text.ivorTable.rtos
     .global     rtos_ivorVectorTableRTOS
     .p2align    8
 rtos_ivorVectorTableRTOS:
@@ -364,4 +360,4 @@ rtos_ivorVectorTableEntry15:
     mbar
     se_b        rtos_ivorVectorTableEntry15
 
-/* End of IVOR exception handlers 0..15 (thereof in use 0..11) for core 0, Z4A */
+/* End of IVOR exception handlers 0..15 (thereof in use 0..11) for cores running the RTOS */
