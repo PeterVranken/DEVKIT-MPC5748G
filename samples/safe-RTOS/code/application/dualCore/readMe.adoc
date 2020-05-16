@@ -1,0 +1,39 @@
+= Basic Test of safe-RTOS
+
+This folder contains a test sequence of the RTOS's protection mechanisms.
+Three processes are configured.
+
+The process with lowest privileges is used to report the status through
+the serial interface. It is normally programmed, so we expect it to make
+no errors and nor must its operability be harmed by the second process.
+
+The second process with medium privileges is programmed to produce a long
+list of imaginable failures. It is a kind of state machine and selects
+another failure to produce in every new run. Occasionally it'll try doing
+operations without a failure to see that it is then normally running.
+
+The second process has two more tasks besides the failure injecting task
+-- one of higher, one of lower priority. We check if these two mostly
+continue running despite of the failing task. Note, the RTOS cannot in
+general guarantee that a process's task A is not harmed by its other
+failing task B; B could of course destroy essential data from A, among more
+the shared stack. This depends on the kind of injected error.
+
+The third process has highest privileges. It controls and supervises the
+second process. It selects the failure or successful operation to execute
+and looks after the (failing) task execution in process 2 if the
+diagnostic APIs report the expected caught error or if the operation
+succeeded as expected.
+
+Process 3 has two tasks, which are associated with the same event as the
+failure producing task of process 2. This guarantees race condition free
+execution of the three task functions, which is a prerequisite for the
+otherwise impossible sharp evaluation of the diagnosed errors - normally
+an error in another process will be asynchronous and not be strictly
+relatable to a specific operation of the other process.
+
+Status of the test is printed to the serial port of the evaluation board.
+Open a terminal on the host machine to read the output: 115200 Bd, 8 Bit,
+1 Stop bit, no parity. Additionally, the successfully running test enables
+a blinking LED on the board. It would stop blinking in case of a
+recognized problem (or even a crashing system).

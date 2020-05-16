@@ -52,19 +52,9 @@
  * Defines
  */
 
-/** The number of cores in the MCU running the RTOS.\n
-      @remark Although this macro is application dependent, we decided to not put it into
-    the user configuration file rtos.config.h. The reason is that the configuration of
-    another number of cores requires more changes than just this macro. Mainly the linker
-    script is additionally affected and it can't reasonably be made dependent on this macro.
-    Putting the macro here effectively expresses that the RTOS needs migration and not just
-    re-configuration if run on another MCU derivative with another number of cores. */
-/// @todo Wrong. We need to allow an application dependent number of RTOS instanciations.
-// the remaining cores can run the normal IVOR #4 handler and all code in SV mode, as
-// sample startup. Actually, we would have a set opreration, any core can decide, but an
-// allowed limitation for this sample would be to say the n first cores need to run the
-// RTOS, n>=1. This should be doable by preprocessor switches.
-#define RTOS_NO_CORES               1
+#if RTOS_NO_CORES < 1  ||  RTOS_NO_CORES >= 3
+# error Bad configuration of cores, which run safe-RTOS
+#endif
 
 /** The number of configured processes per core.\n
       Although it looks like a matter of application dependent configuration, this is a

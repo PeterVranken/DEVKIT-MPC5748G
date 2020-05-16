@@ -187,17 +187,6 @@ rtos_errorCode_t rtos_osInitProcesses(bool isProcessConfiguredAry[1+RTOS_NO_PROC
     /* If the kernel process wouldn't be configured correctly then we would never get here. */
     isProcessConfiguredAry[0] = true;
     
-    /* This code, like all other using core-related global linker symbols ld_*, needs
-       migration. We can't do that here and immediately as it requires a revision of the
-       linker script, which is actually useless and unwanted for the given MCU derivative.
-       We just place an assertion to avoid problem when running this code on another
-       derivative. */
-    /// @todo Make code core dependent if running the RTOS on a multi-core
-#ifdef DEBUG
-    extern rtos_kernelInstanceData_t rtos_kernelInstanceDataAry[RTOS_NO_CORES];
-    assert(pIData == &rtos_kernelInstanceDataAry[0]);
-#endif
-
     /* Fill all process stacks with the empty-pattern, which is applied for computing the
        stackusage. */
     uint32_t * const * const stackStartAry = &_stackCoresStartAry[rtos_osGetIdxCore()][1];
@@ -568,18 +557,6 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
  */
 unsigned int rtos_getStackReserve(unsigned int idxCore, unsigned int PID)
 {
-    /* This code, like all other using core-related global linker symbols ld_*, needs
-       migration. We can't do that here and immediately as it requires a revision of the
-       linker script, which is actually useless and unwanted for the given MCU derivative.
-       We just place an assertion to avoid problem when running this code on another
-       derivative. */
-    /// @todo Make code core dependent if running the RTOS on a multi-core
-#ifdef DEBUG
-    const rtos_kernelInstanceData_t * const pIData = rtos_ugetInstancePtr();
-    extern rtos_kernelInstanceData_t rtos_kernelInstanceDataAry[RTOS_NO_CORES];
-    assert(pIData == &rtos_kernelInstanceDataAry[0]);
-#endif
-
     if(idxCore < RTOS_MAX_NO_CORES  &&  PID <= RTOS_NO_PROCESSES)
     {
         /* Access core specific data. */
