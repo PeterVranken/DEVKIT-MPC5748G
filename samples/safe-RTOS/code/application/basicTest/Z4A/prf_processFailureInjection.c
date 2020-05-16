@@ -205,11 +205,15 @@ static bool testCheckUserCodePtr(void)
              at the end of ld_sdaP1 is at the same time a permitted write into ld_sda2P1.
                The test cases ".PID=(2), .addr=ld_sda2P2Start", ".PID=(3),
              .addr=ld_sda2P3Start" and ".PID=(3), .addr=ld_sdaP4Start" have been commented
-             because the section is empty and writing not possible. */
+             because the section is empty and writing not possible.
+               The test cases ".addr=ld_sda2P1End (=ld_ramEnd)" are no longer valid. On
+             the MPC5748G, MPU alignment is 16 Byte but cache read requires 32 Byte
+             alignment of ramEnd. The identity of ends of process' sda2 and RAM is no
+             longer granted. */
           {.PID=(1), .addr=ld_sdaP1Start, .size=(1), .rdOk=true, .wrOk=true},
           //{.PID=(1), .addr=ld_sdaP1End, .size=(1), .rdOk=true, .wrOk=false},
           {.PID=(1), .addr=ld_sda2P1Start, .size=(1), .rdOk=true, .wrOk=true},
-          {.PID=(1), .addr=ld_sda2P1End /* =ld_ramEnd */, .size=(1), .rdOk=false, .wrOk=false},
+          //{.PID=(1), .addr=ld_sda2P1End /* =ld_ramEnd */, .size=(1), .rdOk=false, .wrOk=false},
           {.PID=(1), .addr=ld_dataP1Start, .size=(1), .rdOk=true, .wrOk=true},
           {.PID=(1), .addr=ld_dataP1End, .size=(1), .rdOk=true, .wrOk=false},
           {.PID=(1), .addr=ld_sdaP2Start, .size=(1), .rdOk=true, .wrOk=false},
@@ -270,7 +274,7 @@ static bool testCheckUserCodePtr(void)
           {.PID=(1), .addr=ld_sdaP1Start, .size=(16), .rdOk=true, .wrOk=true},
           //{.PID=(1), .addr=ld_sdaP1End, .size=(16), .rdOk=true, .wrOk=false},
           {.PID=(1), .addr=ld_sda2P1Start, .size=(16), .rdOk=true, .wrOk=true},
-          {.PID=(1), .addr=ld_sda2P1End /* =ld_ramEnd */, .size=(16), .rdOk=false, .wrOk=false},
+          {.PID=(1), .addr=ld_sda2P1End /* =ld_ramEnd */, .size=(17), .rdOk=false, .wrOk=false},
           {.PID=(1), .addr=ld_dataP1Start, .size=(16), .rdOk=true, .wrOk=true},
           {.PID=(1), .addr=ld_dataP1End, .size=(16), .rdOk=true, .wrOk=false},
           {.PID=(1), .addr=ld_sdaP2Start, .size=(16), .rdOk=true, .wrOk=false},
@@ -330,7 +334,8 @@ static bool testCheckUserCodePtr(void)
 
           {.PID=(1), .addr=ld_sdaP1Start-5, .size=(16), .rdOk=true, .wrOk=false},
           {.PID=(1), .addr=ld_sda2P1End-16 /* =ld_ramEnd */, .size=(16), .rdOk=true, .wrOk=true},
-          {.PID=(1), .addr=ld_sda2P1End-15 /* =ld_ramEnd */, .size=(16), .rdOk=false, .wrOk=false},
+          //{.PID=(1), .addr=ld_sda2P1End-15 /* =ld_ramEnd */, .size=(16), .rdOk=false, .wrOk=false},
+          {.PID=(1), .addr=ld_sda2P1End-15 /* =ld_ramEnd */, .size=(32), .rdOk=false, .wrOk=false},
 
           {.PID=(1), .addr=ld_romStart, .size=(311), .rdOk=true, .wrOk=false},
           {.PID=(1), .addr=ld_romEnd, .size=(311), .rdOk=false, .wrOk=false},
