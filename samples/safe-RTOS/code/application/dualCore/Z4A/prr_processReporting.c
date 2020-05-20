@@ -9,7 +9,7 @@
  * They are are defined in the sphere of unprotected operating system code and anything
  * which relates to their configuration cannot be changed anymore by user code.
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -48,6 +48,7 @@
 #include "tcx_testContext.h"
 #include "syc_systemConfiguration.h"
 #include "prs_processSupervisor.h"
+#include "mzb_main_Z4B.h"
 #include "prr_processReporting.h"
 
 
@@ -70,7 +71,7 @@
  * Data definitions
  */
  
-/** For debugging only: Exceution time of untrusted C lib function ipintf. Unit is
+/** For debugging only: Exceution time of untrusted C lib function iprintf. Unit is
     #STM_TIMER_1_PERIOD_IN_NS. */
 uint32_t SDATA_PRC_REPORT(prr_tiMaxDurationPrintf) = 0;
 
@@ -163,8 +164,11 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
  */
 int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
 {
+    const unsigned int cpuLoadZ4A = syc_cpuLoad
+                     , cpuLoadZ4B = mzb_cpuLoad;
+    
     const uint32_t tiStart = stm_getSystemTime(1);
-    iprintf( "CPU load is %u.%u%%. Stack reserve:\r\n"
+    iprintf( "CPU load on core Z4A is %u.%u%%. Stack reserve:\r\n"
              "  OS: %u Byte\r\n"
              "  PID 1: %u Byte\r\n"
              "  PID 2: %u Byte\r\n"
@@ -180,7 +184,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "  thereof User task abort: %u\r\n"
              "  Total PID 3: %u\r\n"
              "  thereof Deadline missed: %u\r\n"
-           , syc_cpuLoad/10, syc_cpuLoad%10
+           , cpuLoadZ4A/10, cpuLoadZ4A%10
            , rtos_getStackReserve(/* idxCore */ 0, 0)
            , rtos_getStackReserve(/* idxCore */ 0, 1)
            , rtos_getStackReserve(/* idxCore */ 0, 2)
@@ -195,11 +199,61 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
            , rtos_getNoTotalTaskFailure(/* PID */ 3)
            , rtos_getNoTaskFailure(/* PID */ 3, RTOS_ERR_PRC_DEADLINE)
            );
+
+    /* Report some results, we received through uncached memory from other core. */
+    iprintf( "CPU load on core Z4B is %u.%u%%\r\n"
+             "Task counts on core Z4B:\r\n"
+             "  OS, 1ms: %lu\n\r"
+             "  user, 1ms: %lu\n\r"
+             "  idle: %lu\n\r"
+           , cpuLoadZ4B/10, cpuLoadZ4B%10
+           , mzb_cntTaskOs1ms
+           , mzb_cntTask1ms
+           , mzb_cntTaskIdle
+           );
     const uint64_t tiDuration = stm_getSystemTime(1) - tiStart;
     
     if(tiDuration > prr_tiMaxDurationPrintf)
         prr_tiMaxDurationPrintf = tiDuration;
         
+/// @todo remove test code
+    const uint32_t tiEndTest = stm_getSystemTime(1)
+                               + (1.5e-3f * 1e9f / STM_TIMER_1_PERIOD_IN_NS);
+    bool didChange = false;
+    uint32_t tiChangedAfter;
+    const unsigned long mzb_cntTaskOs1ms_1st = mzb_cntTaskOs1ms;
+    while((signed int)(tiEndTest - stm_getSystemTime(1)) > 0)
+    {
+        if(mzb_cntTaskOs1ms != mzb_cntTaskOs1ms_1st)
+        {
+            tiChangedAfter = stm_getSystemTime(1)
+                             - (uint32_t)(tiEndTest - (1.5e-3f * 1e9f / STM_TIMER_1_PERIOD_IN_NS));
+            didChange = true;
+            break;
+        }
+    }
+    static unsigned int SDATA_PRC_REPORT(cntDidntChange_) = 0;
+    cntDidntChange_ += (didChange? 0: 1);
+    iprintf( "Task counts on core Z4B, %lu us later:\r\n"
+             "  OS, 1ms: %lu\n\r"
+             "  user, 1ms: %lu\n\r"
+             "  idle: %lu\n\r"
+             "  (didn't change %u times)\r\n"
+           , (stm_getSystemTime(1)-(uint32_t)(tiEndTest - (1.5e-3f * 1e9f / STM_TIMER_1_PERIOD_IN_NS)))/5
+           , mzb_cntTaskOs1ms
+           , mzb_cntTask1ms
+           , mzb_cntTaskIdle
+           , cntDidntChange_
+           );
+    if(didChange)
+    {
+        iprintf( "Task counts changed after %lu us\r\n"
+               , tiChangedAfter*STM_TIMER_1_PERIOD_IN_NS/1000
+               );
+    }
+    else
+        iprintf("Task counts didn't change\r\n");
+
     return 0;
     
 } /* End of prr_taskReporting */

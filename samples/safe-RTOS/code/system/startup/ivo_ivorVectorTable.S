@@ -37,6 +37,8 @@
  * Include files
  */
 
+#include "rtos.config.h"
+
 
 /*
  * Defines
@@ -245,12 +247,12 @@ ivo_IVOR15trap\Core\():
     
     /* Instantiate the macro up to three times to have an individual implementation for
        each core, which is not running safe-RTOS (safe-RTOS has its own IVOR #4 handler). */
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_0_Z4A == 0
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0
     macroIVORVectorTable Core0
 #endif
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1_Z4B == 0
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
     macroIVORVectorTable Core1
 #endif
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_2_Z2 == 0
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 0
     macroIVORVectorTable Core2
 #endif

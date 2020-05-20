@@ -72,7 +72,6 @@
    maintainability we have a define for each struct member. The static assertion defined
    below needs to double check at least size and offset of all those definitions, which are
    actually shared with the assembler code. */
-#define SIZE_OF_INSTANCE_DATA   (O_ID_RUN_TSK_PRIO+4)
 #define O_ID_PROC_ARY           0                                       /* Assembler used */
 #define O_ID_TSK_CFG_ARY        (O_ID_PROC_ARY+4*SIZE_OF_PROCESS_DESC)
 #define O_ID_ITSK_CFG_ARY       (O_ID_TSK_CFG_ARY+RTOS_MAX_NO_TASKS*SIZE_OF_TASK_CONF)
@@ -186,10 +185,8 @@
     condition for a static assertion. It double-checks the interface between C and assembly
     code and shapes a kind of minimalistic type-safety. */
 #define RTOS_STATIC_CONSTRAINTS_INTERFACE_C_AS_INSTANCE_DATA (                              \
-            SIZE_OF_INSTANCE_DATA < 0x8000                                                  \
-            &&  offsetof(rtos_kernelInstanceData_t, processAry) == 0                        \
+            offsetof(rtos_kernelInstanceData_t, processAry) == 0                            \
             &&  sizeof(rtos_eventDesc_t) == SIZE_OF_EV_DESC                                 \
-            &&  sizeof(rtos_kernelInstanceData_t) == SIZE_OF_INSTANCE_DATA                  \
             &&  offsetof(rtos_kernelInstanceData_t, processAry) == O_ID_PROC_ARY            \
             &&  offsetof(rtos_kernelInstanceData_t, mapPrioToEvent) == O_ID_MAP_PRIO_TO_EV  \
             &&  sizeof(rtos_eventDesc_t*) == 4                                              \

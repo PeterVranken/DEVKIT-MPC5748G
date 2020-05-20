@@ -1011,7 +1011,7 @@ rut_noTimeBudget:
     /* Store the current task priority at task start. This is a prerequiste of a protected
        implementation of the system calls for the priority ceiling protocol. */
     mfspr       r7, SPR_G3_CDATA        /* r7: rtos_osGetInstancePtr() */
-    e_lwz       r7, O_ID_CUR_PRIO(r7)   /* r7: rtos_kernelInstanceDataAry[PIR].currentPrio */
+    e_lwz       r7, O_ID_CUR_PRIO(r7)   /* r7: rtos_kernelInstanceData_coreN.currentPrio */
     se_stw      r7, RUT_O_CPR(sp)       /* Store it for use by PCP system call */
 
     /* Let LR point to a system call for task termination. This permits the user code to

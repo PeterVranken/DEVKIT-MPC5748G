@@ -181,9 +181,9 @@ enum prioEvent_t
     as the task priorities. */
 enum prioIRQ_t
 {
-    prioIrqPit1 = RTOS_KERNEL_IRQ_PRIORITY-2,   /** INTC priority of timer IRQ PIT1 */
-    prioIrqPit2 = RTOS_KERNEL_IRQ_PRIORITY,     /** INTC priority of timer IRQ PIT2 */
-    prioIrqPit3 = RTOS_KERNEL_IRQ_PRIORITY+3,   /** INTC priority of timer IRQ PIT3 */
+    prioIrqPit1 = RTOS_KERNEL_IRQ_PRIORITY_CORE_0-2,   /** INTC priority of timer IRQ PIT1 */
+    prioIrqPit2 = RTOS_KERNEL_IRQ_PRIORITY_CORE_0,     /** INTC priority of timer IRQ PIT2 */
+    prioIrqPit3 = RTOS_KERNEL_IRQ_PRIORITY_CORE_0+3,   /** INTC priority of timer IRQ PIT3 */
 };
 
 
@@ -272,7 +272,7 @@ static int32_t taskInitProcess(uint32_t PID)
                   , "Bad task priority configuration"
                   );
 
-    static unsigned int cnt_ SECTION(.data.Shared.cnt_) = 0;
+    static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
     /* Scheduler test: Check order of initialization calls. */
@@ -665,21 +665,21 @@ static void osInstallInterruptServiceRoutines(void)
                    &&  prioIrqPit3 >= 1  &&  prioIrqPit3 <= 15
                   , "Interrupt priority out of range"
                   );
-    _Static_assert(prioIrqPit1 > RTOS_KERNEL_IRQ_PRIORITY
-                   ||  prioIrqPit2 > RTOS_KERNEL_IRQ_PRIORITY
-                   ||  prioIrqPit3 > RTOS_KERNEL_IRQ_PRIORITY
+    _Static_assert(prioIrqPit1 > RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+                   ||  prioIrqPit2 > RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+                   ||  prioIrqPit3 > RTOS_KERNEL_IRQ_PRIORITY_CORE_0
                   , "By intention, at least one interrupt should have a priority above the"
                     " scheduler of the RTOS"
                   );
-    _Static_assert(prioIrqPit1 < RTOS_KERNEL_IRQ_PRIORITY
-                   ||  prioIrqPit2 < RTOS_KERNEL_IRQ_PRIORITY
-                   ||  prioIrqPit3 < RTOS_KERNEL_IRQ_PRIORITY
+    _Static_assert(prioIrqPit1 < RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+                   ||  prioIrqPit2 < RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+                   ||  prioIrqPit3 < RTOS_KERNEL_IRQ_PRIORITY_CORE_0
                   , "By intention, at least one interrupt should have a priority below the"
                     " scheduler of the RTOS"
                   );
-    _Static_assert(prioIrqPit1 == RTOS_KERNEL_IRQ_PRIORITY
-                   ||  prioIrqPit2 == RTOS_KERNEL_IRQ_PRIORITY
-                   ||  prioIrqPit3 == RTOS_KERNEL_IRQ_PRIORITY
+    _Static_assert(prioIrqPit1 == RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+                   ||  prioIrqPit2 == RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+                   ||  prioIrqPit3 == RTOS_KERNEL_IRQ_PRIORITY_CORE_0
                   , "By intention, at least one interrupt should have the priority of the"
                     " scheduler of the RTOS"
                   );

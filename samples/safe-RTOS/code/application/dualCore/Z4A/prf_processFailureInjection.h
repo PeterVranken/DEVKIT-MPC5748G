@@ -299,7 +299,7 @@ typedef struct prf_cmdFailure_t
 
 /** The next error to inject. This object is written by task prs_taskCommandError and read
     by prf_taskInjectError. There are no race conditions between these two tasks. */
-extern prf_cmdFailure_t DATA_SHARED(prf_cmdFailure);
+extern prf_cmdFailure_t SHARED(prf_cmdFailure);
 
 
 /*

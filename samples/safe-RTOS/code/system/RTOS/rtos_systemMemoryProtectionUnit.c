@@ -169,13 +169,15 @@ void rtos_osInitMPU(void)
        significant. The relevant masters are the three cores and DMA: M0, M1, M2, M4, M8,
        M9, M10. In this sample, we don't use the other bus masters (security core and
        certain I/O devices) and for now, they don't get access.
-         Remark: We have one RAM region for the OS, which includes all used RAM. This
-       region is surely not cache inhibitted. This makes it impossible to have any other
-       region cache inhibitted since CI=1 has lower priority than CI=0 (see RM 21.4.2, p.
-       506). If we want to make the sahred RAM cache inhibitted then we need to change the
-       linker script: This section needs to be at the end of all used RAM so that it no
-       longer overlaps with the all-RAM section. */
+         Remark: We use two overlapping regions for most RAM. One spawns all of the RAM and
+       grants read access to anybody (and write access to OS code), the other ones relate
+       to small areas, which grant write access to one of the processes. This technique
+       makes it difficult to get cache inhibitted RAM: The large global read access area
+       must of course not disable the cache and -- since CI=1 has lower priority than CI=0
+       (see RM 21.4.2, p. 506) -- this can't be altered by the overlapping area. To provide
+       cached and uncached RAM we split the large global read area into two MPU areas. */
 #define WORD3_ACCESS_SET_RAM            RGD_WRD3(074u, 077u, 076u, /* CI */ 0u)
+#define WORD3_ACCESS_SET_RAM_CI         RGD_WRD3(074u, 077u, 076u, /* CI */ 1u)
 #define WORD2_ALL_RAM                   RGD_WRD2(/* idxPattern */ 1u)
 #define WORD2_PROCESS_RAM               RGD_WRD2(/* idxPattern */ 2u)
 #define WORD2_SHARED_RAM                RGD_WRD2(/* idxPattern */ 3u)
@@ -287,9 +289,13 @@ void rtos_osInitMPU(void)
          All masters and the kernel have full access (RWX) for all used RAM. The processes
        have general read access. (They get write and execute rights only to their own
        portion of RAM, which is specified in different region descriptors.)
+         The entire used RAM is split in two: We have a cached and an uncached portion. The
+       latter degrades system performance but is still useful for simple cross-core
+       communication.
          We use linker defined symbols to find the boundaries of the region. In the linker
        script, they need to be aligned compatible with the constraints of the MPU. This is
        checked by assertion. */
+#if 0
     extern uint8_t ld_ramStart[0], ld_ramEnd[0];
     assert(((uintptr_t)ld_ramStart & 0xf) == 0  &&  ((uintptr_t)ld_ramEnd & 0xf) == 0);
     SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_ramStart;  /* Start address of region. */
@@ -299,6 +305,30 @@ void rtos_osInitMPU(void)
     SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
     SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
     ++ r;
+#else
+    extern uint8_t ld_cachedRamStart[0], ld_cachedRamEnd[0];
+    assert(((uintptr_t)ld_cachedRamStart & 0xf) == 0
+           &&  ((uintptr_t)ld_cachedRamEnd & 0xf) == 0
+          );
+    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_cachedRamStart;/* Start address of region. */
+    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_cachedRamEnd-1;/* End address of region, including. */
+    SMPU_1->RGD[r].WORD2 = WORD2_ALL_RAM;
+    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM;
+    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
+    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    ++ r;
+    extern uint8_t ld_uncachedRamStart[0], ld_uncachedRamEnd[0];
+    assert(((uintptr_t)ld_uncachedRamStart & 0xf) == 0
+           &&  ((uintptr_t)ld_uncachedRamEnd & 0xf) == 0
+          );
+    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_uncachedRamStart;/* Start address of region. */
+    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_uncachedRamEnd-1;/* End address of region, incl. */
+    SMPU_1->RGD[r].WORD2 = WORD2_ALL_RAM;
+    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM_CI;
+    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
+    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    ++ r;
+#endif
 
     /* It would be very easy to offer a compile time switch to select a hierarchical memory
        access model, where process with ID i has write access to the memory of process with

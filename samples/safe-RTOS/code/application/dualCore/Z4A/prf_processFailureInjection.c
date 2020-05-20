@@ -74,11 +74,11 @@
 
 /** The next error to inject. This object is written by task prs_taskCommandError and read
     by prf_taskInjectError. There are no race conditions between these two tasks. */
-prf_cmdFailure_t DATA_SHARED(prf_cmdFailure) = { .kindOfFailure = prf_kof_noFailure
-                                                 , .noRecursionsBeforeFailure = 0
-                                                 , .value = 0
-                                                 , .address = 0
-                                               };
+prf_cmdFailure_t SHARED(prf_cmdFailure) = { .kindOfFailure = prf_kof_noFailure
+                                            , .noRecursionsBeforeFailure = 0
+                                            , .value = 0
+                                            , .address = 0
+                                          };
 
 /** Task invocation counter. Here for task1ms. */
 static unsigned long SDATA_PRC_FAIL(_cntTask1ms) = 0;
@@ -888,9 +888,9 @@ static void injectError(void)
 
 #if PRF_ENA_TC_PRF_KOF_MPU_EXC_BEFORE_SC == 1
     case prf_kof_mpuExcBeforeSc:
-        asm volatile (".extern  rtos_kernelInstanceDataAry\n\t"
-                      "e_lis    %%r4, rtos_kernelInstanceDataAry@ha\n\t"
-                      "e_la     %%r4, rtos_kernelInstanceDataAry@l(%%r4)\n\t"
+        asm volatile (".extern  rtos_kernelInstanceData_core0\n\t"
+                      "e_lis    %%r4, rtos_kernelInstanceData_core0@ha\n\t"
+                      "e_la     %%r4, rtos_kernelInstanceData_core0@l(%%r4)\n\t"
                       "se_li    %%r3, 0         /* 0: System call terminate task */\n\t"
                       "se_stw   %%r3, 0(%%r4)   /* Invalid instruction, MPU, IVOR #1 */\n\t"
                       "se_sc\n\t"

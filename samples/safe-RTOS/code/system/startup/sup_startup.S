@@ -339,15 +339,36 @@ sub_endInitRam:
 
     /* Load the pointer to the core instance pointer, i.e. the pointer to the data, which
        is individual to each core. */
-#if SIZE_OF_INSTANCE_DATA >= 0x8000
-# error Invalid implementation
-#endif
-/// @todo Support flexible assignment of cores to instance data sets
-    .extern     rtos_kernelInstanceDataAry
     mfspr       r3, SPR_PIR
-    e_mull2i    r3, SIZE_OF_INSTANCE_DATA   /* Requires SIZE_OF_INSTANCE_DATA < 0x8000 */
-    e_add2is    r3, rtos_kernelInstanceDataAry@ha
-    e_add16i    r3, r3, rtos_kernelInstanceDataAry@l
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
+    .extern     rtos_kernelInstanceData_core0
+    se_cmpli    r3, 1
+    se_bge      su_isNotCore0
+    e_lis       r3, rtos_kernelInstanceData_core0@ha
+    e_add16i    r3, r3, rtos_kernelInstanceData_core0@l
+    se_b        su_loadKernelInstancePtr    
+su_isNotCore0:
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+    .extern     rtos_kernelInstanceData_core1
+    se_cmpli    r3, 1
+    se_bne      su_isNotCore1
+    e_lis       r3, rtos_kernelInstanceData_core1@ha
+    e_add16i    r3, r3, rtos_kernelInstanceData_core1@l
+    se_b        su_loadKernelInstancePtr    
+su_isNotCore1:
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+    .extern     rtos_kernelInstanceData_core2
+    se_cmpli    r3, 2
+    se_bne      su_isNotCore2
+    e_lis       r3, rtos_kernelInstanceData_core2@ha
+    e_add16i    r3, r3, rtos_kernelInstanceData_core2@l
+    se_b        su_loadKernelInstancePtr    
+su_isNotCore2:
+#endif
+    se_b        .       /* assert(idxCore == 0, 1 or 2) */
+su_loadKernelInstancePtr:
     mtspr       SPR_G3_CDATA, r3
 
     /* Calling main: Load EABI function argument registers with argc=1, argv[0]=processor
@@ -535,24 +556,20 @@ disableWatchdogs:
  */
 initExceptionHandlers:
 
-#if RTOS_NO_CORES < 1  ||  RTOS_NO_CORES > 3
-# error Bad configuration. Unexpected number of cores run safe-RTOS
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
+# define CORE0_IVOR_TABLE  rtos_ivorVectorTableRTOS
 #else
-# if RTOS_NO_CORES >= 1
-#  define CORE0_IVOR_TABLE  rtos_ivorVectorTableRTOS
-# else
-#  define CORE0_IVOR_TABLE  rtos_ivorVectorTableCore0
-# endif
-# if RTOS_NO_CORES >= 2
-#  define CORE1_IVOR_TABLE  rtos_ivorVectorTableRTOS
-# else
-#  define CORE1_IVOR_TABLE  rtos_ivorVectorTableCore1
-# endif
-# if RTOS_NO_CORES >= 3
-#  define CORE2_IVOR_TABLE  rtos_ivorVectorTableRTOS
-# else
-#  define CORE2_IVOR_TABLE  rtos_ivorVectorTableCore2
-# endif
+# define CORE0_IVOR_TABLE  rtos_ivorVectorTableCore0
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1
+# define CORE1_IVOR_TABLE  rtos_ivorVectorTableRTOS
+#else
+# define CORE1_IVOR_TABLE  rtos_ivorVectorTableCore1
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2
+# define CORE2_IVOR_TABLE  rtos_ivorVectorTableRTOS
+#else
+# define CORE2_IVOR_TABLE  rtos_ivorVectorTableCore2
 #endif
 
     /* Write the common most significant 24 bits of all the exception handler addresses. */

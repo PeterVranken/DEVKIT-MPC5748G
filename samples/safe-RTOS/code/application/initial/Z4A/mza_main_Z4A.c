@@ -171,7 +171,7 @@ extern void (*volatile SECTION(.bss.startup) sup_main_Z2)(signed int, const char
  */
 static int32_t taskInitProcess(uint32_t PID)
 {
-    static unsigned int cnt_ SECTION(.data.Shared.cnt_) = 0;
+    static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
 //    /* Only process 1 has access to the C lib (more precise: to those functions of the C

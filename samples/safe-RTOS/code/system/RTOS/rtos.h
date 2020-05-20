@@ -4,7 +4,7 @@
  * @file rtos.h
  * Definition of global interface of module rtos.c
  *
- * Copyright (C) 2017-2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -52,10 +52,6 @@
  * Defines
  */
 
-#if RTOS_NO_CORES < 1  ||  RTOS_NO_CORES >= 3
-# error Bad configuration of cores, which run safe-RTOS
-#endif
-
 /** The number of configured processes per core.\n
       Although it looks like a matter of application dependent configuration, this is a
     fixed setting in our RTOS. We have the HW constraint of a limited number of memory
@@ -76,6 +72,22 @@
     value. If an MCU drivative should ever have more than this number of cores then a
     source code migration is required. This is not a variable configuration setting. */
 #define RTOS_MAX_NO_CORES           3
+
+/** The number of cores in the MCU running the RTOS. */
+/// @todo Move this code to an inner header file. Simplify to the sum but put a _Static_assert into the C code to prove the correct setting of the three macros.
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1 \
+    &&  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+# define RTOS_NO_CORES  3
+#elif RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1 \
+      ||  RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1 \
+      ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+# define RTOS_NO_CORES  2
+#elif RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1 \
+      ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+# define RTOS_NO_CORES  1
+#else
+# error Configuration error. In this project, at least one core should run safe-RTOS
+#endif
 
 /** This event ID is returned if creation of a new event is impossible. The ID is unusable,
     no task can be created specifying this event ID. */
@@ -587,7 +599,9 @@ static inline unsigned int rtos_osGetIdxCore(void)
  *   @remark
  * The function is intended to implement safe user code callbacks from interrupt events.
  * However, deadline monitoring fails for the task execution if the ISR, which makes use of
- * this API has a priority equal to or above the kernel priority #RTOS_KERNEL_IRQ_PRIORITY.
+ * this API has a priority equal to or above the kernel priority
+ * #RTOS_KERNEL_IRQ_PRIORITY_CORE_0 (or #RTOS_KERNEL_IRQ_PRIORITY_CORE_1, or
+ * #RTOS_KERNEL_IRQ_PRIORITY_CORE_2, if the RTOS is running on core 1 or 2, respectively).
  * This would likely break the aimed safety concept; an infinite loop in the user code could
  * make the system hang. In most situations, a reasonable safety requirement will prohibit
  * the use of this function from any ISR with such a high priority.

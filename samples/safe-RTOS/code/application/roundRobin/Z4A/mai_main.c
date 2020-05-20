@@ -192,7 +192,7 @@ static int32_t taskInitProcess(uint32_t PID)
                   , "Bad task priority configuration"
                   );
 
-    static unsigned int cnt_ SECTION(.data.Shared.cnt_) = 0;
+    static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
     /* Scheduler test: Check order of initialization calls. */

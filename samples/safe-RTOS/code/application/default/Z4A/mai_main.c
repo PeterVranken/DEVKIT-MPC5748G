@@ -283,10 +283,10 @@ enum
  */
 
 /** A task invokation counter, which is incremented by all application tasks. */
-volatile unsigned long long _cntAllTasks SECTION(.bss.Shared) = 0;
+volatile unsigned long long SHARED(_cntAllTasks) = 0;
 
 /** A cycle counter for each task. The last entry is meant for the idle task. */
-volatile unsigned long long _cntTaskAry[noRegisteredTasks+1] SECTION(.bss.Shared) =
+volatile unsigned long long SHARED(_cntTaskAry)[noRegisteredTasks+1] =
                                                         {[0 ... noRegisteredTasks] = 0};
 
 volatile unsigned long mai_cntTaskIdle SECTION(.bss.OS) = 0  /** Counter of cycles of
@@ -349,7 +349,7 @@ static volatile struct sharedDataTasksIdleAnd1msAndCpuLoad_t
     /** The number of recognized data consistency errors. */
     unsigned int noErrors;
 
-} _sharedDataTasksIdleAnd1msAndCpuLoad SECTION(.data.Shared) =
+} _sharedDataTasksIdleAnd1msAndCpuLoad SECTION(.shared._sharedDataTasksIdleAnd1msAndCpuLoad) =
     { .cntTask1ms = 0
     , .cntTaskCpuLoad = 0
     , .cntTaskIdle = 0
@@ -1041,7 +1041,7 @@ static void osInstallInterruptServiceRoutines(void)
  */
 static int32_t taskInitProcess(uint32_t PID)
 {
-    static unsigned int cnt_ SECTION(.data.Shared.cnt_) = 0;
+    static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
     /* Only process 1 has access to the C lib (more precise: to those functions of the C

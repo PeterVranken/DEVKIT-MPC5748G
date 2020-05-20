@@ -28,21 +28,6 @@
     *(.data.OS.*)
     . = ALIGN(16);
 
-    /* Data sections, which are shared between all processes. */
-    . = ALIGN(16);
-    ld_dataSharedStart = ABSOLUTE(.);
-    *_Shared_*.o(.data)
-    *_Shared_*.o(.data.*)
-    *(.data.Shared)
-    *(.data.Shared.*)
-    *_Shared_*.o(.bss)
-    *_Shared_*.o(.bss.*)
-    *(.bss.Shared)
-    *(.bss.Shared.*)
-
-    . = ALIGN(16);
-    ld_dataSharedEnd = ABSOLUTE(.);
-
     /* Our ROM to RAM copy routine in the startup code copies always 4 Byte at once.
        The end address of any area to copy should thus be a multiple of 4. */
     . = ALIGN(4);
@@ -504,8 +489,30 @@
     *_OS_*.o(.sdata2.*)
     *(.sdata2.OS)
     *(.sdata2.OS.*)
+
+    /* The last portion of RAM is specified in the MPU as uncached. We don't have enough
+       area descriptors available to do this selectively for data, which is truely meant
+       uncached. By using the characteristics "uncached" for all remaining RAM data, we
+       will of course have some misplaced objects but it are only sda2 data objects, which
+       are affected, and as a matter of experience, the amount of such data is very
+       little. */ 
+    . = ALIGN(16);
+    ld_cachedRamEnd = ABSOLUTE(.);
+    ld_uncachedRamStart = ABSOLUTE(.);
+    
+    *(.uncached.OS)
+    *(.uncached.OS.*)
+
     . = ALIGN(16);
     ld_sdata2OSEnd = ABSOLUTE(.);
+
+    /* Data sections, which are shared between all processes. */
+    . = ALIGN(16);
+    ld_dataSharedStart = ABSOLUTE(.);
+    *(.shared)
+    *(.shared.*)
+    . = ALIGN(16);
+    ld_dataSharedEnd = ABSOLUTE(.);
 
     /* Small data sections for process P4. */
     . = ALIGN(16);
@@ -515,7 +522,6 @@
     *_P4_*.o(.sdata2.*)
     *(.sdata2.P4)
     *(.sdata2.P4.*)
-
 
     *_P4_*.o(.sbss2)
     *_P4_*.o(.sbss2.*)

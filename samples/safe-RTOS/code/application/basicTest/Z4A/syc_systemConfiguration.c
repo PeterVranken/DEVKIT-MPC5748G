@@ -100,7 +100,7 @@ volatile unsigned long long SBSS_OS(syc_cntISRPit3) = 0;
  */
 static int32_t taskInitProcess(uint32_t PID)
 {
-    static unsigned int cnt_ SECTION(.data.Shared.cnt_) = 0;
+    static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
     /* Only process 1 has access to the C lib (more precise: to those functions of the C

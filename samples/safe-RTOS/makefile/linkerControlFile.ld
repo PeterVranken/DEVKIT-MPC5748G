@@ -141,7 +141,12 @@ SECTIONS
     } > memFlash
 
     /* Read the beginning of the used RAM into a linker label. */
-    .dummyRAMInit (NOLOAD) : { ld_ramStart = ABSOLUTE(.); } >memData
+    .dummyRAMInit (NOLOAD) :
+    { 
+        ld_ramStart = ABSOLUTE(.);
+        ld_cachedRamStart = ABSOLUTE(.);
+
+    } >memData
 
     /* The External Interrupt vector table requires a 16 Bit alignment. This is ensured
        by an assembler statement but this can mean a waste of up to 64k of RAM if the
@@ -224,7 +229,13 @@ SECTIONS
        we align here to the next such boundary.
          Another constraint is the SMPU, which require a multiple of 16 Byte.
          Another constraint is the cache, which reads 32 Byte at once to fill a cache line. */
-    .dummyRAM (NOLOAD) : { . = ALIGN(32); ld_ramEnd = ABSOLUTE(.); } >memData
+    .dummyRAM (NOLOAD) :
+    {
+        . = ALIGN(32);
+        ld_uncachedRamEnd = ABSOLUTE(.);
+        ld_ramEnd = ABSOLUTE(.);
+
+    } >memData
 
     /* Compute the sizes of the memory chunks of the processes, which are configured in the
        MPU. The computed sizes are not required in the code but it is useful to have them

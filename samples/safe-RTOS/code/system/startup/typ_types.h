@@ -143,13 +143,11 @@
     addressing mode. See #BSS_OS for details. */
 # define SDATA_P4(var)   SECTION(.sdata.P4.var) var
 
-/** Helper for definition of simple, shared, uninitialized data objects. See
-    #BSS_OS for details. */
-# define BSS_SHARED(var) SECTION(.bss.Shared.var) var
+/** Helper for definition of simple, shared, initialized and uninitialized data objects.
+    "Shared" related to the user processes; all of them may write to objects defined with
+    this macro. See #BSS_OS for details. */
+# define SHARED(var) SECTION(.shared.var) var
 
-/** Helper for definition of simple, process P4 owned, initialized data objects. See
-    #BSS_OS for details. */
-# define DATA_SHARED(var)   SECTION(.data.Shared.var) var
 
 #else
 # error Configuration is required for your compiler

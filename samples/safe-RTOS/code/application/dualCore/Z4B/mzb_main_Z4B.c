@@ -125,17 +125,16 @@ enum
  */
 
 /** Counter of cycles of infinite main loop. */
-volatile unsigned long SBSS_OS(mzb_cntTaskIdle) = 0;
+volatile unsigned long SECTION(.uncached.OS.mzb_cntTaskIdle) mzb_cntTaskIdle = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long long SBSS_P1(mzb_cntTask1ms) = 0;  
+volatile unsigned long SECTION(.uncached.P1.mzb_cntTask1ms) mzb_cntTask1ms = 0;  
 
 /** Counter of cyclic 1ms OS task. */
-volatile unsigned long long SBSS_OS(mzb_cntTaskOs1ms) = 0;
+volatile unsigned long SECTION(.uncached.OS.mzb_cntTaskOs1ms) mzb_cntTaskOs1ms = 0;
 
-/** The average CPU load produced by all tasks and interrupts in tens of percent. */
-unsigned int DATA_OS(mzb_cpuLoad) = 1000;
-
+/** The average CPU load produced by all tasks and interrupts in tens of percent. */ 
+volatile unsigned int SECTION(.uncached.OS.mzb_cpuLoad) mzb_cpuLoad = 1000;
 
 
 /*
@@ -159,7 +158,7 @@ unsigned int DATA_OS(mzb_cpuLoad) = 1000;
  */
 static int32_t taskInitProcess(uint32_t PID)
 {
-    static unsigned int cnt_ SECTION(.data.Shared.cnt_) = 0;
+    static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
 //    /* Only process 1 has access to the C lib (more precise: to those functions of the C
@@ -223,7 +222,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     if(++cntIsOn_ >= 500)
     {
         cntIsOn_ = -500;
-        printf("This is call %llu of task1ms\r\n", mzb_cntTask1ms);
+//        printf("This is call %lu of task1ms\r\n", mzb_cntTask1ms);
     }
     lbd_setLED(lbd_led_2_DS9, /* isOn */ cntIsOn_ >= 0);
 
@@ -264,7 +263,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     {
         cntIsOn_ = -500;
 
-        printf("This is call %llu of taskOs1ms\r\n", mzb_cntTaskOs1ms);
+//        printf("This is call %lu of taskOs1ms\r\n", mzb_cntTaskOs1ms);
     }
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
     

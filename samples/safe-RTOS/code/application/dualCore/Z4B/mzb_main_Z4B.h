@@ -42,6 +42,19 @@
  * Global data declarations
  */
 
+/** Counter of cycles of infinite main loop. */
+extern volatile unsigned long mzb_cntTaskIdle;
+
+/** Counter of cyclic 1ms user task. */
+extern volatile unsigned long mzb_cntTask1ms;  
+
+/** Counter of cyclic 1ms OS task. */
+extern volatile unsigned long mzb_cntTaskOs1ms;
+
+/** The average CPU load produced by all tasks and interrupts on core Z4B in tens of
+    percent. */ 
+extern volatile unsigned int mzb_cpuLoad;
+
 
 /*
  * Global prototypes

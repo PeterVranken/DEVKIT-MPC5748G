@@ -211,6 +211,14 @@
 /** A pseudo event ID. Used to register a process initialization task using registerTask(). */
 #define EVENT_ID_INIT_TASK     (UINT_MAX)
 
+/** Select the static configuration, which applies to the calling core. It's a simple
+    selection from one out of three statically defined macros. Selection is done by
+    name pattern. */
+#define GET_CORE_VALUE(macro, idxCore)                                          \
+            ((idxCore)==0? (macro##_CORE_0)                                     \
+                         : ((idxCore)==1? (macro##_CORE_1): (macro##_CORE_2))   \
+            )
+            
 
 /*
  * Local type definitions
@@ -239,9 +247,9 @@ void rtos_osProcessTriggeredEvents(rtos_eventDesc_t *pEvent);
     just the configuration data and it leaves it open, whether the core runs the RTOS and
     whether the index is used at all. */
 static const unsigned int rtos_idxRtosTimerAry[RTOS_MAX_NO_CORES] =
-    { [0] = RTOS_CORE_0_IDX_OF_PID_TIMER
-    , [1] = RTOS_CORE_1_IDX_OF_PID_TIMER
-    , [2] = RTOS_CORE_2_IDX_OF_PID_TIMER
+    { [0] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0)
+    , [1] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1)
+    , [2] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
     };
 
 
@@ -675,7 +683,8 @@ static inline void checkEventDue(void)
  * INTC.
  *   @remark
  * The INTC priority at which this function is executed is configured as
- * #RTOS_KERNEL_IRQ_PRIORITY.
+ * #RTOS_KERNEL_IRQ_PRIORITY_CORE_0 (or as #RTOS_KERNEL_IRQ_PRIORITY_CORE_1, or as
+ * #RTOS_KERNEL_IRQ_PRIORITY_CORE_2, if the RTOS is running on core 1 or 2, respectively).
  */
 static void onOsTimerTick(void)
 {
@@ -734,36 +743,51 @@ static inline void launchAllTasksOfEvent(const rtos_eventDesc_t * const pEvent)
  */
 static void initRTOSClockTick(void)
 {
-    _Static_assert( RTOS_CLOCK_TICK_IN_MS >= 1  &&  RTOS_CLOCK_TICK_IN_MS <= 35791
-                  , "RTOS clock tick configuration is out of range"
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0
+                    ||  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 0) >= 1 
+                        &&  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 0) <= 35791
+                  , "RTOS clock tick configuration on core Z4A is out of range"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0_Z4A == 0
-                    ||  RTOS_CORE_0_IDX_OF_PID_TIMER >= 1 && RTOS_CORE_0_IDX_OF_PID_TIMER <= 15
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
+                    ||  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 1) >= 1 
+                        &&  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 1) <= 35791
+                  , "RTOS clock tick configuration on core Z4B is out of range"
+                  );
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
+                    ||  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 2) >= 1 
+                        &&  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 2) <= 35791
+                  , "RTOS clock tick configuration on core Z2 is out of range"
+                  );
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0)
+                        >= 1 && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0) <= 15
                   , "Bad configuration of PIT timers as clock source for safe-RTOS"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1_Z4B == 0
-                    ||  RTOS_CORE_1_IDX_OF_PID_TIMER >= 1 && RTOS_CORE_1_IDX_OF_PID_TIMER <= 15
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1) 
+                        >= 1 && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1) <= 15
                   , "Bad configuration of PIT timers as clock source for safe-RTOS"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_2_Z2 == 0
-                    ||  RTOS_CORE_2_IDX_OF_PID_TIMER >= 1 && RTOS_CORE_2_IDX_OF_PID_TIMER <= 15
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 0 
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2) 
+                        >= 1 && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2) <= 15
                   , "Bad configuration of PIT timers as clock source for safe-RTOS"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0_Z4A == 0
-                    ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1_Z4B == 0
-                    ||  RTOS_CORE_0_IDX_OF_PID_TIMER != RTOS_CORE_1_IDX_OF_PID_TIMER
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0  ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0) 
+                        != GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1)
                   , "If safe-RTOS runs on different cores then they need to have different"
                     " clock sources"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0_Z4A == 0
-                    ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2_Z2 == 0
-                    ||  RTOS_CORE_0_IDX_OF_PID_TIMER != RTOS_CORE_2_IDX_OF_PID_TIMER
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0  ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 0
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0) 
+                        != GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
                   , "If safe-RTOS runs on different cores then they need to have different"
                     " clock sources"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1_Z4B == 0
-                    ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2_Z2 == 0
-                    ||  RTOS_CORE_1_IDX_OF_PID_TIMER != RTOS_CORE_2_IDX_OF_PID_TIMER
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0  ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 0
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1)
+                        != GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
                   , "If safe-RTOS runs on different cores then they need to have different"
                     " clock sources"
                   );
@@ -787,7 +811,7 @@ static void initRTOSClockTick(void)
     rtos_osRegisterInterruptHandler( &onOsTimerTick
                                    , processorID
                                    , vectorNum
-                                   , RTOS_KERNEL_IRQ_PRIORITY
+                                   , GET_CORE_VALUE(RTOS_KERNEL_IRQ_PRIORITY, processorID)
                                    , /* isPremptable */ true
                                    );
 
@@ -796,8 +820,11 @@ static void initRTOSClockTick(void)
        Milliseconds.
          -1: See RM, 51.6 */
 /// @todo Here, we need to have a double-check with CCL
-    PIT->TIMER[idxTimerChn].LDVAL = 40000u*RTOS_CLOCK_TICK_IN_MS -1;
-/// @todo Have minimal variations for different core, ideally prime periods to improve testing
+    PIT->TIMER[idxTimerChn].LDVAL = (unsigned int)
+                                    (40000u * GET_CORE_VALUE( RTOS_CLOCK_TICK_IN_MS
+                                                            , processorID
+                                                            )
+                                    ) - 1u;
 
     /* Enable timer operation. Note, this doesn't release the scheduler yet; the step size
        is still zero and the system time doesn't advance despite of the starting timer
@@ -1499,8 +1526,9 @@ rtos_errorCode_t rtos_osInitKernel(void)
                 rtos_osReleaseProcess(/* PID */ idxP);
 
         /* Release scheduler. */
-        pIData->tiOsStep = RTOS_CLOCK_TICK_IN_MS;
-
+        pIData->tiOsStep = (unsigned long)GET_CORE_VALUE( RTOS_CLOCK_TICK_IN_MS
+                                                        , rtos_osGetIdxCore()
+                                                        );
         rtos_osResumeAllInterrupts();
     }
 

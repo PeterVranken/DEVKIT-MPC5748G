@@ -1,39 +1,576 @@
-- floating point: emulation lib or only on Z4, makefile setting
-- Library selection: either Z2 or Z4, Z4 if Z2 no float? TBC: What is
-  said/done in linker script?
-- Devices supported. Global sharing like PIT and DMA channels
-  - Clocks: full speed, all peripherals clocked
-  - SMPU (all open, one uncached chunk)
-  - PBridge (TBC: All open?)
-  - DMA, LINFlex for serial
-  - Watchdogs off
-  - Reset escalation: off
-  - SIUL2 as far as ports are required
-- Basic intercore communication support:
-  - Cache-inhibited data area
-  - Decorated store
-  - Memory barrier
-  - mutex, nestable mutex and intercore critical section
-  - no effective synchronization because no kernel
-  - TODO thread-safe queue
-  - Cross-core interrupts (two lines of code!)
-- Serial
-  - Unclear status of context-safe use (how is the new-lib library compiled?)
-  - Use sio_write or restrict printf to a single core
-- Debugger scripts: Pros & cons
-  - The scripts are not a substitute for the IDE, they are not generally
-    better but they have advantages in certain situations and are a
-    valuable add-on
-  - Can handle reset escalation. Even if switched off: Regular (not
-    escalated) reset made IDE fail to coennect to target for setting break
-    points and stepping through the code (re-flash of healthy SW was
-    however possible)
-  - Can speed-up the flash procedure, can beintegrated into makefile after
-    build
-  - Easier access to MCU registers, since the Embedded Sys plugin in the
-    IDE is not working at all. We need to use the console window in the
-    IDE instaeda nd this is much less convenient than a GDB in a normal
-    shell window (IDE has no  commmand completion and with respect to
-    repetition and modification of previously submitted commands)
-  - Struggles with switching between cores and restart of MCU after reset.
-    Mostly the server needs to be restarted
+= image:doc/manual/theme/iconSafeRTOS-asColoredIcon.jpg[width="3%", pdfwidth="5%"] safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L
+:Author:            Peter Vranken 
+:Email:             mailto:Peter_Vranken@Yahoo.de
+:toc:               left
+:xrefstyle:         short
+:numbered:
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+
+CAUTION: This readme file basically is a copy from the ancestor project,
+which had been published for the MPC5643L. The text has not been revised
+for the new context yet. It'll still contains many references to the
+single core solution MPC5643L.
+
+== About this application
+
+This DEVKIT-MPC5748G sample application implements an easy to reuse RTOS
+for the NXP MPC5748G and other microcontroller derivates with e200z4/7
+core. The sample application started as a copy of MPC5643L sample
+"RTOS-VLE". The RTOS implementation has been reworked (folder
+`code\system\RTOS`) with respect to the demands of safety-critical
+software. The concept of processes has been added with the intention to
+run applications of different criticality levels in different processes
+without fearing harmful interferences between them. Features:
+
+* Preemptive, priority controlled scheduling
+* Up to five processes (including kernel) with disjunct memory address
+  spaces and hierarchic privileges
+* Tasks belong to processes and share the process owned memories
+* Globally shared memory for communication purpose
+* Hardware memory protection to ensure integrity of process owned memories
+* Secured priority ceiling protocol for communication purpose
+* Inter-process function calls for communication purpose
+* Deadline monitoring and activation loss counters for avoidance of
+  blocking tasks
+* Exception handling to catch failures like use of privileged, illegal or
+  misaligned instructions or forbidden access to memory or I/O
+* Diagnostic API to gather information about failing processes and the
+  possibility to halt critical processes
+* I/O driver model for safe implementation of a complete operating system
+
+The RTOS itself is not a runnable piece of software. It requires some
+application code. The demo application file from the elder
+TRK-USB-MPC5643L sample RTOS-VLE has been migrated and can now be found as
+sample application "default", see folder `code\application\default`.
+
+Some more meaningful applications of the RTOS can be found in folder
+`code\application\`.
+
+To see how the samples work you need to open a terminal software on your
+host machine. You can find a terminal as part of the CodeWarrior Eclipse
+IDE; go to the menu, "Window/Show View/Other/Terminal/Terminal".
+
+Open the serial port, which is offered by the DEVKIT-MPC5748G. (On
+Windows, open the Computer Management and go to the Device Manager to find
+out.) The Baud rate has been selected as 115200 Bd in files
+`code\application\<applicationName>\mai_main.c`, 8 Bit, no parity, 1 start
+and stop Bit. The terminal should print the messages, which are regularly
+sent by the sample code running on the evaluation board.
+
+== The RTOS
+
+The proposed RTOS is little exciting with respect to its functionality.
+The scheduler implements the functionality of what is called the "Basic
+Conformance Class 1" (BCC1) of the OSEK/VDX-OS standard and of its BCC2 with
+the exception of activation queuing.
+
+The scheduler offers an API to create events that can activate tasks. An
+event is either a regular timer event, triggered by the RTOS system clock,
+or a software triggered event. The latter can be triggered either from
+user code (if it has sufficient privileges) or from ISRs belonging to the
+operating system.
+
+The RTOS offers a pre-configured set of up to four processes. The
+limitation to four is a hardware constraint and for sake of simplicity no
+virtualization by software has been shaped. The operating system forms a
+fifth process. The operating system startup code will register the needed
+tasks. The registration assigns them to one of the processes and
+associates them with one of the created events.
+
+All scheduling is strictly priority controlled. The triggering of an event
+makes all associated tasks ready to run. This is called task activation.
+At any time, the scheduler decides by priority, which of the _ready_ tasks
+becomes the one and only _running_ task. This may involve preemption of
+tasks.
+
+The operating system startup code can install needed interrupt service
+routines (ISR). The API offered for this purpose is similar to the other
+DEVKIT-MPC5748G samples in this repository.
+
+For mutual exclusion of tasks, if shared data is involved, a lock API is
+offered that implements the priority ceiling protocol (PCP). It is secured
+so that supervisory tasks cannot be accidentally or purposely blocked by
+application code.
+
+The mechanisms already known from the other DEVKIT-MPC5748G samples to
+suspend and resume all interrupts are still supported but they are no
+longer offered to application code, only the operating system may use them
+(mainly for I/O driver implementation).
+
+The use of the RTOS is further supported by some diagnostic functions.
+They offer stack usage information, information about caught exceptions
+and averaged CPU load information. The diagnostics comes along with a new
+API to halt the execution of a process. Permission to use this API is
+granted only to what is considered the safety process or task.
+
+Many more details can be found in the manual, which is available
+https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/safe-RTOS-swScheduler/LSM/safe-RTOS-VLE/doc/manual/readMe.adoc[online (for MPC5643L)^]
+in GitHub or as
+https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/safe-RTOS-swScheduler/LSM/safe-RTOS-VLE/doc/manual/manual.pdf[printable (for MPC5643L)^]
+document. The API is described in the online https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/TRK-USB-MPC5643L/safe-RTOS-swScheduler/LSM/safe-RTOS-VLE/doc/doxygen/html/globals_func.html[Doxygen help (for MPC5643L)^], too.
+
+=== Differences to the ancestor RTOSs
+
+The architecture of the RTOS is very simple and resembles its ancestors,
+which were the simple RTOS without safety concept and safe-RTOS-VLE with
+hardware scheduler (still provided only for MPC5643L). This simplicity
+significantly supports the validation of the code in a safety-critical
+software development environment.
+
+For an explanation of the scheduling scheme, you may still refer to the
+documentation of the simple RTOS, please look
+https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/safe-RTOS-swScheduler/LSM/RTOS-VLE#The-RTOS[here (for MPC5643L)^].
+
+The differences between safe-RTOS and the simple RTOS are:
+
+* The safety concept
+* Any number of tasks can be associated with an event. The simple RTOS had
+  used a one-by-one relation between events and tasks. (Having more than
+  one task per event makes sense only in conjunction with the new process
+  concept)
+* The implementation of the safety mechanisms means a performance loss.
+  The sample application "benchmark", which aims at simulating the typical
+  timing of a true application shows an increased CPU load of 1.7%.
+* The architecture of the RTOSs may be similar but the implementation
+  isn't. The safety demands require a significant portion of assembler
+  code for implementation
+* The Book E instruction set is no longer supported
+
+The major difference between the two branches of safe-RTOS is the
+substitution of the hardware based scheduler by a pure software solution.
+This has its pros and cons:
+
+* The performance of the software solution is worse. The sample
+  application "benchmark" shows an increased CPU load of about 0.3%. For
+  the other sample application "default", which has an extremely high
+  interrupt load, it's even 1.5%
+* There's no longer a limitation for the maximum number of events. This
+  was the main motivation for the change; a port for the MPC5775B/E
+  dual-core suffered from the hardware limitation of eight events, which
+  were even to be distributed onto both cores
+* All tasks have a prioprity, which is by principle lower than any
+  interrupt priority
+* User mode tasks can't have a critical section with ISRs any more. (OS
+  tasks can still have)
+* In a safety aware development process, the effort for testing and code
+  reviews will be higher for the software solution
+* There are behavioral differences between hard- and software solution,
+  which are visible at the API. It's mainly about having separate priority
+  spaces for tasks and ISRs in the software solution, but this is a
+  particularity, which won't have an impact on the choice to make
+
+For small applications, where the hardware given maximum of eight events
+is no issue, the hardware solution may still be the better choice. For now,
+it is still available on the master branch of the repository.
+
+== The safety concept
+
+This sections aims at giving an overview on the safety concept. Technical
+details can be found in the manual of the RTOS.
+
+A typical nowadays embedded project consists of a lot of code coming from
+various sources. There may be an Open Source Ethernet stack, an Open
+Source Web server plus self-made Web services, there may be an Open Source
+driver software for a high resolution LCD, a framework for GUIs plus a
+self-designed GUI, there needs to be the self-made system control software,
+possibly a file system for data logging on an SMD storage, the C
+libraries are used, and so on. All in all many hundred thousand lines of
+code.
+
+If the system can reach a state, which is potentially harmful to people or
+hardware, then it'll typically need some supervisory software, too, which
+has the only aim of avoiding such a state. Most typical, the supervisory
+software can be kept very lean. It may e.g. be sufficient to read a
+temperature sensor, check the temperature against a boundary and to
+control the coil of the main relays, which powers the system. If the
+temperature exceeds a limit or if the temperature reading is somehow
+implausible then the relay is switched off and the entire system
+unpowered. That's all. A few hundred lines of code can already suffice
+for such a task.
+
+All the rest of the software is not safety relevant. A fault in this
+majority of code may lead to wrong system behavior, customer
+dissatisfaction, loss of money, frustration, etc. but will not endanger
+the safety of the system or the people using it.
+
+If we rate the safety goal higher than the rest then we have a significant
+gain in terms of development effort if we can ensure that the few hundred
+lines of supervisory code will surely work always well and even despite of
+potential failures of the rest of the code. Without the constraint
+"despite of" we had to ensure "working always well" for all the many
+hundred thousand lines of code.
+
+Using a safety-aware RTOS can be one means to ensure this. The supervisory
+code is put into a process of higher privileges and the hundred thousands
+of lines of other code are placed into a separate process with lower
+privileges. (Only) RTOS and supervisory code need to be carefully
+reviewed, tested, validated to guarantee the "working always well" of the
+supervisory code. Using a "normal" RTOS, where a fault in any part of the
+code can crash the entire software system, the effort for reviews, tests
+and validation needed to be extended to all of the many hundred thousand
+lines of code. The economic difference and the much higher risk of not
+discovering a fault are evident.
+
+These basic considerations result in a single top-level requirement for
+our safe-RTOS:
+
+* If the implementation of a task, which is meant the supervisory or
+  safety task, is itself free of faults then the RTOS shall guarantee that
+  this task is correctly and timely executed regardless of whatever
+  imaginable failures are made by any other process.
+
+This requirement serves at the same time as the definition of the term
+"safe", when used in the context of this RTOS. safe-RTOS promises no more
+than this requirement says. As a consequence, a software made with this
+RTOS is not necessarily safe and even if it is then the system using that
+software is still not necessarily safe. Here, we just deal with the tiny
+contribution an operating system kernel can make to a safe system.
+
+All other technical requirements are derived from this one.
+
+=== Technical concept
+
+The basic idea of safe-RTOS is to organize all user tasks in groups of
+such, the processes. Each process has write-access to its own, disjunct
+RAM areas. (And to one additional shared area, which all processes have
+write access to.) Writing to any other address of the address space is a
+privilege violation.
+
+Reading RAM and ROM is known to be free of side-effects and can't do any
+harm to another process -- it's therefore generally permitted.
+
+Reading non-user MCU registers (CPU supervisor registers and I/O
+registers) can have side-effects and is therefore generally forbidden. Any
+attempt to do so is considered a privilege violation.
+
+Any attempt to write to a non-user MCU register (CPU supervisor register
+or I/O register) is considered a privilege violation.
+
+API functions that control the behavior of other tasks or processes are
+restricted to the use of certain processes. Any attempt of another process
+to make use of such an API is a privilege violation. The most prominent
+example is the API to halt the execution of a process.
+
+Any privilege violation is punished by immediate abortion of the causing
+task and in particular before the according instruction can have a
+side-effect on not-owned RAM or CPU or I/O registers. The abortion is
+counted with cause in the global process data.
+
+The abortion of a task has no impact on future activations. The same task
+will be activated again as soon as the event is triggered again, which the
+task is associated with. If the task has a static error then it may easily
+end up with an endless cycle of task activations and task abortions.
+
+The kernel will never do more than immediately aborting a failing task.
+It'll not take any decision like: "Enough is enough, we are going to stop
+that." Instead, it offers the mechanisms to implement such decisions in a
+particular supervisory task.
+
+The implementation of recognizing privilege violations before they can
+harm is founded on the memory management unit (MMU) in the CPU, the memory
+protection unit of the CPU-external buses and the CPU's exception
+mechanism. It's impossible for a user task to change the behavior of the
+MPU as its registers are in the address space it itself protects. It is
+impossible for user code to change the behavior of MMU or CPU exception
+handling; these settings are held in CPU supervisor registers, which
+cannot be accessed without an immediately punished privilege violation.
+
+Note, the execution of code in ROM is generally not restricted. A task may
+even call operating system code routines -- until the executed code would
+have a side-effect on not-owned RAM or on supervisor or I/O registers
+(which it'll normally have very soon). Then a privilege violation is
+detected and the task is aborted.
+
+=== Self-diagnosis of the kernel
+
+The RTOS offers an all-embracing concept for recognizing failures of the
+user tasks and for hindering these failures from doing any harm. By
+principle, the kernel can't offer such a concept for its own
+implementation, too. Nonetheless, there is a thin layer of self-diagnosis
+and protection against kernel implementation faults. The exception
+handlers inspect the exception throwing context to prove that this context
+belongs to the user task code. According to our concept this will always
+be the case -- except for implementation errors in the kernel itself (or in
+an added I/O driver, see below) or, less likely but possible, because of a
+sporadic hardware fault, e.g. caused by local chip overtemperature or
+cosmic radiation. In which case the kernel simply stops working.
+
+Halting the software execution can be considered not breaking the safety
+concept of the system; in a safe system, there will always be an external
+(i.e. CPU unrelated) device, which permanently checks the alive status of
+the software running on the CPU and this device will ensure the transition
+of the system into the safe state.
+
+Note, in contrast to faults caught in the user tasks this mechanism can
+not guarantee that the failure has not yet done some harm before being
+recognized.
+
+=== Kernel vs. Operating System
+
+safe-RTOS implements an operating system kernel but not an operating
+system (OS). Additional code has to be added to let it become an OS. The
+majority of this code will be the configuration and setup of processes and
+tasks and a set of I/O device drivers.
+
+The implementation of such drivers needs to make use of privileged
+instructions and needs to access the I/O address space, which both is not
+allowed in user tasks. The safety concept can hence not be limited to the
+RTOS. The considerations made for the RTOS and its implementation need to
+be considered for the I/O driver implementation, too. The concept is that
+the RTOS is not limited to the source code that implements it but it also
+has an abstract layer: It comes along with a binding set of design rules
+how to implement an I/O driver. These rules are called the "driver model".
+Any programmer of an I/O driver, who disregards only a single rule will
+break the entire safety concept and the RTOS implementation can't help it.
+
+safe-RTOS's driver model specifies memory mapped drivers, safe callbacks
+and system calls of three "conformance classes", basic, simple and full.
+They offer a trade off between driver performance in terms of CPU load and
+attainable behavior and ease of programming. The by far leanest and most
+powerful "basic" implementation needs to be done in assembler, the other
+two classes can be implemented in C.
+
+Note, adding an I/O driver to the RTOS is not only a matter of complying
+with the driver model. Any programming error can potentially break the
+safety concept, too. Much of the I/O driver code is executed in the kernel
+process and implementation faults can crash the entire software system
+like it generally is for all code in a "normal" RTOS. The organization of
+the development work needs to take care by planning and implementing
+according quality assurance measures. (Organizational measures, which will
+necessarily include the published source code of the RTOS itself.)
+
+=== Architecture of application code
+
+Provided all I/O drivers are implemented fully compliant with the driver
+model and they have been successfully validated then we have a safe
+operating system but still not a safe software. A further constraint is
+that the application software makes correct use of the offered mechanisms.
+
+The supervisory code shall be put into the process with highest
+privileges. It can be that the outlined concept is implemented in a
+recursive way and the supervisory code is in turn split into two
+criticality levels, with a very lean watchdog functionality on top.
+("Sub-ordinated main part of supervisory code still alive and
+functioning?") In which case the watchdog would have highest privileges
+followed by the main part of the supervisory code and both having higher
+privileges as the supervised functional code.
+
+The highest privileged safety code will run on a priority level, which cannot
+be preempted by tasks belonging to processes of lower privileges and which
+cannot be blocked by these tasks using the offered APIs for mutual
+exclusion of tasks. (With other words, a task with low privileges cannot
+shape a critical section with the task of highest privileges.)
+
+The supervisory code will make use of the diagnostics APIs to see if the
+functional code is executing well. It can in case halt the execution of
+the failing process or otherwise ensure that the system doesn't leave the
+safe operation state.
+
+The RTOS mechanisms guarantee that faults in the user code cannot do any
+harm -- but this relates only to the definition of "harm" in the RTOS
+context: OS configuration, I/O configuration or state, memory of other
+processes, timely execution of their tasks can't be touched. The same
+mechanisms can not hinder the user task code from doing all kind of
+things, which are not harmful in this sense but still harmful to the
+system under control. Not allowing this is of course a top-level
+requirement of the aimed software. It needs to be tackled mainly by the
+architecture of the software. Here's a single example:
+
+Commonly, the functional code in the software computes I/O commands, which
+go to the I/O drivers and control the connected actuators -- which can mean
+a lot of harm if giving wrong commands. By application design it can be
+easily ensured that a functional task runs first, followed by a
+supervisory task and finally the OS owned I/O driver task executes. In
+such an architecture the supervisory code would be put in the position to
+double-check the I/O control commands -- and override them if advisable --
+before these commands are executed by the finally running I/O task.
+
+This is just meant a simple example. The point is that the RTOS only
+offers the mechanisms to design a safe software but it can not undertake
+for software safety.
+
+== Tools
+
+=== Environment
+
+==== Command line based build
+
+The makefiles and related scripts require a few settings of the
+environment in the host machine. In particular, the location of the GNU
+compiler installation needs to be known and the PATH variable needs to
+contain the paths to the required tools. 
+
+For Windows users there is a shortcut to PowerShell in the root of this
+project (not sample), which opens the shell with the prepared environment.
+Furthermore, it creates an alias to the appropriate GNU make executable.
+You can simply type `make` from any location to run MinGW32 GNU make.
+
+The PowerShell process reads the script `setEnv.ps1`, located in the
+project root, too, to configure the environment. This script requires
+customization prior to its first use. Windows users open it in a text
+editor and follow the given instructions that are marked by TODO tags.
+Mainly, it's about specifying the installation directory of GCC.
+
+Non-Windows users will read this script to see, which (few) environmental
+settings are needed to successfully run the build and prepare an according
+script for their native shell.
+
+==== Eclipse for building, flashing and debugging
+
+Flashing and debugging is always done using the NXP CodeWarrior Eclipse
+IDE, which is available for free download. If you are going to run the
+application build from Eclipse, too, then the same environmental settings
+as described above for a shell based build need to be done for Eclipse. The
+easiest way to do so is starting Eclipse from a shell, that has executed
+the script `setEnv.ps1` prior to opening Eclipse.
+
+For Windows users the script `CW-IDE.ps1` has been prepared. This script
+requires customization prior to its first use. Windows users open it in a
+text editor and follow the given instructions that are marked by TODO
+tags. Mainly, it's about specifying the installation directory of
+CodeWarrior.
+
+Non-Windows users will read this script to see, which (few) environmental
+and path settings are needed to successfully run the build under control
+of Eclipse and prepare an according script for their native shell.
+
+Once everything is prepared, the CodeWarrior Eclipse IDE will never be
+started other than by clicking the script `CW-IDE.ps1` or its equivalent
+on non-Windows hosts.
+
+See https://github.com/PeterVranken/TRK-USB-MPC5643L[project overview^] and
+https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[GitHub
+Wiki^] for more details about downloading and installing the required
+tools.
+
+=== Compiler and makefile
+
+Compilation and linkage are makefile controlled. The compiler is GCC
+(MinGW-powerpc-eabivle-4.9.4). The makefile is made generic and can be
+reused for other projects, not only for a tiny "Hello World" with a few
+source files. It supports a number of options (targets); get an overview
+by typing:
+ 
+    cd <projectRoot>/samples/safe-RTOS
+    mingw32-make help
+
+The main makefile `GNUmakefile` has been configured for the build of
+sample "safe-RTOS" but the kernel can't be linked into a runnable
+binary without an application. You need to specify the source code path of
+a safe-RTOS application on the command line of make. Set variable APP to
+do so. Possible applications can be found as the children of folder
+`<projectRoot>/samples/safe-RTOS/code/application`. Type
+("code/application/default/" is just an example):
+
+    mingw32-make -s build APP=code/application/default/
+    mingw32-make -s build APP=code/application/default/ CONFIG=PRODUCTION
+    mingw32-make -s build APP=code/application/default/
+    mingw32-make -s build APP=code/application/default/ CONFIG=PRODUCTION
+
+to produce the flashable files
+`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-safe-RTOS.elf`,
+`bin\ppc\default\PRODUCTION\DEVKIT-MPC5748G-safe-RTOS.elf`,
+`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-safe-RTOS.elf`,
+and
+`bin\ppc\default\PRODUCTION\DEVKIT-MPC5748G-safe-RTOS.elf`.
+
+To get more information, type:
+
+    mingw32-make help
+
+WARNING: The makefile requires the MinGW port of the make processor. The
+Cygwin port will fail with obscure, misleading error messages. It's safe
+to use the `make.exe` from the compiler installation archive but
+explicitly typing `mingw32-make` will avoid any problem.
+
+The makefile is designed to run on different host systems but has been
+tested with Windows 7 and Windows 10 only.
+
+Note, the Eclipse project configuration in the root folder of this sample
+only supports the build of a sub-set of the possible configurations.
+Safe-RTOS can be compiled with a few sample applications only, each of
+them in DEBUG and PRODUCTION compilation. To build more samples with
+Eclipse you would have to duplicate the existing build configurations and
+adapt the make command lines in the build settings according to the
+explanations and examples above.
+
+=== Flashing and debugging
+
+The code of this DEVKIT-MPC5748G sample can be flashed and debugged with
+the CodeWarrior IDE.
+
+To flash the `*.elf` file of a safe-RTOS application like `default`, open the
+CodeWarrior IDE, go to the menu, click "Window/Show
+View/Other/Debug/Debugger Shell". In the debugger shell window, type for
+example:
+
+    cd <rootFolderOfSample>/makefile/debugger
+    set APP default
+    source flashDEBUG.tcl
+    
+or
+
+    set APP default
+    source flashPRODUCTION.tcl
+
+(Setting TCL variable APP doesn't need to be repeated prior to every
+repeated flashing.)
+
+The debugger is started by a click on the black triangle next to the blue
+icon "bug", then click "Debug Configurations.../CodeWarrior/safe-RTOS
+(default, DEBUG)". Confirm and start the debugger with a last click on 
+button "Debug".
+
+(Or select the according debug configuration for another safe-RTOS
+application.)
+
+You can find more details on using the CodeWarrior IDE at
+https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[TRK-USB-MPC5643L/wiki/Tools-and-Installation^].
+
+== Code architecture
+
+This DEVKIT-MPC5748G sample is compiled for the VLE instruction set. The
+build settings are identical to "startup". Please refer to
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/startup/readMe.adoc[samples/startup/readMe.adoc^]
+for details.
+
+=== Book E versus VLE
+
+Only VLE code is supported.
+
+== Known issues
+
+. Debugger: If the view shows the INTC0 register set then the debugger
+harmfully affects program execution and the RTOS fails: The write to
+INTC_EOIR_PRC0, which normally restores the current priority level
+INTC_CPR_PRC0, now fails to do so. The complete interrupt handling fails
+from now on. Mostly the effect is that the OS tick interrupt, which has a
+high priority, leaves this high priority level set in the INTC_CPR_PRC0,
+so that effectively no interrupts (including itself) are handled any more.
+Only the code of the idle task is executed any longer.
++
+Workaround: Don't open the view of the INTC0 in the debugger when
+debugging a safe-RTOS application. Then the INTC and the code work fine.
+
+. Debugger: A similar effect has been observed with the instructions to
+alter the External Interrupt enable bit, MSR[EE]. Do not single-step in
+the debugger over wrtee(i) instructions. The instruction may fail to
+change the bit. If the code approaches such an instruction you should use
+the right-click operation "Run to line", targeting the instruction behind
+the wrtee(i). This works fine.
+
+. Debugger: It is not possible to hinder the P&E debugger from halting at
+an se_illegal instruction. (See https://community.nxp.com/thread/497533)
+This makes it impossible to debug the fault catching capabilities of the
+RTOS. All severe code errors, which lead to the execution of an arbitrary
+address, will sooner or later encounter a zero word in the instruction
+stream and the debugger will break -- before the RTOS can catch the error.
+It is possible to continue the code execution from the debugger and to
+see, what the RTOS will do but this is an interactive process and
+systematic testing of error catching code is not possible this way. We can
+only do it without connected debugger.
