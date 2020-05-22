@@ -42,32 +42,21 @@
 #  error Inconsistent definition of system call
 # endif
 
-# if RTOS_NO_CORES >= 1
-#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0030 \
+/* This system call is not specific to a core; all of them may use the same function. */
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0030 \
                                         RTOS_SC_TABLE_ENTRY(stm_scBscHdlr_getSystemTime, BASIC)
-# endif
-# if RTOS_NO_CORES >= 2
-#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0030 \
-                                        RTOS_SC_TABLE_ENTRY(stm_scBscHdlr_getSystemTime, BASIC)
-# endif
-# if RTOS_NO_CORES >= 3
-#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0030 \
-                                        RTOS_SC_TABLE_ENTRY(stm_scBscHdlr_getSystemTime, BASIC)
-# endif
-# if RTOS_NO_CORES >= 4
-#  error System call definition requires extension for more than three cores
-# endif
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0030 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0030
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0030 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0030
 
 #else
-
 # error System call 0030 is ambiguously defined
+
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
    definition.*/
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0030   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0030   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0030   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-
 #endif
 
 

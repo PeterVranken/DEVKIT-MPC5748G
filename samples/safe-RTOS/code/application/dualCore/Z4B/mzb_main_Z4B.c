@@ -173,30 +173,6 @@ static int32_t taskInitProcess(uint32_t PID)
 
 
 /**
- * Test of LED and button driver: This callback is invoke on every state change of any of
- * the supported (two) buttons.
- *   @return
- * The function always returns zero (no error).
- *   @param PID
- * PID of process, which is registered for the callback.
- *   @param buttonState
- * Current state of both buttons and changes in the instance of calling. See enum
- * lbd_buttonStateMask_t for details.
- */
-static int32_t onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
-{
-    /* Test button input: The current status is echoed as LED status. */
-    if((buttonState & lbd_btStMask_btnSw1_down) != 0)
-        lbd_setLED(lbd_led_6_DS5,  /* isOn */ true);
-    else if((buttonState & lbd_btStMask_btnSw1_released) != 0)
-        lbd_setLED(lbd_led_6_DS5,  /* isOn */ false);
-              
-    return 0;    
-
-} /* End of onButtonChangeCallback */
-
-
-/**
  * Task function, cyclically activated every Millisecond. The LED D4 is switched on and off.
  *   @return
  * If the task function returns a negative value then the task execution is counted as
@@ -268,6 +244,34 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
     
 } /* End of taskOs1ms */
+
+
+
+/**
+ * Test of LED and button driver: This callback is invoked on every state change of any of
+ * the supported (two) buttons.
+ *   @return
+ * The function always returns zero (no error).
+ *   @param PID
+ * PID of process, which is registered for the callback.
+ *   @param buttonState
+ * Current state of both buttons and changes in the instance of calling. See enum
+ * lbd_buttonStateMask_t for details.
+ *   @remark
+ * This function must never be called directly. It has been made public for the only reason
+ * that the boot core needs to know it for the initialization call of the I/O driver.
+ */
+int32_t mzb_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
+{
+    /* Test button input: The current status is echoed as LED status. */
+    if((buttonState & lbd_btStMask_btnSw1_down) != 0)
+        lbd_setLED(lbd_led_6_DS5,  /* isOn */ true);
+    else if((buttonState & lbd_btStMask_btnSw1_released) != 0)
+        lbd_setLED(lbd_led_6_DS5,  /* isOn */ false);
+              
+    return 0;    
+
+} /* End of mzb_onButtonChangeCallback */
 
 
 

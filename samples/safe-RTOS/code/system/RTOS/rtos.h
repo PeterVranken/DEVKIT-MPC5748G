@@ -68,26 +68,10 @@
     specification or leave it. An unused process doesn't produce any overhead. */
 #define RTOS_NO_PROCESSES           4
 
-/** The maximum number of cores. The other macro #RTOS_NO_CORES may be varied up to this
-    value. If an MCU drivative should ever have more than this number of cores then a
-    source code migration is required. This is not a variable configuration setting. */
+/** The maximum number of cores. If an MCU drivative should have a deviating number of
+    cores then a source code migration is required. This is not a variable configuration
+    setting. */
 #define RTOS_MAX_NO_CORES           3
-
-/** The number of cores in the MCU running the RTOS. */
-/// @todo Move this code to an inner header file. Simplify to the sum but put a _Static_assert into the C code to prove the correct setting of the three macros.
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1 \
-    &&  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-# define RTOS_NO_CORES  3
-#elif RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1 \
-      ||  RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1 \
-      ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1  &&  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-# define RTOS_NO_CORES  2
-#elif RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1  ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1 \
-      ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-# define RTOS_NO_CORES  1
-#else
-# error Configuration error. In this project, at least one core should run safe-RTOS
-#endif
 
 /** This event ID is returned if creation of a new event is impossible. The ID is unusable,
     no task can be created specifying this event ID. */
@@ -167,13 +151,13 @@
 /** Helper for data initialization: Task time budget are internally represented in STM
     counter ticks. Using this macro one can specify it more conveniently in Milliseconds.
     The macro just converts its argument from Milliseconds to clock ticks. */
-/// @todo We need a compile-time consistency checl of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
+/// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
 #define RTOS_TI_MS2TICKS(tiInMs) ((tiInMs)*80000u)
 
-/** Helper for data initialization: Task time budget are internally represented in STM
+/** Helper for data initialization: Task time budgets are internally represented in STM(0)
     counter ticks. Using this macro one can specify it more conveniently in Microseconds. The
     macro just converts its argument from Microseconds to clock ticks. */
-/// @todo We need a compile-time consistency checl of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
+/// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
 #define RTOS_TI_US2TICKS(tiInUs) ((tiInUs)*80u)
 
 /** Index of core Z4 A or value of read-only register PIR on this core and return value of

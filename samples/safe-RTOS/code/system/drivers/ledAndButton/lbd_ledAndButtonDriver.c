@@ -20,11 +20,14 @@
 /* Module interface
  *   lbd_osInitLEDAndButtonDriver
  *   lbd_scSmplHdlr_setLED
- *   lbd_scSmplHdlr_getButton
+ *   lbd_scSmplHdlr_getButton_core0
+ *   lbd_scSmplHdlr_getButton_core1
+ *   lbd_scSmplHdlr_getButton_core2
  *   lbd_osGetButtonSw1
  *   lbd_osGetButtonSw2
  *   lbd_osTask1ms
  * Local functions
+ *   osGetButton
  */
 
 /*
@@ -38,6 +41,7 @@
 #include <assert.h>
 
 #include "typ_types.h"
+#include "rtos.config.h"
 #include "rtos_ivorHandler.h"
 #include "lbd_ledAndButtonDriver_defSysCalls.h"
 #include "lbd_ledAndButtonDriver.h"
@@ -52,7 +56,41 @@
  * Local type definitions
  */
  
- 
+/** The state information needed to debounce a single button. */
+typedef struct stateButton_t
+{
+    /** The GPIO index of the digital input the button is connected to. */ 
+    lbd_button_t button;
+
+    /** The counter value of the debouncer. */
+    int8_t cntDebounce;
+    
+    /** The current debounced state of the button. \a true means pressed. */
+    bool buttonState;
+
+} stateButton_t;
+
+
+/** The state information of the driver. It can be run on different cores and the cores
+    must influence one another. Therefore we have the state information core dependent. */
+typedef struct stateDriver_t
+{
+    /** The debounce counter for button SW1. */
+    stateButton_t stateSW1;
+    
+    /** The debounce counter for button SW2. */
+    stateButton_t stateSW2;
+    
+    /** The last recent value of the vector of all button states. Used in the driver's main
+        function to detect button change events. */
+    uint8_t lastStateButtons;
+    
+    /** The specification of a notification callback in case the button state changes. */
+    rtos_taskDesc_t onButtonChangeCallback;
+
+} stateDriver_t;
+
+
 /*
  * Local prototypes
  */
@@ -62,37 +100,172 @@
  * Data definitions
  */
 
-/** The descriptor of a user task, which is run as notification in case of a button state
-    change. */
-static rtos_taskDesc_t SDATA_OS(_onButtonChangeCallback) =
-            { .addrTaskFct = 0
-            , .PID = 0
-            , .tiTaskMax = RTOS_TI_US2TICKS(1000)
-            };
+/** The state information to debounce the buttons on the different cores.
+      @remark We make the definition for all cores independent from the configuration
+    macros #RTOS_RUN_SAFE_RTOS_ON_CORE_0 (1, 2): The driver's OS API is not RTOS dependent
+    and may be used from a core not running the RTOS, too.
+      @remark We can put the data object into a normal cached area. Each core solely uses
+    its own array element and the only data exchange across core boundaries is the
+    initialization of the elements, which is done on the boot core and before any other
+    core may make use of the driver API. Therefore this is uncritical with respect to
+    cache consistency. */
+static stateDriver_t DATA_OS(_coreInstanceDataAry)[RTOS_MAX_NO_CORES] =
+    {
+        [0 ... (RTOS_MAX_NO_CORES-1)] =
+            { .stateSW1 =
+                { .button = lbd_bt_button_SW1
+                , .cntDebounce = 0
+                , .buttonState = false
+                }
+            , .stateSW2 =
+                { .button = lbd_bt_button_SW2
+                , .cntDebounce = 0
+                , .buttonState = false
+                }
+            , .lastStateButtons = 0
+            , .onButtonChangeCallback =
+                { .addrTaskFct = 0
+                , .PID = 0
+                , .tiTaskMax = RTOS_TI_US2TICKS(1000)
+                }
+            }       
+    };
+
 
 /*
  * Function implementation
  */
 
 /**
+ * Get the current status of button SW1. This is the switch, which is labeled both on the
+ * PCB, "SW1_PA3" and "SW4". This makes it potentially dangerous to mix up the switch with
+ * the reset button on the board, which is labeled "RESET" and "SW1".
+ *   @return
+ * \a true if button SW1 is currently pressed, \a false otherwise. This is the debounced
+ * read value from the GPIO.
+ *   @param pCoreInstanceData
+ * Each participating core has its own debouncing. We need some core related state
+ * information, which is provided by reference by this argument.
+ *   @remark
+ * This function must be called from the OS context only. Any attempt to use it in user
+ * code will lead to a privileged exception. User task code can consider using
+ * lbd_getButton() instead.
+ */
+static bool osGetButton(stateButton_t * const pCoreInstanceData)
+{
+    _Static_assert( LBD_DEBOUNCE_TIME_BUTTONS >= 2  &&  LBD_DEBOUNCE_TIME_BUTTONS <= 100
+                  , "Debounce time configuration out of range"
+                  );
+
+    /* The debounce time of the read process of the button states is determined by this
+       counter maximum. */  
+    #define MAX_CNT_BTN_DEBOUNCE    ((LBD_DEBOUNCE_TIME_BUTTONS)/2)
+
+    /* The contribution to the debouncing depends on the current 0/1 reading of the GPIO
+       input buffer. */
+    const signed int actState =
+        *(((__IO uint8_t*)&SIUL2->GPDI[0])+((unsigned)pCoreInstanceData->button)) != 0? 1: -1;
+
+    pCoreInstanceData->cntDebounce += actState;
+    if(pCoreInstanceData->cntDebounce >= MAX_CNT_BTN_DEBOUNCE)
+    {
+        pCoreInstanceData->cntDebounce = MAX_CNT_BTN_DEBOUNCE;
+        pCoreInstanceData->buttonState = true;
+    }
+    else if(pCoreInstanceData->cntDebounce <= -MAX_CNT_BTN_DEBOUNCE)
+    {
+        pCoreInstanceData->cntDebounce = -MAX_CNT_BTN_DEBOUNCE;
+        pCoreInstanceData->buttonState = false;
+    }
+    #undef MAX_CNT_BTN_DEBOUNCE
+
+    return pCoreInstanceData->buttonState;
+
+} /* End of osGetButton */
+
+
+
+
+/**
  * Initialization of LED driver. The GPIO ports are defined to become outputs and the
  * output values are set such that the LEDs are shut off.
- *   @param onButtonChangeCallback
- * The I/O driver offers the service to poll the current button input status and to inform
- * the application code about any change. The notification is done per callback. Pass NULL
- * if no notification is desired.
- *   @param PID
+ *   @param onButtonChangeCallback_core0
+ * The I/O driver offers the service to regularly poll the current button input status and
+ * to inform the application code about any change. The notification is done per callback.
+ * Pass NULL if no notification is desired on core 0, Z4A.
+ *   @param PID_core0
  * The ID of the process to run the callback in. The value doesn't care if \a
- * onButtonChangeCallback is NULL. The range is 1 ... #RTOS_NO_PROCESSES. It is checked by
- * assertion.
+ * onButtonChangeCallback_core0 is NULL. The range is 1 ... #RTOS_NO_PROCESSES. It is
+ * checked by assertion.
+ *   @param onButtonChangeCallback_core1
+ * The I/O driver offers the service to regularly poll the current button input status and
+ * to inform the application code about any change. The notification is done per callback.
+ * Pass NULL if no notification is desired on core 1, Z4B.
+ *   @param PID_core1
+ * The ID of the process to run the callback in. The value doesn't care if \a
+ * onButtonChangeCallback_core1 is NULL. The range is 1 ... #RTOS_NO_PROCESSES. It is
+ * checked by assertion.
+ *   @param onButtonChangeCallback_core2
+ * The I/O driver offers the service to regularly poll the current button input status and
+ * to inform the application code about any change. The notification is done per callback.
+ * Pass NULL if no notification is desired on core 2, Z2.
+ *   @param PID_core2
+ * The ID of the process to run the callback in. The value doesn't care if \a
+ * onButtonChangeCallback_core2 is NULL. The range is 1 ... #RTOS_NO_PROCESSES. It is
+ * checked by assertion.
+ *   @param tiMaxTimeInUs
+ * Deadline monitoring is enabled for the callbacks. This argument specifies the world time
+ * budget for completion of the callbacks \a onButtonChangeCallback_coreN in Microseconds.
+ * A value of 0 disables the deadline monitoring for the callback execution. The maximum
+ * permited value is #RTOS_TI_DEADLINE_MAX_IN_US.
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user 
  * code will lead to a privileged exception.
+ *   @remark
+ * In a multi-core implementation, this function is called only once from the boot core and
+ * before any other core may make use of the other driver API.
+ *   @remark
+ * In a multi-core environment, if a core doesn't run safe-RTOS, it may still use this
+ * driver in restricted way:\n
+ *   - Only the OS function can be used (lbd_os<FctName>())\n
+ *   - Callbacks must not be used (onButtonChangeCallback_coreN == NULL)\n
+ *   - The regular call of lbd_osTask1ms() should be avoided. It is simply useless without
+ * a callback
  */
-void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCallback
-                                 , unsigned int PID
+void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCallback_core0
+                                 , unsigned int PID_core0
+                                 , lbd_onButtonChangeCallback_t onButtonChangeCallback_core1
+                                 , unsigned int PID_core1
+                                 , lbd_onButtonChangeCallback_t onButtonChangeCallback_core2
+                                 , unsigned int PID_core2
+                                 , unsigned int tiMaxTimeInUs
                                  )
 {
+    /* Reset driver's state information. */
+    _Static_assert( sizeOfAry(_coreInstanceDataAry) == 3
+                  , "Code needs adaptation after change of HW configuration"
+                  );
+    _coreInstanceDataAry[0] =
+    _coreInstanceDataAry[1] =
+    _coreInstanceDataAry[2] =
+        (stateDriver_t){ .stateSW1 =
+                            { .button = lbd_bt_button_SW1
+                            , .cntDebounce = 0
+                            , .buttonState = false
+                            }
+                        , .stateSW2 =
+                            { .button = lbd_bt_button_SW2
+                            , .cntDebounce = 0
+                            , .buttonState = false
+                            }
+                       , .lastStateButtons = 0
+                       , .onButtonChangeCallback =
+                            { .addrTaskFct = 0
+                            , .PID = 0
+                            , .tiTaskMax = RTOS_TI_US2TICKS(1000)
+                            }
+                       };
+        
     /* LEDs are initially off. */
     lbd_osSetLED(lbd_led_0_DS11, /* isOn */ false);
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ false);
@@ -156,23 +329,48 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
     INIT_SW(lbd_bt_button_SW1)
     INIT_SW(lbd_bt_button_SW2)
 
-    /* Save optional callback in global variable. */
-    if(onButtonChangeCallback != NULL)
+    /* Save optional callbacks in global driver data. */
+    if(onButtonChangeCallback_core0 != NULL)
     {
-        /* Here we are in trusted code. The passed PID is static configuration data and
-           cannot produce an occasional failure. Checking by assertion is appropriate. */
-        assert(PID > 0  &&  PID < RTOS_NO_PROCESSES);
-        _onButtonChangeCallback.PID = PID;
-
-        _onButtonChangeCallback.addrTaskFct = (uintptr_t)onButtonChangeCallback;
+        /* Here we are in trusted code. The passed arguments are static configuration data
+           and cannot produce an occasional failure. Checking by assertion is appropriate. */
+        assert(PID_core0 > 0  &&  PID_core0 < RTOS_NO_PROCESSES
+               &&  tiMaxTimeInUs < RTOS_TI_DEADLINE_MAX_IN_US
+              );
         
-        /* A difficult descision: Shall we generally set a time budget for all user code?
-           This may rarely produce an exception, which can leave the user code in an
-           inconsistent state, such that subsequent failures result. Even in a safe system, a
-           potentially not returning user function may be not critical: There will be a
-           higher prioritized supervisory task to recognize this situation and to bring the
-           system in a safe state. */
-        assert(_onButtonChangeCallback.tiTaskMax > 0);
+        _coreInstanceDataAry[0].onButtonChangeCallback.PID = PID_core0;
+        _coreInstanceDataAry[0].onButtonChangeCallback.addrTaskFct =
+                                                    (uintptr_t)onButtonChangeCallback_core0;
+        _coreInstanceDataAry[0].onButtonChangeCallback.tiTaskMax =
+                                                    RTOS_TI_US2TICKS(tiMaxTimeInUs);
+    }
+    if(onButtonChangeCallback_core1 != NULL)
+    {
+        /* Here we are in trusted code. The passed arguments are static configuration data
+           and cannot produce an occasional failure. Checking by assertion is appropriate. */
+        assert(PID_core1 > 0  &&  PID_core1 < RTOS_NO_PROCESSES
+               &&  tiMaxTimeInUs < RTOS_TI_DEADLINE_MAX_IN_US
+              );
+        
+        _coreInstanceDataAry[1].onButtonChangeCallback.PID = PID_core1;
+        _coreInstanceDataAry[1].onButtonChangeCallback.addrTaskFct =
+                                                    (uintptr_t)onButtonChangeCallback_core1;
+        _coreInstanceDataAry[1].onButtonChangeCallback.tiTaskMax =
+                                                    RTOS_TI_US2TICKS(tiMaxTimeInUs);
+    }
+    if(onButtonChangeCallback_core2 != NULL)
+    {
+        /* Here we are in trusted code. The passed arguments are static configuration data
+           and cannot produce an occasional failure. Checking by assertion is appropriate. */
+        assert(PID_core2 > 0  &&  PID_core2 < RTOS_NO_PROCESSES
+               &&  tiMaxTimeInUs < RTOS_TI_DEADLINE_MAX_IN_US
+              );
+        
+        _coreInstanceDataAry[2].onButtonChangeCallback.PID = PID_core2;
+        _coreInstanceDataAry[2].onButtonChangeCallback.addrTaskFct =
+                                                    (uintptr_t)onButtonChangeCallback_core2;
+        _coreInstanceDataAry[2].onButtonChangeCallback.tiTaskMax =
+                                                    RTOS_TI_US2TICKS(tiMaxTimeInUs);
     }
 } /* End of lbd_osInitLEDAndButtonDriver */
 
@@ -255,12 +453,13 @@ uint32_t lbd_scSmplHdlr_setLED( uint32_t pidOfCallingTask ATTRIB_UNUSED
 
 
 
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
 /**
  * Sample implementation of a system call of conformance class "simple". Such a system call
  * can already be implemented in C but it needs to be run with all interrupts suspended. It
  * cannot be preempted. Suitable for short running services only.\n
- *   Here we use the concept to implement an input function for the two buttons on the eval
- * board TRK-USB-MPC5643L.
+ *   Here we use the concept to implement an input function for the two buttons on core 0
+ * on the eval board DEVKIT-MPC5748G.
  *   @return
  * The value of the argument \a isOn is returned.
  *   @param pidOfCallingTask
@@ -270,34 +469,117 @@ uint32_t lbd_scSmplHdlr_setLED( uint32_t pidOfCallingTask ATTRIB_UNUSED
  *   @param isOn
  * Switch the selected LED either on or off.
  */
-uint32_t lbd_scSmplHdlr_getButton( uint32_t pidOfCallingTask ATTRIB_UNUSED
-                                 , lbd_button_t button
-                                 )
+uint32_t lbd_scSmplHdlr_getButton_core0( uint32_t pidOfCallingTask ATTRIB_UNUSED
+                                       , lbd_button_t button
+                                       )
 {
     /* A safe, "trusted" implementation needs to double check the selected button in order to
        avoid undesired access to I/O ports other than the two true button ports on the eval
        board. */
-    if(button == lbd_bt_button_SW1  ||  button == lbd_bt_button_SW2)
-        return (uint32_t)lbd_osGetButton(button);
+    assert(rtos_osGetIdxCore() == 0);
+    if(button == lbd_bt_button_SW1)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 0].stateSW1);
+    else if(button == lbd_bt_button_SW2)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 0].stateSW2);
     else
     {
         /* Abort this system call and the calling user task and count this event as an
            error in the process the failing task belongs to. */
         rtos_osSystemCallBadArgument();
     }
-} /* End of lbd_scSmplHdlr_getButton */
+} /* End of lbd_scSmplHdlr_getButton_core0 */
+#endif
+
+
+
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+/**
+ * Sample implementation of a system call of conformance class "simple". Such a system call
+ * can already be implemented in C but it needs to be run with all interrupts suspended. It
+ * cannot be preempted. Suitable for short running services only.\n
+ *   Here we use the concept to implement an input function for the two buttons on core 1
+ * on the eval board DEVKIT-MPC5748G.
+ *   @return
+ * The value of the argument \a isOn is returned.
+ *   @param pidOfCallingTask
+ * Process ID of calling user task.
+ *   @param led
+ * The LED to address to.
+ *   @param isOn
+ * Switch the selected LED either on or off.
+ */
+uint32_t lbd_scSmplHdlr_getButton_core1( uint32_t pidOfCallingTask ATTRIB_UNUSED
+                                       , lbd_button_t button
+                                       )
+{
+    /* A safe, "trusted" implementation needs to double check the selected button in order to
+       avoid undesired access to I/O ports other than the two true button ports on the eval
+       board. */
+    assert(rtos_osGetIdxCore() == 1);
+    if(button == lbd_bt_button_SW1)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 1].stateSW1);
+    else if(button == lbd_bt_button_SW2)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 1].stateSW2);
+    else
+    {
+        /* Abort this system call and the calling user task and count this event as an
+           error in the process the failing task belongs to. */
+        rtos_osSystemCallBadArgument();
+    }
+} /* End of lbd_scSmplHdlr_getButton_core1 */
+#endif
+
+
+
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+/**
+ * Sample implementation of a system call of conformance class "simple". Such a system call
+ * can already be implemented in C but it needs to be run with all interrupts suspended. It
+ * cannot be preempted. Suitable for short running services only.\n
+ *   Here we use the concept to implement an input function for the two buttons on core 2
+ * on the eval board DEVKIT-MPC5748G.
+ *   @return
+ * The value of the argument \a isOn is returned.
+ *   @param pidOfCallingTask
+ * Process ID of calling user task.
+ *   @param led
+ * The LED to address to.
+ *   @param isOn
+ * Switch the selected LED either on or off.
+ */
+uint32_t lbd_scSmplHdlr_getButton_core2( uint32_t pidOfCallingTask ATTRIB_UNUSED
+                                       , lbd_button_t button
+                                       )
+{
+    /* A safe, "trusted" implementation needs to double check the selected button in order to
+       avoid undesired access to I/O ports other than the two true button ports on the eval
+       board. */
+    assert(rtos_osGetIdxCore() == 2);
+    if(button == lbd_bt_button_SW1)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 2].stateSW1);
+    else if(button == lbd_bt_button_SW2)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 2].stateSW2);
+    else
+    {
+        /* Abort this system call and the calling user task and count this event as an
+           error in the process the failing task belongs to. */
+        rtos_osSystemCallBadArgument();
+    }
+} /* End of lbd_scSmplHdlr_getButton_core2 */
+#endif
+
 
 
 
 /**
  * Get the current status of button SW1. This is the switch, which is labeled both on the
- * PCB, "SW1_PA3" and "SW4". This makes it potentially dangeraous to mix up the switch with
+ * PCB, "SW1_PA3" and "SW4". This makes it potentially dangerous to mix up the switch with
  * the reset button on the board, which is labeled "RESET" and "SW1".
  *   @return
  * \a true if button SW1 is currently pressed, \a false otherwise. This is the debounced
  * read value from the GPIO.
- *   @param button
- * The enumeration value to identify a button.
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception. User task code can consider using
@@ -305,30 +587,9 @@ uint32_t lbd_scSmplHdlr_getButton( uint32_t pidOfCallingTask ATTRIB_UNUSED
  */
 bool lbd_osGetButtonSw1(void)
 {
-    _Static_assert( LBD_MAX_CNT_BTN_DEBOUNCE >= 1  && LBD_MAX_CNT_BTN_DEBOUNCE <= 50
-                  , "Debounce time configuration out of range"
-                  );
-
-    /* The contribution to the debouncing depends on th current 0/1 reading of the GPIO
-       input buffer. */
-    const signed int actState =
-                *(((__IO uint8_t*)&SIUL2->GPDI[0])+((unsigned)lbd_bt_button_SW1)) != 0? 1: -1;
-
-    static signed int SBSS_OS(cntDebounce_) = 0;
-    static bool SBSS_OS(buttonState_) = false;
-    cntDebounce_ += actState;
-    if(cntDebounce_ >= LBD_MAX_CNT_BTN_DEBOUNCE)
-    {
-        cntDebounce_ = LBD_MAX_CNT_BTN_DEBOUNCE;
-        buttonState_ = true;
-    }
-    else if(cntDebounce_ <= -LBD_MAX_CNT_BTN_DEBOUNCE)
-    {
-        cntDebounce_ = -LBD_MAX_CNT_BTN_DEBOUNCE;
-        buttonState_ = false;
-    }
-    return buttonState_;
-
+    assert(rtos_osGetIdxCore() < sizeOfAry(_coreInstanceDataAry));
+    return osGetButton(&_coreInstanceDataAry[rtos_osGetIdxCore()].stateSW1);
+    
 } /* End of lbd_osGetButtonSw1 */
 
 
@@ -339,8 +600,6 @@ bool lbd_osGetButtonSw1(void)
  *   @return
  * \a true if button SW2 is currently pressed, \a false otherwise. This is the debounced
  * read value from the GPIO.
- *   @param button
- * The enumeration value to identify a button.
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception. User task code can consider using
@@ -348,29 +607,8 @@ bool lbd_osGetButtonSw1(void)
  */
 bool lbd_osGetButtonSw2(void)
 {
-    _Static_assert( LBD_MAX_CNT_BTN_DEBOUNCE >= 1  && LBD_MAX_CNT_BTN_DEBOUNCE <= 50
-                  , "Debounce time configuration out of range"
-                  );
-
-    /* The contribution to the debouncing depends on th current 0/1 reading of the GPIO
-       input buffer. */
-    const signed int actState =
-                *(((__IO uint8_t*)&SIUL2->GPDI[0])+((unsigned)lbd_bt_button_SW2)) != 0? 1: -1;
-
-    static signed int SBSS_OS(cntDebounce_) = 0;
-    static bool SBSS_OS(buttonState_) = false;
-    cntDebounce_ += actState;
-    if(cntDebounce_ >= LBD_MAX_CNT_BTN_DEBOUNCE)
-    {
-        cntDebounce_ = LBD_MAX_CNT_BTN_DEBOUNCE;
-        buttonState_ = true;
-    }
-    else if(cntDebounce_ <= -LBD_MAX_CNT_BTN_DEBOUNCE)
-    {
-        cntDebounce_ = -LBD_MAX_CNT_BTN_DEBOUNCE;
-        buttonState_ = false;
-    }
-    return buttonState_;
+    assert(rtos_osGetIdxCore() < sizeOfAry(_coreInstanceDataAry));
+    return osGetButton(&_coreInstanceDataAry[rtos_osGetIdxCore()].stateSW2);
 
 } /* End of lbd_osGetButtonSw2 */
 
@@ -381,29 +619,36 @@ bool lbd_osGetButtonSw2(void)
  * Regularly called step function of the I/O driver. This function needs to be called from
  * a regular 1ms operating system task. The button states are read and a callback is
  * invoked in case of a state change.
+ *   @remark
+ * On a multi-core implementation, this function needs to be called from all cores, which
+ * want to make use of the on-button-change callback.
  */
 void lbd_osTask1ms(void)
 {
+    /* The state infomation is core dependent. This way, each core can get its own
+        notifications. */
+    assert(rtos_osGetIdxCore() < sizeOfAry(_coreInstanceDataAry));
+    stateDriver_t * const pCoreInstanceData = &_coreInstanceDataAry[rtos_osGetIdxCore()];
+    
+    const uint8_t lastStateButtons = pCoreInstanceData->lastStateButtons;
+
     /* Polling the buttons is useless if we have no notification callback. */
-    if(_onButtonChangeCallback.addrTaskFct != 0)
+    if(pCoreInstanceData->onButtonChangeCallback.addrTaskFct != 0)
     {
         /* Read the current button status. */
         const uint8_t stateButtons = (lbd_osGetButtonSw1()? 0x01: 0x0)
                                      | (lbd_osGetButtonSw2()? 0x10: 0x0)
                                      ;
 
-        /* Compare with last state and invoke callback on any difference. */
-        static uint8_t SBSS_OS(lastStateButtons_) = 0;
-        
-        if(stateButtons != lastStateButtons_)
+        if(stateButtons != lastStateButtons)
         {
             const uint8_t comp = stateButtons
-                                 | ((stateButtons ^ lastStateButtons_) << 1)  /* changed  */
-                                 | ((stateButtons & ~lastStateButtons_) << 2) /* went on  */
-                                 | ((~stateButtons & lastStateButtons_) << 3) /* went off */
+                                 | ((stateButtons ^ lastStateButtons) << 1)  /* changed  */
+                                 | ((stateButtons & ~lastStateButtons) << 2) /* went on  */
+                                 | ((~stateButtons & lastStateButtons) << 3) /* went off */
                                  ;
-            rtos_osRunTask(&_onButtonChangeCallback, /* taskParam */ comp);
-            lastStateButtons_ = stateButtons;
+            rtos_osRunTask(&pCoreInstanceData->onButtonChangeCallback, /* taskParam */ comp);
+            pCoreInstanceData->lastStateButtons = stateButtons;
         }
     } /* End if(Callback demanded by system configuration?) */    
 } /* End of lbd_osTask1ms */

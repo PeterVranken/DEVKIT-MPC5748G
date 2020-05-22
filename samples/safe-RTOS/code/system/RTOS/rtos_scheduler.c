@@ -1221,7 +1221,7 @@ rtos_errorCode_t rtos_osInitKernel(void)
        - can decide to change the condition of the assertion if you really need so many
          different task priorities
        - should decide if you change the implementation of the mapping from task priority
-         to event having that priority. So far we chose the most time efficient technique,
+         to events having that priority. So far we chose the most time efficient technique,
          a direct lookup table, but any other technique would be fine, too. */
     _Static_assert( RTOS_MAX_TASK_PRIORITY <= 64
                   , "The used range of task priorities has been chosen such large that the"

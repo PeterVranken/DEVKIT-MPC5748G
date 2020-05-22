@@ -45,23 +45,15 @@
 #  error Inconsistent definition of system call
 # endif
 
-# define RTOS_SYSCALL_TABLE_ENTRY_0020  RTOS_SC_TABLE_ENTRY(sio_scFlHdlr_writeSerial, FULL)
-# if RTOS_NO_CORES >= 1
-#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020 \
+/* This system call is not specific to a core; all of them may use the same function. */
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020 \
                                         RTOS_SC_TABLE_ENTRY(sio_scFlHdlr_writeSerial, FULL)
-# endif
-# if RTOS_NO_CORES >= 2
-#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0020 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020
-# endif
-# if RTOS_NO_CORES >= 3
-#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0020 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020
-# endif
-# if RTOS_NO_CORES >= 4
-#  error System call definition requires extension for more than three cores
-# endif
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0020 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0020 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020
 
 #else
 # error System call 0020 is ambiguously defined
+
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
    definition.*/

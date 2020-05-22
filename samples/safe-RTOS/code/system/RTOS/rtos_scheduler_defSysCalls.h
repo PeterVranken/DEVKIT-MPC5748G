@@ -40,37 +40,26 @@
 #if !defined(RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003)    \
     && !defined(RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0003) \
     && !defined(RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0003)
-    
+
 # if RTOS_SYSCALL_TRIGGER_EVENT != 3
 #  error Inconsistent definition of system call
 # endif
 
-# if RTOS_NO_CORES >= 1
-#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003 \
-                                    RTOS_SC_TABLE_ENTRY(rtos_scFlHdlr_triggerEvent, FULL)
-# endif
-# if RTOS_NO_CORES >= 2
-#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0003 \
-                                    RTOS_SC_TABLE_ENTRY(rtos_scFlHdlr_triggerEvent, FULL)
-# endif
-# if RTOS_NO_CORES >= 3
-#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0003 \
-                                    RTOS_SC_TABLE_ENTRY(rtos_scFlHdlr_triggerEvent, FULL)
-# endif
-# if RTOS_NO_CORES >= 4
-#  error System call definition requires extension for more than three cores
-# endif
+/* This system call is not specific to a core; all of them may use the same function. */
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003 \
+                                        RTOS_SC_TABLE_ENTRY(rtos_scFlHdlr_triggerEvent, FULL)
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0003 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0003 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003
 
 #else
-
 # error System call 0003 is ambiguously defined
+
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
    definition.*/
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003    RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0003    RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0003    RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-
 #endif
 
 

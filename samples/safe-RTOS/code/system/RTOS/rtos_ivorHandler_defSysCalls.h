@@ -49,32 +49,21 @@
    publishing it globally in rtos_ivorHandler.h. */
 extern void rtos_scBscHdlr_terminateUserTask(int32_t result);
 
-# if RTOS_NO_CORES >= 1
-#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0000  \
-                        RTOS_SC_TABLE_ENTRY(rtos_scBscHdlr_terminateUserTask, BASIC)
-# endif
-# if RTOS_NO_CORES >= 2
-#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0000  \
-                        RTOS_SC_TABLE_ENTRY(rtos_scBscHdlr_terminateUserTask, BASIC)
-# endif
-# if RTOS_NO_CORES >= 3
-#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0000  \
-                        RTOS_SC_TABLE_ENTRY(rtos_scBscHdlr_terminateUserTask, BASIC)
-# endif
-# if RTOS_NO_CORES >= 4
-#  error System call definition requires extension for more than three cores
-# endif
+/* This system call is not specific to a core; all of them may use the same function. */
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0000  \
+                                RTOS_SC_TABLE_ENTRY(rtos_scBscHdlr_terminateUserTask, BASIC)
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0000  RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0000
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0000  RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0000
 
 #else
-
 # error System call 0000 is ambiguously defined
+
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
    definition.*/
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0000    RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0000    RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0000    RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-
 #endif
 
 

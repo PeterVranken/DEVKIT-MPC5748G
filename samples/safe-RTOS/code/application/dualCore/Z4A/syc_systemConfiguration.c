@@ -398,9 +398,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     stm_osInitSystemTimers();
     
     /* Initialize the button and LED driver for the eval board. */
-/// @todo We need to have a per core callback
-    lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback */ NULL
-                                , /* pidOnButtonChangeCallback */ 0
+    lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
+                                , /* PID_core0 */                    0   
+                                , /* onButtonChangeCallback_core1 */ mzb_onButtonChangeCallback
+                                , /* PID_core1 */                    1
+                                , /* onButtonChangeCallback_core2 */ NULL
+                                , /* PID_core2 */                    0   
+                                , /* tiMaxTimeInUs */                1000
                                 );
 
     /* Initialize the serial output channel as prerequisite of using printf. */

@@ -34,6 +34,7 @@
  * Include files
  */
 
+#include "rtos.config.h"
 #include "assert_config.h"
 
 
@@ -71,8 +72,9 @@
  * Function implementation
  */
 
+    .macro      macroAssert_scBscHdlr_assert_func core
 /**
- *   @func assert_scBscHdlr_assert_func
+ *   @func assert_scBscHdlr_assert_func_core0/_core1/_core2
  * Implementation of the assert function, which is called by the C assert macro if the
  * condition fails. The implementation here is made as basic system call handler. This
  * permits offering the service to user and operating system code.\n
@@ -111,66 +113,78 @@
  * directly. The system call handler is compliant with the basic conformance class. It is
  * executed with EE=0 and must not rely on sp, r2 and r13
  */
-    .section    .text.ivor
-    .globl      assert_scBscHdlr_assert_func
+    .section    .text.ivor.assert_scBscHdlr_assert_func_\core\()
+    .globl      assert_scBscHdlr_assert_func_\core\()
     .align      2
 
-assert_scBscHdlr_assert_func:
+assert_scBscHdlr_assert_func_\core\():
     /* Globaly store fault location related information, file name, line number, etc.,
        provided by the C assert macro. The information is passed in as function arguments
        in r4, r5, etc. */
-    e_lis       r3, assert_noOccurances@ha
-    e_lwz       r0, assert_noOccurances@l(r3)
+    e_lis       r3, assert_noOccurances_\core\()@ha
+    e_lwz       r0, assert_noOccurances_\core\()@l(r3)
     se_addi     r0, 1
     se_cmpli    r0, 1
-    se_blt      ass_saturateOcc     /* Don't store increment if we wrap around */
-    e_stw       r0, assert_noOccurances@l(r3)
-ass_saturateOcc:
+    se_blt      ass_saturateOcc_\core\()    /* Don't store increment if we wrap around */
+    e_stw       r0, assert_noOccurances_\core\()@l(r3)
+ass_saturateOcc_\core\():
 
 #if ASSERT_FAILURE_BEHAVIOR == ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_FIRST
-    se_bne      ass_noUpdErrInfo
+    se_bne      ass_noUpdErrInfo_\core\()
 #endif
-    e_lis       r3, assert_fileName@ha
-    e_stw       r4, assert_fileName@l(r3)
-    e_lis       r3, assert_line@ha
-    e_stw       r5, assert_line@l(r3)
-    e_lis       r3, assert_funcName@ha
-    e_stw       r6, assert_funcName@l(r3)
-    e_lis       r3, assert_expression@ha
-    e_stw       r7, assert_expression@l(r3)
-ass_noUpdErrInfo:
+    e_lis       r3, assert_fileName_\core\()@ha
+    e_stw       r4, assert_fileName_\core\()@l(r3)
+    e_lis       r3, assert_line_\core\()@ha
+    e_stw       r5, assert_line_\core\()@l(r3)
+    e_lis       r3, assert_funcName_\core\()@ha
+    e_stw       r6, assert_funcName_\core\()@l(r3)
+    e_lis       r3, assert_expression_\core\()@ha
+    e_stw       r7, assert_expression_\core\()@l(r3)
+ass_noUpdErrInfo_\core\():
     mfspr       r0, SPR_PID0    /* PID is not changed prior to entry in basic handler */
-    e_lis       r3, assert_PID@ha
-    e_lbz       r4, assert_PID@l(r3)    /* r4: PID stored so far, can initially be 0xff */
+    e_lis       r3, assert_PID_\core\()@ha
+    e_lbz       r4, assert_PID_\core\()@l(r3)   /* r4: PID stored so far, can initially be 0xff */
     se_extsb    r4                      /* r4: PID so far as int32_t, range [-1 .. 4] */
     se_cmp      r0, r4                  /* Signed compare with PID from this assertion */
-    se_ble      ass_noUpdPID            /* Don't store if not greater */
-    e_stb       r0, assert_PID@l(r3)    /* Store new greatest seen PID. */
-ass_noUpdPID:
+    se_ble      ass_noUpdPID_\core\()   /* Don't store if not greater */
+    e_stb       r0, assert_PID_\core\()@l(r3)   /* Store new greatest seen PID. */
+ass_noUpdPID_\core\():
 
     /* For testability of failure handling of SW, we must not halt a user task. We inspect
        the machine status of the calling context if testability is requested. */
 #if ASSERT_FAILURE_BEHAVIOR == ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_FIRST \
     ||  ASSERT_FAILURE_BEHAVIOR == ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_LAST
 
-    mfsrr1      r0                  /* Load MSR of system calling process */
-    se_btsti    r0, 17              /* Test bit "problem state" */
-    se_bne      ass_contUserTask    /* if(Problem state == user) return; */
+    mfsrr1      r0                          /* Load MSR of system calling process */
+    se_btsti    r0, 17                      /* Test bit "problem state" */
+    se_bne      ass_contUserTask_\core\()   /* if(Problem state == user) return; */
 
 #endif
 
     /* MSR[EE] = 0 is always granted on entry into a basic system call handler and all
        which remains is entering an infinite loop. */
     .extern     assert_infiniteLoopAfterCaughtError /* Just to have it in the map file. */
-assert_infiniteLoopAfterCaughtError:
-    se_b        assert_infiniteLoopAfterCaughtError
+assert_infiniteLoopAfterCaughtError_\core\():
+    se_b        assert_infiniteLoopAfterCaughtError_\core\()
 
     /* Return to the user task, which had made the system call. */
-ass_contUserTask:
+ass_contUserTask_\core\():
     se_li       r3, 0
     se_rfi
 
 /* End of assert_scBscHdlr_assert_func */
+    .endm
 
+    /* Instantiate the macro up to three times to have an individual implementation for
+       each core, which is running safe-RTOS. */
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
+    macroAssert_scBscHdlr_assert_func core0
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+    macroAssert_scBscHdlr_assert_func core1
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+    macroAssert_scBscHdlr_assert_func core2
+#endif
 
 #endif /* DEBUG */

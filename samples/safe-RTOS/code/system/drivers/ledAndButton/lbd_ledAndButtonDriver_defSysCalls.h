@@ -43,32 +43,21 @@
 #  error Inconsistent definition of system call
 # endif
 
-# if RTOS_NO_CORES >= 1
-#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0025 \
-                                        RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_setLED, SIMPLE)
-# endif
-# if RTOS_NO_CORES >= 2
-#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0025 \
-                                        RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_setLED, SIMPLE)
-# endif
-# if RTOS_NO_CORES >= 3
-#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0025 \
-                                        RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_setLED, SIMPLE)
-# endif
-# if RTOS_NO_CORES >= 4
-#  error System call definition requires extension for more than three cores
-# endif
+/* This system call is not specific to a core; all of them may use the same function. */
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0025 \
+                                       RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_setLED, SIMPLE)
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0025 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0025
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0025 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0025
 
 #else
-
 # error System call 0025 is ambiguously defined
+
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
    definition.*/
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0025   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0025   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0025   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-
 #endif
 
 
@@ -80,24 +69,14 @@
 #  error Inconsistent definition of system call
 # endif
 
-# if RTOS_NO_CORES >= 1
-#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0026 \
-                                        RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_getButton, SIMPLE)
-# endif
-# if RTOS_NO_CORES >= 2
-#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0026 \
-                                        RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_getButton, SIMPLE)
-# endif
-# if RTOS_NO_CORES >= 3
-#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0026 \
-                                        RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_getButton, SIMPLE)
-# endif
-# if RTOS_NO_CORES >= 4
-#  error System call definition requires extension for more than three cores
-# endif
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0026 \
+                                   RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_getButton_core0, SIMPLE)
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0026 \
+                                   RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_getButton_core1, SIMPLE)
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0026 \
+                                   RTOS_SC_TABLE_ENTRY(lbd_scSmplHdlr_getButton_core2, SIMPLE)
 
 #else
-
 # error System call 0026 is ambiguously defined
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
@@ -105,7 +84,6 @@
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0026   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0026   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
 # define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0026   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-
 #endif
 
 
@@ -124,9 +102,21 @@
  */
 
 /* System call implementation to make the LED driver available to user mode tasks. */
-uint32_t lbd_scSmplHdlr_setLED(uint32_t callingPid ATTRIB_UNUSED, lbd_led_t led, bool isOn);
+uint32_t lbd_scSmplHdlr_setLED(uint32_t callingPid, lbd_led_t led, bool isOn);
 
-/* System call implementation to read the button states of SW2 and SW3 on the eval board. */
-uint32_t lbd_scSmplHdlr_getButton(uint32_t callingPid ATTRIB_UNUSED, lbd_button_t button);
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
+/* System call implementation to read the button states of SW2 and SW3 from core 0. */
+uint32_t lbd_scSmplHdlr_getButton_core0( uint32_t callingPid, lbd_button_t button);
+#endif
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+/* System call implementation to read the button states of SW2 and SW3 from core 1. */
+uint32_t lbd_scSmplHdlr_getButton_core1(uint32_t callingPid, lbd_button_t button);
+#endif
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+/* System call implementation to read the button states of SW2 and SW3 from core 2. */
+uint32_t lbd_scSmplHdlr_getButton_core2(uint32_t callingPid, lbd_button_t button);
+#endif
 
 #endif  /* LBD_LEDANDBUTTONDRIVER_DEFSYSCALLS_INCLUDED */

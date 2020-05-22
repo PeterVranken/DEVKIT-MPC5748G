@@ -4,7 +4,7 @@
  * function. This leaves it open, how the target platform should behave when an assertion
  * fires. This module implements the wanted behavior as a system call for the RTOS.
  *
- * Copyright (C) 2017-2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -67,28 +67,82 @@
 /*
  * Data definitions
  */
- 
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
 /** The number of passed assert macros with \a false condition. If the assert function is
     configured to halt the SW in case (see #ASSERT_FAILURE_BEHAVIOR) then it becomes a
     Boolean flag, which indicates, whether an assertion has fired since reset. */
-volatile uint32_t assert_noOccurances SECTION(.data.OS.assert_noOccurances) = 0;
+volatile uint32_t DATA_OS(assert_noOccurances_core0) = 0;
 
 /** If an assertion has fired: The name of the causing source file. Otherwise NULL. */
-volatile const char *assert_fileName SECTION(.data.OS.assert_fileName) = NULL;
+volatile const char * DATA_OS(assert_fileName_core0) = NULL;
 
 /** If an assertion has fired: The name of the causing function. Otherwise NULL. */
-volatile const char *assert_funcName SECTION(.data.OS.assert_funcName) = NULL;
+volatile const char * DATA_OS(assert_funcName_core0) = NULL;
 
 /** If an assertion has fired: The causing source line in the source file. Otherwise NULL. */
-volatile signed int assert_line SECTION(.data.OS.assert_line) = -1;
+volatile signed int DATA_OS(assert_line_core0) = -1;
  
 /** If an assertion has fired: The failing condition. Otherwise NULL. */
-volatile const char *assert_expression SECTION(.data.OS.assert_expression) = NULL;
+volatile const char * DATA_OS(assert_expression_core0) = NULL;
 
 /** If at least one assertion has fired: The maximum PID of all failing processes so far.
     With other words, the ID of the process with highest privileges, which had failed so
     far. The value is -1 as long as no assertion had fired at all. */
-volatile int8_t assert_PID SECTION(.data.OS.assert_PID) = -1;
+volatile int8_t DATA_OS(assert_PID_core0) = -1;
+#endif
+
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+/** The number of passed assert macros with \a false condition. If the assert function is
+    configured to halt the SW in case (see #ASSERT_FAILURE_BEHAVIOR) then it becomes a
+    Boolean flag, which indicates, whether an assertion has fired since reset. */
+volatile uint32_t DATA_OS(assert_noOccurances_core1) = 0;
+
+/** If an assertion has fired: The name of the causing source file. Otherwise NULL. */
+volatile const char * DATA_OS(assert_fileName_core1) = NULL;
+
+/** If an assertion has fired: The name of the causing function. Otherwise NULL. */
+volatile const char * DATA_OS(assert_funcName_core1) = NULL;
+
+/** If an assertion has fired: The causing source line in the source file. Otherwise NULL. */
+volatile signed int DATA_OS(assert_line_core1) = -1;
+ 
+/** If an assertion has fired: The failing condition. Otherwise NULL. */
+volatile const char * DATA_OS(assert_expression_core1) = NULL;
+
+/** If at least one assertion has fired: The maximum PID of all failing processes so far.
+    With other words, the ID of the process with highest privileges, which had failed so
+    far. The value is -1 as long as no assertion had fired at all. */
+volatile int8_t DATA_OS(assert_PID_core1) = -1;
+#endif
+
+
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+/** The number of passed assert macros with \a false condition. If the assert function is
+    configured to halt the SW in case (see #ASSERT_FAILURE_BEHAVIOR) then it becomes a
+    Boolean flag, which indicates, whether an assertion has fired since reset. */
+volatile uint32_t DATA_OS(assert_noOccurances_core2) = 0;
+
+/** If an assertion has fired: The name of the causing source file. Otherwise NULL. */
+volatile const char * DATA_OS(assert_fileName_core2) = NULL;
+
+/** If an assertion has fired: The name of the causing function. Otherwise NULL. */
+volatile const char * DATA_OS(assert_funcName_core2) = NULL;
+
+/** If an assertion has fired: The causing source line in the source file. Otherwise NULL. */
+volatile signed int DATA_OS(assert_line_core2) = -1;
+ 
+/** If an assertion has fired: The failing condition. Otherwise NULL. */
+volatile const char * DATA_OS(assert_expression_core2) = NULL;
+
+/** If at least one assertion has fired: The maximum PID of all failing processes so far.
+    With other words, the ID of the process with highest privileges, which had failed so
+    far. The value is -1 as long as no assertion had fired at all. */
+volatile int8_t DATA_OS(assert_PID_core2) = -1;
+#endif
+
+
 
 
 /*

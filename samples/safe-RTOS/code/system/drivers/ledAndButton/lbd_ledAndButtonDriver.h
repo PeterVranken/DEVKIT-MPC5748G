@@ -44,10 +44,6 @@
       The range is 2 .. 100. */
 #define LBD_DEBOUNCE_TIME_BUTTONS   4
 
-/* The debounce time of the read process of the button states is determined by this
-   counter maximum. */
-#define LBD_MAX_CNT_BTN_DEBOUNCE    ((LBD_DEBOUNCE_TIME_BUTTONS)/2)
-
 /** Index of implemented system call for switching an LED on or off. */
 #define LBD_SYSCALL_SET_LED         25
 
@@ -231,8 +227,13 @@ static inline bool lbd_getButton(lbd_button_t button)
  */
 
 /** Initialization of LED driver. */
-void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCallback
-                                 , unsigned int idOfAimedProcess
+void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCallback_core0
+                                 , unsigned int PID_core0
+                                 , lbd_onButtonChangeCallback_t onButtonChangeCallback_core1
+                                 , unsigned int PID_core1
+                                 , lbd_onButtonChangeCallback_t onButtonChangeCallback_core2
+                                 , unsigned int PID_core2
+                                 , unsigned int tiMaxTimeInUs
                                  );
 
 /** Regularly called step function of the I/O driver. */

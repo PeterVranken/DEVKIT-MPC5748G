@@ -63,4 +63,7 @@ extern volatile unsigned int mzb_cpuLoad;
 /** Main entry point of code execution for core Z4B. */
 void /* _Noreturn */ mzb_main_Z4B(int noArgs, const char *argAry[]);
 
+/** Callback for LED and button I/O driver. */
+int32_t mzb_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
+
 #endif  /* MZB_MAIN_Z4B_INCLUDED */

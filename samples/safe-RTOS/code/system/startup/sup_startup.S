@@ -340,34 +340,36 @@ sub_endInitRam:
     /* Load the pointer to the core instance pointer, i.e. the pointer to the data, which
        is individual to each core. */
     mfspr       r3, SPR_PIR
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
-    .extern     rtos_kernelInstanceData_core0
     se_cmpli    r3, 1
     se_bge      su_isNotCore0
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
+    .extern     rtos_kernelInstanceData_core0
     e_lis       r3, rtos_kernelInstanceData_core0@ha
     e_add16i    r3, r3, rtos_kernelInstanceData_core0@l
-    se_b        su_loadKernelInstancePtr    
-su_isNotCore0:
+#else
+    se_li       r3, 0   /* pInstanceData = NULL; */
 #endif
+    se_b        su_loadKernelInstancePtr
+su_isNotCore0:
+    se_bgt      su_isNotCore1
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
     .extern     rtos_kernelInstanceData_core1
-    se_cmpli    r3, 1
-    se_bne      su_isNotCore1
     e_lis       r3, rtos_kernelInstanceData_core1@ha
     e_add16i    r3, r3, rtos_kernelInstanceData_core1@l
-    se_b        su_loadKernelInstancePtr    
-su_isNotCore1:
+#else
+    se_li       r3, 0   /* pInstanceData = NULL; */
 #endif
+    se_b        su_loadKernelInstancePtr
+su_isNotCore1:
+    se_cmpli    r3, 2
+    se_bne      .       /* assert(idxCore == 0, 1 or 2) */
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
     .extern     rtos_kernelInstanceData_core2
-    se_cmpli    r3, 2
-    se_bne      su_isNotCore2
     e_lis       r3, rtos_kernelInstanceData_core2@ha
     e_add16i    r3, r3, rtos_kernelInstanceData_core2@l
-    se_b        su_loadKernelInstancePtr    
-su_isNotCore2:
+#else
+    se_li       r3, 0   /* pInstanceData = NULL; */
 #endif
-    se_b        .       /* assert(idxCore == 0, 1 or 2) */
 su_loadKernelInstancePtr:
     mtspr       SPR_G3_CDATA, r3
 

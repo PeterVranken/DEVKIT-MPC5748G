@@ -908,8 +908,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     stm_osInitSystemTimers();
     
     /* Initialize the button and LED driver for the eval board. */
-    lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback */ NULL
-                                , /* pidOnButtonChangeCallback */ 0
+    lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
+                                , /* PID_core0 */                    0
+                                , /* onButtonChangeCallback_core1 */ NULL
+                                , /* PID_core1 */                    0
+                                , /* onButtonChangeCallback_core2 */ NULL
+                                , /* PID_core2 */                    0   
+                                , /* tiMaxTimeInUs */                1000
                                 );
 
     /* Initialize the serial output channel as prerequisite of using printf. */
