@@ -208,7 +208,7 @@ int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATT
         value = ~expectedValue;
         
         /* This is, what we would do in C:
-             address = (uint32_t)rtos_ugetInstancePtr()
+             address = (uint32_t)rtos_getInstancePtr()
                                  ->processAry[syc_pidSupervisor-1].cntTotalTaskFailure;
              Unfortunately, rtos_processAry and its type are not public. The data is
            however shared with the assembly code and we can use the same interfacing size

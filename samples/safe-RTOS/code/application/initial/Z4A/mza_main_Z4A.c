@@ -249,8 +249,8 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     {
         struct rtos_kernelInstanceData_t;
         static volatile const struct rtos_kernelInstanceData_t *pInstance ATTRIB_UNUSED;
-        extern const struct rtos_kernelInstanceData_t *rtos_ugetInstancePtr(void);
-        pInstance = rtos_ugetInstancePtr();
+        extern const struct rtos_kernelInstanceData_t *rtos_getInstancePtr(void);
+        pInstance = rtos_getInstancePtr();
         static volatile uint8_t DATA_P1(coreId) ATTRIB_UNUSED;
         coreId = rtos_osGetIdxCore();
     }

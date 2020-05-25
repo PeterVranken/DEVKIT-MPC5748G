@@ -439,7 +439,7 @@ bool rtos_isProcessSuspended(uint32_t PID)
        results. */
     -- PID;
 
-    const rtos_kernelInstanceData_t * const pIData = rtos_ugetInstancePtr();
+    const rtos_kernelInstanceData_t * const pIData = rtos_getInstancePtr();
     assert(PID < sizeOfAry(pIData->processAry));
     return pIData->processAry[PID].state == 0;
 
@@ -461,7 +461,7 @@ bool rtos_isProcessSuspended(uint32_t PID)
  */
 unsigned int rtos_getNoTotalTaskFailure(unsigned int PID)
 {
-    const rtos_kernelInstanceData_t * const pIData = rtos_ugetInstancePtr();
+    const rtos_kernelInstanceData_t * const pIData = rtos_getInstancePtr();
     if(--PID < RTOS_NO_PROCESSES)
         return pIData->processAry[PID].cntTotalTaskFailure;
     else
@@ -491,7 +491,7 @@ unsigned int rtos_getNoTotalTaskFailure(unsigned int PID)
  */
 unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
 {
-    const rtos_kernelInstanceData_t * const pIData = rtos_ugetInstancePtr();
+    const rtos_kernelInstanceData_t * const pIData = rtos_getInstancePtr();
     if(--PID < RTOS_NO_PROCESSES
        &&  kindOfErr < sizeOfAry(pIData->processAry[PID].cntTaskFailureAry)
       )

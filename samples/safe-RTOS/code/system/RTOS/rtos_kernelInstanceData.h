@@ -216,8 +216,7 @@ static inline rtos_kernelInstanceData_t *rtos_osGetInstancePtr(void)
 
 
 /** Get kernel instance data by reference. Here for user tasks. */
-/// @todo When implmenting it: Rename back to rtos_getInstancePtr(). The current name was chosen preliminarily only, to detect renaming conflicts
-const rtos_kernelInstanceData_t *rtos_ugetInstancePtr(void);
+const rtos_kernelInstanceData_t *rtos_getInstancePtr(void);
 
 
 #endif  /* RTOS_KERNELINSTANCEDATA_INCLUDED */

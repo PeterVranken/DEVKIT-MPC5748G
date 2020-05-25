@@ -264,7 +264,7 @@ rtos_ivorVectorTableEntry8:
  * Exception handler IVOR9 for the Debug interrupt.
  */
     .global     rtos_ivorVectorTableEntry9
-    .extern     rtos_ivor15Handler
+    .extern     rtos_ivor9Handler
     .p2align    4
 rtos_ivorVectorTableEntry9:
     /* We place a memory barrier here to flush all store buffers. All possible MPU
@@ -275,7 +275,7 @@ rtos_ivorVectorTableEntry9:
        will surely preempt us here at this particular instruction. This is the way it'll
        recognize the double-exception situation. */
     mbar
-    e_b         rtos_ivor15Handler  /* Debug interrupt handler */
+    e_b         rtos_ivor9Handler  /* Debug interrupt handler */
 
 
 /**
@@ -284,7 +284,7 @@ rtos_ivorVectorTableEntry9:
  * section 62.8.5.11.
  */
     .global     rtos_ivorVectorTableEntry10
-    .extern     rtos_ivor33And34Handler
+    .extern     rtos_ivor10And11Handler
     .p2align    4
 rtos_ivorVectorTableEntry10:
     /* We place a memory barrier here to flush all store buffers. All possible MPU
@@ -295,7 +295,7 @@ rtos_ivorVectorTableEntry10:
        will surely preempt us here at this particular instruction. This is the way it'll
        recognize the double-exception situation. */
     mbar
-    e_b         rtos_ivor33And34Handler /* Embedded Floating-point Data handler */
+    e_b         rtos_ivor10And11Handler /* Embedded Floating-point Data interrupt handler */
 
 
 /**
@@ -314,7 +314,7 @@ rtos_ivorVectorTableEntry11:
        will surely preempt us here at this particular instruction. This is the way it'll
        recognize the double-exception situation. */
     mbar
-    e_b         rtos_ivor33And34Handler /* Embedded Floating-point Round interrupt handler */
+    e_b         rtos_ivor10And11Handler /* Embedded Floating-point Round interrupt handler */
 
 
 /**

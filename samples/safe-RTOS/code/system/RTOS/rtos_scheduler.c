@@ -2055,10 +2055,10 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority)
  */
 unsigned int rtos_getNoActivationLoss(unsigned int idEvent)
 {
-    const rtos_kernelInstanceData_t * const pIData = rtos_ugetInstancePtr();
+    const rtos_kernelInstanceData_t * const pIData = rtos_getInstancePtr();
     if(idEvent < pIData->noEvents)
     {
-        const rtos_kernelInstanceData_t * const pIData = rtos_ugetInstancePtr();
+        const rtos_kernelInstanceData_t * const pIData = rtos_getInstancePtr();
         assert(idEvent < pIData->noEvents);
         const rtos_eventDesc_t *pEvent = pIData->mapEventIDToPtr[idEvent];
         return pEvent->noActivationLoss;

@@ -505,6 +505,9 @@ zeroizeRegisters:
     mtspr   596, r0
     mtspr   597, r0
 
+    mtpmr   400, r0     /* PMGC0. Particularly bit PMIE, "Performance monitor interrupt
+                           enable", needs to be zero. */
+
     se_blr
 
 /* End of zeroizeRegisters */
