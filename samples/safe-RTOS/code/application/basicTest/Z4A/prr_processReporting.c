@@ -181,10 +181,10 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "  Total PID 3: %u\r\n"
              "  thereof Deadline missed: %u\r\n"
            , syc_cpuLoad/10, syc_cpuLoad%10
-           , rtos_getStackReserve(/* idxCore */ 0, 0)
-           , rtos_getStackReserve(/* idxCore */ 0, 1)
-           , rtos_getStackReserve(/* idxCore */ 0, 2)
-           , rtos_getStackReserve(/* idxCore */ 0, 3)
+           , rtos_getStackReserve(/* PID */ 0 /* OS */)
+           , rtos_getStackReserve(/* PID */ 1)
+           , rtos_getStackReserve(/* PID */ 2)
+           , rtos_getStackReserve(/* PID */ 3)
            , prs_cntTestCycles, rtos_getNoActivationLoss(syc_idEvTest)
            , syc_cntISRPit3
            , rtos_getNoTotalTaskFailure(/* PID */ 1)

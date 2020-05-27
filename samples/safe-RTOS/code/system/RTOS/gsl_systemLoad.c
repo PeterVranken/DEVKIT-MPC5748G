@@ -53,6 +53,9 @@
     is measured and reported (to the debugger). The acutal delay can then be tuned based on
     the results. The CPU load result is invalid in this case and the normal setting for
     this define will be zero.
+      @remark Caution, if calibration mode is on then the function is no longer reentrant,
+    but it is usually run on more than one core at a time. The core will overwrite one
+    another's results.
       @remark Setting this module into calibration mode requires that no watchdog is
     active. */
 #define MODULE_CALIBRATION_MODE     0

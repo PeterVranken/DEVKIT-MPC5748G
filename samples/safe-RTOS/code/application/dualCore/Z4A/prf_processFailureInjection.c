@@ -362,11 +362,11 @@ static bool testCheckUserCodePtr(void)
 #endif
         };
 
-    static unsigned int SDATA_P2(idxTestChkPtr);
+    static unsigned int SDATA_P2(idxTestCase);
     const struct testCase_t *pTC = &testCaseAry[0];
-    for( idxTestChkPtr=0
-       ; idxTestChkPtr<sizeOfAry(testCaseAry) && success
-       ; ++idxTestChkPtr, ++pTC
+    for( idxTestCase=0
+       ; idxTestCase<sizeOfAry(testCaseAry) && success
+       ; ++idxTestCase, ++pTC
        )
     {
         if(rtos_checkUserCodeReadPtr(pTC->addr, pTC->size) != pTC->rdOk)

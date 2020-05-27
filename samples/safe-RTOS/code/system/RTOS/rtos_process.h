@@ -109,7 +109,7 @@ unsigned int rtos_getNoTotalTaskFailure(unsigned int PID);
 unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr);
 
 /** Compute how many bytes of the stack area are still unused. */
-unsigned int rtos_getStackReserve(unsigned int idxCore, unsigned int PID);
+unsigned int rtos_getStackReserve(unsigned int PID);
 
 
 /*

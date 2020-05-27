@@ -25,11 +25,16 @@
  * Local functions
  */
 
+#ifndef __VLE__
+# error Book E instruction set is no longer supported by this module!
+#endif
+
 /*
  * Include files
  */
 
 #include "hwc_hardwareConfiguration.h"
+#include "rtos_ivorHandler.h"
 
 
 /*
@@ -96,45 +101,97 @@
 
 del_delayMicroseconds:
 
-#ifdef __VLE__
-# if defined(LINK_IN_RAM)
-#  if HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
-#   define NO_CYCLES_PER_US     80.0    /* Code in RAM, I-cache and branch prediction on. */
-#   define NO_CYCLES_OFFSET     18
-#  elif !HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
-/// @todo This case is suspicious, needs review
-#   define NO_CYCLES_PER_US     22.857  /* Code in RAM, I-cache off, branch prediction on. */
-#   define NO_CYCLES_OFFSET     21
-#  endif
-# else /* Code in flash ROM */
-#  if HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
-#   define NO_CYCLES_PER_US     80.0   /* Code in ROM, I-cache and branch prediction on. */
-#   define NO_CYCLES_OFFSET     18
-#  elif !HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
-/// @todo This case is still bad, needs calibration
-#   define NO_CYCLES_PER_US     22.857 /* Code in ROM, I-cache off, branch prediction on. */
-#   define NO_CYCLES_OFFSET     21
-#  endif
-# endif
-# ifndef NO_CYCLES_PER_US
-#  error Module del_delay.S needs calibration for chosen configuration
-# endif
 
-    /* Rescale us to number of busy wait loops (see below). */
-    efscfui     r3, r3      /* r3: noMicroSec as float32_t */
-    e_lis       r4, facNoCyclesPerMicroSec@ha       /* GNU as doesn't know floating point */
-    e_lwz       r4, facNoCyclesPerMicroSec@l(r4)    /* literals, we need to load a const */
-    efsmul      r3, r3, r4  /* r3: noMicroSec*facNoCyclesPerMicroSec as float32_t */
-    efsctui     r3, r3      /* r3: noCycles as uint32, rounded to nearest, saturated */
-
-    /* Compensate for overhead, like this code and function call. */
-    e_cmpl16i   r3, NO_CYCLES_OFFSET    /* Overhead compensation possible? */
-    se_ble      exitDelayMicroseconds   /* Wanted busy wait less than overhead: done */
-# if NO_CYCLES_OFFSET >= 1
-    e_add16i    r3, r3, -NO_CYCLES_OFFSET /* Consider overhead. Range NO_CYCLES_OFFSET: >= 1 */
-#elif NO_CYCLES_OFFSET != 0
-#   error NO_CYCLES_OFFSET is out of range
+    /* Calibration of delay cycles for Z4. The Z4 cores have I- and D-cache and branch
+       proediction as speed affecting configuration items. We need a set of calibration
+       values for each relevant combination of configuration items. */
+#if defined(LINK_IN_RAM)
+# if HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
+#  define NO_CYCLES_PER_US_Z4   80.0   /* Z4 code in RAM, I-cache and branch prediction on. */
+#  define NO_CYCLES_OFFSET_Z4   27
+# elif !HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
+#  define NO_CYCLES_PER_US_Z4   22.857 /* Z4 code in RAM, I-cache off, branch prediction on. */
+#  define NO_CYCLES_OFFSET_Z4   7 
+# endif
+#else /* Code in flash ROM */
+# if HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
+#  define NO_CYCLES_PER_US_Z4   80.0   /* Z4 Code in ROM, I-cache and branch prediction on. */
+#  define NO_CYCLES_OFFSET_Z4   27
+# elif !HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION
+#  define NO_CYCLES_PER_US_Z4   40.0   /* Z4 Code in ROM, I-cache off, branch prediction on. */
+#  define NO_CYCLES_OFFSET_Z4   24
+# endif
 #endif
+
+    /* Calibration of delay cycles for Z2. The Z2 core runs at half the clock speed and it
+       doesn't have I- and D-cache. This reduces the number of cases. ROM and RAM access
+       are as fast. The branch prediction unit is available and would make a difference. */
+#if HWC_ENABLE_BRANCH_PREDICTION
+# define NO_CYCLES_PER_US_Z2    20
+# define NO_CYCLES_OFFSET_Z2    18
+#endif
+
+#if !defined(NO_CYCLES_PER_US_Z4) || !defined(NO_CYCLES_PER_US_Z2) \
+    ||  NO_CYCLES_PER_US_Z2 >= 0x8000  ||  NO_CYCLES_OFFSET_Z4 < 0  ||  NO_CYCLES_OFFSET_Z2 < 0
+# error Module del_delay.S needs calibration for chosen configuration
+#endif
+
+    /* Define the stack frame contents as offsets of data objects. Note the minimum offset
+       of 8 due to the storage of stack pointer and link register. */
+    #define O_TI_DEL        (8+0)
+    #define SIZE_OF_PAYLOAD 4  /* Size of user data in stack frame */
+
+    /* Size of stack frame: Room for SP and LR and uprounding to multiple of 8. */
+    #define SIZE_OF_SF  ((((SIZE_OF_PAYLOAD)+15)/8)*8)
+    #define O_LR        (SIZE_OF_SF+4)
+
+    /* Create stack frame and save stack pointer and return address. */
+    e_stwu      sp, -SIZE_OF_SF(sp)
+    se_mflr     r0
+    #if O_LR <= 60
+    se_stw      r0, O_LR(sp)
+    #else
+    e_stw       r0, O_LR(sp)
+    #endif
+
+    /* On the MPC5748G, the implementation needs to be core specific: The clock rates and
+       the instruction sets differ (no EFPU on Z2). */
+    .extern     rtos_getIdxCore
+    se_stw      r3, O_TI_DEL(sp)
+    e_bl        rtos_getIdxCore     /* r3: Contents of PIR */
+    se_cmpli    r3, 2
+    se_lwz      r3, O_TI_DEL(sp)
+#ifdef DEBUG
+    se_bgt      .           /* assert(idxCore <= 2); */
+#endif
+    se_beq      del_entryZ2
+
+    /* Rescale us to number of busy wait loops on a Z4 core. */
+    efscfui     r0, r3      /* r0: noMicroSec as float32_t */
+    e_lis       r3, facNoCyclesPerMicroSec@ha       /* GNU as doesn't know floating point */
+    e_lwz       r3, facNoCyclesPerMicroSec@l(r3)    /* literals, we need to load a const */
+    efsmul      r3, r0, r3  /* r3: noMicroSec*facNoCyclesPerMicroSec as float32_t */
+    efsctui     r3, r3      /* r3: noCycles as uint32, rounded to nearest, saturated */
+    /* Compensate for overhead, like this code and function call. */
+    e_cmpl16i   r3, NO_CYCLES_OFFSET_Z4 /* Overhead compensation possible? */
+    se_ble      exitDelayMicroseconds   /* Wanted busy wait less than overhead: done */
+#if NO_CYCLES_OFFSET_Z4 >= 1
+    e_add16i    r3, r3, -NO_CYCLES_OFFSET_Z4    /* Consider overhead. Range
+                                                   NO_CYCLES_OFFSET_Z4: >= 1 */
+#endif
+    se_b        del_delay
+
+del_entryZ2:
+    /* Rescale us to number of busy wait loops on the Z2 core. */
+    e_mull2i    r3, NO_CYCLES_PER_US_Z2
+    e_cmpl16i   r3, NO_CYCLES_OFFSET_Z2 /* Overhead compensation possible? */
+    se_ble      exitDelayMicroseconds   /* Wanted busy wait less than overhead: done */
+#if NO_CYCLES_OFFSET_Z2 >= 1
+    e_add16i    r3, r3, -NO_CYCLES_OFFSET_Z2 /* Consider overhead. NO_CYCLES_OFFSET_Z2 >= 1 */
+#endif
+    
+    /* Both cores starts here with the delay, having the number of delay cycles in r3. */
+del_delay:
 
     /* The code for the busy wait loop must be inside a 64 Bit word because of the 64 Bit
        address bus for fetching instructions and inside a 32 Byte block because this is the
@@ -152,16 +209,32 @@ del_loopDelayMicroseconds:
     se_bne      del_loopDelayMicroseconds
 
 exitDelayMicroseconds:
+    /* Remove the no longer needed stack frame and return. */
+    #if O_LR <= 60
+    se_lwz      r0, O_LR(sp)
+    #else
+    e_lwz       r0, O_LR(sp)
+    #endif
+    se_mtlr     r0
+    #if SIZE_OF_SF <= 32
+    se_addi     sp, SIZE_OF_SF
+    #else
+    e_add16i    sp, sp, SIZE_OF_SF
+    #endif
     se_blr
 
     .section    .rodata.facNoCyclesPerMicroSec
     .balign     4
 facNoCyclesPerMicroSec:
-    .float      NO_CYCLES_PER_US
+    .float      NO_CYCLES_PER_US_Z4
     
-# undef NO_CYCLES_PER_US
-#else
-# error Book E instruction set is no longer supported!
-#endif
+    #undef O_TI_DEL
+    #undef SIZE_OF_PAYLOAD
+    #undef SIZE_OF_SF
+    #undef O_LR
 
+#undef NO_CYCLES_PER_US_Z4
+#undef NO_CYCLES_OFFSET_Z4
+#undef NO_CYCLES_PER_US_Z2
+#undef NO_CYCLES_OFFSET_Z2
 /* End of del_delayMicroseconds */

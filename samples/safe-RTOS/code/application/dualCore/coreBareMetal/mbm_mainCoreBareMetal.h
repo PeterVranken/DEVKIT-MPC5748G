@@ -1,10 +1,10 @@
-#ifndef MZB_MAIN_Z4B_INCLUDED
-#define MZB_MAIN_Z4B_INCLUDED
+#ifndef MZ2_MAIN_Z2_INCLUDED
+#define MZ2_MAIN_Z2_INCLUDED
 /**
- * @file mzb_main_Z4B.h
- * Definition of global interface of module mzb_main_Z4B.c
+ * @file mz2_main_Z2.h
+ * Definition of global interface of module mz2_main_Z2.c
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -43,27 +43,22 @@
  */
 
 /** Counter of cycles of infinite main loop. */
-extern volatile unsigned long mzb_cntTaskIdle;
+extern volatile unsigned long mbm_cntMain;
 
-/** Counter of cyclic 1ms user task. */
-extern volatile unsigned long mzb_cntTask1ms;  
+#if 0
+/** Counter of cyclic 1ms user isr. */
+extern volatile unsigned long mbm_cntIsr1ms;  
+#endif
 
-/** Counter of cyclic 1ms OS task. */
-extern volatile unsigned long mzb_cntTaskOs1ms;
-
-/** The average CPU load produced by all tasks and interrupts on core Z4B in tens of
-    percent. */ 
-extern volatile unsigned int mzb_cpuLoad;
+/** The average CPU load produced by all isrs and interrupts in tens of percent. */ 
+extern volatile unsigned int mbm_cpuLoadCoreBareMetal;
 
 
 /*
  * Global prototypes
  */
 
-/** Main entry point of code execution for core Z4B. */
-void /* _Noreturn */ mzb_main_Z4B(int noArgs, const char *argAry[]);
+/** Main entry point of code execution for core Z2. */
+void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs, const char *argAry[]);
 
-/** Callback for LED and button I/O driver. */
-int32_t mzb_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
-
-#endif  /* MZB_MAIN_Z4B_INCLUDED */
+#endif  /* MZ2_MAIN_Z2_INCLUDED */

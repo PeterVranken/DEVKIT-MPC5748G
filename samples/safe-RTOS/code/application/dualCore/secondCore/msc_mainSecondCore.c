@@ -1,10 +1,8 @@
 /**
- * @file mzb_main_Z4B.c
- * C entry function for the Z4 A core. The core completes the HW initialization (clocks run
- * at full speed, peripheral bridge is widely opened, SMPU is configured) and initializes a
- * few I/O drivers, e.g. LED drivers and serial I/O with the host. Then it starts the
- * safe-RTOS kernel on the core Z4A. The other cores are not started in this initial
- * sample.\n
+ * @file msc_mainSecondCore.c
+ * C entry function for the second core running safe-RTOS. By compile-time configuration,
+ * this can be either the Z4B or the Z2. The main function starts the safe-RTOS kernel on
+ * the chosen core.\n
  *   Two regular tasks are spinning and driving an LED each. A third LED is commanded by
  * the idle task. Only if three LEDs are blinking everything is alright.\n
  *   Progress information is permanently written into the serial output channel. A terminal
@@ -27,7 +25,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   mzb_main_Z4B
+ *   msc_mainSecondCore
  * Local functions
  *   taskInitProcess
  *   task1ms
@@ -55,7 +53,9 @@
 #include "sio_serialIO.h"
 #include "del_delay.h"
 #include "stm_systemTimer.h"
-#include "mzb_main_Z4B.h"
+#include "syc_systemConfiguration.h"
+#include "mbm_mainCoreBareMetal.h"
+#include "msc_mainSecondCore.h"
 
 
 /*
@@ -125,16 +125,16 @@ enum
  */
 
 /** Counter of cycles of infinite main loop. */
-volatile unsigned long SECTION(.uncached.OS.mzb_cntTaskIdle) mzb_cntTaskIdle = 0;
+volatile unsigned long SECTION(.uncached.OS.msc_cntTaskIdle) msc_cntTaskIdle = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long SECTION(.uncached.P1.mzb_cntTask1ms) mzb_cntTask1ms = 0;  
+volatile unsigned long SECTION(.uncached.P1.msc_cntTask1ms) msc_cntTask1ms = 0;  
 
 /** Counter of cyclic 1ms OS task. */
-volatile unsigned long SECTION(.uncached.OS.mzb_cntTaskOs1ms) mzb_cntTaskOs1ms = 0;
+volatile unsigned long SECTION(.uncached.OS.msc_cntTaskOs1ms) msc_cntTaskOs1ms = 0;
 
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */ 
-volatile unsigned int SECTION(.uncached.OS.mzb_cpuLoad) mzb_cpuLoad = 1000;
+volatile unsigned int SECTION(.uncached.OS.msc_cpuLoadSecondCore) msc_cpuLoadSecondCore = 1000;
 
 
 /*
@@ -161,11 +161,6 @@ static int32_t taskInitProcess(uint32_t PID)
     static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
 
-//    /* Only process 1 has access to the C lib (more precise: to those functions of the C
-//       lib, which write to lib owned data objects) and can write a status message. */
-//    if(PID == 1)
-//        iprintf("taskInitPID%lu(): %u\r\n", PID, cnt_);
-
     return cnt_ == PID? 0: -1;
 
 } /* End of taskInitProcess */
@@ -187,7 +182,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ mzb_cntTask1ms;
+    ++ msc_cntTask1ms;
 
 #if TASKS_PRODUCE_GROUND_LOAD == 1
     /* Produce a bit of CPU load. This call simulates some true application software. */
@@ -196,10 +191,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
 
     static int SBSS_P1(cntIsOn_) = 0;
     if(++cntIsOn_ >= 500)
-    {
         cntIsOn_ = -500;
-//        printf("This is call %lu of task1ms\r\n", mzb_cntTask1ms);
-    }
     lbd_setLED(lbd_led_2_DS9, /* isOn */ cntIsOn_ >= 0);
 
     return 0;
@@ -221,7 +213,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ mzb_cntTaskOs1ms;
+    ++ msc_cntTaskOs1ms;
 
     /** Regularly called step function of the I/O driver. */
     lbd_osTask1ms();
@@ -236,11 +228,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
               
     static int SBSS_P1(cntIsOn_) = 0;
     if(++cntIsOn_ >= 500)
-    {
         cntIsOn_ = -500;
-
-//        printf("This is call %lu of taskOs1ms\r\n", mzb_cntTaskOs1ms);
-    }
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
     
 } /* End of taskOs1ms */
@@ -261,7 +249,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
  * This function must never be called directly. It has been made public for the only reason
  * that the boot core needs to know it for the initialization call of the I/O driver.
  */
-int32_t mzb_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
+int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
 {
     /* Test button input: The current status is echoed as LED status. */
     if((buttonState & lbd_btStMask_btnSw1_down) != 0)
@@ -271,12 +259,14 @@ int32_t mzb_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonSta
               
     return 0;    
 
-} /* End of mzb_onButtonChangeCallback */
+} /* End of msc_onButtonChangeCallback */
 
 
 
 /**
- * C entry function main. Is used for and only for Z4B core.
+ * C entry function main. Is used for the second core running safe-RTOS. It depends on
+ * configuration macros #RTOS_RUN_SAFE_RTOS_ON_CORE_1 and #RTOS_RUN_SAFE_RTOS_ON_CORE_2,
+ * which one that is.
  *   @param noArgs
  * Number of arguments in \a argAry. Is actually always equal to one.
  *   @param argAry
@@ -286,12 +276,18 @@ int32_t mzb_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonSta
  * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
  * compiler warning. 
  */
-void /* _Noreturn */ mzb_main_Z4B( int noArgs ATTRIB_DBG_ONLY
-                                 , const char *argAry[] ATTRIB_DBG_ONLY
-                                 )
+void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
+                                       , const char *argAry[] ATTRIB_DBG_ONLY
+                                       )
 {
-    assert(noArgs == 1  && strcmp(argAry[0], "Z4B") == 0);
-
+    assert( noArgs == 1
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+            &&  strcmp(argAry[0], "Z4B") == 0
+#elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+            &&  strcmp(argAry[0], "Z2") == 0
+#endif
+          );
+            
 #if 0 /* Here, on the second core, we must not make use of the serial output. It is
          basically alright to make use of the sio API but blocking by busy wait is involved
          with hard to predict impact on the RTOS timing. Moreover, the use of the C library
@@ -370,9 +366,14 @@ void /* _Noreturn */ mzb_main_Z4B( int noArgs ATTRIB_DBG_ONLY
        function to register the interrupt handlers at the global, shared interrupt
        controller is not cross-core safe under all circumstances. This was we simply avoid
        any race condition. */
-#if 0
-    startSecondaryCore(/* idxCore */ 2 /* Z2 */, mzt_main_Z2);
+    const unsigned int idxThirdRTOSCore =
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+        2; /* Z2 */
 #endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+        1; /* Z4B */
+#endif
+    syc_startSecondaryCore(idxThirdRTOSCore, mbm_mainCoreBareMetal);
 
     /* The code down here becomes the idle task of the RTOS. We enter an infinite loop,
        where some background can be placed. */
@@ -382,17 +383,14 @@ void /* _Noreturn */ mzb_main_Z4B( int noArgs ATTRIB_DBG_ONLY
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
-        mzb_cpuLoad = gsl_osGetSystemLoad();
+        msc_cpuLoadSecondCore = gsl_osGetSystemLoad();
 
         static bool SBSS_OS(isOn_) = false;
         lbd_osSetLED(lbd_led_3_DS8, isOn_ = !isOn_);
 
         /* Make spinning of the idle task observable in the debugger. */
-        ++ mzb_cntTaskIdle;
+        ++ msc_cntTaskIdle;
 
     } /* End of inifinite idle loop of RTOS. */
 
-    /* We never get here. Just to avoid a compiler warning. */
-//    return -1;
-
-} /* End of mzb_main_Z4B */
+} /* End of msc_mainSecondCore */

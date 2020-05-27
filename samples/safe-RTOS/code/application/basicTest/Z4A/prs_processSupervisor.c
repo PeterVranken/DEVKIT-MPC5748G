@@ -641,15 +641,9 @@ int32_t prs_taskWatchdog(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
         prs_status.status.noActLossEvPIT2 = rtos_getNoActivationLoss(syc_idEvPIT2);
         prs_status.status.noTaskFailSV = rtos_getNoTotalTaskFailure(syc_pidSupervisor);
         prs_status.status.noTaskFailRep = rtos_getNoTotalTaskFailure(syc_pidReporting);
-        prs_status.status.stackResSV = rtos_getStackReserve( /* idxCore */ 0
-                                                           , syc_pidSupervisor
-                                                           );
-        prs_status.status.stackResRep = rtos_getStackReserve( /* idxCore */ 0
-                                                            , syc_pidReporting
-                                                            );
-        prs_status.status.stackResOS = rtos_getStackReserve( /* idxCore */ 0
-                                                           , /* PID */ 0 /* OS */
-                                                           );
+        prs_status.status.stackResSV = rtos_getStackReserve(syc_pidSupervisor);
+        prs_status.status.stackResRep = rtos_getStackReserve(syc_pidReporting);
+        prs_status.status.stackResOS = rtos_getStackReserve(/* PID */ 0 /* OS */);
         
         /* The first term in the failure condition is equivalent to a check of activation
            losses for the supervisory process (event syc_idEvPIT2). The event triggering

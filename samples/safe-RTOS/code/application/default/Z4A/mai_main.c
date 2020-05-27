@@ -779,11 +779,11 @@ static int32_t task1s(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNU
              "  thereof Deadline missed: %u\r\n"
              "tiPrintf = %luus\r\n"
            , mai_cpuLoad/10, mai_cpuLoad%10
-           , rtos_getStackReserve(/* idxCore */ 0, 0)
-           , rtos_getStackReserve(/* idxCore */ 0, 1)
-           , rtos_getStackReserve(/* idxCore */ 0, 2)
-           , rtos_getStackReserve(/* idxCore */ 0, 3)
-           , rtos_getStackReserve(/* idxCore */ 0, 4)
+           , rtos_getStackReserve(/* PID */ 0)
+           , rtos_getStackReserve(/* PID */ 1)
+           , rtos_getStackReserve(/* PID */ 2)
+           , rtos_getStackReserve(/* PID */ 3)
+           , rtos_getStackReserve(/* PID */ 4)
            , mai_cntTask1ms, rtos_getNoActivationLoss(idEv1ms)
            , mai_cntTask3ms, rtos_getNoActivationLoss(idEv3ms)
            , mai_cntTask1s, rtos_getNoActivationLoss(idEv1s)

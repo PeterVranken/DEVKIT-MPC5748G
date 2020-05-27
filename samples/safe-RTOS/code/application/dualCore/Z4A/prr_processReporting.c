@@ -48,7 +48,8 @@
 #include "tcx_testContext.h"
 #include "syc_systemConfiguration.h"
 #include "prs_processSupervisor.h"
-#include "mzb_main_Z4B.h"
+#include "mbm_mainCoreBareMetal.h"
+#include "msc_mainSecondCore.h"
 #include "prr_processReporting.h"
 
 
@@ -165,7 +166,8 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
 int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
 {
     const unsigned int cpuLoadZ4A = syc_cpuLoad
-                     , cpuLoadZ4B = mzb_cpuLoad;
+                     , cpuLoadSecondCore = msc_cpuLoadSecondCore
+                     , cpuLoadCoreBareMetal = mbm_cpuLoadCoreBareMetal;
     
     const uint32_t tiStart = stm_getSystemTime(1);
     iprintf( "CPU load on core Z4A is %u.%u%%. Stack reserve:\r\n"
@@ -185,10 +187,10 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "  Total PID 3: %u\r\n"
              "  thereof Deadline missed: %u\r\n"
            , cpuLoadZ4A/10, cpuLoadZ4A%10
-           , rtos_getStackReserve(/* idxCore */ 0, 0)
-           , rtos_getStackReserve(/* idxCore */ 0, 1)
-           , rtos_getStackReserve(/* idxCore */ 0, 2)
-           , rtos_getStackReserve(/* idxCore */ 0, 3)
+           , rtos_getStackReserve(/* PID */ 0 /* OS */)
+           , rtos_getStackReserve(/* PID */ 1)
+           , rtos_getStackReserve(/* PID */ 2)
+           , rtos_getStackReserve(/* PID */ 3)
            , prs_cntTestCycles, rtos_getNoActivationLoss(syc_idEvTest)
            , syc_cntISRPit3
            , rtos_getNoTotalTaskFailure(/* PID */ 1)
@@ -201,59 +203,34 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
            );
 
     /* Report some results, we received through uncached memory from other core. */
-    iprintf( "CPU load on core Z4B is %u.%u%%\r\n"
-             "Task counts on core Z4B:\r\n"
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+# define CORE_RTOS          "Z4B"
+# define CORE_BARE_METAL    "Z2"
+#elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+# define CORE_RTOS          "Z2"
+# define CORE_BARE_METAL    "Z4B"
+#endif
+    iprintf( "CPU load on core " CORE_RTOS " is %u.%u%%\r\n"
+             "Task counts on core " CORE_RTOS ":\r\n"
              "  OS, 1ms: %lu\n\r"
              "  user, 1ms: %lu\n\r"
              "  idle: %lu\n\r"
-           , cpuLoadZ4B/10, cpuLoadZ4B%10
-           , mzb_cntTaskOs1ms
-           , mzb_cntTask1ms
-           , mzb_cntTaskIdle
+             "CPU load on core " CORE_BARE_METAL " is %u.%u%%\r\n"
+             "Cycle counts on core " CORE_BARE_METAL ":\r\n"
+             "  main: %lu\n\r"
+           , cpuLoadSecondCore/10, cpuLoadSecondCore%10
+           , msc_cntTaskOs1ms
+           , msc_cntTask1ms
+           , msc_cntTaskIdle
+           , cpuLoadCoreBareMetal/10, cpuLoadCoreBareMetal%10
+           , mbm_cntMain
            );
+
     const uint64_t tiDuration = stm_getSystemTime(1) - tiStart;
     
     if(tiDuration > prr_tiMaxDurationPrintf)
         prr_tiMaxDurationPrintf = tiDuration;
         
-/// @todo remove test code
-    const uint32_t tiEndTest = stm_getSystemTime(1)
-                               + (1.5e-3f * 1e9f / STM_TIMER_1_PERIOD_IN_NS);
-    bool didChange = false;
-    uint32_t tiChangedAfter;
-    const unsigned long mzb_cntTaskOs1ms_1st = mzb_cntTaskOs1ms;
-    while((signed int)(tiEndTest - stm_getSystemTime(1)) > 0)
-    {
-        if(mzb_cntTaskOs1ms != mzb_cntTaskOs1ms_1st)
-        {
-            tiChangedAfter = stm_getSystemTime(1)
-                             - (uint32_t)(tiEndTest - (1.5e-3f * 1e9f / STM_TIMER_1_PERIOD_IN_NS));
-            didChange = true;
-            break;
-        }
-    }
-    static unsigned int SDATA_PRC_REPORT(cntDidntChange_) = 0;
-    cntDidntChange_ += (didChange? 0: 1);
-    iprintf( "Task counts on core Z4B, %lu us later:\r\n"
-             "  OS, 1ms: %lu\n\r"
-             "  user, 1ms: %lu\n\r"
-             "  idle: %lu\n\r"
-             "  (didn't change %u times)\r\n"
-           , (stm_getSystemTime(1)-(uint32_t)(tiEndTest - (1.5e-3f * 1e9f / STM_TIMER_1_PERIOD_IN_NS)))/5
-           , mzb_cntTaskOs1ms
-           , mzb_cntTask1ms
-           , mzb_cntTaskIdle
-           , cntDidntChange_
-           );
-    if(didChange)
-    {
-        iprintf( "Task counts changed after %lu us\r\n"
-               , tiChangedAfter*STM_TIMER_1_PERIOD_IN_NS/1000
-               );
-    }
-    else
-        iprintf("Task counts didn't change\r\n");
-
     return 0;
     
 } /* End of prr_taskReporting */

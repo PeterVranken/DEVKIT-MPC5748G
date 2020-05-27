@@ -70,9 +70,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "typ_types.h"
 #include "mtx_mutex.h"
 #include "sio_serialIO.h"
-#include "typ_types.h"
+#include "rtos_ivorHandler.h"
 
 
 /*
@@ -310,7 +311,6 @@ signed int write(int file, const void *msg, size_t noBytes)
         /// @todo Do we need EOL conversion?
         /* We check the core status register to find out if can use the OS variant of the
            write function or if we need to do the more expensive system call. */
-        extern uint32_t rtos_getCoreStatusRegister(void);
         if((rtos_getCoreStatusRegister() & 0x00004000u) == 0)
             return (signed int)sio_osWriteSerial((const char*)msg, (unsigned int)noBytes);
         else

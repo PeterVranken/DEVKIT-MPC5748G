@@ -4,11 +4,15 @@
 <stringAttribute key="org.eclipse.cdt.launch.launchGroup.0.actionParam" value="2"/>
 <stringAttribute key="org.eclipse.cdt.launch.launchGroup.0.enabled" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.launchGroup.0.mode" value="debug"/>
-<stringAttribute key="org.eclipse.cdt.launch.launchGroup.0.name" value="dualCore (Z4_0, DEBUG in RAM)"/>
+<stringAttribute key="org.eclipse.cdt.launch.launchGroup.0.name" value="dualCore (Z4_0, DEBUG)"/>
 <stringAttribute key="org.eclipse.cdt.launch.launchGroup.1.action" value="NONE"/>
 <stringAttribute key="org.eclipse.cdt.launch.launchGroup.1.enabled" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.launchGroup.1.mode" value="debug"/>
-<stringAttribute key="org.eclipse.cdt.launch.launchGroup.1.name" value="dualCore (Z4_1, DEBUG in RAM)"/>
+<stringAttribute key="org.eclipse.cdt.launch.launchGroup.1.name" value="dualCore (Z4_1, DEBUG)"/>
+<stringAttribute key="org.eclipse.cdt.launch.launchGroup.2.action" value="NONE"/>
+<stringAttribute key="org.eclipse.cdt.launch.launchGroup.2.enabled" value="true"/>
+<stringAttribute key="org.eclipse.cdt.launch.launchGroup.2.mode" value="debug"/>
+<stringAttribute key="org.eclipse.cdt.launch.launchGroup.2.name" value="dualCore (Z2, DEBUG)"/>
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
 <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
 </listAttribute>

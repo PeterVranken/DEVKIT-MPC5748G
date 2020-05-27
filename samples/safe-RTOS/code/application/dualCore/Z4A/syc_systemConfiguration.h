@@ -140,6 +140,9 @@ extern volatile unsigned long long syc_cntISRPit3;
  * Global prototypes
  */
 
+/** Start a secondary core. */
+void syc_startSecondaryCore(unsigned int idxCore, void (*main)(signed int, const char *[]));
+
 /** Entry point into C code. */
 int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB_DBG_ONLY);
 

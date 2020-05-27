@@ -82,11 +82,11 @@ tcx_waitTimePerCycleInUS:
 #define SIZE_OF_STACKFRAME  0
 
 fillRegisters:
-    se_mr       r0, r3
-    se_addi     r3, 1
     mtxer       r3
     se_addi     r3, 1
     mtctr       r3
+    se_addi     r3, 1
+    se_mr       r4, r3
     se_addi     r3, 1
     se_mr       r5, r3
     se_addi     r3, 1
@@ -160,10 +160,6 @@ fillRegisters:
 #define SIZE_OF_STACKFRAME  0
 
 testRegisters:
-    cmplw       cr0, r0, r3
-    se_bne      tcx_testFailed
-    se_addi     r3, 1
-    
     mfxer       r0
     xor         r0, r0, r3
     e_rlwinm    r0, r0, 0, 25, 2 /* Mask all bits in use (0xe000007f) and compare with zero */
@@ -173,6 +169,10 @@ testRegisters:
                 
     mfctr       r0
     cmplw       cr0, r0, r3
+    se_bne      tcx_testFailed
+    se_addi     r3, 1
+                
+    cmplw       cr0, r4, r3
     se_bne      tcx_testFailed
     se_addi     r3, 1
                 
@@ -283,6 +283,19 @@ testRegisters:
     se_blr
 
 tcx_testFailed:
+    /* We have an errror if we ever get here. However, the implementation of the of test is
+       very fragile and a valid code change at other location may make it fail. Check this
+       first:
+         The registers are filled and later checked. To increase the significance of the
+       test, we epose them to context switches for a long while. The time span is measured
+       by an external function, del_delayMicroseconds(), which is not part of this test
+       code and which is made only on EABI requirements. It may legally alter some
+       registers. Here, in the test code, we omit those registers, which are known to be in
+       use by that other function. After any implementation change of that function or any
+       of its sub-functions (when another register is (legally) used), we may need to adopt
+       that change here in our test routine. */
+       
+#ifdef DEBUG
     /* We use the implementation of the assert macro to report the problem. This doesn't
        work in PRODUCTION compilation: The code is not compiled, the system call index is
        invalid and the kernel will abort the task execution and count a process error
@@ -301,8 +314,10 @@ tcx_testFailed:
     e_lis       r7, tr_expression@ha
     e_add16i    r7, r7, tr_expression@l
     se_sc
-    se_b        .       /* The system call won't actually return. */
-
+#endif
+    se_b        .       /* Here, we catch the error in PRODUCTION compilation. The system
+                           call won't actually return. */
+#ifdef DEBUG
     .section    .rodata
 tr_fileName:
     .string     __FILE__
@@ -310,6 +325,7 @@ tr_funcName:
     .string     "testRegisters"
 tr_expression:
     .string     "Register comparison failed"
+#endif
 
 #undef SIZE_OF_STACKFRAME
 /* End of testRegisters */
@@ -344,9 +360,11 @@ tcx_testContext:
     e_stw       r3, tcx_cntLoopsPerTask@sda21(%r0)
     e_stw       r4, tcx_waitTimePerCycleInUS@sda21(%r0)
 
-    /* To give time for a context switch we use del_delayMicroseconds as an external
-       funtion. It clobbers the volatile GPR 3,4, the LR and CR0. These registers must
-       therefore not be tested. We can use them as work registers, too. */
+    /* To give time for a context switch we use del_delayMicroseconds() as an external
+       funtion. It clobbers the volatile GPR 0 and 3, the LR and CR0. These registers must
+       therefore not be tested. We can use them as work registers, too.
+         Note that the test implementation needs to be double-checked whenever the
+       implementation of del_delayMicroseconds() changes. */
     e_lwz       r3, txt_startValue@sda21(%r0)
     se_stw      r3, O_R3(sp)
     

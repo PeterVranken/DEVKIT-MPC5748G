@@ -102,7 +102,7 @@
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.SHIFT_FREQ" value="5000"/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.SPECIFY_IP" value="false"/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.SPECIFY_NETWORK_CARD" value="false"/>
-<intAttribute key="com.pemicro.debug.gdbjtag.ppc.selectedCoreNumber" value="2"/>
+<intAttribute key="com.pemicro.debug.gdbjtag.ppc.selectedCoreNumber" value="3"/>
 <intAttribute key="com.pemicro.debug.gdbjtag.ppc.serverPortNumber" value="7224"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.trc_eth.CYCLONE_IP" value=""/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.trc_eth.DO_RESET_DELAY" value="false"/>

@@ -517,8 +517,8 @@ unsigned int rtos_getNoTotalTaskFailure(unsigned int PID);
 /** Get the number of task failures of given category for the given process. */
 unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr);
 
-/** Compute how many bytes of the stack area of a process on a core are still unused. */
-unsigned int rtos_getStackReserve(unsigned int idxCore, unsigned int PID);
+/** How many bytes of the stack area of a process are still unused on the calling core? */
+unsigned int rtos_getStackReserve(unsigned int PID);
 
 /** Kernel function to suspend a process. */
 void rtos_osSuspendProcess(uint32_t PID);

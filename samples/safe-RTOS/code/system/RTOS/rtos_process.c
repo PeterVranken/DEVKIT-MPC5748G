@@ -188,7 +188,7 @@ rtos_errorCode_t rtos_osInitProcesses(bool isProcessConfiguredAry[1+RTOS_NO_PROC
     isProcessConfiguredAry[0] = true;
     
     /* Fill all process stacks with the empty-pattern, which is applied for computing the
-       stackusage. */
+       stack usage. */
     uint32_t * const * const stackStartAry = &_stackCoresStartAry[rtos_osGetIdxCore()][1];
     const uint32_t * const * const stackEndAry = &_stackCoresEndAry[rtos_osGetIdxCore()][1];
     unsigned int idxP
@@ -246,7 +246,7 @@ rtos_errorCode_t rtos_osInitProcesses(bool isProcessConfiguredAry[1+RTOS_NO_PROC
               );
     } /* End for(All processes) */
 
-    if(errCode == rtos_err_noError)
+    if(errCode == rtos_err_noError  &&  maxPIDInUse >= 1)
     {
         /* Caution: Maintenance of this code is required consistently with
            rtos_osGrantPermissionSuspendProcess() and rtos_scSmplHdlr_suspendProcess(). */
@@ -397,7 +397,10 @@ void rtos_osReleaseProcess(uint32_t PID)
 /**
  * Kernel function to suspend a process. All currently running tasks belonging to the process
  * are aborted and the process is stopped forever (i.e. there won't be further task starts
- * or I/O driver callback invocations).
+ * or I/O driver callback invocations).\n
+ *   If the kernel is started on more than one core and if several cores share the same
+ * process then the function still relates to only those tasks of the process, which are
+ * configured to run on the calling core.
  *   @param PID
  * The ID of the process to suspend in the range 1..4. Checked by assertion.
  *   @remark
@@ -413,6 +416,14 @@ void rtos_osSuspendProcess(uint32_t PID)
     /* The process array has no entry for the kernel process. An index offset by one
        results. */
     -- PID;
+
+    /* Form a safety perspective, it could be advantageous to stop the process on all
+       cores. However, this is not implementable for the Z4 cores due to their D cache.
+       We could write to the flag processAry[PID].state of another core but there's no
+       guarantee that that core will see the change within a particular time span.
+         We would need to use atomic read/writes or load/store with reservation in the
+       kernel's assembly implementation or have a portion of the kernel instance data in
+       the uncached memory. */
 
     rtos_kernelInstanceData_t * const pIData = rtos_osGetInstancePtr();
     assert(PID < sizeOfAry(pIData->processAry));
@@ -449,9 +460,13 @@ bool rtos_isProcessSuspended(uint32_t PID)
 
 /**
  * Get the number of task failures (and task abortions at the same time) counted for the
- * given process since start of the kernel.
+ * given process since start of the kernel on the calling core.
  *   @return
- * Get total number of errors counted for process \a PID.
+ * Get total number of errors counted for process \a PID.\n
+ *   If the kernel is started on more than one core and if several cores share the same
+ * process then the function still returns only those process errors, which had been caught
+ * on the calling core. Explicit cross-core communication will be required to query the
+ * failures counted for the same process on another core, too.
  *   @param PID
  * The ID of the queried process in the range 1 .. RTOS_NO_PROCESSES. An out of range PID
  * will always yield UINT_MAX and an assertion fires in DEBUG compilation. An unused
@@ -476,9 +491,13 @@ unsigned int rtos_getNoTotalTaskFailure(unsigned int PID)
 
 /**
  * Get the number of task failures of given category counted for the given process since
- * start of the kernel.
+ * start of the kernel on the calling core.
  *   @return
- * Get total number of errors of category \a kindOfErr counted for process \a PID.
+ * Get total number of errors of category \a kindOfErr counted for process \a PID.\n
+ *   If the kernel is started on more than one core and if several cores share the same
+ * process then the function still returns only those process errors, which had been caught
+ * on the calling core. Explicit cross-core communication will be required to query the
+ * failures counted for the same process on another core, too.
  *   @param PID
  * The ID of the queried process in the range 1 .. RTOS_NO_PROCESSES. An out of range PID
  * will always yield UINT_MAX and an assertion fires in DEBUG compilation. An unused
@@ -508,11 +527,11 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
 
 
 /**
- * Compute how many bytes of the stack area of a process are still unused. If the value is
- * requested after an application has been run a long while and has been forced to run
- * through all its conditional code paths, it may be used to optimize the static stack
- * allocation. The function is useful only for diagnosis purpose as there's no chance to
- * dynamically increase or decrease the stack area at runtime.\n
+ * Compute how many bytes of the stack area of a process are still unused on the calling
+ * core. If the value is requested after an application has been run a long while and has
+ * been forced to run through all its conditional code paths, it may be used to optimize
+ * the static stack allocation. The function is useful only for diagnosis purpose as
+ * there's no chance to dynamically increase or decrease the stack area at runtime.\n
  *   The function may be called from a task, ISR and from the idle task.\n
  *   The algorithm is as follows: The unused part of the stack is initialized with a
  * specific pattern word. This routine counts the number of subsequent pattern words down
@@ -541,10 +560,6 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
  *   @return
  * The number of still unused stack bytes of the given process. See function description
  * for details.
- *   @param idxCore
- * The implementation of a process has an individual stack on each core running the RTOS.
- * Select the core of interest. Each core is permitted to check the stacks of each (other)
- * core.
  *   @param PID
  * The process ID the query relates to. (Each process has its own stack.) ID 0 relates to
  * the OS/kernel stack.
@@ -555,10 +570,19 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
  *   @remark
  * This function can be called from both, the OS context and a user task.
  */
-unsigned int rtos_getStackReserve(unsigned int idxCore, unsigned int PID)
+unsigned int rtos_getStackReserve(unsigned int PID)
 {
-    if(idxCore < RTOS_MAX_NO_CORES  &&  PID <= RTOS_NO_PROCESSES)
+    if(PID <= RTOS_NO_PROCESSES)
     {
+        /* We can safely do the operation only for the calling core. If we call this
+           function regularly from core i then there's no guarantee that it doesn't have
+           portions of the stack of core j still in its cache, while j has meanwhile
+           changed its stack memory. i could see a too optimistic result - which is
+           inacceptable as particularly the pessimistic readings are (safety) use case of
+           this API. */
+        const unsigned int idxCore = rtos_getIdxCore();
+        assert(idxCore < RTOS_MAX_NO_CORES);
+        
         /* Access core specific data. */
         uint32_t * const * const stackStartAry = &_stackCoresStartAry[idxCore][0];
         const uint32_t * const * const stackEndAry = &_stackCoresEndAry[idxCore][0];

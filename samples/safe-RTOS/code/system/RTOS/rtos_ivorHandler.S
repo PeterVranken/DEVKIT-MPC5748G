@@ -48,6 +48,7 @@
  *   rtos_scBscHdlr_sysCallUndefined
  *   rtos_ivor5Handler
  *   rtos_getInstancePtr
+ *   rtos_getIdxCore
  *   rtos_getCoreStatusRegister
  *   rtos_ivor6Handler
  *   rtos_ivor7Handler
@@ -419,6 +420,7 @@ ivr1_testIvor3:
     se_b        ivr1_continuePreemptedIvor
 
 ivr1_testIvor5:
+    /// @todo The interrupts vectors have a distance of 16 Byte. Can be reduced to an se_addi(distance)
     e_lis       r0, rtos_ivorVectorTableEntry5@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry5@l  /* r0: Address Alignment IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
@@ -1267,6 +1269,43 @@ gip_srr0AtUserCodeException:
 /* End of rtos_getInstancePtr */
 
 
+
+/**
+ *   @rtos_getIdxCore
+ * This function returns the contents of CPU read-only register PIR.
+ *   @return
+ * Get the index of the core the calling code is running on. The range is 0..2, meaning
+ * Z4A, Z4B, Z2, respectively.
+ *   @remark
+ * This function may be called from all contexts. However, OS contexts shouldn't because of
+ * the performance penalty. They should only use the intrinsic rtos_osGetIdxCore() instead.
+ */
+    .section    .text
+    .global     rtos_getIdxCore
+    .balign     2
+rtos_getIdxCore:
+    /* We put a synchronization instruction here in order to make all pending exceptions
+       happen before we by intention provoke a privileged exception. Without the mbar it
+       could rarely happen that an MPU exception is masked by the privileged exception
+       caused here. A memory protection exception from an error shortly before the call of
+       this function could be delayed beyond the privileged instruction mfspr, which we
+       have a few lines down here. The entry into the IVOR #6 handler will force the
+       pending MPU exception to occur, the IVOR #1 handler will preempt the beginning IVOR
+       #6 handler and it'll analyse this as a rare but normal double exception.
+       Consequently it returns to the preempted IVOR #6 and let it go. The IVOR #6 doesn't
+       see any particular problem and would complete the action of rtos_getIdxCore.
+         Note, this situation wouldn't be harmful or even safety critical; it just meant
+       that a bad instruction is skipped without recording the event or punishing the
+       related process. */
+    mbar
+gic_srr0AtUserCodeException:
+    mfspr       r3, SPR_PIR     /* OS code in SV mode will simply load the processor ID */
+    se_blr                      /* ... and return. User code won't get here: exception */
+
+/* End of rtos_getIdxCore */
+
+
+
 /**
  *   @func rtos_getCoreStatusRegister
  * Get the value of the msr. This is an entry point to C code, which can be called from
@@ -1313,19 +1352,34 @@ rtos_ivor6Handler:
     e_add16i    r0, r3, gip_srr0AtUserCodeException@l
     mfspr       r3, SPR_SRR0    /* r3: Point of exception */
     se_cmpl     r3, r0          /* Is it in function rtos_getInstancePtr? */
-    se_bne      iv6_checkForGetCoreStatusRegister    /* No, go ahead */
+    se_bne      iv6_checkForGetIdxCore  /* No, go ahead */
     se_mflr     r3              /* r3: Wanted return address from function */
     mtspr       SPR_SRR0, r3    /* We want to return with rfi in order to restore the msr */
     se_li       r3, 0           /* ESR: PPR, VLEMI = 0x04000020 are set (RM 62.8.5.7) */
     mtspr       SPR_ESR, r3     /* Fastest way to clear the bits, clearing irrelated bits
                                    is tolerated for sake of higher function performance. */
     mfspr       r3, SPR_G3_CDATA  /* r3: Instance pointer for return to user code */
-    se_rfi                      /* End the call of rtos_getInstancePtr */
+    se_rfi                      /* End the call of rtos_getInstancePtr with result */
 
-iv6_checkForGetCoreStatusRegister:
-    /* See rtos_getCoreStatusRegister: Maybe we got here because user code has called this
+iv6_checkForGetIdxCore:
+    /* See rtos_getIdxCore: Maybe we got here because user code has called that
        function - which is legal. If so, we have to complete the function call. */
-    se_addi     r0, (gcs_srr0AtUserCodeException-gip_srr0AtUserCodeException)
+    se_addi     r0, (gic_srr0AtUserCodeException-gip_srr0AtUserCodeException)
+    mfspr       r3, SPR_SRR0    /* r3: Point of exception */
+    se_cmpl     r3, r0          /* Is it in function rtos_getIdxCore? */
+    se_bne      iv6_checkForGetCoreStatusRegister   /* No, go ahead */
+    se_mflr     r3              /* r3: Wanted return address from function */
+    mtspr       SPR_SRR0, r3    /* We want to return with rfi in order to restore the msr */
+    se_li       r3, 0           /* ESR: PPR, VLEMI = 0x04000020 are set (RM 62.8.5.7) */
+    mtspr       SPR_ESR, r3     /* Fastest way to clear the bits, clearing irrelated bits
+                                   is tolerated for sake of higher function performance. */
+    mfspr       r3, SPR_PIR     /* r3: MSR at point of exception for return to user code */
+    se_rfi                      /* End the call of rtos_getIdxCore with result */
+        
+iv6_checkForGetCoreStatusRegister:
+    /* See rtos_getCoreStatusRegister: Maybe we got here because user code has called that
+       function - which is legal. If so, we have to complete the function call. */
+    se_addi     r0, (gcs_srr0AtUserCodeException-gic_srr0AtUserCodeException)
     mfspr       r3, SPR_SRR0    /* r3: Point of exception */
     se_cmpl     r3, r0          /* Is it in function rtos_getCoreStatusRegister? */
     se_bne      iv6_isTrueIvor6Exception    /* No, handle as process fault */
@@ -1335,7 +1389,7 @@ iv6_checkForGetCoreStatusRegister:
     mtspr       SPR_ESR, r3     /* Fastest way to clear the bits, clearing irrelated bits
                                    is tolerated for sake of higher function performance. */
     mfspr       r3, SPR_SRR1    /* r3: MSR at point of exception for return to user code */
-    se_rfi                      /* End the call of rtos_getCoreStatusRegister */
+    se_rfi                      /* End the call of rtos_getCoreStatusRegister with result */
         
 iv6_isTrueIvor6Exception:
     mfspr       r0, SPR_SRR1    /* Load MSR of preempted process */

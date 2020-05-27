@@ -405,9 +405,9 @@ static int32_t taskS(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_DB
 
     ++ mai_cntTaskS;
 
-    const unsigned int stackReserveOs = rtos_getStackReserve(/* idxCore */ 0, pidOs)
-                     , stackReserveP1 = rtos_getStackReserve(/* idxCore */ 0, /* PID */ 1)
-                     , stackReserveP2 = rtos_getStackReserve(/* idxCore */ 0, /* PID */ 2);
+    const unsigned int stackReserveOs = rtos_getStackReserve(/* PID */ pidOs)
+                     , stackReserveP1 = rtos_getStackReserve(/* PID */ 1)
+                     , stackReserveP2 = rtos_getStackReserve(/* PID */ 2);
 
     const bool success = rtos_getNoTotalTaskFailure(/* PID */ 1) == 0
                          &&  rtos_getNoTotalTaskFailure(/* PID */ 2) == 0

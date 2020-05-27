@@ -1,8 +1,11 @@
 /**
  * @file syc_systemConfiguration.c
- * System configuration: Configuration of tasks and I/O drivers as required for the
- * application.\n
- *   The code in this file is executed in supervisor mode and it belongs in to the sphere
+ * System configuration: Here we have the C entry function for the Z4A core. It completes
+ * the HW initialization (clocks run at full speed, peripheral bridge is widely opened,
+ * SMPU is configured) and initializes a few I/O drivers, e.g. LED drivers and serial I/O
+ * with the host. Then it configures tasks and I/O drivers as required for the application.
+ * It starts the safe-RTOS kernel on the core Z4A and starts the other core Z4B.\n
+ *   Most of the code in this file is executed in supervisor mode and belongs to the sphere
  * of trusted code.
  *
  * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -21,6 +24,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   syc_startSecondaryCore
  *   main
  * Local functions
  *   taskInitProcess
@@ -28,7 +32,6 @@
  *   isrPit2
  *   isrPit3
  *   osInstallInterruptServiceRoutines
- *   startSecondaryCore
  */
 
 /*
@@ -55,7 +58,7 @@
 #include "prs_processSupervisor.h"
 #include "syc_systemConfiguration.h"
 #include "std_decoratedStorage.h"
-#include "mzb_main_Z4B.h"
+#include "msc_mainSecondCore.h"
 
 
 /*
@@ -246,9 +249,9 @@ static void osInstallInterruptServiceRoutines(void)
          The RTOS operates in ticks of 1ms. We use prime numbers to get good asynchronity
        with the RTOS clock.
          -1: See RM, 51.6 */
-    PIT->TIMER[1].LDVAL = 39989-1;/* Interrupt rate approx. 1kHz */             
+    PIT->TIMER[1].LDVAL = 39989-1;/* Interrupt rate approx. 1kHz */
     PIT->TIMER[2].LDVAL = 40009-1;/* Interrupt rate approx. 1kHz for watchdog */
-    PIT->TIMER[3].LDVAL = 1327-1; /* Interrupt rate approx. 30kHz */            
+    PIT->TIMER[3].LDVAL = 1327-1; /* Interrupt rate approx. 30kHz */
 
     /* Enable timer operation. This operation affects all timer channels.
          PIT_MCR_FRZ: For this multi-core MCU it is not so easy to decide whether or not to
@@ -257,12 +260,12 @@ static void osInstallInterruptServiceRoutines(void)
        debugger know...). Both possibilities can be annoying or advantageous, depending on
        the situation. */
     PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
-    
+
     /* Clear possibly pending interrupt flags. */
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
-    
+
     /* Enable interrupts by the timers and start them. See RM 51.4.10. */
     PIT->TIMER[1].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
@@ -274,7 +277,7 @@ static void osInstallInterruptServiceRoutines(void)
 
 /**
  * Start a secondary core. The initial core is already started and it is the one, which will
- * execute this function. Never call the function from another core than Z4A.
+ * typically execute this function.
  *   @param idxCore
  * Which core to start? Permitted indexes are 1 for the Z4B core and 2 for the Z2 core.
  *   @param main
@@ -285,9 +288,9 @@ static void osInstallInterruptServiceRoutines(void)
  * happens repeatedly and maybe even coincidentally; either of this can make the runtime
  * fail.
  */
-static void startSecondaryCore( unsigned int idxCore
-                              , void (*main)(signed int, const char *[])
-                              )
+void syc_startSecondaryCore( unsigned int idxCore
+                           , void (*main)(signed int, const char *[])
+                           )
 {
     /* The entry point into the C code cannot be the normal main function for the other
        cores. The C compiler unconditionally generates the call of the C run time
@@ -304,7 +307,7 @@ static void startSecondaryCore( unsigned int idxCore
        startup code.): The entry point into code execution after reset. Common for all
        three cores. */
     extern void _Noreturn sup_startUp(void);
-    
+
     /* Prepare core start: Enter code start address and set allowed run modes. */
     switch(idxCore)
     {
@@ -314,7 +317,9 @@ static void startSecondaryCore( unsigned int idxCore
            conditionally in that it reads a core dependent address of the C main function
            to use. */
         sup_main_Z4B = main;
-/// @todo Why don't we use the atomic store word operation here?
+
+        /* Ensure that the value has been written into main memory before we do the mode
+           change below. */
         std_fullMemoryBarrier();
 
         /* RM 38.3.91, p. 1209: The core is enabled in all run modes. Caution, the RM names
@@ -330,8 +335,11 @@ static void startSecondaryCore( unsigned int idxCore
 
     case 2 /* Z2 */:
         /* Pass the pointer to the C code entry to the assembly startup code being executed
-           on the other core. See case Z4B for details. */ 
+           on the other core. See case Z4B for details. */
         sup_main_Z2 = main;
+
+        /* Ensure that the value has been written into main memory before we do the mode
+           change below. */
         std_fullMemoryBarrier();
 
         /* RM 38.3.92, p. 1211: The core is enabled in all run modes. */
@@ -352,7 +360,7 @@ static void startSecondaryCore( unsigned int idxCore
        running in parallel. */
     ccl_triggerTransitionToModeDRUN();
 
-} /* End of startSecondaryCore */
+} /* End of syc_startSecondaryCore */
 
 
 
@@ -368,13 +376,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* Interrupts become usable and configurable by SW. */
     rtos_osInitINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -396,14 +404,21 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
-                                , /* PID_core0 */                    0   
-                                , /* onButtonChangeCallback_core1 */ mzb_onButtonChangeCallback
+                                , /* PID_core0 */                    0
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+                                , /* onButtonChangeCallback_core1 */ msc_onButtonChangeCallback
                                 , /* PID_core1 */                    1
                                 , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0   
+                                , /* PID_core2 */                    0
+#elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+                                , /* onButtonChangeCallback_core1 */ NULL
+                                , /* PID_core1 */                    0
+                                , /* onButtonChangeCallback_core2 */ msc_onButtonChangeCallback
+                                , /* PID_core2 */                    1
+#endif
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -617,7 +632,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        controller is not cross-core safe under all circumstances. This was we simply avoid
        any race condition. For the same reason, the next core will start the third one
        after it reached the same point. */
-    startSecondaryCore(/* idxCore */ 1 /* Z4B */, mzb_main_Z4B);
+    const unsigned int idxSecondRTOSCore =
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+        1; /* Z4B */
+#endif
+#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+        2; /* Z2 */
+#endif
+    syc_startSecondaryCore(idxSecondRTOSCore, msc_mainSecondCore);
 
     /* The code down here becomes our idle task. It is executed when and only when no
        application task or ISR is running. */
