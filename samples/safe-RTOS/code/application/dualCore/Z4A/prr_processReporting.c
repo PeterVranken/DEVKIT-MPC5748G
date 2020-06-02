@@ -170,22 +170,20 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
                      , cpuLoadCoreBareMetal = mbm_cpuLoadCoreBareMetal;
     
     const uint32_t tiStart = stm_getSystemTime(1);
-    iprintf( "CPU load on core Z4A is %u.%u%%. Stack reserve:\r\n"
-             "  OS: %u Byte\r\n"
-             "  PID 1: %u Byte\r\n"
-             "  PID 2: %u Byte\r\n"
-             "  PID 3: %u Byte\r\n"
-             "Event triggers (lost):\r\n"
-             "  idEvTest: %lu (%u)\r\n"
-             "  isrPit3: %llu (N/A)\r\n"
-             "Process errors:\r\n"
-             "  Total PID 1: %u\r\n"
-             "  thereof Deadline missed: %u\r\n"
-             "  Total PID 2: %u\r\n"
-             "  thereof Deadline missed: %u\r\n"
-             "  thereof User task abort: %u\r\n"
-             "  Total PID 3: %u\r\n"
-             "  thereof Deadline missed: %u\r\n"
+    iprintf( "CPU Z4A (running safe-RTOS):\r\n"
+             "  CPU load: %u.%u%%\r\n"
+             "  Stack reserve:\r\n"
+             "    OS: %u Byte\r\n"
+             "    PID 1: %u Byte\r\n"
+             "    PID 2: %u Byte\r\n"
+             "    PID 3: %u Byte\r\n"
+             "  Event triggers (lost):\r\n"
+             "    idEvTest: %lu (%u)\r\n"
+             "    isrPit3: %llu (N/A)\r\n"
+             "  Process errors:\r\n"
+             "    Total PID 1: %u\r\n"
+             "    Total PID 2: %u\r\n"
+             "    Total PID 3: %u\r\n"
            , cpuLoadZ4A/10, cpuLoadZ4A%10
            , rtos_getStackReserve(/* PID */ 0 /* OS */)
            , rtos_getStackReserve(/* PID */ 1)
@@ -194,12 +192,8 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
            , prs_cntTestCycles, rtos_getNoActivationLoss(syc_idEvTest)
            , syc_cntISRPit3
            , rtos_getNoTotalTaskFailure(/* PID */ 1)
-           , rtos_getNoTaskFailure(/* PID */ 1, RTOS_ERR_PRC_DEADLINE)
            , rtos_getNoTotalTaskFailure(/* PID */ 2)
-           , rtos_getNoTaskFailure(/* PID */ 2, RTOS_ERR_PRC_DEADLINE)
-           , rtos_getNoTaskFailure(/* PID */ 2, RTOS_ERR_PRC_USER_ABORT)
            , rtos_getNoTotalTaskFailure(/* PID */ 3)
-           , rtos_getNoTaskFailure(/* PID */ 3, RTOS_ERR_PRC_DEADLINE)
            );
 
     /* Report some results, we received through uncached memory from other core. */
@@ -210,19 +204,33 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
 # define CORE_RTOS          "Z2"
 # define CORE_BARE_METAL    "Z4B"
 #endif
-    iprintf( "CPU load on core " CORE_RTOS " is %u.%u%%\r\n"
-             "Task counts on core " CORE_RTOS ":\r\n"
-             "  OS, 1ms: %lu\n\r"
-             "  user, 1ms: %lu\n\r"
-             "  idle: %lu\n\r"
-             "CPU load on core " CORE_BARE_METAL " is %u.%u%%\r\n"
-             "Cycle counts on core " CORE_BARE_METAL ":\r\n"
-             "  main: %lu\n\r"
+    iprintf( "CPU " CORE_RTOS " (running safe-RTOS):\r\n"
+             "  CPU load: %u.%u%%\r\n"
+             "  Stack reserve:\r\n"
+             "    OS: %u Byte\r\n"
+             "    PID 1: %u Byte\r\n"
+             "  Task counts (lost triggers):\r\n"
+             "    OS, 1ms: %lu (%u)\n\r"
+             "    user, 1ms: %lu\n\r"
+             "    idle: %lu\n\r"
+             "  Process errors:\n\r"
+             "    Total PID 1: %u\r\n"
+             "CPU " CORE_BARE_METAL " (bare metal):\r\n"
+             "  ISR load: %u.%u%%\r\n"
+             "  Stack reserve:\r\n"
+             "    core: %u Byte\r\n"
+             "  Cycle counts on core " CORE_BARE_METAL ":\r\n"
+             "    main: %lu\n\r"
            , cpuLoadSecondCore/10, cpuLoadSecondCore%10
+           , msc_stackReserveOS
+           , msc_stackReserveP1
            , msc_cntTaskOs1ms
+           , msc_cntActivationLossFailures
            , msc_cntTask1ms
            , msc_cntTaskIdle
+           , msc_cntTaskFailuresP1
            , cpuLoadCoreBareMetal/10, cpuLoadCoreBareMetal%10
+           , mbm_stackReserve
            , mbm_cntMain
            );
 

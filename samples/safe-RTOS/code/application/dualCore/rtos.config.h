@@ -42,18 +42,27 @@
     should run safe-RTOS, too. (Primary core Z4A always runs safe-RTOS in this sample.) You
     may set either this macro or #RTOS_RUN_SAFE_RTOS_ON_CORE_2 to one. The other one needs
     to be set to zero. */
-#define RTOS_RUN_SAFE_RTOS_ON_CORE_1        0
+#define RTOS_RUN_SAFE_RTOS_ON_CORE_1        1
 
 /** Specify whether core 2, Z2, should run safe-RTOS. Permitted values are 1 or 0.\n
       The Z4 and Z2 core are not fully compatible. To prove that the kernel runs on the Z2,
     too, you may configure this macro to one - however, then the other macro
     #RTOS_RUN_SAFE_RTOS_ON_CORE_1 needs to be set to zero. */
-#define RTOS_RUN_SAFE_RTOS_ON_CORE_2        1
+#define RTOS_RUN_SAFE_RTOS_ON_CORE_2        0
 
 /** The period time of the RTOS system timer. Unit is 1ms. Configurable range is 1..35791.
     If either this range or the timing accuracy of 1ms is not sufficient then you need to
     change the implementation of the main RTOS clock in rtos_scheduler.c, function
-    initRTOSClockTick(). */
+    initRTOSClockTick().
+      @remark In this test we use a floating point value for the clock period of the RTOS
+    on the second core. Basically, the RTOS expects a non-zero integer. A floating point
+    number leads to the correct, according timer configuration but the logical clock of the
+    scheduler increments by the downwards rounded value. We have in our example a period
+    time of 1.0002375ms on core 1 but the RTOS thinks for all scheduling decisions it were
+    1ms.\n
+      The reason for doing so is testing. The small deviation has been chosen such that the
+    RTOS timers on the different cores have integer cycle times, which are prime to one
+    another. This leads to most random concurrency patterns. */
 #define RTOS_CLOCK_TICK_IN_MS_CORE_0            1 /* ms */
 #define RTOS_CLOCK_TICK_IN_MS_CORE_1            1.0002375 /* ms */
 #define RTOS_CLOCK_TICK_IN_MS_CORE_2            1.0003375 /* ms */

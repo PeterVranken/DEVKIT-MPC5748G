@@ -28,6 +28,7 @@
  *   msc_mainSecondCore
  * Local functions
  *   taskInitProcess
+ *   injectError
  *   task1ms
  *   taskOs1ms
  */
@@ -133,6 +134,19 @@ volatile unsigned long SECTION(.uncached.P1.msc_cntTask1ms) msc_cntTask1ms = 0;
 /** Counter of cyclic 1ms OS task. */
 volatile unsigned long SECTION(.uncached.OS.msc_cntTaskOs1ms) msc_cntTaskOs1ms = 0;
 
+/** Total counter of task failures in P1 on second core. */
+volatile unsigned int SECTION(.uncached.OS.msc_cntTaskFailuresP1) msc_cntTaskFailuresP1 = 0;
+
+/** Activation loss counter for process 1 on the second core. */
+volatile unsigned int SECTION(.uncached.OS.msc_cntActivationLossFailures)
+                                                        msc_cntActivationLossFailures = 0;
+
+/** Stack reserve of process p1 on the second core. */
+volatile unsigned int SECTION(.uncached.OS.msc_stackReserveP1) msc_stackReserveP1 = 0;
+
+/** Stack reserve of kernel process on the second core. */
+volatile unsigned int SECTION(.uncached.OS.msc_stackReserveOS) msc_stackReserveOS = 0;
+
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */ 
 volatile unsigned int SECTION(.uncached.OS.msc_cpuLoadSecondCore) msc_cpuLoadSecondCore = 1000;
 
@@ -168,6 +182,84 @@ static int32_t taskInitProcess(uint32_t PID)
 
 
 /**
+ * Here, on the second core we have a safe-RTOS running with full error catching
+ * capabilities. We can try injecting some severe errors and expect the software on this
+ * core to still run stable.\n
+ *   Each invokation of this function injects an error and the calling user task will be
+ * aborted. The function doesn't normally return but sometimes it may.
+ *   @param 
+ * 
+ *   @remark
+ * Despite of error catching, we need to take care, what we do. On the boot core, the
+ * sample application "basicTest" is running. It injects errors, too and looks at the
+ * system reaction. A supervior task halts excution if somethin unexpected happens. An
+ * unexpected thing can easily be a failure additional to those expected. If several cores
+ * run safe-RTOS then they share the processes. Our failure injecting task belongs to
+ * process 1 and on the boot core this process must not report any failures. Therefore we
+ * can only inject errors, which are known to not harm any task on the boot core and
+ * belonging to the same process. This means in particular that we must not do anything
+ * which corrupts the memories of the process, which includes provoking straying tasks,
+ * e.g. by corrupted stack memories or altered user accessible CPU registers.
+ *   @see boolean otherFunction(int)
+ */
+static void injectError(void)
+{
+    static unsigned int SDATA_P1(idxErr_) = 0;
+    switch(idxErr_++)
+    {
+    case 0:
+        /* No error. */
+        break;
+    
+    case 1:
+        /* Illegal instruction. */
+        rtos_osGetIdxCore();
+        break;
+    
+    case 2:
+        /* Modify instance pointer. */
+        asm volatile ("mtspr 275, %%r1\n\t" ::: /* Clobbers */ "memory");
+        break;
+    
+    case 3:
+        /* Abort task execution (without reporting an error). */
+        rtos_terminateTask(0);
+        break;
+    
+    case 4:
+        /* Abort task execution (with reporting an error). */
+        rtos_terminateTask(-1);
+        break;
+    
+    case 5:
+        /* Access some peripheral. */
+        lbd_osSetLED(lbd_led_7_DS4, /* isOn */ true);
+        break;
+    
+    case 6:
+    {
+        /* Access an other process' memory. */
+        extern uint8_t ld_stackStartOSCore0[0], ld_stackEndOSCore0[0];
+        memset( /* address */ ld_stackStartOSCore0
+              , /* value */ 0
+              , /* noBytes */ (uintptr_t)ld_stackEndOSCore0 - (uintptr_t)ld_stackStartOSCore0
+              );
+        break;
+    }
+
+    default:
+        /** @todo This way to count cyclically is error prone. If we skip one case label
+            value the remaining cases are never reached and now arning or error is
+            produced. */
+        idxErr_ = 0;
+    }
+    
+} /* End of injectError */
+
+
+
+
+/**
  * Task function, cyclically activated every Millisecond. The LED D4 is switched on and off.
  *   @return
  * If the task function returns a negative value then the task execution is counted as
@@ -193,6 +285,10 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     if(++cntIsOn_ >= 500)
         cntIsOn_ = -500;
     lbd_setLED(lbd_led_2_DS9, /* isOn */ cntIsOn_ >= 0);
+
+    /* Inject an error from time to time. */
+    if((msc_cntTask1ms & 0x3) == 0)
+        injectError();
 
     return 0;
 
@@ -226,6 +322,13 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     /* Test button input: The current status is echoed as LED status. */
     lbd_osSetLED(lbd_led_5_DS6,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
               
+    /* Communicate the current number of recognized failures to the reporting task running
+       on the boot core. */
+    msc_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
+    msc_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
+    msc_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
+    msc_stackReserveOS = rtos_getStackReserve(pidOs);
+
     static int SBSS_P1(cntIsOn_) = 0;
     if(++cntIsOn_ >= 500)
         cntIsOn_ = -500;

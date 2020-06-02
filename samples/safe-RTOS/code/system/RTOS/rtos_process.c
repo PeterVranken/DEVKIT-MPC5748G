@@ -569,6 +569,9 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
  * occasionally from the idle task.
  *   @remark
  * This function can be called from both, the OS context and a user task.
+ *   @remark
+ * This function my be called even from a core, which is not running safe-RTOS. Hoever, the
+ * use is restricted to PID 0, the OS stack, which is the only one is use on such a core.
  */
 unsigned int rtos_getStackReserve(unsigned int PID)
 {

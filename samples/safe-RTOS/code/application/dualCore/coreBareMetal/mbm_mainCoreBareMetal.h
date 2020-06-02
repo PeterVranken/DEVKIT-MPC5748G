@@ -50,6 +50,9 @@ extern volatile unsigned long mbm_cntMain;
 extern volatile unsigned long mbm_cntIsr1ms;  
 #endif
 
+/** Stack reserve on the bare metal core. */
+extern volatile unsigned int mbm_stackReserve;
+
 /** The average CPU load produced by all isrs and interrupts in tens of percent. */ 
 extern volatile unsigned int mbm_cpuLoadCoreBareMetal;
 

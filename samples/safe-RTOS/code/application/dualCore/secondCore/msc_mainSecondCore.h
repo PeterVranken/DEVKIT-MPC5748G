@@ -51,6 +51,18 @@ extern volatile unsigned long msc_cntTask1ms;
 /** Counter of cyclic 1ms OS task. */
 extern volatile unsigned long msc_cntTaskOs1ms;
 
+/** Total counter of task failures in P1 on second core. */
+extern volatile unsigned int msc_cntTaskFailuresP1;
+
+/** Activation loss counter for process 1 on the second core. */
+extern volatile unsigned int msc_cntActivationLossFailures;
+
+/** Stack reserve of process p1 on the second core. */
+extern volatile unsigned int msc_stackReserveP1;
+
+/** Stack reserve of kernel process on the second core. */
+extern volatile unsigned int msc_stackReserveOS;
+
 /** The average CPU load produced by all tasks and interrupts on core Z4B in tens of
     percent. */ 
 extern volatile unsigned int msc_cpuLoadSecondCore;
