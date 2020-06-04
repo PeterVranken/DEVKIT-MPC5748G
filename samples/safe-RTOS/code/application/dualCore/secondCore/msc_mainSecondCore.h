@@ -1,5 +1,5 @@
-#ifndef MSC_MAIN_Z4B_INCLUDED
-#define MSC_MAIN_Z4B_INCLUDED
+#ifndef MSC_MAINSECONDCORE_INCLUDED
+#define MSC_MAINSECONDCORE_INCLUDED
 /**
  * @file msc_mainSecondCore.h
  * Definition of global interface of module msc_mainSecondCore.c
@@ -78,4 +78,4 @@ void /* _Noreturn */ msc_mainSecondCore(int noArgs, const char *argAry[]);
 /** Callback for LED and button I/O driver. */
 int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
 
-#endif  /* MSC_MAIN_Z4B_INCLUDED */
+#endif  /* MSC_MAINSECONDCORE_INCLUDED */

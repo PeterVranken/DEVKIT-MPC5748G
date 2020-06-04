@@ -1,8 +1,8 @@
-#ifndef MZ2_MAIN_Z2_INCLUDED
-#define MZ2_MAIN_Z2_INCLUDED
+#ifndef MBM_MAINCOREBAREMETAL_INCLUDED
+#define MBM_MAINCOREBAREMETAL_INCLUDED
 /**
  * @file mz2_main_Z2.h
- * Definition of global interface of module mz2_main_Z2.c
+ * Definition of global interface of module mbm_mainCoreBareMetal.c
  *
  * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -64,4 +64,4 @@ extern volatile unsigned int mbm_cpuLoadCoreBareMetal;
 /** Main entry point of code execution for core Z2. */
 void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs, const char *argAry[]);
 
-#endif  /* MZ2_MAIN_Z2_INCLUDED */
+#endif  /* MBM_MAINCOREBAREMETAL_INCLUDED */
