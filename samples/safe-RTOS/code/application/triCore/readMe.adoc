@@ -1,0 +1,45 @@
+= Basic Test of a multi-core application of safe-RTOS
+
+This sample application for safe-RTOS on the DEVKIT-MPC5748G demonstrates
+the use of the kernel in a multi-core environment. Two of the three cores
+run safe-RTOS.
+
+The kernel is started on the boot core Z4A. Here, the sample application
+"basicTest" is configured, which we already know from the single core
+installations of the RTOS. After starting the kernel the boot core
+launches the second core.
+
+The code on the second core is the other sample application "initial",
+i.e. one of the most simple possible task configurations with two 1ms
+tasks (user mode and OS task), which simply drive an LED each and which
+query the user buttons.
+
+Both cores' applications use their specific LEDs, so that the concurrent
+run of both the cores can be observed. Moreover, you are encouraged to
+press the user buttons on the evaluation board and see if the related LEDs
+are lit.
+
+The MCU has three cores. It can be configured at compile time, which core
+is the second one running safe-RTOS with sample application "initial".
+Either the second Z4A or the Z2 can be chosen to run safe-RTOS. The
+remaining third core runs a simpler bare metal application. The choice of
+the second RTOS core has been made configurable for testing purpose; the
+Z4 and Z2 cores are similar but not same and this way the kernel can be
+tested with both of them.
+
+"Bare metal application" on the remaining core means an application
+programming environment similar to what we have seen in the other
+DEVKIT-MPC5748G sample "startup": A C main function, a service to register
+interrupt service routines, services to temporarily lock interrupt
+processing, simple I/O drivers to access the user LEDs and buttons on the
+evaluation board, serial in- and output -- and everything executed in
+supervisor mode.
+
+Status and progress of the sample application are printed to the serial
+port of the evaluation board. Open a terminal on the host machine to read
+the output: 115200 Bd, 8 Bit, 1 Stop bit, no parity. Additionally, the
+successfully running test can be observed by blinking LEDs on the board.
+Five LEDs are permanently blinking at different rates and two of them
+should be lit when pressing the user buttons. Only the eighth, innermost
+mounted LED should never be alight: It would start blinking in case of a
+problem recognized by the safety supervisor task on core Z4A.
