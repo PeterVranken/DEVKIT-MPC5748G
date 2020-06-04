@@ -25,10 +25,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   m4b_injectError
+ *   m4b_onButtonChangeCallback
  *   m4b_mainZ4B
  * Local functions
  *   taskInitProcess
- *   injectError
  *   task1ms
  *   taskOs1ms
  */
@@ -125,14 +126,14 @@ enum
  * Data definitions
  */
 
-/** Counter of cycles of infinite main loop. */
-volatile unsigned long SECTION(.uncached.OS.m4b_cntTaskIdle) m4b_cntTaskIdle = 0;
-
 /** Counter of cyclic 1ms user task. */
 volatile unsigned long SECTION(.uncached.P1.m4b_cntTask1ms) m4b_cntTask1ms = 0;  
 
 /** Counter of cyclic 1ms OS task. */
 volatile unsigned long SECTION(.uncached.OS.m4b_cntTaskOs1ms) m4b_cntTaskOs1ms = 0;
+
+/** Counter of cycles of infinite main loop. */
+volatile unsigned long SECTION(.uncached.OS.m4b_cntTaskIdle) m4b_cntTaskIdle = 0;
 
 /** Total counter of task failures in P1 on second core. */
 volatile unsigned int SECTION(.uncached.OS.m4b_cntTaskFailuresP1) m4b_cntTaskFailuresP1 = 0;
@@ -148,7 +149,7 @@ volatile unsigned int SECTION(.uncached.OS.m4b_stackReserveP1) m4b_stackReserveP
 volatile unsigned int SECTION(.uncached.OS.m4b_stackReserveOS) m4b_stackReserveOS = 0;
 
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */ 
-volatile unsigned int SECTION(.uncached.OS.m4b_cpuLoadSecondCore) m4b_cpuLoadSecondCore = 1000;
+volatile unsigned int SECTION(.uncached.OS.m4b_cpuLoadZ4B) m4b_cpuLoadZ4B = 1000;
 
 
 /*
@@ -182,13 +183,94 @@ static int32_t taskInitProcess(uint32_t PID)
 
 
 /**
+ * Task function, cyclically activated every Millisecond. The LED D4 is switched on and off.
+ *   @return
+ * If the task function returns a negative value then the task execution is counted as
+ * error in the process.
+ *   @param PID
+ * A user task function gets the process ID as first argument.
+ *   @param taskParam
+ * A variable task parameter. Here just used for testing.
+ */
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+{
+    assert(taskParam == 0);
+
+    /* Make spinning of the task observable in the debugger. */
+    ++ m4b_cntTask1ms;
+
+#if TASKS_PRODUCE_GROUND_LOAD == 1
+    /* Produce a bit of CPU load. This call simulates some true application software. */
+    del_delayMicroseconds(/* fullLoadThisNoMicroseconds */ 50 /* approx. 5% load */);
+#endif
+
+    static int SBSS_P1(cntIsOn_) = 0;
+    if(++cntIsOn_ >= 500)
+        cntIsOn_ = -500;
+    lbd_setLED(lbd_led_2_DS9, /* isOn */ cntIsOn_ >= 0);
+
+    /* Inject an error from time to time. */
+    static unsigned int SDATA_P1(idxErr_) = 0;
+    if((m4b_cntTask1ms & 0x3) == 0)
+        mb4_injectError(&idxErr_);
+
+    return 0;
+
+} /* End of task1ms */
+
+
+
+/**
+ * OS task function, cyclically activated every Millisecond. Used to clock the step
+ * functions of our I/O drivers.\n
+ *   This task is run in supervisor mode and it has no protection. The implementation
+ * belongs into the sphere of trusted code.
+ *   @param taskParam
+ * A variable task parameter. Here just used for testing.
+ */
+static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
+{
+    assert(taskParam == 0);
+
+    /* Make spinning of the task observable in the debugger. */
+    ++ m4b_cntTaskOs1ms;
+
+    /** Regularly called step function of the I/O driver. */
+    lbd_osTask1ms();
+
+#if TASKS_PRODUCE_GROUND_LOAD == 1
+    /* Produce a bit of CPU load. This call simulates some true application software. */
+    del_delayMicroseconds(/* fullLoadThisNoMicroseconds */ 75 /* approx. 7.5% load */);
+#endif
+
+    /* Test button input: The current status is echoed as LED status. */
+    lbd_osSetLED(lbd_led_5_DS6,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
+              
+    /* Communicate the current number of recognized failures to the reporting task running
+       on the boot core. */
+    m4b_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
+    m4b_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
+
+    static int SBSS_P1(cntIsOn_) = 0;
+    if(++cntIsOn_ >= 500)
+        cntIsOn_ = -500;
+    lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
+    
+} /* End of taskOs1ms */
+
+
+
+/**
  * Here, on the second core we have a safe-RTOS running with full error catching
  * capabilities. We can try injecting some severe errors and expect the software on this
  * core to still run stable.\n
  *   Each invokation of this function injects an error and the calling user task will be
  * aborted. The function doesn't normally return but sometimes it may.
- *   @param 
- * 
+ *   @param pIdxErr
+ * The state of the functionby reference. Actually a counter, which is incremented
+ * (cyclically) at every function invocation and which has the meaning of the kind of
+ * error, which is injected. Prior to the very first call of the function the counter * \a
+ * pIdxErr should be set to zero.
  *   @remark
  * Despite of error catching, we need to take care, what we do. On the boot core, the
  * sample application "basicTest" is running. It injects errors, too and looks at the
@@ -202,10 +284,17 @@ static int32_t taskInitProcess(uint32_t PID)
  * e.g. by corrupted stack memories or altered user accessible CPU registers.
  *   @see boolean otherFunction(int)
  */
-static void injectError(void)
+void mb4_injectError(unsigned int * const pIdxErr)
 {
-    static unsigned int SDATA_P1(idxErr_) = 0;
-    switch(idxErr_++)
+    /* Evaluation and increment of counter need to be done prior to the switch case: We
+       will not reach the end of the switch statement any more. */
+    const unsigned int idxErr = *pIdxErr;
+    if(idxErr < 6)
+        *pIdxErr = idxErr+1;
+    else
+        *pIdxErr = 0;
+
+    switch(idxErr)
     {
     case 0:
         /* No error. */
@@ -248,93 +337,11 @@ static void injectError(void)
     }
 
     default:
-        /** @todo This way to count cyclically is error prone. If we skip one case label
-            value the remaining cases are never reached and now arning or error is
-            produced. */
-        idxErr_ = 0;
+        assert(false);
     }
     
-} /* End of injectError */
+} /* End of mb4_injectError */
 
-
-
-
-/**
- * Task function, cyclically activated every Millisecond. The LED D4 is switched on and off.
- *   @return
- * If the task function returns a negative value then the task execution is counted as
- * error in the process.
- *   @param PID
- * A user task function gets the process ID as first argument.
- *   @param taskParam
- * A variable task parameter. Here just used for testing.
- */
-static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
-{
-    assert(taskParam == 0);
-
-    /* Make spinning of the task observable in the debugger. */
-    ++ m4b_cntTask1ms;
-
-#if TASKS_PRODUCE_GROUND_LOAD == 1
-    /* Produce a bit of CPU load. This call simulates some true application software. */
-    del_delayMicroseconds(/* fullLoadThisNoMicroseconds */ 50 /* approx. 5% load */);
-#endif
-
-    static int SBSS_P1(cntIsOn_) = 0;
-    if(++cntIsOn_ >= 500)
-        cntIsOn_ = -500;
-    lbd_setLED(lbd_led_2_DS9, /* isOn */ cntIsOn_ >= 0);
-
-    /* Inject an error from time to time. */
-    if((m4b_cntTask1ms & 0x3) == 0)
-        injectError();
-
-    return 0;
-
-} /* End of task1ms */
-
-
-
-/**
- * OS task function, cyclically activated every Millisecond. Used to clock the step
- * functions of our I/O drivers.\n
- *   This task is run in supervisor mode and it has no protection. The implementation
- * belongs into the sphere of trusted code.
- *   @param taskParam
- * A variable task parameter. Here just used for testing.
- */
-static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
-{
-    assert(taskParam == 0);
-
-    /* Make spinning of the task observable in the debugger. */
-    ++ m4b_cntTaskOs1ms;
-
-    /** Regularly called step function of the I/O driver. */
-    lbd_osTask1ms();
-
-#if TASKS_PRODUCE_GROUND_LOAD == 1
-    /* Produce a bit of CPU load. This call simulates some true application software. */
-    del_delayMicroseconds(/* fullLoadThisNoMicroseconds */ 75 /* approx. 7.5% load */);
-#endif
-
-    /* Test button input: The current status is echoed as LED status. */
-    lbd_osSetLED(lbd_led_5_DS6,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
-              
-    /* Communicate the current number of recognized failures to the reporting task running
-       on the boot core. */
-    m4b_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
-    m4b_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
-    m4b_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
-    m4b_stackReserveOS = rtos_getStackReserve(pidOs);
-
-    static int SBSS_P1(cntIsOn_) = 0;
-    if(++cntIsOn_ >= 500)
-        cntIsOn_ = -500;
-    lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
-    
-} /* End of taskOs1ms */
 
 
 
@@ -383,13 +390,7 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
                                 , const char *argAry[] ATTRIB_DBG_ONLY
                                 )
 {
-    assert( noArgs == 1
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
-            &&  strcmp(argAry[0], "Z4B") == 0
-#elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-            &&  strcmp(argAry[0], "Z2") == 0
-#endif
-          );
+    assert(noArgs == 1  &&  strcmp(argAry[0], "Z4B") == 0);
             
 #if 0 /* Here, on the second core, we must not make use of the serial output. It is
          basically alright to make use of the sio API but blocking by busy wait is involved
@@ -465,18 +466,11 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
         while(true)
             ;
 
-    /* Only after initialization of the RTOS, we start the next core. They is because the
+    /* Only after initialization of the RTOS, we start the next core. This is because the
        function to register the interrupt handlers at the global, shared interrupt
        controller is not cross-core safe under all circumstances. This was we simply avoid
        any race condition. */
-    const unsigned int idxThirdRTOSCore =
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
-        2; /* Z2 */
-#endif
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-        1; /* Z4B */
-#endif
-    syc_startSecondaryCore(idxThirdRTOSCore, mz2_mainZ2);
+    syc_startSecondaryCore(/* idxCore */ 2 /* Z2 */, mz2_mainZ2);
 
     /* The code down here becomes the idle task of the RTOS. We enter an infinite loop,
        where some background can be placed. */
@@ -486,8 +480,13 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
-        m4b_cpuLoadSecondCore = gsl_osGetSystemLoad();
+        m4b_cpuLoadZ4B = gsl_osGetSystemLoad();
 
+        /* Communicate some status information to the reporting task running on the boot
+           core. */
+        m4b_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
+        m4b_stackReserveOS = rtos_getStackReserve(pidOs);
+        
         static bool SBSS_OS(isOn_) = false;
         lbd_osSetLED(lbd_led_3_DS8, isOn_ = !isOn_);
 

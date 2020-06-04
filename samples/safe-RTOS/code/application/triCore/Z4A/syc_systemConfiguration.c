@@ -58,6 +58,7 @@
 #include "prs_processSupervisor.h"
 #include "syc_systemConfiguration.h"
 #include "std_decoratedStorage.h"
+#include "mz2_mainZ2.h"
 #include "m4b_mainZ4B.h"
 
 
@@ -80,7 +81,7 @@
  */
 
 /** The current, averaged CPU load in tens of percent. */
-volatile unsigned int SDATA_OS(syc_cpuLoad) = 1000;
+volatile unsigned int SDATA_OS(syc_cpuLoadZ4A) = 1000;
 
 /** A counter of the invocations of the otherwise useless PIT3 ISR. */
 volatile unsigned long long SBSS_OS(syc_cntISRPit3) = 0;
@@ -408,17 +409,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
                                 , /* onButtonChangeCallback_core1 */ m4b_onButtonChangeCallback
                                 , /* PID_core1 */                    1
-                                , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0
-#elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-                                , /* onButtonChangeCallback_core1 */ NULL
-                                , /* PID_core1 */                    0
-                                , /* onButtonChangeCallback_core2 */ m4b_onButtonChangeCallback
+                                , /* onButtonChangeCallback_core2 */ mz2_onButtonChangeCallback
                                 , /* PID_core2 */                    1
-#endif
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -627,19 +621,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Installing more interrupts should be possible while the system is already running. */
     osInstallInterruptServiceRoutines();
 
-    /* Only after initialization of the RTOS, we start the next core. They is because the
+    /* Only after initialization of the RTOS, we start the next core. This is because the
        function to register the interrupt handlers at the global, shared interrupt
        controller is not cross-core safe under all circumstances. This was we simply avoid
-       any race condition. For the same reason, the next core will start the third one
+       any race condition. For the same reason, the second core will start the third one
        after it reached the same point. */
-    const unsigned int idxSecondRTOSCore =
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
-        1; /* Z4B */
-#endif
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-        2; /* Z2 */
-#endif
-    syc_startSecondaryCore(idxSecondRTOSCore, m4b_mainZ4B);
+    syc_startSecondaryCore(/* idxCore */ 1 /* Z4B */, m4b_mainZ4B);
 
     /* The code down here becomes our idle task. It is executed when and only when no
        application task or ISR is running. */
@@ -650,6 +637,6 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
-        syc_cpuLoad = gsl_osGetSystemLoad();
+        syc_cpuLoadZ4A = gsl_osGetSystemLoad();
     }
 } /* End of main */

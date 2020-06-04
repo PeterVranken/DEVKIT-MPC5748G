@@ -42,24 +42,47 @@
  * Global data declarations
  */
 
-/** Counter of cycles of infinite main loop. */
-extern volatile unsigned long mz2_cntMain;
-
-#if 0
 /** Counter of cyclic 1ms user isr. */
 extern volatile unsigned long mz2_cntIsr1ms;  
-#endif
 
-/** Stack reserve on the bare metal core. */
-extern volatile unsigned int mz2_stackReserve;
+/** Counter of cyclic 100us user isr. */
+extern volatile unsigned long mz2_cntIsr100us;  
 
-/** The average CPU load produced by all isrs and interrupts in tens of percent. */ 
-extern volatile unsigned int mz2_cpuLoadCoreBareMetal;
+/** Counter of cyclic 33us user isr. */
+extern volatile unsigned long mz2_cntIsr33us;  
+
+/** Counter of cyclic 1ms user task. */
+extern volatile unsigned long mz2_cntTask1ms;  
+
+/** Counter of cyclic 1ms OS task. */
+extern volatile unsigned long mz2_cntTaskOs1ms;
+
+/** Counter of cycles of infinite main loop. */
+extern volatile unsigned long mz2_cntTaskIdle;
+
+/** Total counter of task failures in P1 on second core. */
+extern volatile unsigned int mz2_cntTaskFailuresP1;
+
+/** Activation loss counter for process 1 on the second core. */
+extern volatile unsigned int mz2_cntActivationLossFailures;
+
+/** Stack reserve of process p1 on the second core. */
+extern volatile unsigned int mz2_stackReserveP1;
+
+/** Stack reserve of kernel process on the second core. */
+extern volatile unsigned int mz2_stackReserveOS;
+
+/** The average CPU load produced by all tasks and interrupts on core Z4B in tens of
+    percent. */ 
+extern volatile unsigned int mz2_cpuLoadZ2;
 
 
 /*
  * Global prototypes
  */
+
+/** Callback for LED and button I/O driver. */
+int32_t mz2_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
 
 /** Main entry point of code execution for core Z2. */
 void /* _Noreturn */ mz2_mainZ2(int noArgs, const char *argAry[]);

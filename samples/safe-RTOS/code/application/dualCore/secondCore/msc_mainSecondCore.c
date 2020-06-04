@@ -465,7 +465,7 @@ void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
         while(true)
             ;
 
-    /* Only after initialization of the RTOS, we start the next core. They is because the
+    /* Only after initialization of the RTOS, we start the next core. This is because the
        function to register the interrupt handlers at the global, shared interrupt
        controller is not cross-core safe under all circumstances. This was we simply avoid
        any race condition. */

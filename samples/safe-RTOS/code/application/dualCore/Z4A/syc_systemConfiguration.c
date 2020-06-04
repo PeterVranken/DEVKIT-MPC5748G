@@ -627,7 +627,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Installing more interrupts should be possible while the system is already running. */
     osInstallInterruptServiceRoutines();
 
-    /* Only after initialization of the RTOS, we start the next core. They is because the
+    /* Only after initialization of the RTOS, we start the next core. This is because the
        function to register the interrupt handlers at the global, shared interrupt
        controller is not cross-core safe under all circumstances. This was we simply avoid
        any race condition. For the same reason, the next core will start the third one

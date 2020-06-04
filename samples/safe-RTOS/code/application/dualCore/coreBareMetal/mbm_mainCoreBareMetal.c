@@ -246,7 +246,7 @@ void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs ATTRIB_DBG_ONLY, const cha
     osInstallInterruptServiceRoutines();
     rtos_osResumeAllInterrupts();
     
-    /* The "main" function of a bare metal application on a core not running sfae-RTOS is
+    /* The "main" function of a bare metal application on a core not running safe-RTOS is
        placed in infinite loop; C's main must never return. */
     while(true)
     {

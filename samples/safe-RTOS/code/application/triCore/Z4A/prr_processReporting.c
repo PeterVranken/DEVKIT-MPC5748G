@@ -165,12 +165,12 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
  */
 int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
 {
-    const unsigned int cpuLoadZ4A = syc_cpuLoad
-                     , cpuLoadSecondCore = m4b_cpuLoadSecondCore
-                     , cpuLoadCoreBareMetal = mz2_cpuLoadCoreBareMetal;
+    const unsigned int cpuLoadZ4A = syc_cpuLoadZ4A
+                     , cpuLoadZ4B = m4b_cpuLoadZ4B
+                     , cpuLoadZ2 = mz2_cpuLoadZ2;
     
     const uint32_t tiStart = stm_getSystemTime(1);
-    iprintf( "CPU Z4A (running safe-RTOS):\r\n"
+    iprintf( "CPU Z4A:\r\n"
              "  CPU load: %u.%u%%\r\n"
              "  Stack reserve:\r\n"
              "    OS: %u Byte\r\n"
@@ -204,7 +204,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
 # define CORE_RTOS          "Z2"
 # define CORE_BARE_METAL    "Z4B"
 #endif
-    iprintf( "CPU " CORE_RTOS " (running safe-RTOS):\r\n"
+    iprintf( "CPU Z4B:\r\n"
              "  CPU load: %u.%u%%\r\n"
              "  Stack reserve:\r\n"
              "    OS: %u Byte\r\n"
@@ -215,13 +215,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "    idle: %lu\n\r"
              "  Process errors:\n\r"
              "    Total PID 1: %u\r\n"
-             "CPU " CORE_BARE_METAL " (bare metal):\r\n"
-             "  ISR load: %u.%u%%\r\n"
-             "  Stack reserve:\r\n"
-             "    core: %u Byte\r\n"
-             "  Cycle counts on core " CORE_BARE_METAL ":\r\n"
-             "    main: %lu\n\r"
-           , cpuLoadSecondCore/10, cpuLoadSecondCore%10
+           , cpuLoadZ4B/10, cpuLoadZ4B%10
            , m4b_stackReserveOS
            , m4b_stackReserveP1
            , m4b_cntTaskOs1ms
@@ -229,9 +223,33 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
            , m4b_cntTask1ms
            , m4b_cntTaskIdle
            , m4b_cntTaskFailuresP1
-           , cpuLoadCoreBareMetal/10, cpuLoadCoreBareMetal%10
-           , mz2_stackReserve
-           , mz2_cntMain
+           );             
+
+    iprintf( "CPU Z2:\r\n"
+             "  CPU load: %u.%u%%\r\n"
+             "  Stack reserve:\r\n"
+             "    OS: %u Byte\r\n"
+             "    PID 1: %u Byte\r\n"
+             "  Task counts (lost triggers):\r\n"
+             "    ISR 33us: %lu\n\r"
+             "    ISR 100us: %lu\n\r"
+             "    ISR 1ms: %lu\n\r"
+             "    OS, 1ms: %lu (%u)\n\r"
+             "    user, 1ms: %lu\n\r"
+             "    idle: %lu\n\r"
+             "  Process errors:\n\r"
+             "    Total PID 1: %u\r\n"
+           , cpuLoadZ2/10, cpuLoadZ2%10
+           , mz2_stackReserveOS
+           , mz2_stackReserveP1
+           , mz2_cntIsr33us
+           , mz2_cntIsr100us
+           , mz2_cntIsr1ms
+           , mz2_cntTaskOs1ms
+           , mz2_cntActivationLossFailures
+           , mz2_cntTask1ms
+           , mz2_cntTaskIdle
+           , mz2_cntTaskFailuresP1
            );
 
     const uint64_t tiDuration = stm_getSystemTime(1) - tiStart;

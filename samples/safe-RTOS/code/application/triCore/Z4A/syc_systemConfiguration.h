@@ -130,7 +130,7 @@ enum
  */
 
 /** The current, averaged CPU load in tens of percent. */
-extern volatile unsigned int syc_cpuLoad;
+extern volatile unsigned int syc_cpuLoadZ4A;
 
 /** A counter of the invocations of the otherwise useless PIT3 ISR. */
 extern volatile unsigned long long syc_cntISRPit3;

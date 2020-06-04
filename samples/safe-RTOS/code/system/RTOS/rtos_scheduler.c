@@ -677,10 +677,10 @@ static inline void checkEventDue(void)
 /**
  * The OS default timer handler. In function rtos_osInitKernel(), it is associated with the
  * PIT0 interrupt. You must not call this function yourself. The routine is invoked once
- * every #RTOS_CLOCK_TICK_IN_MS Milliseconds and triggers most of the scheduler decisions.
- * The application code is expected to run mainly in regular tasks and these are activated
- * by this routine when they become due. All the rest is done by the interrupt controller
- * INTC.
+ * every #RTOS_CLOCK_TICK_IN_MS_CORE_0 (_1, _2) Milliseconds and triggers most of the
+ * scheduler decisions. The application code is expected to run mainly in regular tasks and
+ * these are activated by this routine when they become due. All the rest is done by the
+ * interrupt controller INTC.
  *   @remark
  * The INTC priority at which this function is executed is configured as
  * #RTOS_KERNEL_IRQ_PRIORITY_CORE_0 (or as #RTOS_KERNEL_IRQ_PRIORITY_CORE_1, or as
@@ -739,7 +739,7 @@ static inline void launchAllTasksOfEvent(const rtos_eventDesc_t * const pEvent)
  * function of the RTOS, onOsTimerTick(). The wrap-around cycle frequency of the timer
  * determines the time resolution of the RTOS operations.\n
  *   The wrap-around cycle time is a compile-time configuration item, see
- * #RTOS_CLOCK_TICK_IN_MS for more details.
+ * #RTOS_CLOCK_TICK_IN_MS_CORE_0 (_1, _2) for more details.
  */
 static void initRTOSClockTick(void)
 {
@@ -816,8 +816,8 @@ static void initRTOSClockTick(void)
                                    );
 
     /* Peripheral clock has been initialized to 40 MHz. To get a 1ms interrupt tick we
-       need to count till 40000. We configure an interrupt rate of RTOS_CLOCK_TICK_IN_MS
-       Milliseconds.
+       need to count till 40000. We configure an interrupt rate of
+       RTOS_CLOCK_TICK_IN_MS_CORE_0 (_1, _2) Milliseconds.
          -1: See RM, 51.6 */
 /// @todo Here, we need to have a double-check with CCL
     PIT->TIMER[idxTimerChn].LDVAL = (unsigned int)
@@ -1192,7 +1192,7 @@ rtos_errorCode_t rtos_osRegisterOSTask( unsigned int idEvent
  *   The function initializes a hardware device to produce a regular clock tick and
  * connects the OS schedule function onOsTimerTick() with the interrupt raised by this
  * timer device. After return, the RTOS is running with a regular clock tick for scheduling
- * the tasks. Period time is #RTOS_CLOCK_TICK_IN_MS Milliseconds.\n
+ * the tasks. Period time is #RTOS_CLOCK_TICK_IN_MS_CORE_0 (_1, _2) Milliseconds.\n
  *   The function can be called before or after the External Interrupts are enabled at the
  * CPU (see rtos_osResumeAllInterrupts()). Normal behavior is however, no to resume the
  * interrupt processing before and let this be done by rtos_osInitKernel().

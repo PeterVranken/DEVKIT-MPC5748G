@@ -20,11 +20,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   mz2_onButtonChangeCallback
  *   mz2_mainZ2
  * Local functions
  *   isrPit4
  *   isrPit5
  *   isrPit6
+ *   task1ms
+ *   taskOs1ms
  */
 
 /*
@@ -48,6 +51,7 @@
 #include "sio_serialIO.h"
 #include "del_delay.h"
 #include "stm_systemTimer.h"
+#include "m4b_mainZ4B.h"
 #include "mz2_mainZ2.h"
 
 
@@ -57,11 +61,55 @@
  
 /** The demo can be compiled with a ground load. Most tasks produce some CPU load if this
     switch is set to 1. */
-#define ISRs_PRODUCE_GROUND_LOAD   1
+#define TASKS_PRODUCE_GROUND_LOAD   1
+
 
 /*
  * Local type definitions
  */
+
+/** The enumeration of all events, tasks and priorities, to have them as symbols in the
+    source code. Most relevant are the event IDs. Actually, these IDs are provided by the
+    RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
+    are dealt out by rtos_osCreateEvent() form the series 0, 1, 2, .... So we don't need
+    to have a dynamic storage of the IDs; we define them as constants and double-check by
+    assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
+    requires that the order of creating the events follows the order here in the
+    enumeration.\n
+      Here, we have the IDs of the created events. They occupy the index range starting
+    from zero. */
+enum
+{
+    /** Regular timer event. */
+    idEv1ms = 0,
+
+    /** The number of tasks to register. */
+    noRegisteredEvents
+};
+
+
+/** The RTOS uses constant priorities for its events, which are defined here.\n
+      Note, the priority is a property of an event rather than of a task. A task implicitly
+    inherits the priority of the event it is associated with. */
+enum
+{
+    prioTaskIdle = 0,            /* Prio 0 is implicit, cannot be chosen explicitly */
+    prioEv1ms = 1,
+};
+
+
+/** In safe-RTOS a task belongs to a process, characterized by the PID, 1..4. The
+    relationship is defined here.\n
+      Note, a process needs to be configured in the linker script (actually: assignment of
+    stack space) before it can be used. */
+enum
+{
+    pidOs = 0,              /* kernel always and implicitly has PID 0 */
+    pidTask1ms = 1,         /* Don't use P2, there are failures injected in core 0 */
+    pidTaskOs1ms = pidOs,   /* A kernel or operating system task, e.g. to implement a
+                               polling I/O driver. */
+    pidTaskIdle = pidOs     /* PID 0 is implicit, idle belongs to the kernel */
+};
 
 
 /*
@@ -73,9 +121,6 @@
  * Data definitions
  */
 
-/** Counter of cycles of infinite main loop. */
-volatile unsigned long SECTION(.uncached.OS.mz2_cntIsrIdle) mz2_cntMain = 0;
-
 /** Counter of regular 1ms user isr. */
 volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr1ms) mz2_cntIsr1ms = 0;  
 
@@ -85,11 +130,30 @@ volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr100us) mz2_cntIsr100us = 0
 /** Counter of regular 33us user isr. */
 volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr33us) mz2_cntIsr33us = 0;  
 
-/** Stack reserve on the bare metal core. */
-volatile unsigned int SECTION(.uncached.OS.mz2_stackReserve) mz2_stackReserve = 0;
+/** Counter of cyclic 1ms user task. */
+volatile unsigned long SECTION(.uncached.P1.mz2_cntTask1ms) mz2_cntTask1ms = 0;  
+
+/** Counter of cyclic 1ms OS task. */
+volatile unsigned long SECTION(.uncached.OS.mz2_cntTaskOs1ms) mz2_cntTaskOs1ms = 0;
+
+/** Counter of cycles of infinite main loop. */
+volatile unsigned long SECTION(.uncached.OS.mz2_cntTaskIdle) mz2_cntTaskIdle = 0;
+
+/** Total counter of task failures in P1 on second core. */
+volatile unsigned int SECTION(.uncached.OS.mz2_cntTaskFailuresP1) mz2_cntTaskFailuresP1 = 0;
+
+/** Activation loss counter for process 1 on the second core. */
+volatile unsigned int SECTION(.uncached.OS.mz2_cntActivationLossFailures)
+                                                        mz2_cntActivationLossFailures = 0;
+
+/** Stack reserve of process p1 on the second core. */
+volatile unsigned int SECTION(.uncached.OS.mz2_stackReserveP1) mz2_stackReserveP1 = 0;
+
+/** Stack reserve of kernel process on the second core. */
+volatile unsigned int SECTION(.uncached.OS.mz2_stackReserveOS) mz2_stackReserveOS = 0;
 
 /** The average CPU load produced by all ISRs in tens of percent. */ 
-volatile unsigned int SECTION(.uncached.OS.mz2_cpuLoad) mz2_cpuLoadCoreBareMetal = 1000;
+volatile unsigned int SECTION(.uncached.OS.mz2_cpuLoadZ2) mz2_cpuLoadZ2 = 1000;
 
 
 /*
@@ -144,6 +208,106 @@ static void isrPit6(void)
     PIT->TIMER[6].TFLG = PIT_RTI_TFLG_TIF(1);
 
 } /* End of isrPit6 */
+
+
+
+/**
+ * Task function, cyclically activated every Millisecond. The LED D4 is switched on and off.
+ *   @return
+ * If the task function returns a negative value then the task execution is counted as
+ * error in the process.
+ *   @param PID
+ * A user task function gets the process ID as first argument.
+ *   @param taskParam
+ * A variable task parameter. Here just used for testing.
+ */
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+{
+    assert(taskParam == 0);
+
+    /* Make spinning of the task observable in the debugger. */
+    ++ mz2_cntTask1ms;
+
+#if TASKS_PRODUCE_GROUND_LOAD == 1
+    /* Produce a bit of CPU load. This call simulates some true application software. */
+    del_delayMicroseconds(/* fullLoadThisNoMicroseconds */ 50 /* approx. 5% load */);
+#endif
+
+#if 0
+    /* Inject an error from time to time. */
+    static unsigned int SDATA_P1(idxErr_) = 0;
+    if((mz2_cntTask1ms & 0x3) == 0)
+        m4b_injectError(&idxErr_);
+#endif
+
+    return 0;
+
+} /* End of task1ms */
+
+
+
+/**
+ * OS task function, cyclically activated every Millisecond. Used to clock the step
+ * functions of our I/O drivers.\n
+ *   This task is run in supervisor mode and it has no protection. The implementation
+ * belongs into the sphere of trusted code.
+ *   @param taskParam
+ * A variable task parameter. Here just used for testing.
+ */
+static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
+{
+    assert(taskParam == 0);
+
+    /* Make spinning of the task observable in the debugger. */
+    ++ mz2_cntTaskOs1ms;
+
+    /** Regularly called step function of the I/O driver. */
+    lbd_osTask1ms();
+
+#if TASKS_PRODUCE_GROUND_LOAD == 1
+    /* Produce a bit of CPU load. This call simulates some true application software. */
+    del_delayMicroseconds(/* fullLoadThisNoMicroseconds */ 75 /* approx. 7.5% load */);
+#endif
+
+    /* Test button input: The current status is echoed as LED status. */
+//    lbd_osSetLED(lbd_led_5_DS6,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
+              
+    /* Communicate the current number of recognized failures to the reporting task running
+       on the boot core. */
+    mz2_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
+    mz2_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
+
+} /* End of taskOs1ms */
+
+
+
+/**
+ * Test of LED and button driver: This callback is invoked on every state change of any of
+ * the supported (two) buttons.
+ *   @return
+ * The function always returns zero (no error).
+ *   @param PID
+ * PID of process, which is registered for the callback.
+ *   @param buttonState
+ * Current state of both buttons and changes in the instance of calling. See enum
+ * lbd_buttonStateMask_t for details.
+ *   @remark
+ * This function must never be called directly. It has been made public for the only reason
+ * that the boot core needs to know it for the initialization call of the I/O driver.
+ */
+int32_t mz2_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
+{
+#if 0
+    /* Test button input: The current status is echoed as LED status. */
+    if((buttonState & lbd_btStMask_btnSw1_down) != 0)
+        lbd_setLED(lbd_led_6_DS5,  /* isOn */ true);
+    else if((buttonState & lbd_btStMask_btnSw1_released) != 0)
+        lbd_setLED(lbd_led_6_DS5,  /* isOn */ false);
+#endif
+
+    return 0;    
+
+} /* End of mz2_onButtonChangeCallback */
 
 
 
@@ -231,55 +395,124 @@ static void osInstallInterruptServiceRoutines(void)
  */
 void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[])
 {
-    assert( noArgs == 1
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
-            &&  strcmp(argAry[0], "Z2") == 0
-#elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
-            &&  strcmp(argAry[0], "Z4B") == 0
-#endif
-          );
+    assert(noArgs == 1  &&  strcmp(argAry[0], "Z2") == 0);
+            
+#if 0 /* Here, on the third core, we must not make use of the serial output. It is
+         basically alright to make use of the sio API but blocking by busy wait is involved
+         with hard to predict impact on the RTOS timing. Moreover, the use of the C library
+         is strongly deprecated - it is not proven that it has been configured and compiled
+         for multi-core use. Simple functions without static data will properly work, but
+         nothing can be said about the printf and stream function families, which make use
+         of buffers and heap. */
 
-    /* A bare metal application may use the RTOS servivces
-       rtos_osRegisterInterruptHandler() and
-       rtos_osSuspendAllInterrupts()/rtos_osResumeAllInterrupts() to install and control
-       interrupt handlers. The next function defines 3 PIT interrupts. */
-    osInstallInterruptServiceRoutines();
-    rtos_osResumeAllInterrupts();
+    /* Demonstrate the use of the serial interface. Note, the function is never blocking
+       and we have left it for a long time before the character are visible in the console
+       window. Never blocking: If the buffer has not enough space then an according number
+       of characters is dropped rather than the function waiting for the buffer becoming
+       empty. */
+    #define GREETING "Hello World\r\n"
+    sio_osWriteSerial(GREETING, /* noBytes */ sizeof(GREETING)-1);
+    puts("puts saying " GREETING);
+    printf("printf saying %s", GREETING);
+    #undef GREETING
+#endif    
+
+    /* Create the events that trigger application tasks at the RTOS. Note, we do not really
+       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
+       The returned value is redundant. This technique requires that we create the events
+       in the right order and this requires in practice a double-check by assertion - later
+       maintenance errors are unavoidable otherwise. */
+    bool initOk = true;
+    unsigned int idEvent;
+    if(rtos_osCreateEvent( &idEvent
+                         , /* tiCycleInMs */              1
+                         , /* tiFirstActivationInMs */    10
+                         , /* priority */                 prioEv1ms
+                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
+                         , /* taskParam */                0
+                         )
+       == rtos_err_noError
+      )
+    {
+        assert(idEvent == idEv1ms);
+
+        if(rtos_osRegisterOSTask(idEv1ms, taskOs1ms) != rtos_err_noError)
+            initOk = false;
+
+        if(rtos_osRegisterUserTask( idEv1ms
+                                  , task1ms
+                                  , pidTask1ms
+                                  , /* tiTaskMaxInUs */ 0
+                                  )
+           != rtos_err_noError
+          )
+        {
+            initOk = false;
+        }
+    }
+    else
+        initOk = false;
+
+    /* The last check ensures that we didn't forget to register a task. */
+    assert(idEvent == noRegisteredEvents-1);
+
+    /* Configure the interrupts, which we have justto produce some load and disturbance. */
+//    osInstallInterruptServiceRoutines();
     
-    /* The "main" function of a bare metal application on a core not running sfae-RTOS is
-       placed in infinite loop; C's main must never return. */
+    /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
+       succeeds. The step involves a configuration check. We must not startup the SW if the
+       check fails. */
+    if(!initOk ||  rtos_osInitKernel() != rtos_err_noError)
+        while(true)
+            ;
+
+    /* The rest of the code is placed in an infinite loop; it becomes the RTOS' idle task. */
     while(true)
     {
         /* Compute the average CPU load. Note, this operation lasts about 1.5s and has a
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the interrupts but not that of the rest of
            the code in the idle loop. */
-        mz2_cpuLoadCoreBareMetal = gsl_osGetSystemLoad();
+        mz2_cpuLoadZ2 = gsl_osGetSystemLoad();
 
         /* We have only one LED left for this core. We let it blink as usually but since it
            should be a failure indication, we enable the activity only if everything looks
            alright. Particularly, the interrupts should work properly.
              We assume, that the idle loop takes between 1 and 2s. */
-        bool isSystemAlive = mz2_cpuLoadCoreBareMetal < 1000
-                             &&  mz2_cpuLoadCoreBareMetal > 0;
+        bool isSystemAlive = mz2_cpuLoadZ2 < 1000
+                             &&  mz2_cpuLoadZ2 > 0;
                              
+#if 0
         static unsigned long SDATA_OS(cntIsr1ms_) = 0;
-        unsigned long tmpCntIsr = mz2_cntIsr1ms;
-        if(tmpCntIsr < cntIsr1ms_+1000u  ||  tmpCntIsr > cntIsr1ms_+2000u)
+        unsigned long tmpCnt = mz2_cntIsr1ms;
+        if(tmpCnt < cntIsr1ms_+1000u  ||  tmpCnt > cntIsr1ms_+2000u)
             isSystemAlive = false;
-        cntIsr1ms_ = tmpCntIsr; 
+        cntIsr1ms_ = tmpCnt; 
         
         static unsigned long SDATA_OS(cntIsr100us_) = 0;
-        tmpCntIsr = mz2_cntIsr100us;
-        if(tmpCntIsr < cntIsr100us_+10000u  ||  tmpCntIsr > cntIsr100us_+20000u)
+        tmpCnt = mz2_cntIsr100us;
+        if(tmpCnt < cntIsr100us_+10000u  ||  tmpCnt > cntIsr100us_+20000u)
             isSystemAlive = false;
-        cntIsr100us_ = tmpCntIsr; 
+        cntIsr100us_ = tmpCnt; 
             
         static unsigned long SDATA_OS(cntIsr33us_) = 0;
-        tmpCntIsr = mz2_cntIsr33us;
-        if(tmpCntIsr < cntIsr33us_+30000u  ||  tmpCntIsr > cntIsr33us_+60000u)
+        tmpCnt = mz2_cntIsr33us;
+        if(tmpCnt < cntIsr33us_+30000u  ||  tmpCnt > cntIsr33us_+60000u)
             isSystemAlive = false;
-        cntIsr33us_ = tmpCntIsr; 
+        cntIsr33us_ = tmpCnt; 
+#endif
+
+        static unsigned long SDATA_OS(cntTask1ms_) = 0;
+        unsigned long tmpCnt = mz2_cntTask1ms;
+        if(tmpCnt < cntTask1ms_+1000u  ||  tmpCnt > cntTask1ms_+2000u)
+            isSystemAlive = false;
+        cntTask1ms_ = tmpCnt; 
+        
+        static unsigned long SDATA_OS(cntTaskOs1ms_) = 0;
+        tmpCnt = mz2_cntTaskOs1ms;
+        if(tmpCnt < cntTaskOs1ms_+1000u  ||  tmpCnt > cntTaskOs1ms_+2000u)
+            isSystemAlive = false;
+        cntTaskOs1ms_ = tmpCnt; 
         
         static bool SBSS_OS(isOn_) = false;
         isOn_ = isSystemAlive && !isOn_;
@@ -287,10 +520,11 @@ void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[]
 
         /* Communicate some status information to the reporting task running on the boot
            core. */
-        mz2_stackReserve = rtos_getStackReserve(/* PID */ 0);
+        mz2_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
+        mz2_stackReserveOS = rtos_getStackReserve(pidOs);
         
         /* Make spinning of the idle task observable in the debugger. */
-        ++ mz2_cntMain;
+        ++ mz2_cntTaskIdle;
 
     } /* End of inifinite idle loop of bare metal application. */
 

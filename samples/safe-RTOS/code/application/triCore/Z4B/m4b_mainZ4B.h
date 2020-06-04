@@ -42,14 +42,14 @@
  * Global data declarations
  */
 
-/** Counter of cycles of infinite main loop. */
-extern volatile unsigned long m4b_cntTaskIdle;
-
 /** Counter of cyclic 1ms user task. */
 extern volatile unsigned long m4b_cntTask1ms;  
 
 /** Counter of cyclic 1ms OS task. */
 extern volatile unsigned long m4b_cntTaskOs1ms;
+
+/** Counter of cycles of infinite main loop. */
+extern volatile unsigned long m4b_cntTaskIdle;
 
 /** Total counter of task failures in P1 on second core. */
 extern volatile unsigned int m4b_cntTaskFailuresP1;
@@ -65,17 +65,20 @@ extern volatile unsigned int m4b_stackReserveOS;
 
 /** The average CPU load produced by all tasks and interrupts on core Z4B in tens of
     percent. */ 
-extern volatile unsigned int m4b_cpuLoadSecondCore;
+extern volatile unsigned int m4b_cpuLoadZ4B;
 
 
 /*
  * Global prototypes
  */
 
-/** Main entry point of code execution for core Z4B. */
-void /* _Noreturn */ m4b_mainZ4B(int noArgs, const char *argAry[]);
+/** Test function: error injection. */
+void mb4_injectError(unsigned int * const pIdxErr);
 
 /** Callback for LED and button I/O driver. */
 int32_t m4b_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
+
+/** Main entry point of code execution for core Z4B. */
+void /* _Noreturn */ m4b_mainZ4B(int noArgs, const char *argAry[]);
 
 #endif  /* M4B_MAINZ4B_INCLUDED */
