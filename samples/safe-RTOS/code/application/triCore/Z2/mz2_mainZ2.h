@@ -1,8 +1,8 @@
-#ifndef MZ2_MAIN_Z2_INCLUDED
-#define MZ2_MAIN_Z2_INCLUDED
+#ifndef MZ2_MAINZ2_INCLUDED
+#define MZ2_MAINZ2_INCLUDED
 /**
  * @file mz2_main_Z2.h
- * Definition of global interface of module mz2_main_Z2.c
+ * Definition of global interface of module mz2_mainZ2.c
  *
  * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -43,18 +43,18 @@
  */
 
 /** Counter of cycles of infinite main loop. */
-extern volatile unsigned long mbm_cntMain;
+extern volatile unsigned long mz2_cntMain;
 
 #if 0
 /** Counter of cyclic 1ms user isr. */
-extern volatile unsigned long mbm_cntIsr1ms;  
+extern volatile unsigned long mz2_cntIsr1ms;  
 #endif
 
 /** Stack reserve on the bare metal core. */
-extern volatile unsigned int mbm_stackReserve;
+extern volatile unsigned int mz2_stackReserve;
 
 /** The average CPU load produced by all isrs and interrupts in tens of percent. */ 
-extern volatile unsigned int mbm_cpuLoadCoreBareMetal;
+extern volatile unsigned int mz2_cpuLoadCoreBareMetal;
 
 
 /*
@@ -62,6 +62,6 @@ extern volatile unsigned int mbm_cpuLoadCoreBareMetal;
  */
 
 /** Main entry point of code execution for core Z2. */
-void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs, const char *argAry[]);
+void /* _Noreturn */ mz2_mainZ2(int noArgs, const char *argAry[]);
 
-#endif  /* MZ2_MAIN_Z2_INCLUDED */
+#endif  /* MZ2_MAINZ2_INCLUDED */

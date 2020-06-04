@@ -1,8 +1,8 @@
-#ifndef MSC_MAIN_Z4B_INCLUDED
-#define MSC_MAIN_Z4B_INCLUDED
+#ifndef M4B_MAINZ4B_INCLUDED
+#define M4B_MAINZ4B_INCLUDED
 /**
- * @file msc_mainSecondCore.h
- * Definition of global interface of module msc_mainSecondCore.c
+ * @file m4b_mainZ4B.h
+ * Definition of global interface of module m4b_mainZ4B.c
  *
  * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -43,29 +43,29 @@
  */
 
 /** Counter of cycles of infinite main loop. */
-extern volatile unsigned long msc_cntTaskIdle;
+extern volatile unsigned long m4b_cntTaskIdle;
 
 /** Counter of cyclic 1ms user task. */
-extern volatile unsigned long msc_cntTask1ms;  
+extern volatile unsigned long m4b_cntTask1ms;  
 
 /** Counter of cyclic 1ms OS task. */
-extern volatile unsigned long msc_cntTaskOs1ms;
+extern volatile unsigned long m4b_cntTaskOs1ms;
 
 /** Total counter of task failures in P1 on second core. */
-extern volatile unsigned int msc_cntTaskFailuresP1;
+extern volatile unsigned int m4b_cntTaskFailuresP1;
 
 /** Activation loss counter for process 1 on the second core. */
-extern volatile unsigned int msc_cntActivationLossFailures;
+extern volatile unsigned int m4b_cntActivationLossFailures;
 
 /** Stack reserve of process p1 on the second core. */
-extern volatile unsigned int msc_stackReserveP1;
+extern volatile unsigned int m4b_stackReserveP1;
 
 /** Stack reserve of kernel process on the second core. */
-extern volatile unsigned int msc_stackReserveOS;
+extern volatile unsigned int m4b_stackReserveOS;
 
 /** The average CPU load produced by all tasks and interrupts on core Z4B in tens of
     percent. */ 
-extern volatile unsigned int msc_cpuLoadSecondCore;
+extern volatile unsigned int m4b_cpuLoadSecondCore;
 
 
 /*
@@ -73,9 +73,9 @@ extern volatile unsigned int msc_cpuLoadSecondCore;
  */
 
 /** Main entry point of code execution for core Z4B. */
-void /* _Noreturn */ msc_mainSecondCore(int noArgs, const char *argAry[]);
+void /* _Noreturn */ m4b_mainZ4B(int noArgs, const char *argAry[]);
 
 /** Callback for LED and button I/O driver. */
-int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
+int32_t m4b_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);
 
-#endif  /* MSC_MAIN_Z4B_INCLUDED */
+#endif  /* M4B_MAINZ4B_INCLUDED */

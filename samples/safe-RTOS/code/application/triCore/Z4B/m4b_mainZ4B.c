@@ -1,5 +1,5 @@
 /**
- * @file msc_mainSecondCore.c
+ * @file m4b_mainZ4B.c
  * C entry function for the second core running safe-RTOS. By compile-time configuration,
  * this can be either the Z4B or the Z2. The main function starts the safe-RTOS kernel on
  * the chosen core.\n
@@ -25,7 +25,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   msc_mainSecondCore
+ *   m4b_mainZ4B
  * Local functions
  *   taskInitProcess
  *   injectError
@@ -55,8 +55,8 @@
 #include "del_delay.h"
 #include "stm_systemTimer.h"
 #include "syc_systemConfiguration.h"
-#include "mbm_mainCoreBareMetal.h"
-#include "msc_mainSecondCore.h"
+#include "mz2_mainZ2.h"
+#include "m4b_mainZ4B.h"
 
 
 /*
@@ -126,29 +126,29 @@ enum
  */
 
 /** Counter of cycles of infinite main loop. */
-volatile unsigned long SECTION(.uncached.OS.msc_cntTaskIdle) msc_cntTaskIdle = 0;
+volatile unsigned long SECTION(.uncached.OS.m4b_cntTaskIdle) m4b_cntTaskIdle = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long SECTION(.uncached.P1.msc_cntTask1ms) msc_cntTask1ms = 0;  
+volatile unsigned long SECTION(.uncached.P1.m4b_cntTask1ms) m4b_cntTask1ms = 0;  
 
 /** Counter of cyclic 1ms OS task. */
-volatile unsigned long SECTION(.uncached.OS.msc_cntTaskOs1ms) msc_cntTaskOs1ms = 0;
+volatile unsigned long SECTION(.uncached.OS.m4b_cntTaskOs1ms) m4b_cntTaskOs1ms = 0;
 
 /** Total counter of task failures in P1 on second core. */
-volatile unsigned int SECTION(.uncached.OS.msc_cntTaskFailuresP1) msc_cntTaskFailuresP1 = 0;
+volatile unsigned int SECTION(.uncached.OS.m4b_cntTaskFailuresP1) m4b_cntTaskFailuresP1 = 0;
 
 /** Activation loss counter for process 1 on the second core. */
-volatile unsigned int SECTION(.uncached.OS.msc_cntActivationLossFailures)
-                                                        msc_cntActivationLossFailures = 0;
+volatile unsigned int SECTION(.uncached.OS.m4b_cntActivationLossFailures)
+                                                        m4b_cntActivationLossFailures = 0;
 
 /** Stack reserve of process p1 on the second core. */
-volatile unsigned int SECTION(.uncached.OS.msc_stackReserveP1) msc_stackReserveP1 = 0;
+volatile unsigned int SECTION(.uncached.OS.m4b_stackReserveP1) m4b_stackReserveP1 = 0;
 
 /** Stack reserve of kernel process on the second core. */
-volatile unsigned int SECTION(.uncached.OS.msc_stackReserveOS) msc_stackReserveOS = 0;
+volatile unsigned int SECTION(.uncached.OS.m4b_stackReserveOS) m4b_stackReserveOS = 0;
 
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */ 
-volatile unsigned int SECTION(.uncached.OS.msc_cpuLoadSecondCore) msc_cpuLoadSecondCore = 1000;
+volatile unsigned int SECTION(.uncached.OS.m4b_cpuLoadSecondCore) m4b_cpuLoadSecondCore = 1000;
 
 
 /*
@@ -274,7 +274,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ msc_cntTask1ms;
+    ++ m4b_cntTask1ms;
 
 #if TASKS_PRODUCE_GROUND_LOAD == 1
     /* Produce a bit of CPU load. This call simulates some true application software. */
@@ -287,7 +287,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     lbd_setLED(lbd_led_2_DS9, /* isOn */ cntIsOn_ >= 0);
 
     /* Inject an error from time to time. */
-    if((msc_cntTask1ms & 0x3) == 0)
+    if((m4b_cntTask1ms & 0x3) == 0)
         injectError();
 
     return 0;
@@ -309,7 +309,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ msc_cntTaskOs1ms;
+    ++ m4b_cntTaskOs1ms;
 
     /** Regularly called step function of the I/O driver. */
     lbd_osTask1ms();
@@ -324,10 +324,10 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
               
     /* Communicate the current number of recognized failures to the reporting task running
        on the boot core. */
-    msc_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
-    msc_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
-    msc_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
-    msc_stackReserveOS = rtos_getStackReserve(pidOs);
+    m4b_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
+    m4b_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
+    m4b_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
+    m4b_stackReserveOS = rtos_getStackReserve(pidOs);
 
     static int SBSS_P1(cntIsOn_) = 0;
     if(++cntIsOn_ >= 500)
@@ -352,7 +352,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
  * This function must never be called directly. It has been made public for the only reason
  * that the boot core needs to know it for the initialization call of the I/O driver.
  */
-int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
+int32_t m4b_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
 {
     /* Test button input: The current status is echoed as LED status. */
     if((buttonState & lbd_btStMask_btnSw1_down) != 0)
@@ -362,7 +362,7 @@ int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonSta
               
     return 0;    
 
-} /* End of msc_onButtonChangeCallback */
+} /* End of m4b_onButtonChangeCallback */
 
 
 
@@ -379,9 +379,9 @@ int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonSta
  * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
  * compiler warning. 
  */
-void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
-                                       , const char *argAry[] ATTRIB_DBG_ONLY
-                                       )
+void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
+                                , const char *argAry[] ATTRIB_DBG_ONLY
+                                )
 {
     assert( noArgs == 1
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
@@ -476,7 +476,7 @@ void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
         1; /* Z4B */
 #endif
-    syc_startSecondaryCore(idxThirdRTOSCore, mbm_mainCoreBareMetal);
+    syc_startSecondaryCore(idxThirdRTOSCore, mz2_mainZ2);
 
     /* The code down here becomes the idle task of the RTOS. We enter an infinite loop,
        where some background can be placed. */
@@ -486,14 +486,14 @@ void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
-        msc_cpuLoadSecondCore = gsl_osGetSystemLoad();
+        m4b_cpuLoadSecondCore = gsl_osGetSystemLoad();
 
         static bool SBSS_OS(isOn_) = false;
         lbd_osSetLED(lbd_led_3_DS8, isOn_ = !isOn_);
 
         /* Make spinning of the idle task observable in the debugger. */
-        ++ msc_cntTaskIdle;
+        ++ m4b_cntTaskIdle;
 
     } /* End of inifinite idle loop of RTOS. */
 
-} /* End of msc_mainSecondCore */
+} /* End of m4b_mainZ4B */

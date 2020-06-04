@@ -48,8 +48,8 @@
 #include "tcx_testContext.h"
 #include "syc_systemConfiguration.h"
 #include "prs_processSupervisor.h"
-#include "mbm_mainCoreBareMetal.h"
-#include "msc_mainSecondCore.h"
+#include "mz2_mainZ2.h"
+#include "m4b_mainZ4B.h"
 #include "prr_processReporting.h"
 
 
@@ -166,8 +166,8 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
 int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
 {
     const unsigned int cpuLoadZ4A = syc_cpuLoad
-                     , cpuLoadSecondCore = msc_cpuLoadSecondCore
-                     , cpuLoadCoreBareMetal = mbm_cpuLoadCoreBareMetal;
+                     , cpuLoadSecondCore = m4b_cpuLoadSecondCore
+                     , cpuLoadCoreBareMetal = mz2_cpuLoadCoreBareMetal;
     
     const uint32_t tiStart = stm_getSystemTime(1);
     iprintf( "CPU Z4A (running safe-RTOS):\r\n"
@@ -222,16 +222,16 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "  Cycle counts on core " CORE_BARE_METAL ":\r\n"
              "    main: %lu\n\r"
            , cpuLoadSecondCore/10, cpuLoadSecondCore%10
-           , msc_stackReserveOS
-           , msc_stackReserveP1
-           , msc_cntTaskOs1ms
-           , msc_cntActivationLossFailures
-           , msc_cntTask1ms
-           , msc_cntTaskIdle
-           , msc_cntTaskFailuresP1
+           , m4b_stackReserveOS
+           , m4b_stackReserveP1
+           , m4b_cntTaskOs1ms
+           , m4b_cntActivationLossFailures
+           , m4b_cntTask1ms
+           , m4b_cntTaskIdle
+           , m4b_cntTaskFailuresP1
            , cpuLoadCoreBareMetal/10, cpuLoadCoreBareMetal%10
-           , mbm_stackReserve
-           , mbm_cntMain
+           , mz2_stackReserve
+           , mz2_cntMain
            );
 
     const uint64_t tiDuration = stm_getSystemTime(1) - tiStart;

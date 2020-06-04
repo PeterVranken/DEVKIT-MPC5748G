@@ -1,7 +1,7 @@
 /**
- * @file mbm_mainCoreBareMetal.c
- * C entry function for the remaining core, which doesn't run safe-RTOS. It registers some
- * ISRs and has a main loop for processing. It drives the last available user LED on the
+ * @file mz2_mainZ2.c
+ * C entry function for the third core, Z2. It runs safe-RTOS with the same simple sample
+ * application as core Z4B, "initial". It drives the last available user LED on the
  * evaluation board.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   mbm_mainCoreBareMetal
+ *   mz2_mainZ2
  * Local functions
  *   isrPit4
  *   isrPit5
@@ -48,7 +48,7 @@
 #include "sio_serialIO.h"
 #include "del_delay.h"
 #include "stm_systemTimer.h"
-#include "mbm_mainCoreBareMetal.h"
+#include "mz2_mainZ2.h"
 
 
 /*
@@ -74,22 +74,22 @@
  */
 
 /** Counter of cycles of infinite main loop. */
-volatile unsigned long SECTION(.uncached.OS.mbm_cntIsrIdle) mbm_cntMain = 0;
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsrIdle) mz2_cntMain = 0;
 
 /** Counter of regular 1ms user isr. */
-volatile unsigned long SECTION(.uncached.OS.mbm_cntIsr1ms) mbm_cntIsr1ms = 0;  
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr1ms) mz2_cntIsr1ms = 0;  
 
 /** Counter of regular 100us user isr. */
-volatile unsigned long SECTION(.uncached.OS.mbm_cntIsr100us) mbm_cntIsr100us = 0;  
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr100us) mz2_cntIsr100us = 0;  
 
 /** Counter of regular 33us user isr. */
-volatile unsigned long SECTION(.uncached.OS.mbm_cntIsr33us) mbm_cntIsr33us = 0;  
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr33us) mz2_cntIsr33us = 0;  
 
 /** Stack reserve on the bare metal core. */
-volatile unsigned int SECTION(.uncached.OS.mbm_stackReserve) mbm_stackReserve = 0;
+volatile unsigned int SECTION(.uncached.OS.mz2_stackReserve) mz2_stackReserve = 0;
 
 /** The average CPU load produced by all ISRs in tens of percent. */ 
-volatile unsigned int SECTION(.uncached.OS.mbm_cpuLoad) mbm_cpuLoadCoreBareMetal = 1000;
+volatile unsigned int SECTION(.uncached.OS.mz2_cpuLoad) mz2_cpuLoadCoreBareMetal = 1000;
 
 
 /*
@@ -103,7 +103,7 @@ volatile unsigned int SECTION(.uncached.OS.mbm_cpuLoad) mbm_cpuLoadCoreBareMetal
  */
 static void isrPit4(void)
 {
-    ++ mbm_cntIsr1ms;
+    ++ mz2_cntIsr1ms;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
@@ -120,7 +120,7 @@ static void isrPit4(void)
  */
 static void isrPit5(void)
 {
-    ++ mbm_cntIsr100us;
+    ++ mz2_cntIsr100us;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
@@ -137,7 +137,7 @@ static void isrPit5(void)
  */
 static void isrPit6(void)
 {
-    ++ mbm_cntIsr33us;
+    ++ mz2_cntIsr33us;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
@@ -229,7 +229,7 @@ static void osInstallInterruptServiceRoutines(void)
  * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
  * compiler warning. 
  */
-void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs ATTRIB_DBG_ONLY, const char *argAry[])
+void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[])
 {
     assert( noArgs == 1
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
@@ -254,29 +254,29 @@ void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs ATTRIB_DBG_ONLY, const cha
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the interrupts but not that of the rest of
            the code in the idle loop. */
-        mbm_cpuLoadCoreBareMetal = gsl_osGetSystemLoad();
+        mz2_cpuLoadCoreBareMetal = gsl_osGetSystemLoad();
 
         /* We have only one LED left for this core. We let it blink as usually but since it
            should be a failure indication, we enable the activity only if everything looks
            alright. Particularly, the interrupts should work properly.
              We assume, that the idle loop takes between 1 and 2s. */
-        bool isSystemAlive = mbm_cpuLoadCoreBareMetal < 1000
-                             &&  mbm_cpuLoadCoreBareMetal > 0;
+        bool isSystemAlive = mz2_cpuLoadCoreBareMetal < 1000
+                             &&  mz2_cpuLoadCoreBareMetal > 0;
                              
         static unsigned long SDATA_OS(cntIsr1ms_) = 0;
-        unsigned long tmpCntIsr = mbm_cntIsr1ms;
+        unsigned long tmpCntIsr = mz2_cntIsr1ms;
         if(tmpCntIsr < cntIsr1ms_+1000u  ||  tmpCntIsr > cntIsr1ms_+2000u)
             isSystemAlive = false;
         cntIsr1ms_ = tmpCntIsr; 
         
         static unsigned long SDATA_OS(cntIsr100us_) = 0;
-        tmpCntIsr = mbm_cntIsr100us;
+        tmpCntIsr = mz2_cntIsr100us;
         if(tmpCntIsr < cntIsr100us_+10000u  ||  tmpCntIsr > cntIsr100us_+20000u)
             isSystemAlive = false;
         cntIsr100us_ = tmpCntIsr; 
             
         static unsigned long SDATA_OS(cntIsr33us_) = 0;
-        tmpCntIsr = mbm_cntIsr33us;
+        tmpCntIsr = mz2_cntIsr33us;
         if(tmpCntIsr < cntIsr33us_+30000u  ||  tmpCntIsr > cntIsr33us_+60000u)
             isSystemAlive = false;
         cntIsr33us_ = tmpCntIsr; 
@@ -287,11 +287,11 @@ void /* _Noreturn */ mbm_mainCoreBareMetal(int noArgs ATTRIB_DBG_ONLY, const cha
 
         /* Communicate some status information to the reporting task running on the boot
            core. */
-        mbm_stackReserve = rtos_getStackReserve(/* PID */ 0);
+        mz2_stackReserve = rtos_getStackReserve(/* PID */ 0);
         
         /* Make spinning of the idle task observable in the debugger. */
-        ++ mbm_cntMain;
+        ++ mz2_cntMain;
 
     } /* End of inifinite idle loop of bare metal application. */
 
-} /* End of mbm_mainCoreBareMetal */
+} /* End of mz2_mainZ2 */

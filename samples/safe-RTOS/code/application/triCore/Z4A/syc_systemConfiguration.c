@@ -58,7 +58,7 @@
 #include "prs_processSupervisor.h"
 #include "syc_systemConfiguration.h"
 #include "std_decoratedStorage.h"
-#include "msc_mainSecondCore.h"
+#include "m4b_mainZ4B.h"
 
 
 /*
@@ -409,14 +409,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
-                                , /* onButtonChangeCallback_core1 */ msc_onButtonChangeCallback
+                                , /* onButtonChangeCallback_core1 */ m4b_onButtonChangeCallback
                                 , /* PID_core1 */                    1
                                 , /* onButtonChangeCallback_core2 */ NULL
                                 , /* PID_core2 */                    0
 #elif RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
                                 , /* onButtonChangeCallback_core1 */ NULL
                                 , /* PID_core1 */                    0
-                                , /* onButtonChangeCallback_core2 */ msc_onButtonChangeCallback
+                                , /* onButtonChangeCallback_core2 */ m4b_onButtonChangeCallback
                                 , /* PID_core2 */                    1
 #endif
                                 , /* tiMaxTimeInUs */                1000
@@ -639,7 +639,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 #if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
         2; /* Z2 */
 #endif
-    syc_startSecondaryCore(idxSecondRTOSCore, msc_mainSecondCore);
+    syc_startSecondaryCore(idxSecondRTOSCore, m4b_mainZ4B);
 
     /* The code down here becomes our idle task. It is executed when and only when no
        application task or ISR is running. */
