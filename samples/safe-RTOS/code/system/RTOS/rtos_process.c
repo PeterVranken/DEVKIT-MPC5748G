@@ -79,7 +79,7 @@
  */
 
 /* We need to reference the linker provided information about the location of the stacks. */
-#if RTOS_MAX_NO_CORES != 3
+#if RTOS_NO_CORES != 3
 # error Code needs migration to a maximum of other than 3 cores
 #endif
 extern uint32_t ld_stackStartOSCore0[], ld_stackEndOSCore0[]
@@ -102,7 +102,7 @@ extern uint32_t ld_stackStartOSCore0[], ld_stackEndOSCore0[]
 /** An array of process stack areas, per core and process. Here we have the start addresses
     of the stacks. The process index is zero based and index 0 is the kernel. Which menas
     that the PID can be used as index. */
-static uint32_t * const _stackCoresStartAry[RTOS_MAX_NO_CORES][1+RTOS_NO_PROCESSES] =
+static uint32_t * const _stackCoresStartAry[RTOS_NO_CORES][1+RTOS_NO_PROCESSES] =
     { /* Core */ [0] = { /* Process */ [0] = ld_stackStartOSCore0
                        , /* Process */ [1] = ld_stackStartP1Core0
                        , /* Process */ [2] = ld_stackStartP2Core0
@@ -125,7 +125,7 @@ static uint32_t * const _stackCoresStartAry[RTOS_MAX_NO_CORES][1+RTOS_NO_PROCESS
 
 /** An array of process stack areas, per core and process. Here we have the end addresses
     of the stacks. */
-static const uint32_t * const _stackCoresEndAry[RTOS_MAX_NO_CORES][1+RTOS_NO_PROCESSES] =
+static const uint32_t * const _stackCoresEndAry[RTOS_NO_CORES][1+RTOS_NO_PROCESSES] =
     { /* Core */ [0] = { /* Process */ [0] = ld_stackEndOSCore0
                        , /* Process */ [1] = ld_stackEndP1Core0
                        , /* Process */ [2] = ld_stackEndP2Core0
@@ -584,7 +584,7 @@ unsigned int rtos_getStackReserve(unsigned int PID)
            inacceptable as particularly the pessimistic readings are (safety) use case of
            this API. */
         const unsigned int idxCore = rtos_getIdxCore();
-        assert(idxCore < RTOS_MAX_NO_CORES);
+        assert(idxCore < RTOS_NO_CORES);
         
         /* Access core specific data. */
         uint32_t * const * const stackStartAry = &_stackCoresStartAry[idxCore][0];

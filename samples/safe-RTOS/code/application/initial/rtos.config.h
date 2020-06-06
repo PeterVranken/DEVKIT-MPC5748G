@@ -35,13 +35,13 @@
 
 
 /** Specify whether core 0, Z4A, should run safe-RTOS. Permitted values are 1 or 0. */
-#define RTOS_RUN_SAFE_RTOS_ON_CORE_0        1
+#define RTOS_RUN_SAFE_RTOS_ON_CORE_0            1
 
 /** Specify whether core 1, Z4B, should run safe-RTOS. Permitted values are 1 or 0. */
-#define RTOS_RUN_SAFE_RTOS_ON_CORE_1        0
+#define RTOS_RUN_SAFE_RTOS_ON_CORE_1            0
 
 /** Specify whether core 2, Z2, should run safe-RTOS. Permitted values are 1 or 0. */
-#define RTOS_RUN_SAFE_RTOS_ON_CORE_2        0
+#define RTOS_RUN_SAFE_RTOS_ON_CORE_2            0
 
 /** The period time of the RTOS system timer. Unit is 1ms. Configurable range is 1..35791.
     If either this range or the timing accuracy of 1ms is not sufficient then you need to

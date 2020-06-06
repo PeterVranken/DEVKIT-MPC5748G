@@ -246,7 +246,7 @@ void rtos_osProcessTriggeredEvents(rtos_eventDesc_t *pEvent);
 /** A constant array holding the index of a PIT timer for each core on the chip. This is
     just the configuration data and it leaves it open, whether the core runs the RTOS and
     whether the index is used at all. */
-static const unsigned int rtos_idxRtosTimerAry[RTOS_MAX_NO_CORES] =
+static const unsigned int rtos_idxRtosTimerAry[RTOS_NO_CORES] =
     { [0] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0)
     , [1] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1)
     , [2] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)

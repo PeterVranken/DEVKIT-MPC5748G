@@ -109,9 +109,9 @@ typedef struct stateDriver_t
     initialization of the elements, which is done on the boot core and before any other
     core may make use of the driver API. Therefore this is uncritical with respect to
     cache consistency. */
-static stateDriver_t DATA_OS(_coreInstanceDataAry)[RTOS_MAX_NO_CORES] =
+static stateDriver_t DATA_OS(_coreInstanceDataAry)[RTOS_NO_CORES] =
     {
-        [0 ... (RTOS_MAX_NO_CORES-1)] =
+        [0 ... (RTOS_NO_CORES-1)] =
             { .stateSW1 =
                 { .button = lbd_bt_button_SW1
                 , .cntDebounce = 0
@@ -227,7 +227,7 @@ static bool osGetButton(stateButton_t * const pCoreInstanceData)
  *   @remark
  * In a multi-core environment, if a core doesn't run safe-RTOS, it may still use this
  * driver in restricted way:\n
- *   - Only the OS function can be used (lbd_os<FctName>())\n
+ *   - Only the OS functions can be used (lbd_os<FctName>())\n
  *   - Callbacks must not be used (onButtonChangeCallback_coreN == NULL)\n
  *   - The regular call of lbd_osTask1ms() should be avoided. It is simply useless without
  * a callback

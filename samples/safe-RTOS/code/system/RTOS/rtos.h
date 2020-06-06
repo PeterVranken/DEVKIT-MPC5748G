@@ -71,7 +71,7 @@
 /** The maximum number of cores. If an MCU drivative should have a deviating number of
     cores then a source code migration is required. This is not a variable configuration
     setting. */
-#define RTOS_MAX_NO_CORES           3
+#define RTOS_NO_CORES           3
 
 /** This event ID is returned if creation of a new event is impossible. The ID is unusable,
     no task can be created specifying this event ID. */
