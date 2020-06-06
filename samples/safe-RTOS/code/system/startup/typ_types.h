@@ -79,6 +79,12 @@
     addressing mode. See #BSS_OS for details. */
 # define SDATA_OS(var)   SECTION(.sdata.OS.var) var
 
+/** Helper for definition of shared, initialized and uninitialized data objects. "Shared"
+    relates to the contexts on different cores; the data is placed in uncached memory. The
+    user processes on all cores have read access and the OS contexts on all cores have read
+    and write permission. */
+# define UNCACHED_OS(var) SECTION(.uncached.OS.var) var
+
 /** Helper for definition of simple, process P1 owned, uninitialized data objects. See
     #BSS_OS for details. */
 # define BSS_P1(var)     SECTION(.bss.P1.var) var
@@ -94,6 +100,12 @@
 /** Helper for definition of simple, process P1 owned, initialized data objects with short
     addressing mode. See #BSS_OS for details. */
 # define SDATA_P1(var)   SECTION(.sdata.P1.var) var
+
+/** Helper for definition of shared, initialized and uninitialized data objects. "Shared"
+    related to the contexts on different cores; the data is placed in uncached memory. All
+    contexts on all cores have read access and the OS contexts on all cores and the user
+    tasks of process P1 on all cores have read and write permission. */
+# define UNCACHED_P1(var) SECTION(.uncached.P1.var) var
 
 /** Helper for definition of simple, process P2 owned, uninitialized data objects. See
     #BSS_OS for details. */
@@ -111,6 +123,12 @@
     addressing mode. See #BSS_OS for details. */
 # define SDATA_P2(var)   SECTION(.sdata.P2.var) var
 
+/** Helper for definition of shared, initialized and uninitialized data objects. "Shared"
+    related to the contexts on different cores; the data is placed in uncached memory. All
+    contexts on all cores have read access and the OS contexts on all cores and the user
+    tasks of process P2 on all cores have read and write permission. */
+# define UNCACHED_P2(var) SECTION(.uncached.P2.var) var
+
 /** Helper for definition of simple, process P3 owned, uninitialized data objects. See
     #BSS_OS for details. */
 # define BSS_P3(var)     SECTION(.bss.P3.var) var
@@ -127,6 +145,12 @@
     addressing mode. See #BSS_OS for details. */
 # define SDATA_P3(var)   SECTION(.sdata.P3.var) var
 
+/** Helper for definition of shared, initialized and uninitialized data objects. "Shared"
+    related to the contexts on different cores; the data is placed in uncached memory. All
+    contexts on all cores have read access and the OS contexts on all cores and the user
+    tasks of process P3 on all cores have read and write permission. */
+# define UNCACHED_P3(var) SECTION(.uncached.P3.var) var
+
 /** Helper for definition of simple, process P4 owned, uninitialized data objects. See
     #BSS_OS for details. */
 # define BSS_P4(var)     SECTION(.bss.P4.var) var
@@ -142,6 +166,12 @@
 /** Helper for definition of simple, process P4 owned, initialized data objects with short
     addressing mode. See #BSS_OS for details. */
 # define SDATA_P4(var)   SECTION(.sdata.P4.var) var
+
+/** Helper for definition of shared, initialized and uninitialized data objects. "Shared"
+    related to the contexts on different cores; the data is placed in uncached memory. All
+    contexts on all cores have read access and the OS contexts on all cores and the user
+    tasks of process P4 on all cores have read and write permission. */
+# define UNCACHED_P4(var) SECTION(.uncached.P4.var) var
 
 /** Helper for definition of simple, shared, initialized and uninitialized data objects.
     "Shared" related to the user processes; all of them may write to objects defined with
