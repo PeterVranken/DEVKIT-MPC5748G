@@ -210,6 +210,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "    OS: %u Byte\r\n"
              "    PID 1: %u Byte\r\n"
              "  Task counts (lost triggers):\r\n"
+             "    Notification from Z2: %lu\n\r"
              "    OS, 1ms: %lu (%u)\n\r"
              "    user, 1ms: %lu\n\r"
              "    idle: %lu\n\r"
@@ -218,6 +219,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
            , cpuLoadZ4B/10, cpuLoadZ4B%10
            , m4b_stackReserveOS
            , m4b_stackReserveP1
+           , m4b_cntTaskNotificationFromZ2
            , m4b_cntTaskOs1ms
            , m4b_cntActivationLossFailures
            , m4b_cntTask1ms

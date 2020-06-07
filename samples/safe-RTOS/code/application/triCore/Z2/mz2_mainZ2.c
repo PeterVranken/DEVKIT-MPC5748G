@@ -408,7 +408,9 @@ static void osInstallInterruptServiceRoutines(void)
  * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
  * compiler warning. 
  */
-void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[])
+void /* _Noreturn */ mz2_mainZ2( int noArgs ATTRIB_DBG_ONLY
+                               , const char *argAry[] ATTRIB_DBG_ONLY
+                               )
 {
     assert(noArgs == 1  &&  strcmp(argAry[0], "Z2") == 0);
             
@@ -472,7 +474,7 @@ void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[]
     assert(idEvent == noRegisteredEvents-1);
 
     /* Configure the interrupts, which we have justto produce some load and disturbance. */
-//    osInstallInterruptServiceRoutines();
+    osInstallInterruptServiceRoutines();
     
     /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
        succeeds. The step involves a configuration check. We must not startup the SW if the
@@ -497,7 +499,6 @@ void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[]
         bool isSystemAlive = mz2_cpuLoadZ2 < 1000
                              &&  mz2_cpuLoadZ2 > 0;
                              
-#if 0
         static unsigned long SDATA_OS(cntIsr1ms_) = 0;
         unsigned long tmpCnt = mz2_cntIsr1ms;
         if(tmpCnt < cntIsr1ms_+1000u  ||  tmpCnt > cntIsr1ms_+2000u)
@@ -515,10 +516,9 @@ void /* _Noreturn */ mz2_mainZ2(int noArgs ATTRIB_DBG_ONLY, const char *argAry[]
         if(tmpCnt < cntIsr33us_+30000u  ||  tmpCnt > cntIsr33us_+60000u)
             isSystemAlive = false;
         cntIsr33us_ = tmpCnt; 
-#endif
 
         static unsigned long SDATA_OS(cntTask1ms_) = 0;
-        unsigned long tmpCnt = mz2_cntTask1ms;
+        tmpCnt = mz2_cntTask1ms;
         if(tmpCnt < cntTask1ms_+1000u  ||  tmpCnt > cntTask1ms_+2000u)
             isSystemAlive = false;
         cntTask1ms_ = tmpCnt; 

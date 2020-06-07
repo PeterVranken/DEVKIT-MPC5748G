@@ -135,7 +135,7 @@ enum
  */
 
 /** Counter of notificastion task, activated by other core Z2 using the inter-core
-   notification driver. */
+    notification driver. */
 volatile unsigned long UNCACHED_P1(m4b_cntTaskNotificationFromZ2) = 0;
 
 /** Counter of cyclic 1ms user task. */
@@ -210,7 +210,8 @@ static int32_t taskNotificationFromZ2( uint32_t PID ATTRIB_UNUSED
                                      , uintptr_t notificationParam
                                      )
 {
-    assert(notificationParam == m4b_cntTaskNotificationFromZ2);
+    while(notificationParam != m4b_cntTaskNotificationFromZ2)
+        assert(false);
 
     /* Make activations of the task observable in the debugger. */
     ++ m4b_cntTaskNotificationFromZ2;

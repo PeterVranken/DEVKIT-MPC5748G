@@ -47,6 +47,10 @@
  * Global data declarations
  */
 
+/** Counter of notificastion task, activated by other core Z2 using the inter-core
+    notification driver. */
+extern volatile unsigned long m4b_cntTaskNotificationFromZ2;
+   
 /** Counter of cyclic 1ms user task. */
 extern volatile unsigned long m4b_cntTask1ms;  
 
