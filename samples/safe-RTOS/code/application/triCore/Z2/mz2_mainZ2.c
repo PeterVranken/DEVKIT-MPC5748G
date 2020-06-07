@@ -51,6 +51,7 @@
 #include "sio_serialIO.h"
 #include "del_delay.h"
 #include "stm_systemTimer.h"
+#include "icn_interCoreNotification.h"
 #include "m4b_mainZ4B.h"
 #include "mz2_mainZ2.h"
 
@@ -141,6 +142,10 @@ volatile unsigned long SECTION(.uncached.OS.mz2_cntTaskIdle) mz2_cntTaskIdle = 0
 
 /** Total counter of task failures in P1 on second core. */
 volatile unsigned int SECTION(.uncached.OS.mz2_cntTaskFailuresP1) mz2_cntTaskFailuresP1 = 0;
+
+/** Counter of notifications , which could not be delivered from Z2 to Z4B because the
+    preceding notification had not been fully processed yet. */
+volatile unsigned int UNCACHED_OS(mz2_noNotificationsLoss) = 0;
 
 /** Activation loss counter for process 1 on the second core. */
 volatile unsigned int SECTION(.uncached.OS.mz2_cntActivationLossFailures)
@@ -277,6 +282,16 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     mz2_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
     mz2_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
 
+    /* Try the inter-core notification driver: We send an event to activate a task on core
+       Z4B. The notification parameter is a simple sequence 0, 1, 2, ..., which is
+       double-checked at the receiver side for validation that all notifications were
+       delivered. */
+    if(icn_osIsNotificationPending(ICN_ID_NOTIFICATION_Z2_TOZ4B))
+        ++ mz2_noNotificationsLoss;
+    icn_osSendNotification( ICN_ID_NOTIFICATION_Z2_TOZ4B
+                          , /* notificationParam */ mz2_cntTaskOs1ms-1
+                          );
+    
 } /* End of taskOs1ms */
 
 

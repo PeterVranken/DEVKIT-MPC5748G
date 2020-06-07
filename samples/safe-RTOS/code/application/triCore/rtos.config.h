@@ -66,8 +66,8 @@
     code (no deadline monitoring). This makes them somewhat critical in use with respect to
     the safety concept. */
 #define RTOS_KERNEL_IRQ_PRIORITY_CORE_0         12
-#define RTOS_KERNEL_IRQ_PRIORITY_CORE_1         1
-#define RTOS_KERNEL_IRQ_PRIORITY_CORE_2         1
+#define RTOS_KERNEL_IRQ_PRIORITY_CORE_1         2
+#define RTOS_KERNEL_IRQ_PRIORITY_CORE_2         2
 
 /** This is the highest task priority in use. Basically, a priority is just a number and it
     doesn't matter which one. However, for some operations, the kernel needs lookup operations

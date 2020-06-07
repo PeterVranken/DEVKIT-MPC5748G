@@ -954,7 +954,7 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
        critical section, which implements mutual exclusion of all contexts on all cores. So
        any context on any core can safely apply this function. */
     static mtx_intercoreCriticalSection_t DATA_OS(critSec) = MTX_INTERCORE_CRITICAL_SECTION;
-    mtx_enterIntercoreCriticalSection(&critSec);
+    mtx_osEnterIntercoreCriticalSection(&critSec);
     
     /* Stop the (possibly) running DMA channel.
          RM 70.5.8.1: Coherently stop a DMA channel with the ability of resuming it later. */
@@ -1050,7 +1050,7 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
     startDMATrigger();
     ++ sio_serialOutNoDMATransfers;
 
-    mtx_leaveIntercoreCriticalSection(&critSec);
+    mtx_osLeaveIntercoreCriticalSection(&critSec);
 
     /* noBytes is saturated to buffer size-1 and can't overflow in conversion to signed. */
     return noBytes;

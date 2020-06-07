@@ -30,6 +30,7 @@
  *   m4b_mainZ4B
  * Local functions
  *   taskInitProcess
+ *   taskNotificationFromZ2
  *   task1ms
  *   taskOs1ms
  */
@@ -88,6 +89,11 @@ enum
     /** Regular timer event. */
     idEv1ms = 0,
 
+    /** This event is used for a notification from Z2: The other will use the inter-core
+        notification driver to trigger this event and thus to activate a task on this core
+        Z4B. */
+    idEvNotificationFromZ2,
+    
     /** The number of tasks to register. */
     noRegisteredEvents
 };
@@ -99,7 +105,8 @@ enum
 enum
 {
     prioTaskIdle = 0,            /* Prio 0 is implicit, cannot be chosen explicitly */
-    prioEv1ms = 1,
+    prioEv1ms,
+    prioEvNotificationFromZ2,
 };
 
 
@@ -110,6 +117,7 @@ enum
 enum
 {
     pidOs = 0,              /* kernel always and implicitly has PID 0 */
+    pidTaskNotificationFromZ2 = 1, /// @todo Shall we use P3? Just for testing?
     pidTask1ms = 1,         /* Don't use P2, there are failures injected in core 0 */
     pidTaskOs1ms = pidOs,   /* A kernel or operating system task, e.g. to implement a
                                polling I/O driver. */
@@ -125,6 +133,10 @@ enum
 /*
  * Data definitions
  */
+
+/** Counter of notificastion task, activated by other core Z2 using the inter-core
+   notification driver. */
+volatile unsigned long UNCACHED_P1(m4b_cntTaskNotificationFromZ2) = 0;
 
 /** Counter of cyclic 1ms user task. */
 volatile unsigned long SECTION(.uncached.P1.m4b_cntTask1ms) m4b_cntTask1ms = 0;  
@@ -179,6 +191,33 @@ static int32_t taskInitProcess(uint32_t PID)
     return cnt_ == PID? 0: -1;
 
 } /* End of taskInitProcess */
+
+
+
+/**
+ * Task function, activated by notification 0, sent from core Z2. The notification
+   announces the transfer of some (test) data from the other core.
+ *   @return
+ * If the task function returns a negative value then the task execution is counted as
+ * error in the process.
+ *   @param PID
+ * A user task function gets the process ID as first argument.
+ *   @param notificationParam
+ * The task parameter is sent by core Z2 as parameter of the notification. Here, in this
+ * sample it is a checksum to enable test of data correctness.
+ */
+static int32_t taskNotificationFromZ2( uint32_t PID ATTRIB_UNUSED
+                                     , uintptr_t notificationParam
+                                     )
+{
+    assert(notificationParam == m4b_cntTaskNotificationFromZ2);
+
+    /* Make activations of the task observable in the debugger. */
+    ++ m4b_cntTaskNotificationFromZ2;
+
+    return 0;
+
+} /* End of taskNotificationFromZ2 */
 
 
 
@@ -445,6 +484,32 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
         if(rtos_osRegisterUserTask( idEv1ms
                                   , task1ms
                                   , pidTask1ms
+                                  , /* tiTaskMaxInUs */ 0
+                                  )
+           != rtos_err_noError
+          )
+        {
+            initOk = false;
+        }
+    }
+    else
+        initOk = false;
+
+    if(rtos_osCreateEvent( &idEvent
+                         , /* tiCycleInMs */              0
+                         , /* tiFirstActivationInMs */    0
+                         , /* priority */                 prioEvNotificationFromZ2
+                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
+                         , /* taskParam */                0
+                         )
+       == rtos_err_noError
+      )
+    {
+        assert(idEvent == idEvNotificationFromZ2);
+
+        if(rtos_osRegisterUserTask( idEvNotificationFromZ2
+                                  , taskNotificationFromZ2
+                                  , pidTaskNotificationFromZ2
                                   , /* tiTaskMaxInUs */ 0
                                   )
            != rtos_err_noError

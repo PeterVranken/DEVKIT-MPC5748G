@@ -32,6 +32,11 @@
  * Defines
  */
 
+/** This is the RTOS event on core Z4B that is triggered from the other core Z2 using the
+    inter-core notification driver. The notification task on the Z4B, which is associated
+    with the event is activated by the Z2 core. */
+#define M4B_ID_EVENT_NOTIFICATION_FROM_Z2   1
+
 
 /*
  * Global type definitions

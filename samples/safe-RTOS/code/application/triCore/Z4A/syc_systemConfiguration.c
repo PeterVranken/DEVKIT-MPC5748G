@@ -58,6 +58,7 @@
 #include "prs_processSupervisor.h"
 #include "syc_systemConfiguration.h"
 #include "std_decoratedStorage.h"
+#include "icn_interCoreNotification.h"
 #include "mz2_mainZ2.h"
 #include "m4b_mainZ4B.h"
 
@@ -419,8 +420,11 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the serial output channel as prerequisite of using printf. */
     sio_osInitSerialInterface(/* baudRate */ 115200);
 
+    
+    /* Initialize the inter-core notification service. */
+    bool initOk = icn_osInitInterCoreNotificationDriver() == icn_err_noError;
+
     /* Register the process initialization tasks. Here, we used always the same function. */
-    bool initOk = true;
     unsigned int u;
     for(u=1; u<=3; ++u)
     {

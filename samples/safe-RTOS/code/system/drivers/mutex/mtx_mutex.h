@@ -41,10 +41,10 @@
 /* Module inline interface
  *   mtx_acquireMutex
  *   mtx_releaseMutex
- *   mtx_enterIntercoreCriticalSection
- *   mtx_leaveIntercoreCriticalSection
- *   mtx_acquireNestedMutex
- *   mtx_releaseNestedMutex
+ *   mtx_osEnterIntercoreCriticalSection
+ *   mtx_osLeaveIntercoreCriticalSection
+ *   mtx_osAcquireNestedMutex
+ *   mtx_osReleaseNestedMutex
  */
 
 /*
@@ -152,6 +152,8 @@ typedef struct mtx_intercoreCriticalSection_t
  * mutex became free and could be locked in the next attempt. There's no arbitration, if
  * more than one core compete for the mutex then starvation is not excluded.
  *   @remark
+ * This function can be called from all contexts, in supervisor or user mode.
+ *   @remark
  * This function can be called from competing cores or from competing tasks on the same
  * core.\n
  *   Note, if \a wait is \a true then using the function from competing tasks on one and
@@ -189,6 +191,8 @@ static inline bool mtx_acquireMutex(mtx_mutex_t *pMutex, bool wait)
  * This function is meant a basic implementation only. It doesn't perform any checks. If a
  * mutex is released which had not been successfully acquired before using
  * mtx_acquireMutex() then the mutual exclusion functionality will fail.
+ *   @remark
+ * This function can be called from all contexts, in supervisor or user mode.
  */
 static inline void mtx_releaseMutex(mtx_mutex_t *pMutex)
 {
@@ -213,10 +217,10 @@ static inline void mtx_releaseMutex(mtx_mutex_t *pMutex)
  * spinning in a busy wait loop if they compete for the protected resource or they are
  * unaffected otherwise.\n
  *   The critical section is left with the counterpart function
- * mtx_leaveIntercoreCriticalSection().\n
+ * mtx_osLeaveIntercoreCriticalSection().\n
  *   The operation is nestable. A context already being inside the critical section may
  * call this function again, however it'll end the critical section only after as many
- * invocations of mtx_leaveIntercoreCriticalSection() as invocations of this function.\n
+ * invocations of mtx_osLeaveIntercoreCriticalSection() as invocations of this function.\n
  *   The operation is not nestable with respect to another critical section. A context
  * already being inside critical section A must not try entering critical section B, this
  * will normally cause a deadlock.\n
@@ -227,12 +231,14 @@ static inline void mtx_releaseMutex(mtx_mutex_t *pMutex)
  * The time between enter and leave needs to be very short because of the blocking of all
  * local contexts and competing contexts on other cores.
  *   @remark
- * The function is left with MSR[EE] = 0. The execution requires supervisor mode.
+ * The function is left with MSR[EE] = 0. The execution requires supervisor mode. Any
+ * attempt to call it from a user mode context will cause a privileged exception.
  *   @remark
  * The function will in no wait keep track or supervise the correct pairing in use.
  * Operation will simply fail if this is not ensured.
  */
-static inline void mtx_enterIntercoreCriticalSection(mtx_intercoreCriticalSection_t *pCritSec)
+static inline void mtx_osEnterIntercoreCriticalSection
+                                                (mtx_intercoreCriticalSection_t *pCritSec)
 {
     uint32_t msr;
 
@@ -265,27 +271,29 @@ static inline void mtx_enterIntercoreCriticalSection(mtx_intercoreCriticalSectio
 
     /* Leave function with MSR[EE] = 0. */
 
-} /* End of mtx_enterIntercoreCriticalSection */
+} /* End of mtx_osEnterIntercoreCriticalSection */
 
 
 
 /**
  * The function ends a core-to-core critical section shaped with the counterpart
- * mtx_enterIntercoreCriticalSection(). The status of External Interrupt handling on entry
- * into mtx_enterIntercoreCriticalSection() is restored - but only if this to the last
+ * mtx_osEnterIntercoreCriticalSection(). The status of External Interrupt handling on entry
+ * into mtx_osEnterIntercoreCriticalSection() is restored - but only if this to the last
  * call in case of nested invocations.
- *   See mtx_enterIntercoreCriticalSection() for details.
+ *   See mtx_osEnterIntercoreCriticalSection() for details.
  *   @param pCritSec
  * The status of the critical section is kept in a critical section object. The one, which
- * was used in the corresponding call of mtx_enterIntercoreCriticalSection() is passed in
+ * was used in the corresponding call of mtx_osEnterIntercoreCriticalSection() is passed in
  * by reference.
  *   @remark
- * The execution of the function requires supervisor mode.
+ * The execution of the function requires supervisor mode. Any attempt to call it from a
+ * user mode context will cause a privileged exception.
  *   @remark
  * The function will in no wait keep track or supervise the correct pairing in use.
  * Operation will simply fail if this is not ensured.
  */
-static inline void mtx_leaveIntercoreCriticalSection(mtx_intercoreCriticalSection_t *pCritSec)
+static inline void mtx_osLeaveIntercoreCriticalSection
+                                                (mtx_intercoreCriticalSection_t *pCritSec)
 {
     const unsigned int idxCore = std_getCoreID();
     if(--pCritSec->cntInvocationAry[idxCore] == 0)
@@ -294,7 +302,7 @@ static inline void mtx_leaveIntercoreCriticalSection(mtx_intercoreCriticalSectio
         mtx_releaseMutex(&pCritSec->mutex);
 
         /* Restore the interrupt suspension state to how it used to be on first entry into
-           mtx_enterIntercoreCriticalSection(). */
+           mtx_osEnterIntercoreCriticalSection(). */
         asm volatile ( /* AssemblerTemplate */
                        "wrtee   %0   /* Restore MSR[EI] */\n\t"
                      : /* OutputOperands */
@@ -309,7 +317,7 @@ static inline void mtx_leaveIntercoreCriticalSection(mtx_intercoreCriticalSectio
            paired/placed calls of enter and leave. */
         assert((int16_t)pCritSec->cntInvocationAry[idxCore] >= 0);
     }
-} /* End of mtx_leaveIntercoreCriticalSection */
+} /* End of mtx_osLeaveIntercoreCriticalSection */
 
 
 
@@ -327,6 +335,9 @@ static inline void mtx_leaveIntercoreCriticalSection(mtx_intercoreCriticalSectio
  * already owned by the requesting core it'll return immediate.
  *   @param pMutex
  * The mutex object by reference.
+ *   @remark
+ * The execution of the function requires supervisor mode. Any attempt to call it from a
+ * user mode context will cause a privileged exception.
  *   @remark
  *   The implementation of this mutex is involved with an unsolvable problem. The
  * acquisition of the mutex can be done while context switching (tasks, interrupts)
@@ -349,11 +360,11 @@ static inline void mtx_leaveIntercoreCriticalSection(mtx_intercoreCriticalSectio
  *   The current implementation inhibits context switches during mutex acquisition. It uses
  * interrupt suspension for this purpose. Interrupt suspension is done with nesting. If
  * interrupts are suspended already on entry then they will stay so after exit and the code
- * between this function and its counterpart, mtx_releaseNestedMutex(), becomes a perfect
+ * between this function and its counterpart, mtx_osReleaseNestedMutex(), becomes a perfect
  * critical section between all contexts on all cores - however with the disadvantage of an
  * unpredictable maximum duration due to the unfair arbitration.
  */
-static inline void mtx_acquireNestedMutex(mtx_nestedMutex_t *pMutex)
+static inline void mtx_osAcquireNestedMutex(mtx_nestedMutex_t *pMutex)
 {
     uint32_t msr;
 
@@ -387,13 +398,15 @@ static inline void mtx_acquireNestedMutex(mtx_nestedMutex_t *pMutex)
                  : /* InputOperands */ "r" (msr)
                  : /* Clobbers */
                  );
-} /* End of mtx_acquireNestedMutex */
+} /* End of mtx_osAcquireNestedMutex */
 
 
 /// @todo Doc function
 // * No test if mutex is really owned by the calling core!
-
-static inline void mtx_releaseNestedMutex(mtx_nestedMutex_t *pMutex)
+// *   @remark
+// * The execution of the function requires supervisor mode. Any attempt to call it from a
+// * user mode context will cause a privileged exception.
+static inline void mtx_osReleaseNestedMutex(mtx_nestedMutex_t *pMutex)
 {
     uint32_t msr;
 
@@ -428,6 +441,6 @@ static inline void mtx_releaseNestedMutex(mtx_nestedMutex_t *pMutex)
                  : /* InputOperands */ "r" (msr)
                  : /* Clobbers */
                  );
-} /* End of mtx_releaseNestedMutex */
+} /* End of mtx_osReleaseNestedMutex */
 
 #endif  /* MTX_MUTEX_INCLUDED */
