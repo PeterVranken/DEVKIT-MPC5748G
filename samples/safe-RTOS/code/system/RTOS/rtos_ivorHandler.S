@@ -1,12 +1,9 @@
 /**
  * @file rtos_ivorHandler.S
- * VLE assembler implementation of IVOR exception handlers for, in the first place the IVOR
- * #4 handler for external interrupts handled by the INTC.\n
- *   Used for MPC5643L in Lockstep Mode (LSM). The code has been designed for use with GCC
- * for PowerPC EABI.\n
- *   This module is based on the interrupt handler for External Interrupts from the
- * standard startup code (file int_INTCInterruptHandler.S). It replaces the IVOR #4 handler
- * from this file and most of the other dummy IVOR handlers.
+ * VLE assembler implementation of IVOR exception handlers for safe-RTOS. Effectively, this
+ * file is the essence of the safe-RTOS kernel.\n
+ *   Used for MPC5748G and compatible with all its cores. The code has been designed for
+ * use with GCC for PowerPC EABI.\n
  *   Much of the documentation in this source file refers to either "Core RM" or CRM. Meant
  * is in either case: "e200z4 Power Architecture Core Reference Manual", Supports
  * e200z446n3, e200z4RM Rev. 0 10/2009, e.g.
@@ -359,22 +356,14 @@ ivr1_z2HasNoDCache:
     e_lis       r0, rtos_ivorVectorTableEntry4@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry4@l    /* r0: Address External IRQ handler */
     se_cmp      r0, r3          /* r3=SPR_MCSRR0 and r0 need to match to satisfy */
-    se_bne      ivr1_testForDblExc
 
-    /* IVOR #4 started handling an unknown, unrelated I/O interrupt when being preempted by
-       the imprecise IVOR #1 because of a fault. We let IVOR #1 handle the problem. The
-       IVOR #4 is not continued. The interrupt is still asserted and the CPU will return to
-       the IVOR #4 handler as soon as the fault handling proceeds to the point where
-       MSR[EE] returns to 1. */
-//    e_lis       r3, rtos_cntIvor1PreemptsIvor4@ha
-//    e_lhz       r0, rtos_cntIvor1PreemptsIvor4@l(r3)
-//    e_cmpl16i   r0, 0xffff
-//    se_beq      ivr1_isUserCodeIvor1Exception
-//    se_addi     r0, 1
-//    e_sth       r0, rtos_cntIvor1PreemptsIvor4@l(r3)
-    se_b        ivr1_isUserCodeIvor1Exception
+    /* r0 == r3: IVOR #4 started handling an unknown, unrelated I/O interrupt when being
+       preempted by the imprecise IVOR #1 because of a fault. We let IVOR #1 handle the
+       problem. The IVOR #4 is not continued. The interrupt is still asserted and the CPU
+       will return to the IVOR #4 handler as soon as the fault handling proceeds to the
+       point where MSR[EE] returns to 1. */
+    se_beq      ivr1_isUserCodeIvor1Exception
 
-ivr1_testForDblExc:
     /* If we get here then we have a preemption of supervisor code, which may be either a
        rare but normal double exception or a fault in the OS. If it is a double exception
        then the address of preemption shall be at the beginning of an exception handler and
@@ -391,65 +380,43 @@ ivr1_testIvor2:
     e_lis       r0, rtos_ivorVectorTableEntry2@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry2@l  /* r0: Address Instruction Storage IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
-    se_bne      ivr1_testIvor3
 
-    /* IVOR #2 started handling the ECU exception when being preempted by the imprecise
-       IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted IVOR #2. */
-//    e_lis       r3, rtos_cntIvor1PreemptsIvor2@ha
-//    e_lhz       r0, rtos_cntIvor1PreemptsIvor2@l(r3)
-//    e_cmpl16i   r0, 0xffff
-//    se_beq      ivr1_continuePreemptedIvor
-//    se_addi     r0, 1
-//    e_sth       r0, rtos_cntIvor1PreemptsIvor2@l(r3)
-    se_b        ivr1_continuePreemptedIvor
+    /* r0 == r3: IVOR #2 started handling the ECU exception when being preempted by the
+       imprecise IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted
+       IVOR #2. */
+    se_beq      ivr1_continuePreemptedIvor
 
-ivr1_testIvor3:
+    /* Note, on the MPC5748G, the interrupts vectors have a distance of 16 Byte. Instead of
+       loading each addreses we could use an incremental "se_addi r0, 16". However, the
+       IVOR #1 handler is in no way time critical and such code wouldn't be compatible
+       with the z4/z7 cores of most other derivatives. */
+
     e_lis       r0, rtos_ivorVectorTableEntry3@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry3@l /* r0: Addr. Instr. Storage IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
-    se_bne      ivr1_testIvor5
 
-    /* IVOR #3 started handling the ECU exception when being preempted by the imprecise
-       IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted IVOR #3. */
-//    e_lis       r3, rtos_cntIvor1PreemptsIvor3@ha
-//    e_lhz       r0, rtos_cntIvor1PreemptsIvor3@l(r3)
-//    e_cmpl16i   r0, 0xffff
-//    se_beq      ivr1_continuePreemptedIvor
-//    se_addi     r0, 1
-//    e_sth       r0, rtos_cntIvor1PreemptsIvor3@l(r3)
-    se_b        ivr1_continuePreemptedIvor
+    /* r0 == r3: IVOR #3 started handling the ECU exception when being preempted by the
+       imprecise IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted
+       IVOR #3. */
+    se_beq      ivr1_continuePreemptedIvor
 
-ivr1_testIvor5:
-    /// @todo The interrupts vectors have a distance of 16 Byte. Can be reduced to an se_addi(distance)
     e_lis       r0, rtos_ivorVectorTableEntry5@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry5@l  /* r0: Address Alignment IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
-    se_bne      ivr1_testIvor6
 
-    /* IVOR #5 started handling the ECU exception when being preempted by the imprecise
-       IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted IVOR #5. */
-//    e_lis       r3, rtos_cntIvor1PreemptsIvor5@ha
-//    e_lhz       r0, rtos_cntIvor1PreemptsIvor5@l(r3)
-//    e_cmpl16i   r0, 0xffff
-//    se_beq      ivr1_continuePreemptedIvor
-//    se_addi     r0, 1
-//    e_sth       r0, rtos_cntIvor1PreemptsIvor5@l(r3)
-    se_b        ivr1_continuePreemptedIvor
+    /* r0 == r3: IVOR #5 started handling the ECU exception when being preempted by the
+       imprecise IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted
+       IVOR #5. */
+    se_beq      ivr1_continuePreemptedIvor
 
-ivr1_testIvor6:
     e_lis       r0, rtos_ivorVectorTableEntry6@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry6@l  /* r0: Address Program IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
     se_bne      ivr1_testIvor7
 
-    /* IVOR #6 started handling the ECU exception when being preempted by the imprecise
-       IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted IVOR #6. */
-//    e_lis       r3, rtos_cntIvor1PreemptsIvor6@ha
-//    e_lhz       r0, rtos_cntIvor1PreemptsIvor6@l(r3)
-//    e_cmpl16i   r0, 0xffff
-//    se_beq      ivr1_continuePreemptedIvor
-//    se_addi     r0, 1
-//    e_sth       r0, rtos_cntIvor1PreemptsIvor6@l(r3)
+    /* r0 == r3: IVOR #6 started handling the ECU exception when being preempted by the
+       imprecise IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted
+       IVOR #6. */
     se_b        ivr1_continuePreemptedIvor
 
 ivr1_isUserCodeIvor1Exception:
@@ -467,12 +434,13 @@ rtos_ivr1_isOSCodeException:
 
 ivr1_testIvor7:
     e_lis       r0, rtos_ivorVectorTableEntry7@ha
-    e_add16i    r0, r0, rtos_ivorVectorTableEntry7@l  /* r0: Address Floating-point unavail handler */
+    e_add16i    r0, r0, rtos_ivorVectorTableEntry7@l  /* r0: Address FPU unavailable handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
     se_bne      ivr1_testIvor8
 
-    /* IVOR #7 started handling the ECU exception when being preempted by the imprecise
-       IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted IVOR #7. */
+    /* r0 == r3: IVOR #7 started handling the ECU exception when being preempted by the
+       imprecise IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted
+       IVOR #7. */
 
 ivr1_continuePreemptedIvor:
     e_lis       r0, 0x32f0  /* 0x32efffff: Mask to reset anticipated exception syndromes */
@@ -484,52 +452,45 @@ ivr1_testIvor8:
     e_lis       r0, rtos_ivorVectorTableEntry8@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry8@l    /* r0: Address System call handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
-    se_bne      ivr1_testIvor9
 
-    /* An IVOR #8 system call had started execution when being preempted by the imprecise
-       IVOR #1. IVOR #8 doesn't need to be proceeded, it surely belongs to the failing
-       task, which is aborted by the exception. */
-//    e_lis       r3, rtos_cntIvor1PreemptsIvor8@ha
-//    e_lhz       r0, rtos_cntIvor1PreemptsIvor8@l(r3)
-//    e_cmpl16i   r0, 0xffff
-//    se_beq      ivr1_isUserCodeIvor1Exception
-//    se_addi     r0, 1
-//    e_sth       r0, rtos_cntIvor1PreemptsIvor8@l(r3)
-    se_b        ivr1_isUserCodeIvor1Exception
+    /* r0 == r3: An IVOR #8 system call had started execution when being preempted by the
+       imprecise IVOR #1. IVOR #8 doesn't need to be proceeded, it surely belongs to the
+       failing task, which is aborted by the exception. */
+    se_beq      ivr1_isUserCodeIvor1Exception
 
-ivr1_testIvor9:
     e_lis       r0, rtos_ivorVectorTableEntry9@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry9@l    /* r0: Address Debug IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
 
-    /* IVOR #9 started handling the exception when being preempted by the imprecise IVOR
-       #1. IVOR #1 doesn't handle the problem but returns to the preempted IVOR #9. */
+    /* r0 == r3: IVOR #9 started handling the exception when being preempted by the
+       imprecise IVOR #1. IVOR #1 doesn't handle the problem but returns to the preempted
+       IVOR #9. */
     se_beq      ivr1_continuePreemptedIvor  
     
     e_lis       r0, rtos_ivorVectorTableEntry10@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry10@l   /* r0: Address EFP Data IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
     
-    /* IVOR #10 started handling the FPU execution when being preempted by the imprecise
-       IVOR #1. The FPU exception must not be proceeded, it surely belongs to the failing
-       task, which is aborted by this MC exception but the FPU exception handler would
-       return to that task without any further action. */
+    /* r0 == r3: IVOR #10 started handling the FPU execution when being preempted by the
+       imprecise IVOR #1. The FPU exception must not be proceeded, it surely belongs to the
+       failing task, which is aborted by this MC exception but the FPU exception handler
+       would return to that task without any further action. */
     se_beq      ivr1_isUserCodeIvor1Exception
     
     e_lis       r0, rtos_ivorVectorTableEntry11@ha
     e_add16i    r0, r0, rtos_ivorVectorTableEntry11@l   /* r0: Address EFP Round IRQ handler */
     se_cmp      r0, r3          /* Both need to match to satisfy */
   
-    /* IVOR #11 started handling the FPU execution when being preempted by the imprecise
-       IVOR #1. The FPU exception must not be proceeded, it surely belongs to the failing
-       task, which is aborted by this MC exception but the FPU exception handler would
-       return to that task without any further action. */
+    /* r0 == r3: IVOR #11 started handling the FPU execution when being preempted by the
+       imprecise IVOR #1. The FPU exception must not be proceeded, it surely belongs to the
+       failing task, which is aborted by this MC exception but the FPU exception handler
+       would return to that task without any further action. */
     se_beq      ivr1_isUserCodeIvor1Exception
     
     /* All anticipated cases have been checked in which we may occasionally see an MC
        exception in supervisor mode. Non of these cases applies and we need to halt SW
        execution. */
-    e_b         rtos_ivr1_isOSCodeException
+    se_b        rtos_ivr1_isOSCodeException
 
 /* End of rtos_ivor1Handler */
 

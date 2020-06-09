@@ -1,4 +1,4 @@
-= image:doc/manual/theme/iconSafeRTOS-asColoredIcon.jpg[width="3%", pdfwidth="5%"] safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L
+= image:doc/manual/theme/iconSafeRTOS-asColoredIcon.jpg[width="3%", pdfwidth="5%"] safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G
 :Author:            Peter Vranken 
 :Email:             mailto:Peter_Vranken@Yahoo.de
 :toc:               left
@@ -16,25 +16,38 @@ which had been published for the MPC5643L. The text has not been revised
 for the new context yet. It'll still contains many references to the
 single core solution MPC5643L.
 
-== About this application
+== About this DEVKIT-MPC5748G sample
 
-This DEVKIT-MPC5748G sample application implements an easy to reuse RTOS
+This DEVKIT-MPC5748G sample implements an easy to reuse RTOS
 for the NXP MPC5748G and other microcontroller derivates with e200z4/7
-core. The sample application started as a copy of MPC5643L sample
-"RTOS-VLE". The RTOS implementation has been reworked (folder
-`code\system\RTOS`) with respect to the demands of safety-critical
-software. The concept of processes has been added with the intention to
-run applications of different criticality levels in different processes
-without fearing harmful interferences between them. Features:
+core. The RTOS has been designed with respect to the demands of
+safety-critical embedded software. The concept of processes has been
+adopted with the intention of running applications of different
+criticality levels in different processes without fearing harmful
+interferences between them. Features of the RTOS are:
 
 * Preemptive, priority controlled scheduling
+* The kernel can run on any core, decided independently for each core
+** Many basic services are available even on cores, which are not
+   configured to run safe-RTOS. This relates to interrupt handling and
+   synchronization
 * Up to five processes (including kernel) with disjunct memory address
   spaces and hierarchic privileges
 * Tasks belong to processes and share the process owned memories
-* Globally shared memory for communication purpose
+* Processes are basically shared by the cores. The cores may run their
+  tasks in same or in disjunct processes
+* Communication services
+** Secured priority ceiling protocol for inter-task communication on a
+   core
+** Inter-process function calls for communication between processes on a
+   core
+** Shared memory
+*** Sharing between tasks of same process but running on different cores
+*** Sharing between different processes
+** Inter-core notification service for sending events and messages from
+   core to core
+** Inter-core mutex operations
 * Hardware memory protection to ensure integrity of process owned memories
-* Secured priority ceiling protocol for communication purpose
-* Inter-process function calls for communication purpose
 * Deadline monitoring and activation loss counters for avoidance of
   blocking tasks
 * Exception handling to catch failures like use of privileged, illegal or
@@ -44,12 +57,10 @@ without fearing harmful interferences between them. Features:
 * I/O driver model for safe implementation of a complete operating system
 
 The RTOS itself is not a runnable piece of software. It requires some
-application code. The demo application file from the elder
-TRK-USB-MPC5643L sample RTOS-VLE has been migrated and can now be found as
-sample application "default", see folder `code\application\default`.
-
-Some more meaningful applications of the RTOS can be found in folder
-`code\application\`.
+application code. The folder `code\application` contains several sample
+applications for the RTOS. The build scripts take the name of a sample
+application as an argument and link the selected application with the
+RTOS into a flushable, runnable and debugable binary file.
 
 To see how the samples work you need to open a terminal software on your
 host machine. You can find a terminal as part of the CodeWarrior Eclipse
@@ -57,10 +68,10 @@ IDE; go to the menu, "Window/Show View/Other/Terminal/Terminal".
 
 Open the serial port, which is offered by the DEVKIT-MPC5748G. (On
 Windows, open the Computer Management and go to the Device Manager to find
-out.) The Baud rate has been selected as 115200 Bd in files
-`code\application\<applicationName>\mai_main.c`, 8 Bit, no parity, 1 start
-and stop Bit. The terminal should print the messages, which are regularly
-sent by the sample code running on the evaluation board.
+out.) The Baud rate has been selected as 115200 Bd in function `main`, 8
+Bit, no parity, 1 start and stop Bit. The terminal should print the
+messages, which are regularly sent by the sample code running on the
+evaluation board. Selected samples may even take some input.
 
 == The RTOS
 
@@ -71,16 +82,19 @@ the exception of activation queuing.
 
 The scheduler offers an API to create events that can activate tasks. An
 event is either a regular timer event, triggered by the RTOS system clock,
-or a software triggered event. The latter can be triggered either from
-user code (if it has sufficient privileges) or from ISRs belonging to the
-operating system.
+a notification from another core or a software triggered event. The latter
+can be triggered either from user code (if it has sufficient privileges)
+or from ISRs belonging to the operating system.
 
 The RTOS offers a pre-configured set of up to four processes. The
 limitation to four is a hardware constraint and for sake of simplicity no
-virtualization by software has been shaped. The operating system forms a
-fifth process. The operating system startup code will register the needed
-tasks. The registration assigns them to one of the processes and
-associates them with one of the created events.
+virtualization by software has been shaped.footnote:[
+  With some limitation even more processes can be defined. The more
+processes the more painful the limitations are. More than six processes
+becomes unrealistic.]
+  The operating system forms a fifth process. The operating system startup
+code will register the needed tasks. The registration assigns them to one
+of the processes and associates them with one of the created events.
 
 All scheduling is strictly priority controlled. The triggering of an event
 makes all associated tasks ready to run. This is called task activation.
@@ -89,32 +103,29 @@ becomes the one and only _running_ task. This may involve preemption of
 tasks.
 
 The operating system startup code can install needed interrupt service
-routines (ISR). The API offered for this purpose is similar to the other
-DEVKIT-MPC5748G samples in this repository.
+routines (ISR).
 
-For mutual exclusion of tasks, if shared data is involved, a lock API is
-offered that implements the priority ceiling protocol (PCP). It is secured
-so that supervisory tasks cannot be accidentally or purposely blocked by
-application code.
+For mutual exclusion of tasks on a core, if shared data is involved, a
+lock API is offered that implements the priority ceiling protocol (PCP).
+It is secured so that supervisory tasks cannot be accidentally or
+purposely blocked by application code.
 
-The mechanisms already known from the other DEVKIT-MPC5748G samples to
-suspend and resume all interrupts are still supported but they are no
-longer offered to application code, only the operating system may use them
-(mainly for I/O driver implementation).
+The mechanisms already known from the other DEVKIT-MPC5748G sample
+"startup" to suspend and resume all interrupts are still supported but
+they are no longer offered to application code, only the operating system
+may use them (mainly for I/O driver implementation).
 
 The use of the RTOS is further supported by some diagnostic functions.
 They offer stack usage information, information about caught exceptions
-and averaged CPU load information. The diagnostics comes along with a new
+and averaged CPU load information. The diagnostics comes along with an
 API to halt the execution of a process. Permission to use this API is
 granted only to what is considered the safety process or task.
 
 Many more details can be found in the manual, which is available
-https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/safe-RTOS-swScheduler/LSM/safe-RTOS-VLE/doc/manual/readMe.adoc[online (for MPC5643L)^]
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/safe-RTOS/doc/manual/readMe.adoc[online^]
 in GitHub or as
-https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/safe-RTOS-swScheduler/LSM/safe-RTOS-VLE/doc/manual/manual.pdf[printable (for MPC5643L)^]
-document. The API is described in the online https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/TRK-USB-MPC5643L/safe-RTOS-swScheduler/LSM/safe-RTOS-VLE/doc/doxygen/html/globals_func.html[Doxygen help (for MPC5643L)^], too.
-
-=== Differences to the ancestor RTOSs
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/safe-RTOS/doc/manual/manual.pdf[printable^]
+document. The API is described in the online https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/DEVKIT-MPC5748G/samples/safe-RTOS/doc/doxygen/html/globals_func.html[Doxygen help], too.
 
 The architecture of the RTOS is very simple and resembles its ancestors,
 which were the simple RTOS without safety concept and safe-RTOS-VLE with
@@ -125,48 +136,6 @@ software development environment.
 For an explanation of the scheduling scheme, you may still refer to the
 documentation of the simple RTOS, please look
 https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/safe-RTOS-swScheduler/LSM/RTOS-VLE#The-RTOS[here (for MPC5643L)^].
-
-The differences between safe-RTOS and the simple RTOS are:
-
-* The safety concept
-* Any number of tasks can be associated with an event. The simple RTOS had
-  used a one-by-one relation between events and tasks. (Having more than
-  one task per event makes sense only in conjunction with the new process
-  concept)
-* The implementation of the safety mechanisms means a performance loss.
-  The sample application "benchmark", which aims at simulating the typical
-  timing of a true application shows an increased CPU load of 1.7%.
-* The architecture of the RTOSs may be similar but the implementation
-  isn't. The safety demands require a significant portion of assembler
-  code for implementation
-* The Book E instruction set is no longer supported
-
-The major difference between the two branches of safe-RTOS is the
-substitution of the hardware based scheduler by a pure software solution.
-This has its pros and cons:
-
-* The performance of the software solution is worse. The sample
-  application "benchmark" shows an increased CPU load of about 0.3%. For
-  the other sample application "default", which has an extremely high
-  interrupt load, it's even 1.5%
-* There's no longer a limitation for the maximum number of events. This
-  was the main motivation for the change; a port for the MPC5775B/E
-  dual-core suffered from the hardware limitation of eight events, which
-  were even to be distributed onto both cores
-* All tasks have a prioprity, which is by principle lower than any
-  interrupt priority
-* User mode tasks can't have a critical section with ISRs any more. (OS
-  tasks can still have)
-* In a safety aware development process, the effort for testing and code
-  reviews will be higher for the software solution
-* There are behavioral differences between hard- and software solution,
-  which are visible at the API. It's mainly about having separate priority
-  spaces for tasks and ISRs in the software solution, but this is a
-  particularity, which won't have an impact on the choice to make
-
-For small applications, where the hardware given maximum of eight events
-is no issue, the hardware solution may still be the better choice. For now,
-it is still available on the master branch of the repository.
 
 == The safety concept
 
@@ -187,7 +156,7 @@ hardware, then it'll typically need some supervisory software, too, which
 has the only aim of avoiding such a state. Most typical, the supervisory
 software can be kept very lean. It may e.g. be sufficient to read a
 temperature sensor, check the temperature against a boundary and to
-control the coil of the main relays, which powers the system. If the
+control the coil of the main relay, which powers the system. If the
 temperature exceeds a limit or if the temperature reading is somehow
 implausible then the relay is switched off and the entire system
 unpowered. That's all. A few hundred lines of code can already suffice
@@ -272,13 +241,16 @@ that." Instead, it offers the mechanisms to implement such decisions in a
 particular supervisory task.
 
 The implementation of recognizing privilege violations before they can
-harm is founded on the memory management unit (MMU) in the CPU, the memory
-protection unit of the CPU-external buses and the CPU's exception
-mechanism. It's impossible for a user task to change the behavior of the
-MPU as its registers are in the address space it itself protects. It is
-impossible for user code to change the behavior of MMU or CPU exception
-handling; these settings are held in CPU supervisor registers, which
-cannot be accessed without an immediately punished privilege violation.
+harm is founded on the memory management unit (MMU) in the CPU,footnote:[
+  This holds in general but not for the MPC5748G, which doesn't have an
+MMU. Here, memory protection is ensured only by the SMPU.]
+  the memory protection unit of the CPU-external buses and the CPU's
+exception mechanism. It's impossible for a user task to change the
+behavior of the MPU as its registers are in the address space it itself
+protects. It is impossible for user code to change the behavior of MMU or
+CPU exception handling; these settings are held in CPU supervisor
+registers, which cannot be accessed without an immediately punished
+privilege violation.
 
 Note, the execution of code in ROM is generally not restricted. A task may
 even call operating system code routines -- until the executed code would
@@ -298,7 +270,7 @@ belongs to the user task code. According to our concept this will always
 be the case -- except for implementation errors in the kernel itself (or in
 an added I/O driver, see below) or, less likely but possible, because of a
 sporadic hardware fault, e.g. caused by local chip overtemperature or
-cosmic radiation. In which case the kernel simply stops working.
+cosmic radiation. In which case the kernel simply stops working on the core.
 
 Halting the software execution can be considered not breaking the safety
 concept of the system; in a safe system, there will always be an external
@@ -406,7 +378,7 @@ compiler installation needs to be known and the PATH variable needs to
 contain the paths to the required tools. 
 
 For Windows users there is a shortcut to PowerShell in the root of this
-project (not sample), which opens the shell with the prepared environment.
+GitHub project, which opens the shell with the prepared environment.
 Furthermore, it creates an alias to the appropriate GNU make executable.
 You can simply type `make` from any location to run MinGW32 GNU make.
 
@@ -422,26 +394,29 @@ script for their native shell.
 
 ==== Eclipse for building, flashing and debugging
 
-Flashing and debugging is always done using the NXP CodeWarrior Eclipse
-IDE, which is available for free download. If you are going to run the
-application build from Eclipse, too, then the same environmental settings
-as described above for a shell based build need to be done for Eclipse. The
-easiest way to do so is starting Eclipse from a shell, that has executed
-the script `setEnv.ps1` prior to opening Eclipse.
+Flashing and debugging is always done using the NXP S32 Design Studio for
+Power Architecture, an Eclipse IDE, which is available for free download
+und unrestricted use in commercial and non commercial projects.
 
-For Windows users the script `CW-IDE.ps1` has been prepared. This script
+If you are going to run the application build from the Eclipse IDE then
+the same environmental settings as described above for a shell based build
+need to be done for Eclipse, too. The easiest way to do so is starting
+Eclipse from a shell, that has executed the script `setEnv.ps1` prior to
+opening Eclipse.
+
+For Windows users the script `S32DS-IDE.ps1` has been prepared. This script
 requires customization prior to its first use. Windows users open it in a
 text editor and follow the given instructions that are marked by TODO
 tags. Mainly, it's about specifying the installation directory of
-CodeWarrior.
+the S32 Design Studio.
 
 Non-Windows users will read this script to see, which (few) environmental
 and path settings are needed to successfully run the build under control
 of Eclipse and prepare an according script for their native shell.
 
-Once everything is prepared, the CodeWarrior Eclipse IDE will never be
-started other than by clicking the script `CW-IDE.ps1` or its equivalent
-on non-Windows hosts.
+Once everything is prepared, the S32 Design Studio will never be started
+other than by clicking the script `S32DS-IDE.ps1` or its equivalent on
+non-Windows hosts.
 
 See https://github.com/PeterVranken/TRK-USB-MPC5643L[project overview^] and
 https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[GitHub
@@ -451,10 +426,11 @@ tools.
 === Compiler and makefile
 
 Compilation and linkage are makefile controlled. The compiler is GCC
-(MinGW-powerpc-eabivle-4.9.4). The makefile is made generic and can be
-reused for other projects, not only for a tiny "Hello World" with a few
-source files. It supports a number of options (targets); get an overview
-by typing:
+(MinGW-powerpc-eabivle-4.9.4). The compiler is part of the S32 Design
+Studio installation and can be used independently from the Studio. The
+makefile is made generic and can be reused for true, large projects that
+want to make use of safe-RTOS. It supports a number of options (targets);
+get an overview by typing:
  
     cd <projectRoot>/samples/safe-RTOS
     mingw32-make help
@@ -467,45 +443,88 @@ do so. Possible applications can be found as the children of folder
 `<projectRoot>/samples/safe-RTOS/code/application`. Type
 ("code/application/default/" is just an example):
 
-    mingw32-make -s build APP=code/application/default/
-    mingw32-make -s build APP=code/application/default/ CONFIG=PRODUCTION
-    mingw32-make -s build APP=code/application/default/
-    mingw32-make -s build APP=code/application/default/ CONFIG=PRODUCTION
+    mingw32-make -sO build APP=code/application/default/
+    mingw32-make -sO build APP=code/application/default/ CONFIG=PRODUCTION
 
 to produce the flashable files
-`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-safe-RTOS.elf`,
-`bin\ppc\default\PRODUCTION\DEVKIT-MPC5748G-safe-RTOS.elf`,
-`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-safe-RTOS.elf`,
-and
+`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-safe-RTOS.elf`, and
 `bin\ppc\default\PRODUCTION\DEVKIT-MPC5748G-safe-RTOS.elf`.
 
 To get more information, type:
 
+    mingw32-make --help
     mingw32-make help
 
 WARNING: The makefile requires the MinGW port of the make processor. The
-Cygwin port will fail with obscure, misleading error messages. It's safe
-to use the `make.exe` from the compiler installation archive but
-explicitly typing `mingw32-make` will avoid any problem.
+Cygwin port will fail with obscure, misleading error messages. For your
+convenience, we have uplodaded an appropriate recent version of the MinGW
+make processor into this GitHub project. The PowerShell startup script
+aliases this (Windows) executable to the command `make`. Moreover,
+explicitly typing `mingw32-make` will generally avoid any problem.
 
 The makefile is designed to run on different host systems but has been
 tested with Windows 7 and Windows 10 only.
 
-Note, the Eclipse project configuration in the root folder of this sample
-only supports the build of a sub-set of the possible configurations.
-Safe-RTOS can be compiled with a few sample applications only, each of
-them in DEBUG and PRODUCTION compilation. To build more samples with
-Eclipse you would have to duplicate the existing build configurations and
-adapt the make command lines in the build settings according to the
-explanations and examples above.
+Note, the Eclipse project configuration in the root folder of this
+DEVKIT-MPC5748G sample (`.settings`, `.cproject`, `.project`) only
+supports the build of a sub-set of the possible configurations. safe-RTOS
+can be compiled with a few sample applications only, each of them in DEBUG
+and PRODUCTION compilation. To build more samples with Eclipse you would
+have to duplicate the existing build configurations and adapt the make
+command lines in the build settings according to the explanations and
+examples above.
+
+=== Running your application in RAM
+
+The makefile and the linker scripts support the location of the code
+entirely in RAM. The MPC5748G has plenty of RAM so that even large pieces
+of code can be loaded and executed in RAM. This is extremely helpful for
+code development. Loading the code into the device's RAM is significantly faster
+than into ROM and many flash erase and program cycles can be safed. Even
+if your complete project may not fit into RAM then you may still consider
+it useful to build some sub-modules together with their testing code in
+this way.
+
+Nothing particular has to be done to load a compiled software into RAM.
+The GNU debugger in the Design Studio just looks at the addresses of code
+and data objects in the binary file (`*.elf`). It'll erase and flash the
+ROM if the objects have ROM addresses and it'll load them into RAM if the
+objects are located in RAM. So all we have to do is defining the memory
+addresses in the linker scripts accordingly in the one or the other way.
+
+Under control of a macro in the main makefile, `GNUmakefile`, the linker
+chooses different address ranges. If the macro `LINK_IN_RAM` is element of
+the list of macros then the linker will devide the physically available
+RAM into 67% for code or text and constant data sections (512k) and 33%
+for data sections (256k). If the macro is not defined in the list then all
+768k of RAM are available to the data sections.
+
+The macro is seen by the C source code at compile-time, too. However,
+there are barely dependecies. The MPU configuration is the principal
+exception and some execution timing operations are dependent on the macro,
+too.
+
+To switch between linkage in ROM or RAM, open file `GNUmakefile` in a text
+editor and look for the definition of variable `defineList`. The left hand
+side expression is a blank-separated list of symbols, which are passed to
+the compiler and linker as preprocessor #define. Add `LINK_IN_RAM` if
+you want to run your code in RAM.
+
+CAUTION: Running the software in RAM is useful but, by principle, a
+preliminary, temporary way of working only. Running the software can be done
+only under control of the debugger, which is needed to load the binary
+data into the MCU's RAM. A start of the software out of reset or after a
+power-up or without connected Design Studio is impossible.
+
+// TODO Continue here with review
 
 === Flashing and debugging
 
 The code of this DEVKIT-MPC5748G sample can be flashed and debugged with
-the CodeWarrior IDE.
+the S32 Design Studio IDE.
 
-To flash the `*.elf` file of a safe-RTOS application like `default`, open the
-CodeWarrior IDE, go to the menu, click "Window/Show
+To flash the `*.elf` file of a safe-RTOS application like `default`, open
+the S32 Design Studio IDE, go to the menu, click "Window/Show
 View/Other/Debug/Debugger Shell". In the debugger shell window, type for
 example:
 
@@ -529,7 +548,7 @@ button "Debug".
 (Or select the according debug configuration for another safe-RTOS
 application.)
 
-You can find more details on using the CodeWarrior IDE at
+You can find more details on using the S32 Design Studio IDE at
 https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[TRK-USB-MPC5643L/wiki/Tools-and-Installation^].
 
 == Code architecture
@@ -544,6 +563,8 @@ for details.
 Only VLE code is supported.
 
 == Known issues
+
+// TODOC: Halting a process relates to the calling core only
 
 . Debugger: If the view shows the INTC0 register set then the debugger
 harmfully affects program execution and the RTOS fails: The write to
