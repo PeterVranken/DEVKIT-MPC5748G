@@ -392,6 +392,7 @@ Non-Windows users will read this script to see, which (few) environmental
 settings are needed to successfully run the build and prepare an according
 script for their native shell.
 
+[[secOpenEclipse]]
 ==== Eclipse for building, flashing and debugging
 
 Flashing and debugging is always done using the NXP S32 Design Studio for
@@ -474,13 +475,14 @@ have to duplicate the existing build configurations and adapt the make
 command lines in the build settings according to the explanations and
 examples above.
 
+[[secRunInRAM]]
 === Running your application in RAM
 
 The makefile and the linker scripts support the location of the code
 entirely in RAM. The MPC5748G has plenty of RAM so that even large pieces
 of code can be loaded and executed in RAM. This is extremely helpful for
 code development. Loading the code into the device's RAM is significantly faster
-than into ROM and many flash erase and program cycles can be safed. Even
+than into ROM and many flash erase and program cycles can be saved. Even
 if your complete project may not fit into RAM then you may still consider
 it useful to build some sub-modules together with their testing code in
 this way.
@@ -494,13 +496,13 @@ addresses in the linker scripts accordingly in the one or the other way.
 
 Under control of a macro in the main makefile, `GNUmakefile`, the linker
 chooses different address ranges. If the macro `LINK_IN_RAM` is element of
-the list of macros then the linker will devide the physically available
+the list of macros then the linker will divide the physically available
 RAM into 67% for code or text and constant data sections (512k) and 33%
 for data sections (256k). If the macro is not defined in the list then all
 768k of RAM are available to the data sections.
 
 The macro is seen by the C source code at compile-time, too. However,
-there are barely dependecies. The MPU configuration is the principal
+there are barely dependencies. The MPU configuration is the principal
 exception and some execution timing operations are dependent on the macro,
 too.
 
@@ -516,55 +518,77 @@ only under control of the debugger, which is needed to load the binary
 data into the MCU's RAM. A start of the software out of reset or after a
 power-up or without connected Design Studio is impossible.
 
-// TODO Continue here with review
-
 === Flashing and debugging
 
 The code of this DEVKIT-MPC5748G sample can be flashed and debugged with
-the S32 Design Studio IDE.
+the S32 Design Studio IDE. Effectively, flashing means to start the GNU
+debugger (GDB) and to let it "load" the *.elf file. If the code is linked
+in flash ROM address space then this loading means writing to the flash.
+Consequently, a flash configuration in the Eclipse IDE is nearly identical
+to any ordinary debug configuration, just the option "Load executable" to
+load a file is checked. Normal debug configurations, i.e. for debugging,
+don't have this check mark set:
 
-To flash the `*.elf` file of a safe-RTOS application like `default`, open
-the S32 Design Studio IDE, go to the menu, click "Window/Show
-View/Other/Debug/Debugger Shell". In the debugger shell window, type for
-example:
+[[figDebugConfigFlash]]
+.Eclipse debug configuration, which is used for flashing
+image::readMe_resources/debugConfigForFlashing.jpg[Eclipse debug configuration, which is used for flashing, width="70%", pdfwidth="70%", align="center"]
 
-    cd <rootFolderOfSample>/makefile/debugger
-    set APP default
-    source flashDEBUG.tcl
-    
-or
+Connect your evaluation board DEVKIT-MPC5748G with the USB wire and start
+the S32 Design Studio as outlined above (<<secOpenEclipse>>). Now you can
+find the debug configuration shown in <<figDebugConfigFlash>> in menu
+"Run/Debug Configurations..." A dialog listing all available debug
+configurations opens. Type "flash" in the text box, which initially has
+the focus, to filter all of them, which are intended for flashing and
+select the one you need. Press the Enter key or click on button
+"Debug" and the flash process begins. The progress is printed in one of
+the console windows in the lower right corner.
 
-    set APP default
-    source flashPRODUCTION.tcl
+It's a bit counter-intuitive that flashing with GDB is just a kind of side
+effect of starting the debugger. Rather than with a "Congratulations,
+flashing successfully completed"-message, flashing ends with a ready to
+use interactive debug session: The source code window shows the startup
+code for the boot core Z4A and you could go ahead and step through the
+just flashed code. However, you won't typically do so and rather stop this
+debug session again. This is why:
 
-(Setting TCL variable APP doesn't need to be repeated prior to every
-repeated flashing.)
+In the S32 Design Studio, a debug session for projects running _n_ cores
+requires opening a combination of _n_ Eclipse debug configurations, one
+for each core. Such a combination is called a "Launch Group". Our flash
+configurations generally use only a single debug configuration, because
+our project links all the code in one *.elf file, regardless of the number
+of cores, which are in use. Therefore, if you'd really go ahead with the
+flash debug session then you could only control and observe boot core Z4A.
+Better to close it again and start a more appropriate Launch Group, like
+"triCore (all cores, DEBUG)".
 
-The debugger is started by a click on the black triangle next to the blue
-icon "bug", then click "Debug Configurations.../CodeWarrior/safe-RTOS
-(default, DEBUG)". Confirm and start the debugger with a last click on 
-button "Debug".
+[[figLaunchGroup]]
+.Debug configuration to chose when debugging a multi-core software
+image::readMe_resources/debugLaunchGroup.jpg[Debug configuration to chose when debugging a multi-core software, width="70%", pdfwidth="70%", align="center"]
 
-(Or select the according debug configuration for another safe-RTOS
-application.)
+If you built your software for execution in RAM (see <<secRunInRAM>>) then
+you don't need to flash. No matter what is currently flashed, just start
+the according debug configuration. The RAM is loaded with your software
+and you can start it with the usual debugger commands to step and run,
+etc. If you end the debug session while the cores are all running (i.e.
+none of the cores is halted in a breakpoint) then the software in RAM even
+stays alive and can be observed without debugger connection. Only after
+next reset the ROM software will take effect again.
 
-You can find more details on using the S32 Design Studio IDE at
-https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[TRK-USB-MPC5643L/wiki/Tools-and-Installation^].
+By the way, the debug sessions can be found also by a click on the black
+triangle next to the blue icon "bug". The last recently used
+configurations are listed in the menu. To see all of them or to
+double-check their properties you'd click "Debug Configurations...",
+somewhere down below the list. In the new dialog, select the wanted one
+and start the debugger with a last click on button "Debug".
+
 
 == Code architecture
-
-This DEVKIT-MPC5748G sample is compiled for the VLE instruction set. The
-build settings are identical to "startup". Please refer to
-https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/startup/readMe.adoc[samples/startup/readMe.adoc^]
-for details.
 
 === Book E versus VLE
 
 Only VLE code is supported.
 
 == Known issues
-
-// TODOC: Halting a process relates to the calling core only
 
 . Debugger: If the view shows the INTC0 register set then the debugger
 harmfully affects program execution and the RTOS fails: The write to
@@ -584,6 +608,15 @@ the debugger over wrtee(i) instructions. The instruction may fail to
 change the bit. If the code approaches such an instruction you should use
 the right-click operation "Run to line", targeting the instruction behind
 the wrtee(i). This works fine.
+
+. Debugger: A similar effect has been observed when putting a breakpoint
+on the first instruction of an exception handler. (Which is indeed a
+natural desire to be informed about exceptions.) The correct exception
+handling is confused. The CPU state is not correctly stored in the xSRRi
+registers and the MSR bits are not properly updated, at least not the
+External Interrupt enable bit, MSR[EE]. Further software execution has
+barely a chance. Workaround is to set the breakpoint a few instructions
+further on in the exception handler.
 
 . Debugger: It is not possible to hinder the P&E debugger from halting at
 an se_illegal instruction. (See https://community.nxp.com/thread/497533)
