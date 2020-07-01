@@ -753,7 +753,7 @@ static void initRTOSClockTick(void)
                         &&  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 1) <= 35791
                   , "RTOS clock tick configuration on core Z4B is out of range"
                   );
-    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
+    _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 0
                     ||  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 2) >= 1 
                         &&  GET_CORE_VALUE(RTOS_CLOCK_TICK_IN_MS, 2) <= 35791
                   , "RTOS clock tick configuration on core Z2 is out of range"

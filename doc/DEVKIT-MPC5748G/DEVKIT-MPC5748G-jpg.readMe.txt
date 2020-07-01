@@ -1,0 +1,3 @@
+Image DEVKIT-MPC5748G.jpg downloaded from
+https://www.nxp.com/design/development-boards/automotive-development-platforms/mpc57xx-mcu-platforms/mpc5748g-development-board-for-secure-gateway:DEVKIT-MPC5748G
+on June 2, 2020
