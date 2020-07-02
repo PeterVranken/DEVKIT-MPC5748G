@@ -17,6 +17,8 @@ ifdef::env-github[]
 endif::[]
 // https://asciidoctor.org/docs/user-manual/
 
+// TODOC: Halting a process relates to the calling core only. Not a bug but maybe counter-intuitive
+
 == Scope
 
 safe-RTOS is a successor of the simple RTOS

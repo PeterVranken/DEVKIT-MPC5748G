@@ -1,4 +1,5 @@
-= DEVKIT-MPC5748G -- Open Source Toolchain Support for a low-cost PowerPC Evaluation Board
+// See https://isis.apache.org/guides/dg/resources/asciidoc-writers-guide.pdf
+= DEVKIT-MPC5748G -- Open Source Toolchain Support for a low-cost multi-core PowerPC Evaluation Board
 :Author:            Peter Vranken
 :Email:             mailto:Peter_Vranken@Yahoo.de
 :toc:               left
@@ -13,32 +14,132 @@
 :tip-caption:       :bulb:
 :warning-caption:   :warning:
 
+CAUTION: This readme file basically is a copy from the ancestor project,
+which had been published for the MPC5643L. The text has not been fully
+revised for the new context yet. It may still contain some incorrect links
+or unwanted references to the single core solution for the MPC5643L.
 
 == Introduction
 
-Software support for low cost PowerPC evaluation board DEVKIT-MPC5748G by NXP.
+This project aims at supporting the software development for the NXP PowerPC
+microcontroller MPC5748G with professional yet free of charge software
+development tools. It's not difficult to find a GNU C cross compiler for the
+PowerPC architecture in the Internet but as a matter of experience it's
+quite cumbersome to make it produce a flashable and running piece of code.
+Furthermore, if we have produced such a binary file then it's still
+another matter to flash it and to find and setup a debugger to step through
+it.
 
-An initial code sample offers:
+.The NXP evaluation board DEVKIT-MPC5748G
+image::doc/DEVKIT-MPC5748G/DEVKIT-MPC5748G.jpg[DEVKIT-MPC5748G,80%]
 
-* Clean, well-documented assembly startup code for all cores (together
-  with related linker script)
-* Clock settings for cores and peripherals
-* Generally usable crossbar configuration
-* Interrupt handling
-* SMPU settings suitable for all cores and to support communication between them
-* Generally usable low level synchronization primitives for communication
-  between cores (using the Protected Storage Controller)
-* C lib support with printf via serial interface and USB connection
-* Trivial application code:
- ** LEDs individually controlled from all three cores
- ** Shared counters to demonstrate cross-core communication
- ** Progress and status messages on serial interface - just open a
-    terminal on your development host machine and select 115200 Bd, 8 Bit,
-    1 stop bit, no parity bit
-* Makefile based compilation
- ** Build from shell window for automation purpose
- ** Integration into S32 Design Studio for interactive use
-* A single image (load file) for all cores
-* Debugger support to flash the code from S32 Design Studio
-* Debugger support to debug all cores - either from S32 Design Studio or
-  from shell windows
+None of these tasks can be solved in general. There are too many
+dependencies on the host machine, the tool revisions, the specific chip
+from the PowerPC family and the hardware board it is mounted on. Any
+imaginable configuration of these will need particular investigation and
+specific solutions. This project focuses on a single such configuration
+and offers a clean, professional level solution for that one. It might be
+possible or not possible, more or less difficult or more or less effortful
+to migrate this solution to other revisions or ports of GCC or other
+derivates from the microcontroller family but this is considered your
+responsibility and out of scope of this project.
+
+An important exception is the choice of the host machine. We don't expect
+problems with Linux. GCC is anyway a native UNIX tool, Cygwin is obsolete
+by nature, the NXP S32 Design Studio for Power Architecture is available
+for Linux, too, and the makefiles used in this project have been designed
+to run under Linux. Please note, that this has not been tested yet.
+
+The configuration for this project is:
+
+[frame="none",options="noheader",width="100%",cols="1,2"]
+|=======
+|Microcontroller|https://www.nxp.com/products/microcontrollers-and-processors/power-architecture-processors/mpc5xxx-55xx-32-bit-mcus/ultra-reliable-mpc56xx-32-bit-automotive-and-industrial-microcontrollers-mcus/ultra-reliable-dual-core-32-bit-mcu-for-automotive-and-industrial-applications:MPC564xL[NXP PowerPC MPC5748G]
+|Evaluation board|https://www.nxp.com/design/development-boards/automotive-development-platforms/mpc57xx-mcu-platforms/mpc5748g-development-board-for-secure-gateway:DEVKIT-MPC5748G[NXP DEVKIT-MPC5748G]
+|Host|Windows 10
+|C compiler footnote:[
+  The same compiler is element of the NXP S32 Design Studio installation. You don't need to download the compiler separately.]|https://drive.google.com/open?id=0B_3zBh2c7LroNEFIOVlJcUVKRWc[MinGW-powerpc-eabivle-4.9.4]
+|Unix tools|http://www.cygwin.com/[Cygwin]
+|Flash tool|https://www.nxp.com/pages/codewarrior-for-mcus-eclipse-ide-coldfire.-56800-e-dsc-kinetis.-nxp-56xx-rs08-s08-s12z-v10.7:CW-MCU10?tab=Design_Tools_Tab[NXP S32 Design Studio for Power Architecture v2.1]
+|Debugger|(same as flash tool)
+|=======
+
+The project presents a few code samples for this hardware and toolchain
+configuration. The samples are intended to support your software
+development. They are no fully elaborated, functional applications but
+they offer high quality building blocks for a true application. The next
+section gives an overview.
+
+== The samples
+
+=== "startup"
+
+The most prominent embedded sample is the blinking LED, called
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/startup["startup"]
+in this project. While it is not of any use as such it does contain a lot
+of reusable stuff for real development: As there is the toolchain setup
+(compiler, linker, flash tool, debugger), a powerful, generic, fully
+reusable makefile and a clean piece of startup code, which will suffice
+for most applications. Remove the LED blink code and start writing your
+application but don't loose time with setting up your development
+environment.
+
+Sample "startup" already integrates some reusable I/O drivers:
+
+Simple but useful for your first steps is the I/O driver to access the
+user LED's and buttons on the DEVKIT-MPC5748G. Evidently, this driver is
+board specific, but the others aren't.
+
+Most useful is the DMA based serial I/O driver, which connects the C
+library's printf function family with the virtual COM port, that is
+element of the board's USB connection. The S32 Design Studio comes along
+with a suitable terminal software; just open the according Eclipse view to
+display the printed output on the host machine.
+
+The System Timer Module driver (STM) can be used to measure time spans and
+to add timing control to your software.
+
+A driver for the Decorated Memory Storage Controller provides safe
+core-to-core data exchange and an encapsulating and abstracting mutex
+class further supports this.
+
+=== image:samples/safe-RTOS/doc/manual/theme/iconSafeRTOS-asColoredIcon.jpg[width="3%", pdfwidth="5%"] safe-RTOS
+
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS["safe-RTOS"]
+is a technically ISO 26262 compliant RTOS with a process and privileges
+management concept that implements the _freedom-from-interference_
+paradigm. It can be run on one or more cores. If a core decides not to run
+the RTOS then it can still make use of some low-level communication
+services to safely exchange data across core-boundaries.
+
+Both samples are self-contained. There are some common elements, which are
+same in both samples, like startup code and makefile. It would be natural
+to put them in a shared directory and reuse them across the samples. We
+decided not to do so in order to make the reuse of the samples as simple
+as possible. Once you have installed the tools you will be able to copy
+any sample to an arbitrary local directory and either run the makefile
+from the command line or use the S32 Design Studio IDE with our Eclipse
+project file to build the sample. The S32 Design Studio IDE is in either
+case required to flash and debug the built software.
+
+== Installation
+
+Please, find more details on installing the required development tools
+in Wiki page
+https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[Tools
+and Installation footnote:[
+  This Wiki page still needs migration to the DEVKIT-MPC5748G project.
+However there are many similarities, which makes it still useful.]].
+
+== Documentation
+
+//* The https://github.com/PeterVranken/DEVKIT-MPC5748G/wiki[Wiki pages] of
+//  this project tell more about download and installation of the tools and
+//  how to run the samples
+* Each sample has a "readMe", which outlines the functionality and its
+  particular added value
+* The code and scripts are documented by source code comments
+* Most relevant documentation about the evaluation board and the
+  microcontroller has been collected in folder
+  https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/doc[doc]
+  and much, much more can be found in the Internet

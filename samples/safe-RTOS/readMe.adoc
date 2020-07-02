@@ -12,9 +12,9 @@
 :warning-caption:   :warning:
 
 CAUTION: This readme file basically is a copy from the ancestor project,
-which had been published for the MPC5643L. The text has not been revised
-for the new context yet. It'll still contains many references to the
-single core solution MPC5643L.
+which had been published for the MPC5643L. The text has not been fully
+revised for the new context yet. It may still contain some references to
+the single core solution for the MPC5643L.
 
 == About this DEVKIT-MPC5748G sample
 
@@ -24,7 +24,7 @@ core. The RTOS has been designed with respect to the demands of
 safety-critical embedded software. The concept of processes has been
 adopted with the intention of running applications of different
 criticality levels in different processes without fearing harmful
-interferences between them. Features of the RTOS are:
+interferences between them. Features of safe-RTOS are:
 
 * Preemptive, priority controlled scheduling
 * The kernel can run on any core, decided independently for each core
@@ -63,8 +63,7 @@ application as an argument and link the selected application with the
 RTOS into a flushable, runnable and debugable binary file.
 
 To see how the samples work you need to open a terminal software on your
-host machine. You can find a terminal as part of the CodeWarrior Eclipse
-IDE; go to the menu, "Window/Show View/Other/Terminal/Terminal".
+host machine. Look e.g. for a setup of "Putty" in the internet.
 
 Open the serial port, which is offered by the DEVKIT-MPC5748G. (On
 Windows, open the Computer Management and go to the Device Manager to find

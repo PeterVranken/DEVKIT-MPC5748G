@@ -759,18 +759,18 @@ static void initRTOSClockTick(void)
                   , "RTOS clock tick configuration on core Z2 is out of range"
                   );
     _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0
-                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0)
-                        >= 1 && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0) <= 15
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0) >= 1
+                        && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0) <= 15
                   , "Bad configuration of PIT timers as clock source for safe-RTOS"
                   );
     _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
-                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1) 
-                        >= 1 && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1) <= 15
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1) >= 1
+                        && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1) <= 15
                   , "Bad configuration of PIT timers as clock source for safe-RTOS"
                   );
     _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 0 
-                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2) 
-                        >= 1 && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2) <= 15
+                    ||  GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2) >= 1
+                        && GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2) <= 15
                   , "Bad configuration of PIT timers as clock source for safe-RTOS"
                   );
     _Static_assert( RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 0  ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 0
