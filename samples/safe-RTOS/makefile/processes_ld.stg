@@ -28,7 +28,7 @@
 // desired memory layout.
 //   The next technical limitation applies to the SDA sections only. If we rename the
 // output sections, e.g. .sdata.P1, then the linker does no longer identify the output
-// section as SDA addressed it refuses resolving according machine instructions (SDA21
+// section as SDA addressed and it refuses resolving according machine instructions (SDA21
 // relocation error). We can't have more than one SDA addressed output section for data and
 // bss.
 //   The only way to still get adjacent data and bss memory chunks per process is placing

@@ -359,7 +359,9 @@ uint32_t rtos_getCoreStatusRegister(void);
     to the init function. Just by uncommenting the second argument it would work. We have
     the function argument commented as there's currently no use case for it and it saves us
     from loading a dummy value into register GPR4 at the calling code location. */
-int32_t rtos_osRunInitTask(const struct rtos_taskDesc_t *pUserTaskConfig);
+int32_t rtos_osRunInitTask( const struct rtos_taskDesc_t *pUserTaskConfig
+                       // , uintptr_t taskParam
+                          );
 
 /** C signature to call a C function in a user process context. Must be called from OS
     context only.

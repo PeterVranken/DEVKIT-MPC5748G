@@ -54,7 +54,7 @@
     the results. The CPU load result is invalid in this case and the normal setting for
     this define will be zero.
       @remark Caution, if calibration mode is on then the function is no longer reentrant,
-    but it is usually run on more than one core at a time. The core will overwrite one
+    but it is usually run on more than one core at a time. The cores will overwrite one
     another's results.
       @remark Setting this module into calibration mode requires that no watchdog is
     active. */
@@ -92,7 +92,7 @@
     internally used delay function is checked. The actually yielded delay times are
     measured and stored in this array for inspection. The unit is the STM counter period
     (12.5 ns on our platform) and the accurate, expected time is 100ms. */
-static uint32_t gsl_tiCalResult[32];
+static uint32_t DATA_OS(gsl_tiCalResult)[32];
 #endif
  
 /*
@@ -161,7 +161,7 @@ unsigned int gsl_osGetSystemLoad(void)
 #endif
         /* One step is exactly 100 ms of code execution time - regardless of how long this
            will take because of interruptions by ISRs and other tasks. */
-        del_delayMicroseconds(TI_STEP_IN_MS*1000u);
+        del_delayMicroseconds(/* tiInUs */ TI_STEP_IN_MS*1000u);
 
 #if MODULE_CALIBRATION_MODE == 1
         uint32_t tiDelayTimeEnd = stm_osGetSystemTime(IDX_STM_TIMER);
@@ -180,8 +180,8 @@ unsigned int gsl_osGetSystemLoad(void)
     /* The measured, elapsed time in STM counter ticks, 12.5 ns on our platform. */
     uint32_t tiWorld = tiEnd - tiStart;
     
-    /* In order to overflows of the 32 Bit range we reduce the time resolution by 1000 for
-       the rest of the computation. Down here all time units are 1000 STM counter periods
+    /* In order to avoid overflows of the 32 Bit range we reduce the time resolution by 1000
+       for the rest of the computation. Down here all time units are 1000 STM counter periods
        or 12.5us. */
     tiWorld = (tiWorld + 500)/1000;
        

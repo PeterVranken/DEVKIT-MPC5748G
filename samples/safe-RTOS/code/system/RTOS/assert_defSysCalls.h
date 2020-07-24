@@ -78,7 +78,7 @@ extern void _Noreturn assert_scBscHdlr_assert_func_core1( const char *fileName
 /* Assembler implemented code in assert_sysCall.S. Note, despite of the C style prototype,
    this is not a C callable function. The calling convention is different to C.
      Each core has its own copy of the routine in order to store the failure information in
-   core-related variables. Here for core 0, Z4A. */
+   core-related variables. Here for core 2, Z2. */
 extern void _Noreturn assert_scBscHdlr_assert_func_core2( const char *fileName
                                                         , int line
                                                         , const char *funcName

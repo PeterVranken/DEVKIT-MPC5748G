@@ -26,7 +26,7 @@
  */
 
 #ifndef __VLE__
-# error Book E instruction set is no longer supported by this module!
+# error Book E instruction set is not supported by this module!
 #endif
 
 /*
@@ -103,7 +103,7 @@ del_delayMicroseconds:
 
 
     /* Calibration of delay cycles for Z4. The Z4 cores have I- and D-cache and branch
-       proediction as speed affecting configuration items. We need a set of calibration
+       prediction as speed affecting configuration items. We need a set of calibration
        values for each relevant combination of configuration items. */
 #if defined(LINK_IN_RAM)
 # if HWC_ENABLE_ICACHE && HWC_ENABLE_BRANCH_PREDICTION

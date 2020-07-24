@@ -256,16 +256,16 @@ void rtos_osInitMPU(void)
     SMPU_0->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
     ++ r;
 
-    /* The last 16k block in the peripheral address space, labeled "Reserved"
-       in RM 3.6.1, Table 3-5, p. 133, seems to accessed by instruction reads. This is not
-       documented but has been seen in the debugger. Most likely, it even is a side effect
-       of setting break points in the debugger at critical code points and will not happen
-       in normal code execution. A critical point was a breakpoint at the beginning of the
-       IVOR #1 handler. The MPU protection exception was followed by an immediate second
-       one, when the breakpoint was hit; an instruction read at 0xffffc004 was tried but
-       rejected by the MPU (peripheral space has no execution access rights). This
-       immediate second exception destroyed the MCSRRi registers and disable code
-       continuation after the break.
+    /* The last 16k block in the peripheral address space, labeled "Reserved" in RM 3.6.1,
+       Table 3-5, p. 133, seems to be accessed by instruction reads. This is not documented
+       but has been seen in the debugger. Most likely, it even is a side effect of setting
+       break points in the debugger at critical code points and will not happen in normal
+       code execution. A critical point was a breakpoint at the beginning of the IVOR #1
+       handler. The MPU protection exception was followed by an immediate second one, when
+       the breakpoint was hit; an instruction read at 0xffffc004 was tried but rejected by
+       the MPU (peripheral space has no execution access rights). This immediate second
+       exception destroyed the MCSRRi registers and disable code continuation after the
+       break.
          As a counter measure, all masters get read and excution access rights in
        supervisor mode. The processes running in user mode still don't get any access. This
        can only partly avoid the effect.
@@ -470,15 +470,6 @@ void rtos_osInitMPU(void)
  */
 bool rtos_checkUserCodeWritePtr(unsigned int PID, const void *address, size_t noBytes)
 {
-    /* This code, like all other using core-related global linker symbols ld_*, needs
-       migration. We can't do that here and immediately as it requires a revision of the
-       linker script, which is actually useless and unwanted for the given MCU derivative.
-       We just place an assertion to avoid problem when running this code on another
-       derivative. */
-#ifndef MCU_MPC5748G
-# error This code requires migration to another MCU than MPC5748G
-#endif
-
     const uint8_t * const p = (uint8_t*)address;
 
     /* The function doesn't support the kernel process with ID zero. We consider the index

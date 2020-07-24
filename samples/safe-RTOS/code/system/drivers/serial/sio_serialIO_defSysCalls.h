@@ -6,7 +6,7 @@
  * header file has to be included by source file rtos_systemCall.c, which collects all system
  * call declarations and assembles the const table of system call descriptors.
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

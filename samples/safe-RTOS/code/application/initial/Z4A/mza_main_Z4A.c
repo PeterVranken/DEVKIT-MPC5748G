@@ -186,7 +186,7 @@ static int32_t taskInitProcess(uint32_t PID)
 
 
 /**
- * Test of LED and button driver: This callback is invoke on every state change of any of
+ * Test of LED and button driver: This callback is invoked on every state change of any of
  * the supported (two) buttons.
  *   @return
  * The function always returns zero (no error).

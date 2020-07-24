@@ -1,9 +1,12 @@
 /**
  * @file int_INTCInterruptHandler.S
  * VLE assembler implementation of interrupt handler for external interrupts handled by the
- * INTC. Used for MPC5748G. The code has been designed for use with GCC for PowerPC EABI.
+ * INTC. Used for MPC5748G. The code has been designed for use with GCC for PowerPC EABI.\n
+ *   The interrut handler defined here is used on a core, which doesn't run the RTOS. It is
+ * simpler and a bit faster as it doesn't need to consider context switches and safety
+ * requirements.
  *
- * Copyright (C) 2017-2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -74,122 +77,6 @@
  */
 
 
-#if 0
-/** The table of function pointers into the actual IRQ handlers is implemented here in the
-    assembler code, where we have better control of the required alignment constraints.\n
-      Note, the entries in the table are normal, proper C functions; no considerations
-    about specific calling conventions (e.g. without stack frame) or according type
-    decorations need to be made. */
-    .section    .INTCInterruptHandlerAry, "a"
-    #define DEF_HDL inc_dummyINTCInterruptHandler /* Use abbrev. for condensed source code */
-    .extern     DEF_HDL
-    .global     int_INTCInterruptHandlerAry
-    .align      16  /* 16 Bit alignment required by INTC hardware. The statement makes the
-                       implementation safe but does not say anything about efficient memory
-                       allocation. To avoid a big waste of memory the section allocation in
-                       the linker file should be made on an according memory address, too. */
-int_INTCInterruptHandlerAry:
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL, DEF_HDL
-    .dc.l       DEF_HDL
-    #undef DEF_HDL
-
-/* End of int_INTCInterruptHandlerAry */
-#endif
-
-
 
     .macro      macroINTCInterruptHandler core, INTC_IACKR, INTC_EOIR
 /**
@@ -203,8 +90,9 @@ int_INTCInterruptHandlerAry:
  * (thereby triggering the priority handling of the INTC) restore the context and return
  * from interrupt.
  */
-    .section .text.ivor4Handler.\core\()/* Load this section close to IVOR handler table of
-                                           same core; se_b becomes possible to jump here. */
+    .section    .text.ivor4Handler.\core\() /* Load this section close to IVOR handler
+                                               table of same core; se_b becomes possible to
+                                               jump here. */
     .globl      int_INTCInterruptHandler\core\()
     .align      2
 int_INTCInterruptHandler\core\():

@@ -798,9 +798,6 @@ static void initRTOSClockTick(void)
     /* Disable timers during configuration. RM, 51.4.1, p. 2731. */
     PIT->MCR = PIT_MCR_MDIS(1) | PIT_MCR_FRZ(1);
 
-    /* Install the interrupt handlers for cyclic timer PIT 1 and 2. The interrupts go to
-       core 0, Z4A. */
-       
     /* Install the interrupt service routine for the configured cyclic timer PITn
        (depending on calling core). The interrupt goes to the calling core. It drives the OS
        scheduler for cyclic task activation. */

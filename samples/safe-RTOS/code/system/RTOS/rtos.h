@@ -52,7 +52,8 @@
  * Defines
  */
 
-/** The number of configured processes per core.\n
+/** The number of configured processes. The definition is not core specific -- processes
+    are shared between cores.\n
       Although it looks like a matter of application dependent configuration, this is a
     fixed setting in our RTOS. We have the HW constraint of a limited number of memory
     region descriptors in MMU and MPU. Four processes can be comfortably supported with
@@ -68,9 +69,9 @@
     specification or leave it. An unused process doesn't produce any overhead. */
 #define RTOS_NO_PROCESSES           4
 
-/** The maximum number of cores. If an MCU drivative should have a deviating number of
-    cores then a source code migration is required. This is not a variable configuration
-    setting. */
+/** The number of cores in the MCU and the maximum number of cores that can run the RTOS.
+    If an MCU derivative should have a deviating number of cores then a source code
+    migration is required. This is not a variable configuration setting. */
 #define RTOS_NO_CORES           3
 
 /** This event ID is returned if creation of a new event is impossible. The ID is unusable,
@@ -148,7 +149,7 @@
             , .conformanceClass = RTOS_HDLR_CONF_CLASS_##confClass      \
             }
 
-/** Helper for data initialization: Task time budget are internally represented in STM
+/** Helper for data initialization: Task time budgets are internally represented in STM
     counter ticks. Using this macro one can specify it more conveniently in Milliseconds.
     The macro just converts its argument from Milliseconds to clock ticks. */
 /// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
@@ -214,6 +215,7 @@ typedef enum rtos_errorCode_t
     , rtos_err_highPrioTaskInLowPrivPrc /// Task of highest prio belongs to process of low privileges
     , rtos_err_runTaskBadPermission /// "Unsafe" permissions granted to rtos_runTask()
     , rtos_err_suspendPrcBadPermission/// "Unsafe" permissions granted to rtos_suspendProcess()
+
     , rtor_err_noErrorCodes
 
 } rtos_errorCode_t;
@@ -915,13 +917,6 @@ static inline bool rtos_triggerEvent(unsigned int idEvent, uintptr_t taskParam)
  */
 static inline bool rtos_checkUserCodeReadPtr(const void *address, size_t noBytes)
 {
-    /* This code, like all other using core-related global linker symbols ld_*, needs
-       migration. We can't do that here and immediately as it requires a revision of the
-       linker script, which is actually useless and unwanted for the given MCU derivative.
-       We just place an assertion to avoid problem when running this code on another
-       derivative. */
-    /// @todo Make code core dependent if running the RTOS on a multi-core
-
     const uint8_t * const p = (uint8_t*)address;
     extern uint8_t ld_ramStart[0], ld_ramEnd[0], ld_romStart[0], ld_romEnd[0];
 

@@ -20,7 +20,10 @@
 /* Entry Point */
 ENTRY(sup_startUp)
 
-/* Choose heap and stack sizes. */
+/* Choose heap and stack sizes. Note, these sizes are lower boundaries. Due to alignment
+   operations, the actual sizes may become a bit larger.
+     The stack size of an used process should be set here to zero. This will switch the
+   process entirely off on the given core. */
 ld_heapSize         = 8k;
 
 ld_stackSizeOSCore0 = 8k;
@@ -227,7 +230,7 @@ SECTIONS
          Our assembler startup code rounds the Ram end address downwards to the next
        multiple of 16 Byte when zeroizing the RAM. To avoid non zero but used RAM cells
        we align here to the next such boundary.
-         Another constraint is the SMPU, which require a multiple of 16 Byte.
+         Another constraint is the SMPU, which requires a multiple of 16 Byte.
          Another constraint is the cache, which reads 32 Byte at once to fill a cache line. */
     .dummyRAM (NOLOAD) :
     {
@@ -238,7 +241,7 @@ SECTIONS
     } >memData
 
     /* Compute the sizes of the memory chunks of the processes, which are configured in the
-       MPU. The computed sizes are not required in the code but it is useful to have them
+       SMPU. The computed sizes are not required in the code but it is useful to have them
        listed in the map file. */
     ld_dataP1Size = ld_dataP1End - ld_dataP1Start;
     ld_sdaP1Size = ld_sdaP1End - ld_sdaP1Start;

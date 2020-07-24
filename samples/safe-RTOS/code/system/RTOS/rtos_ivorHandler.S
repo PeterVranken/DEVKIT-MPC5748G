@@ -663,12 +663,12 @@ ivr4_endSwitchSP:
     e_stmvsprw  O_CR(sp)     /* CR, LR, CTR, XER: 4*4 Byte */
     e_stmvsrrw  O_SRRi(sp)   /* SRR0/SRR1: 2*4 Byte */
 
-    /* Clear request to processor; r3 contains the address of the ISR. On a multi-core
-       derivative, the register to read, IACKR, is found for the calling core i at this
-       address: INTC base + 10h offset + (4d × i), where i=0d to 1d (e.g. RM MPC5775B/E,
-       15.7.3, p545f). */
+    /* Clear request to processor; afterwards, r3 contains the address of the ISR. On a
+       multi-core derivative, the register to read, IACKR, is found for the calling core i
+       at this address: INTC base + 10h offset + (4d × i), where i=0d to 1d (e.g. RM
+       MPC5775B/E, 15.7.3, p545f). */
     mfspr       r3, SPR_PIR                 /* r3: idxCore */
-    se_slwi     r3, 2                       /* r3: idxCore*sizeof(INTC_IACKR_PRCi) */
+    se_slwi     r3, 2                       /* r3: idxCore*sizeof(INTC_IACKRi) */
     e_add2is    r3, INTC_IACKR0@ha          /* Read pointer into ISR Vector Table
                                                rtos_INTCInterruptHandlerAry */
     e_lwz       r3, INTC_IACKR0@l(r3)       /* Load INTC_IACKR, which clears request to
@@ -731,12 +731,13 @@ iv4_noCallOfScheduler:
        to another, PID-aware memory region. MMU and MPU grant all required permissions in
        SV mode. */
     se_lbz      r0, O_PID(sp)   /* PID0 (1 Byte) loaded from stack frame */
-    se_cmpi     r0, 0           /* Check can be done still outside critical section */
+    se_cmpi     r0, 0           /* Check if we return to the kernel process */
     mtspr       SPR_PID0, r0
     se_beq      iv4_retToPreemptedCtxt  /* CR0: Holds PID0!=0. 0: Return to other OS context */
 
     /* If we get here then we need to check the abort conditions of the otherwise resumed
        user task. */
+
     e_lwz       r3, (RUT_O_pPDESC+S_I4_StFr)(sp)/* Find pProcessDesc in parent stack frame */
     se_lbz      r3, O_PDESC_ST(r3)      /* r3: Process state: 0=stopped */
     se_cmpi     r3, 0

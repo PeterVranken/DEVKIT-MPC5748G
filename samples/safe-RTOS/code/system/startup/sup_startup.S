@@ -337,8 +337,7 @@ sub_endCore0InitStack:
     se_blrl
 sub_endInitRam:
 
-    /* Load the pointer to the core instance pointer, i.e. the pointer to the data, which
-       is individual to each core. */
+    /* Load the pointer to the kernel instance data set, which is individual to each core. */
     mfspr       r3, SPR_PIR
     se_cmpli    r3, 1
     se_bge      su_isNotCore0

@@ -55,7 +55,7 @@
  */
 
 /** Estimate the current system load. Must be used from the idle task only and takes above
-    one second to execute. */
+    1.5s to execute. */
 unsigned int gsl_osGetSystemLoad(void);
 
 

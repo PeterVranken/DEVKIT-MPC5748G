@@ -94,8 +94,8 @@ rtos_scBscHdlr_suspendAllTasksByPriority:
     
      /** @remark Configuration setting RTOS_MAX_LOCKABLE_TASK_PRIORITY can be made core
          dependend if this is required: Just make this function implementation and
-         rtos_scBscHdlr_resumeAllTasksByPriority a macro and have up to three
-         instantiations. The system call table would need to declare the handler per core.
+         rtos_scBscHdlr_resumeAllTasksByPriority a macro and have an instantiation per
+         core running the RTOS. The system call table would need to declare the handler per core.
          (Currently it declares the same function for all cores.) */
 
     /* The yielded priority must be within the permitted range: Not at level of safety
