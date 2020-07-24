@@ -1,6 +1,6 @@
 /**
  * @file rtos_externalInterrupt.c
- * This module holds a few routine, which are needed to configure the handling of External
+ * This module holds a few routines, which are needed to configure the handling of External
  * Interrupts (IVOR #4). The interrupt controller is initialized and the operating system
  * code has the chance to register the handlers for particular I/O interrupts.\n
  *   The code in this module used to be part of the startup code in the other samples.
@@ -80,6 +80,12 @@ extern rtos_interruptServiceRoutine_t rtos_INTCInterruptHandlerAry[753];
 
 
 #if DEBUG
+/** The assembly code in rtos_ivorHandler.S, which defines the table of External Interrupt
+    handlers exports the end of the table area in order to support some consistency tests.
+    The declaration is not needed besides an assertion and is therefore not made public. We
+    require an external declaration to become able to access it. */
+extern rtos_interruptServiceRoutine_t rtos_endOfINTCInterruptHandlerAry[0];
+
 /** If an interrupt is enabled in an I/O device but there's no handler registered at the
     INTC then a dummy handler is installed, which will halt the software in an assertion
     and report the causing interrupt in this global variable.
@@ -90,6 +96,8 @@ volatile uint32_t SECTION(.data.OS.rtos_idxUnregisteredInterrupt)
 
 /** If a an unregistered interrupt service has been reported by \a inc_idxUnregisteredInterrupt    then this variable holds the ID of the processor core, which had taken the interrupt.
       @todo This variable should reside in shared, uncached memory. */
+/// @todo Looks like a bug not to put this in OS memory?
+/// @todo Bad naming: inc_ vs. rtos_ 
 volatile uint32_t inc_pirUnregisteredInterrupt = UINT32_MAX;
 
 #endif
@@ -101,7 +109,7 @@ volatile uint32_t inc_pirUnregisteredInterrupt = UINT32_MAX;
 
 /**
  * Dummy interrupt handler. On initialization of the INTC (see
- * rtos_osInitINTCInterruptController()), this function is put into all 256 interrupt vectors
+ * rtos_osInitINTCInterruptController()), this function is put into all interrupt vectors
  * in the table.\n
  *   The dummy handler can't reasonably service the interrupt. It would need to know the
  * source of interrupt to acknowledge the interrupt there (mostly the interrupt bit in the
@@ -150,6 +158,12 @@ void rtos_dummyINTCInterruptHandler(void)
     
     rtos_idxUnregisteredInterrupt = (IACKR - (uint32_t)&rtos_INTCInterruptHandlerAry[0]) / 4;
     
+    /** @todo The use of assertions is critical in a safety design. See file
+        assert_config.h for details. Here, we a have particular additional complextiy: If
+        the assertion is configured not to halt the SW execution then we have corrupted the
+        internal prio stack of the INTC and we can't safely continue.\n
+          Double-check and read the IACKRn only in case of a compatible assert
+        configuration. */
     assert(false);
 #endif
 } /* End of rtos_dummyINTCInterruptHandler */
@@ -165,15 +179,21 @@ void rtos_dummyINTCInterruptHandler(void)
  * indicate the missing true handler for an enabled interrupt. The dummy interrupt handlers
  * are registered for handling by core 0.\n
  *   Note, this function temporarily clears the enable External Interrupts bit in the
- * machine status register but doesn't have changed it on return. You will call it normally
+ * machine status register but won't have changed it on return. Usually, you will call it
  * at system startup time, when all interrupts are still disabled, then call
  * rtos_osRegisterInterruptHandler() repeatedly for all interrupts your code is interested
- * in, then start the other cores and eventually enable the interrupt processing at the CPU.
+ * in, then start the other cores and eventually enable the interrupt processing at the
+ * CPUs.
  *   @remark
  * This function must be called from supervisor mode only.
  */
 void rtos_osInitINTCInterruptController(void)
 {
+    assert((unsigned long)&rtos_endOfINTCInterruptHandlerAry
+           - (unsigned long)&rtos_INTCInterruptHandlerAry[0]
+           == sizeof(rtos_INTCInterruptHandlerAry)
+          );
+
     /* Prepare the vector table with all interrupts being served by our problem reporting
        dummy handler. */
     unsigned int u;
@@ -299,9 +319,9 @@ void rtos_osInitINTCInterruptController(void)
  * statements are combined in that setting an interrupt vector to a core A will cause an
  * assertion if the same interrupt had been registered already before for another core B
  * and the registration for A had specified another interrupt service routine.\n
- *   In the rare case of needing one interrupt for different cores the ISR need to query
- * the processor ID so that the implementation of the same handler can become processor
- * dependent.
+ *   In the rare case of needing one interrupt on different cores the ISR needs
+ * to query the processor ID so that the implementation of the handler can become
+ * processor dependent.
  *   @param vectorNum
  * All possible external interrupt sources are hardwired to the interrupt controller. They
  * are indentified by index. The table, which interrupt source (mostly I/O device) is
@@ -315,7 +335,8 @@ void rtos_osInitINTCInterruptController(void)
  *   @param isPreemptable
  * For each interrupt it can be said, whether it is preemptable by other interrupts of
  * higher priority or not. If this is \a false then the interrupt handler will always be
- * entered with the status bit EE reset in the machine status register MSR.\n
+ * entered with the status bit EE reset in the machine status register MSR of the servicing
+ * core.\n
  *   Note, a handler, which has been declared non-premptable is allowed to set the EE bit
  * itself. It can thus first do some operations without any race-conditions with other
  * interrupts and then continue without further locking normal interrupt processing.
@@ -323,11 +344,16 @@ void rtos_osInitINTCInterruptController(void)
  * The function can be used at any time. It is possible to exchange a handler at run-time,
  * while interrrupts are being processed, but only on the processor, which invokes this
  * function. However, the normal use case will rather be to call this function for all
- * required interrupts and only then call the other function rtos_resumeAllInterrupts() on
- * the processors.\n
- *   This function must not be called for an interrupt number n from the context of that
- * interrupt n and it must be called from processor i for processor j!=i, if that processor
- * is running.
+ * required interrupts and only then call the other function inc_resumeAllInterrupts() on
+ * all the processors.\n
+ *   This function must not be called for an interrupt vector number n from within an ISR
+ * of that interrupt vector number and it must not be called from processor i for processor
+ * j!=i, if that processor is running.
+ *   @remark
+ * On an MPC5748G, all cores share the function code. A core should use this function to
+ * install its ISRs, regardless whether or not it runs the RTOS. A typical scenario
+ * would be running the RTOS only on one core, but the others should still use this
+ * function to install their ISRs.
  *   @remark
  * This function must be called from supervisor mode only.
  */
@@ -346,8 +372,9 @@ void rtos_osRegisterInterruptHandler( const rtos_interruptServiceRoutine_t pInte
        the address to store the preemption information. This convention is known and
        considered by the assembler code that implements the common part of all INTC
        interrupts. */
-    assert(((uintptr_t)pInterruptHandler & 0x80000000) == 0);
+    assert(((uintptr_t)pInterruptHandler & 0x80000000u) == 0);
     void (*pDecoratedInterruptHandler)(void);
+/// @todo Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if?   
     if(isPreemptable)
         pDecoratedInterruptHandler = IRQ_HANDLER(pInterruptHandler, isPreemptable);
     else    
@@ -355,7 +382,7 @@ void rtos_osRegisterInterruptHandler( const rtos_interruptServiceRoutine_t pInte
     
     /* We permit to use this function at any time, i.e. even while interrupts may occur. We
        need to disable them shortly to avoid inconsistent states (vector and priority).
-         Note, this means still doesn't make it safe to exchange a interrupt handler on
+         Note, this means still doesn't make it safe to exchange an interrupt handler on
        another, already running core. This is not detected and can cause a crash. */
     uint32_t msr = rtos_osEnterCriticalSection();
 
@@ -381,6 +408,7 @@ void rtos_osRegisterInterruptHandler( const rtos_interruptServiceRoutine_t pInte
        registered dummy handler in place. */
     const bool isStillDummyISR = rtos_INTCInterruptHandlerAry[vectorNum]
                                  == rtos_dummyINTCInterruptHandler;
+
 #ifdef DEBUG
     /* We have one vector table shared between all cores. If a handler is assigned to more
        than one core then both cores need to use the same service routine. This is checked
@@ -405,7 +433,7 @@ void rtos_osRegisterInterruptHandler( const rtos_interruptServiceRoutine_t pInte
 
     /* Set priority and core in the PSR. The use case of signalling one and the same IRQ to
        one and the same ISR on different cores at a time is supported by or'ing the core
-       flags. The previous core is however dropped if we just see the initial registration of
+       flags. The previous core is however dropped if it is just the initial registration of
        the dummy handler. */
     INTC->PSR[vectorNum] = (uint16_t)(psrPrcSelNew
                                       | (!isStillDummyISR? psrPrcSelSoFar: 0u)
