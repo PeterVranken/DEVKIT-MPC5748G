@@ -1,7 +1,9 @@
 = Basic Test of a multi-core application of safe-RTOS
 
+== Overview
+
 This sample application for safe-RTOS on the DEVKIT-MPC5748G demonstrates
-the use of the kernel in a multi-core environment. Two of the three cores
+the use of the kernel in a multi-core environment. All of the three cores
 run safe-RTOS.
 
 The kernel is started on the boot core Z4A. Here, the sample application
@@ -9,31 +11,44 @@ The kernel is started on the boot core Z4A. Here, the sample application
 installations of the RTOS. After starting the kernel the boot core
 launches the second core.
 
-The code on the second core is the other sample application "initial",
-i.e. one of the most simple possible task configurations with two 1ms
-tasks (user mode and OS task), which simply drive an LED each and which
-query the user buttons.
+The code on the second core, the Z4B, is the other sample application
+"initial", i.e. one of the most simple possible task configurations with
+two 1ms tasks (user mode and OS task), which simply drive an LED each and
+which query the user buttons.
 
 Both cores' applications use their specific LEDs, so that the concurrent
 run of both the cores can be observed. Moreover, you are encouraged to
 press the user buttons on the evaluation board and see if the related LEDs
 are lit.
 
-The MCU has three cores. It can be configured at compile time, which core
-is the second one running safe-RTOS with sample application "initial".
-Either the second Z4A or the Z2 can be chosen to run safe-RTOS. The
-remaining third core runs a simpler bare metal application. The choice of
-the second RTOS core has been made configurable for testing purpose; the
-Z4 and Z2 cores are similar but not same and this way the kernel can be
-tested with both of them.
+The code on the third core, the Z2, is similar to sample application
+"initial". However, the use of LEDs and buttons is restricted. The only
+LED, which is left, is driven by the idle task. The idle task implements a
+watchdog for all other tasks and ISRs so that the LED will only blink if
+everything is found to be alright.
 
-"Bare metal application" on the remaining core means an application
-programming environment similar to what we have seen in the other
-DEVKIT-MPC5748G sample "startup": A C main function, a service to register
-interrupt service routines, services to temporarily lock interrupt
-processing, simple I/O drivers to access the user LEDs and buttons on the
-evaluation board, serial in- and output -- and everything executed in
-supervisor mode.
+== Cross-core notification service
+
+This sample application introduces a new multi-core communication service.
+Notifications can be sent from any to any core and a delivery acknowledge
+can be got.
+
+Notifications are basically events, which trigger a task on the
+destination core, but they can carry a single 32 Bit word as argument,
+too. If larger amounts of data need to be propagated with an event then
+this is easily implementable because of the acknowledge mechanism. Shared
+memory can be applied with any danger of race conditions.
+
+The new driver is used on core Z2, which sends a notification to the Z4B.
+There, task _taskNotificationFromZ2_ is executed each time the
+notification is received.
+
+The driver configuration is found locally as file
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/safe-RTOS/code/application/triCore/icn_interCoreNotification.config.h[icn_interCoreNotification.config.h^]
+and the driver implementation is found in the system files, see
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/code/system/drivers/interCoreNotification/[^]
+
+== Serial connection, progress output
 
 Status and progress of the sample application are printed to the serial
 port of the evaluation board. Open a terminal on the host machine to read

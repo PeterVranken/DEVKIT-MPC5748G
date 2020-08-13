@@ -286,9 +286,9 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
        Z4B. The notification parameter is a simple sequence 0, 1, 2, ..., which is
        double-checked at the receiver side for validation that all notifications were
        delivered. */
-    if(icn_osIsNotificationPending(ICN_ID_NOTIFICATION_Z2_TOZ4B))
+    if(icn_osIsNotificationPending(ICN_ID_NOTIFICATION_Z2_TO_Z4B))
         ++ mz2_noNotificationsLoss;
-    icn_osSendNotification( ICN_ID_NOTIFICATION_Z2_TOZ4B
+    icn_osSendNotification( ICN_ID_NOTIFICATION_Z2_TO_Z4B
                           , /* notificationParam */ mz2_cntTaskOs1ms-1
                           );
     
@@ -310,7 +310,9 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
  * This function must never be called directly. It has been made public for the only reason
  * that the boot core needs to know it for the initialization call of the I/O driver.
  */
-int32_t mz2_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState)
+int32_t mz2_onButtonChangeCallback( uint32_t PID ATTRIB_UNUSED
+                                  , uint8_t buttonState ATTRIB_UNUSED
+                                  )
 {
 #if 0
     /* Test button input: The current status is echoed as LED status. */
@@ -395,10 +397,9 @@ static void osInstallInterruptServiceRoutines(void)
 
 
 /**
- * C entry function main. Is used for the remaining core, which doesn't run safe-RTOS in
- * this sample. It depends on configuration macros #RTOS_RUN_SAFE_RTOS_ON_CORE_1 and
- * #RTOS_RUN_SAFE_RTOS_ON_CORE_2, which one that is. A core not running safe-RTOS, it can
- * still be used without an RTOS.
+ * C entry function for the third core, Z2. It runs safe-RTOS with the same simple sample
+ * application as core Z4B, "initial". It drives the last available user LED on the
+ * evaluation board.
  *   @param noArgs
  * Number of arguments in \a argAry. Is actually always equal to one.
  *   @param argAry

@@ -2,7 +2,7 @@
 
 This sample application for safe-RTOS on the DEVKIT-MPC5748G demonstrates
 the use of the kernel in a multi-core environment. Two of the three cores
-run safe-RTOS.
+run safe-RTOS and the last one runs a bare-metal application.
 
 The kernel is started on the boot core Z4A. Here, the sample application
 "basicTest" is configured, which we already know from the single core
@@ -19,15 +19,17 @@ run of both the cores can be observed. Moreover, you are encouraged to
 press the user buttons on the evaluation board and see if the related LEDs
 are lit.
 
-The MCU has three cores. It can be configured at compile time, which core
-is the second one running safe-RTOS with sample application "initial".
-Either the second Z4A or the Z2 can be chosen to run safe-RTOS. The
-remaining third core runs a simpler bare metal application. The choice of
-the second RTOS core has been made configurable for testing purpose; the
-Z4 and Z2 cores are similar but not same and this way the kernel can be
-tested with both of them.
+The MCU has three cores. Via use of macros RTOS_RUN_SAFE_RTOS_ON_CORE_1
+and RTOS_RUN_SAFE_RTOS_ON_CORE_2, it can be configured at compile time,
+which core is the second one running safe-RTOS with sample application
+"initial". Either the second Z4A or the Z2 can be chosen to run safe-RTOS.
 
-"Bare metal application" on the remaining core means an application
+The remaining third core runs a simpler bare-metal application. The choice
+of the second RTOS core has been made configurable for testing purpose;
+the Z4 and Z2 cores are similar but not same and this way the kernel can
+be tested with both of them.
+
+"Bare-metal application" on the remaining core means an application
 programming environment similar to what we have seen in the other
 DEVKIT-MPC5748G sample "startup": A C main function, a service to register
 interrupt service routines, services to temporarily lock interrupt

@@ -88,7 +88,7 @@ static const icn_configuration_t icn_configuration =
     {
         /* Notification with index 0. This notification is used by core Z2 to pass some
            data to core Z4B. */
-        [ICN_ID_NOTIFICATION_Z2_TOZ4B] =
+        [ICN_ID_NOTIFICATION_Z2_TO_Z4B] =
         {
             /* The notification addresses a particular core. The intention is to address to
                another core but the driver works still fine if the addressed core is the
