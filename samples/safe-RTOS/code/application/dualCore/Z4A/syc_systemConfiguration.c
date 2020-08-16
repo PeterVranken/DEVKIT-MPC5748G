@@ -3,8 +3,11 @@
  * System configuration: Here we have the C entry function for the Z4A core. It completes
  * the HW initialization (clocks run at full speed, peripheral bridge is widely opened,
  * SMPU is configured) and initializes a few I/O drivers, e.g. LED drivers and serial I/O
- * with the host. Then it configures tasks and I/O drivers as required for the application.
- * It starts the safe-RTOS kernel on the core Z4A and starts the other core Z4B.\n
+ * with the host.\n
+ *   After configuring tasks and interrupts as required for the application, it starts the
+ * safe-RTOS kernel on boot core Z4A and starts the second core, which is configured to run
+ * safe-RTOS. (And that core will later start the remaining core with a bare metal
+ * application, see msc_mainSecondCore.c.)\n
  *   Most of the code in this file is executed in supervisor mode and belongs to the sphere
  * of trusted code.
  *
@@ -156,7 +159,7 @@ static void isrPit1(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-    PIT->TIMER[1].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit1 */
 
@@ -176,12 +179,12 @@ static void isrPit2(void)
 {
     /* Indirectly start a user task. It is executed asynchronously to this ISR and has its
        own, irrelated task priority level. */
-    static long unsigned int cnt_ = 0;
+    static long unsigned int SBSS_OS(cnt_) = 0;
     rtos_osTriggerEvent(syc_idEvPIT2, cnt_++);
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-     PIT->TIMER[2].TFLG = PIT_RTI_TFLG_TIF(1);
+     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit2 */
 
@@ -201,7 +204,7 @@ static void isrPit3(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-    PIT->TIMER[3].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit3 */
 
@@ -629,7 +632,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Only after initialization of the RTOS, we start the next core. This is because the
        function to register the interrupt handlers at the global, shared interrupt
-       controller is not cross-core safe under all circumstances. This was we simply avoid
+       controller is not cross-core safe under all circumstances. This way we simply avoid
        any race condition. For the same reason, the next core will start the third one
        after it reached the same point. */
     const unsigned int idxSecondRTOSCore =

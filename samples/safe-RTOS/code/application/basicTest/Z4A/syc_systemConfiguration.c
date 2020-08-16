@@ -1,11 +1,15 @@
 /**
  * @file syc_systemConfiguration.c
- * System configuration: Configuration of tasks and I/O drivers as required for the
- * application.\n
- *   The code in this file is executed in supervisor mode and it belongs in to the sphere
+ * System configuration: Here we have the C entry function for the Z4A core. It completes
+ * the HW initialization (clocks run at full speed, peripheral bridge is widely opened,
+ * SMPU is configured) and initializes a few I/O drivers, e.g. LED drivers and serial I/O
+ * with the host.\n
+ *   After configuring tasks and interrupts as required for the application, it starts the
+ * safe-RTOS kernel on boot core Z4A. The other cores are not started.\n
+ *   Most of the code in this file is executed in supervisor mode and belongs to the sphere
  * of trusted code.
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -137,7 +141,7 @@ static void isrPit1(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-    PIT->TIMER[1].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit1 */
 
@@ -157,12 +161,12 @@ static void isrPit2(void)
 {
     /* Indirectly start a user task. It is executed asynchronously to this ISR and has its
        own, irrelated task priority level. */
-    static long unsigned int cnt_ = 0;
+    static long unsigned int SBSS_OS(cnt_) = 0;
     rtos_osTriggerEvent(syc_idEvPIT2, cnt_++);
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-     PIT->TIMER[2].TFLG = PIT_RTI_TFLG_TIF(1);
+     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit2 */
 
@@ -182,7 +186,7 @@ static void isrPit3(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-    PIT->TIMER[3].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit3 */
 
