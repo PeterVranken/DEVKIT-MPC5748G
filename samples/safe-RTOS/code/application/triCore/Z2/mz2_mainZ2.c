@@ -176,7 +176,7 @@ static void isrPit4(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-    PIT->TIMER[4].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[4].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit4 */
 
@@ -193,7 +193,7 @@ static void isrPit5(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-     PIT->TIMER[5].TFLG = PIT_RTI_TFLG_TIF(1);
+     PIT->TIMER[5].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit5 */
 
@@ -210,7 +210,7 @@ static void isrPit6(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
-    PIT->TIMER[6].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[6].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit6 */
 

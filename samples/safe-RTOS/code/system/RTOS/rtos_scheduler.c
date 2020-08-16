@@ -701,7 +701,7 @@ static void onOsTimerTick(void)
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. */
     const unsigned int idxTimer = rtos_idxRtosTimerAry[rtos_osGetIdxCore()];
-    PIT->TIMER[idxTimer].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[idxTimer].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of onOsTimerTick */
 
