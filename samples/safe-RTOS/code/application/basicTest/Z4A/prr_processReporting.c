@@ -9,7 +9,7 @@
  * They are are defined in the sphere of unprotected operating system code and anything
  * which relates to their configuration cannot be changed anymore by user code.
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -70,7 +70,7 @@
  * Data definitions
  */
  
-/** For debugging only: Exceution time of untrusted C lib function ipintf. Unit is
+/** For debugging only: Execution time of untrusted C lib function ipintf. Unit is
     #STM_TIMER_1_PERIOD_IN_NS. */
 uint32_t SDATA_PRC_REPORT(prr_tiMaxDurationPrintf) = 0;
 
@@ -195,7 +195,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
            , rtos_getNoTotalTaskFailure(/* PID */ 3)
            , rtos_getNoTaskFailure(/* PID */ 3, RTOS_ERR_PRC_DEADLINE)
            );
-    const uint64_t tiDuration = stm_getSystemTime(1) - tiStart;
+    const uint32_t tiDuration = stm_getSystemTime(1) - tiStart;
     
     if(tiDuration > prr_tiMaxDurationPrintf)
         prr_tiMaxDurationPrintf = tiDuration;
