@@ -35,11 +35,15 @@
 /** Some test cases hinder the code from debugging. The likelihood of hitting an se_illegal
     instruction is high when executing code at arbitrary locations. This instruction makes
     the debugger unconditionally break, when the debugger is connected, and program flow is
-    impossible.
+    impossible.\n
+      Note, it should of course be possible to run the software, which is compiled in DEBUG
+    configuration, if no debugger is connected.\n
+      Note, it is impossible to start the software, that has been linked in RAM, without a
+    connected debugger.
       This switch enables code debugging. If the switch is set to 1 then all those test
     cases are switched off, which disable debugging. This switch overrides the otherwise
     made selection of test cases. */
-#ifdef DEBUG
+#if defined(DEBUG)  ||  defined(LINK_IN_RAM)
 # define PRF_DISABLE_ALL_TEST_CASES_THAT_DISABLE_DEBUGGING       1
 #else
 # define PRF_DISABLE_ALL_TEST_CASES_THAT_DISABLE_DEBUGGING       0
@@ -101,6 +105,10 @@
 #define PRF_ENA_TC_PRF_KOF_ENA_FPU_EXC                          1
 
 /// @todo Check debug instructions and potentially add a test case
+/// @todo New test case: stm, store several words illegally and accross a cache block boundary
+/// @todo New test case: stm, same but only partly illegally; 1st CB ok, 2nd don't
+/// @todo New test case: stm, same but only partly illegally; 1st CB not ok, 2nd ok
+/// @todo New test case: Execute RAM, such that we only have an MPU exception
 
 #if PRF_DISABLE_ALL_TEST_CASES_THAT_DISABLE_DEBUGGING == 1
 # undef PRF_ENA_TC_PRF_KOF_JUMP_TO_ILLEGAL_INSTR

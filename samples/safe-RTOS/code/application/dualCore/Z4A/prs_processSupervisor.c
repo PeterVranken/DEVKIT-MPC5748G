@@ -320,6 +320,7 @@ int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATT
 
 #if PRF_ENA_TC_PRF_KOF_PRIVILEGED_AND_MPU == 1
     case prf_kof_privilegedAndMPU:
+        minNoExpectedFailures = 0;
         maxNoExpectedFailures = 1;
         break;
 #endif
@@ -455,6 +456,7 @@ int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATT
         break;
 #endif
 
+/// @todo Duplicate this test case and put an infinite loop instead of returning
 #if PRF_ENA_TC_PRF_KOF_LEAVE_CRIT_SEC == 1
     case prf_kof_leaveCritSec:
         minNoExpectedFailures = 0;
@@ -706,7 +708,7 @@ int32_t prs_taskWatchdog(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
     } /* End if(Failure injection process suspended or still alive?) */
 
     /* Let the LED blink, which indicates the health of the failure injection process. To
-       make the effect event better visible, we change the dutc cycle. */
+       make the effect event better visible, we change the duty cycle. */
     const bool isLedOn = cnt_ >= (isPrcFailingTasksSuspended? INT16_MAX-UINT16_MAX/5: 0);
     lbd_setLED(isPrcFailingTasksSuspended? lbd_led_7_DS4: lbd_led_0_DS11, isLedOn);
 

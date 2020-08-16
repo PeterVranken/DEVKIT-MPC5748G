@@ -215,12 +215,14 @@ static int32_t taskInitProcess(uint32_t PID)
  * A variable task parameter. Here just used for testing, we expect a linear counter
  * starting at zero.
  */
-static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
 {
-    static uint32_t SDATA_P1(cnt) = 0;
-    assert(taskParam == cnt);
-    cnt = taskParam+1;
-    
+#ifdef DEBUG
+    static uint32_t SDATA_P1(cnt_) = 0;
+    assert(taskParam == cnt_);
+    cnt_ = taskParam+1;
+#endif
+
     /* Trigger the next task out of the three round robin tasks.
          The triggered task has same priority, so the trigger needs to be always possible. */
     bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_triggerEvent(idEvTaskB, mai_cntTaskB);

@@ -544,7 +544,7 @@ static void isrPit1(void)
     ++ mai_cntISRPit1;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. */
-    PIT->TIMER[1].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit1 */
 
@@ -563,7 +563,7 @@ static void isrPit2(void)
     ++ mai_cntISRPit2;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. */
-    PIT->TIMER[2].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit2 */
 
@@ -582,7 +582,7 @@ static void isrPit3(void)
     ++ mai_cntISRPit3;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. */
-    PIT->TIMER[3].TFLG = PIT_RTI_TFLG_TIF(1);
+    PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit3 */
 
@@ -1003,14 +1003,6 @@ static void osInstallInterruptServiceRoutines(void)
     PIT->TIMER[2].LDVAL = 1361-1; /* Interrupt rate approx. 30kHz */
     PIT->TIMER[3].LDVAL = 1327-1; /* Interrupt rate approx. 30kHz */
 
-    /* Enable timer operation. This operation affects all timer channels.
-         PIT_MCR_FRZ: For this multi-core MCU it is not so easy to decide whether or not to
-       let the timers be stopped on debugger entry: Any stopped core will halt the timers,
-       regardless whether that core is related to the timer or not (and how should the
-       debugger know...). Both possibilities can be annoying or advantageous, depending on
-       the situation. */
-    PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
-    
     /* Clear possibly pending interrupt flags. */
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
@@ -1021,6 +1013,14 @@ static void osInstallInterruptServiceRoutines(void)
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[3].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
 
+    /* Enable timer operation. This operation affects all timer channels.
+         PIT_MCR_FRZ: For this multi-core MCU it is not so easy to decide whether or not to
+       let the timers be stopped on debugger entry: Any stopped core will halt the timers,
+       regardless whether that core is related to the timer or not (and how should the
+       debugger know...). Both possibilities can be annoying or advantageous, depending on
+       the situation. */
+    PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
+    
 } /* End of osInstallInterruptServiceRoutines */
 
 
@@ -1100,7 +1100,9 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* All clocks run at full speed, including all peripheral clocks. */
     ccl_configureClocks();          
     
-    /* Interrupts become usable and configurable by SW. */
+    /* The interrupt controller is configured. This is the first driver initialization
+       call: Many of the others will register their individual ISRs and this must not be
+       done prior to initialization of the interrupt controller. */
     rtos_osInitINTCInterruptController();
     
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
@@ -1117,7 +1119,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* The core is now running in the desired state. I/O driver initialization follows to
        the extend required by this simple sample. */
 
-    /* Start the system timers for execution time measurement.
+    /* Start the system timers STM for execution time measurement.
          Caution: On the MPC5748G, this is not an option but an essential prerequisite for
        running safe-RTOS. The MPC5748G has a simplified z4 core without the timebase
        feature. The system timer is used as substitute. The driver needs to be started and
@@ -1393,6 +1395,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         if(_sharedDataTasksIdleAnd1msAndCpuLoad.noErrors != 0)
             rtos_osSuspendProcess(/* PID */ 1);
     }
+    
     /* We never get here. Just to avoid a compiler warning. */
     return -1;
 
