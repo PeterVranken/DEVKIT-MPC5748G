@@ -77,13 +77,13 @@
  *   @remark
  * CAUTION: On the MPC5748G, the configuration of the STM device is not a user changeable
  * option but an essential prerequisite for running safe-RTOS. The MPC5748G has a
- * simplified z4 core without the timebase feature. The system timer STM_0 is used as
+ * simplified Z4 core without the timebase feature. The system timer STM_0 is used as
  * substitute. This I/O driver needs to be started and it must be neither changed nor
  * re-configured without carefully double-checking the side-effects on the kernel!
  */
 void stm_osInitSystemTimers(void)
 {
-    /* Some preprocessor check will help to keep the static definitions in the header file
+    /* Some compile time checks will help to keep the static definitions in the header file
        consistent with the actual configuration made here. */
     _Static_assert( 2*STM_TIMER_0_CLK == CCL_PHI_0_CLK
                     &&  ((double)STM_TIMER_0_CLK * STM_TIMER_0_PERIOD_IN_NS * 1e-9) == 1.0

@@ -1188,7 +1188,7 @@ rtos_ivor5Handler:
 
 
 /**
- *   @rtos_getInstancePtr
+ *   @func rtos_getInstancePtr
  * All data in use by the kernel is bundled in a large struct. If the RTOS is run on an MCU
  * with several cores then each core uses its own dedicated instance of this struct. This
  * function returns the struct to use by reference.
@@ -1233,7 +1233,7 @@ gip_srr0AtUserCodeException:
 
 
 /**
- *   @rtos_getIdxCore
+ *   @func rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning

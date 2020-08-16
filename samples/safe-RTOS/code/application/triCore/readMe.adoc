@@ -37,14 +37,14 @@ Notifications are basically events, which trigger a task on the
 destination core, but they can carry a single 32 Bit word as argument,
 too. If larger amounts of data need to be propagated with an event then
 this is easily implementable because of the acknowledge mechanism. Shared
-memory can be applied with any danger of race conditions.
+memory can be applied without any danger of race conditions.
 
 The new driver is used on core Z2, which sends a notification to the Z4B.
 There, task _taskNotificationFromZ2_ is executed each time the
 notification is received.
 
 The driver configuration is found locally as file
-https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/safe-RTOS/code/application/triCore/icn_interCoreNotification.config.h[icn_interCoreNotification.config.h^]
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/application/triCore/icn_interCoreNotification.config.h[icn_interCoreNotification.config.h^]
 and the driver implementation is found in the system files, see
 https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/code/system/drivers/interCoreNotification/[^]
 

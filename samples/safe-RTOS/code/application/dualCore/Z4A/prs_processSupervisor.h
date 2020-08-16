@@ -51,7 +51,7 @@ extern volatile long unsigned int prs_cntTestCycles;
  */
 
 /** User task to select and command the error to inject by the failing task. */
-int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam);
+int32_t prs_taskCommandError(uint32_t PID, uintptr_t taskParam);
 
 /** User task to double-check if failure has been produced and was reported on process
     level. */

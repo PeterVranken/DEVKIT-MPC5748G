@@ -72,7 +72,7 @@
  * Data definitions
  */
  
-/** For debugging only: Exceution time of untrusted C lib function iprintf. Unit is
+/** For debugging only: Execution time of untrusted C lib function iprintf. Unit is
     #STM_TIMER_1_PERIOD_IN_NS. */
 uint32_t SDATA_PRC_REPORT(prr_tiMaxDurationPrintf) = 0;
 

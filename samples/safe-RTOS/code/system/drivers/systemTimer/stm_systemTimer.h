@@ -38,8 +38,10 @@
 /** The frequency at which the STM0 timer counts. */
 #define STM_TIMER_0_CLK             80000000
 
+#ifdef __STDC_VERSION__
 /** The unit of a counter tick of system timer STM0. The value is meant in ns. */
 #define STM_TIMER_0_PERIOD_IN_NS    12.5f
+#endif
 
 /** The frequency at which the ST01 timer counts. */
 #define STM_TIMER_1_CLK             5000000

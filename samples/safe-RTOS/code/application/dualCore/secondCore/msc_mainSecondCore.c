@@ -46,7 +46,6 @@
 #include "MPC5748G.h"
 #include "typ_types.h"
 #include "ccl_configureClocks.h"
-#include "xbs_crossbarSwitch.h"
 
 #include "rtos.h"
 #include "gsl_systemLoad.h"
@@ -187,12 +186,10 @@ static int32_t taskInitProcess(uint32_t PID)
  * core to still run stable.\n
  *   Each invokation of this function injects an error and the calling user task will be
  * aborted. The function doesn't normally return but sometimes it may.
- *   @param 
- * 
  *   @remark
  * Despite of error catching, we need to take care, what we do. On the boot core, the
- * sample application "basicTest" is running. It injects errors, too and looks at the
- * system reaction. A supervior task halts excution if somethin unexpected happens. An
+ * sample application "basicTest" is running. It injects errors, too, and looks at the
+ * system reaction. A supervior task halts excution if something unexpected happens. An
  * unexpected thing can easily be a failure additional to those expected. If several cores
  * run safe-RTOS then they share the processes. Our failure injecting task belongs to
  * process 1 and on the boot core this process must not report any failures. Therefore we
@@ -200,7 +197,6 @@ static int32_t taskInitProcess(uint32_t PID)
  * belonging to the same process. This means in particular that we must not do anything
  * which corrupts the memories of the process, which includes provoking straying tasks,
  * e.g. by corrupted stack memories or altered user accessible CPU registers.
- *   @see boolean otherFunction(int)
  */
 static void injectError(void)
 {
