@@ -438,14 +438,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article toc2 toc-left">
+<body class="article">
 <div id="header">
 <h1>safe-RTOS - Manual</h1>
 <div class="details">
 <span id="author" class="author">Peter Vranken</span><br>
 <span id="email" class="email"><a href="mailto:Peter_Vranken@Yahoo.de">P. Vranken</a></span><br>
 </div>
-<div id="toc" class="toc2">
+<div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_scope">1. Scope</a></li>
@@ -456,16 +456,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_overview_functionality">5.1. Overview Functionality</a></li>
 <li><a href="#_scheduler_and_preemption">5.2. Scheduler and preemption</a></li>
-<li><a href="#_the_operating_system_clock">5.3. The operating system clock</a></li>
-<li><a href="#secPrioTaskAndISR">5.4. Priority of tasks and interrupts</a></li>
-<li><a href="#_exception_handling">5.5. Exception handling</a></li>
-<li><a href="#_deadline_monitoring">5.6. Deadline monitoring</a>
+<li><a href="#_events">5.3. Events</a></li>
+<li><a href="#_the_operating_system_clock">5.4. The operating system clock</a></li>
+<li><a href="#secPrioTaskAndISR">5.5. Priority of tasks and interrupts</a></li>
+<li><a href="#_exception_handling">5.6. Exception handling</a></li>
+<li><a href="#_deadline_monitoring">5.7. Deadline monitoring</a>
 <ul class="sectlevel3">
-<li><a href="#_deadline_monitoring_to_be_used_or_better_not">5.6.1. Deadline monitoring: To be used or better not?</a></li>
+<li><a href="#_deadline_monitoring_to_be_used_or_better_not">5.7.1. Deadline monitoring: To be used or better not?</a></li>
 </ul>
 </li>
-<li><a href="#_differences_to_the_ancestor_rtos">5.7. Differences to the ancestor RTOS</a></li>
-<li><a href="#_distribution_and_integration">5.8. Distribution and integration</a></li>
+<li><a href="#_distribution_and_integration">5.8. Distribution and integration</a>
+<ul class="sectlevel3">
+<li><a href="#_single_image_versus_three_images">5.8.1. Single image versus three images</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#secSafetyConcept">6. The safety concept</a></li>
@@ -485,7 +489,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_safety_concept">7.3.2. Safety concept</a></li>
 <li><a href="#_maintaining_the_system_call_table">7.3.3. Maintaining the system call table</a>
 <ul class="sectlevel4">
-<li><a href="#_system_calls_of_rtos">System calls of RTOS</a></li>
+<li><a href="#_system_calls_of_safe_rtos">System calls of safe-RTOS</a></li>
 <li><a href="#_system_calls_of_sample_io_drivers">System calls of sample I/O drivers</a></li>
 </ul>
 </li>
@@ -497,40 +501,55 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_the_api_of_safe_rtos">8. The API of safe-RTOS</a>
 <ul class="sectlevel2">
 <li><a href="#_naming_conventions">8.1. Naming conventions</a></li>
-<li><a href="#_configuration_and_initialization">8.2. Configuration and initialization</a>
+<li><a href="#_table_of_available_services">8.2. Table of available services</a></li>
+<li><a href="#_system_configuration_and_initialization">8.3. System configuration and initialization</a>
 <ul class="sectlevel3">
-<li><a href="#_allocated_mcu_resources">8.2.1. Allocated MCU resources</a></li>
-<li><a href="#_error_codes">8.2.2. Error codes</a></li>
-<li><a href="#_initialize_the_interrupt_hardware">8.2.3. Initialize the interrupt hardware</a></li>
-<li><a href="#secApiCreateEvent">8.2.4. Create an event</a></li>
-<li><a href="#_registering_a_task">8.2.5. Registering a task</a></li>
-<li><a href="#secApiRegisterIsr">8.2.6. Registering an ISR</a></li>
-<li><a href="#_configure_privileges_for_inter_process_function_calls">8.2.7. Configure privileges for inter-process function calls</a></li>
-<li><a href="#_configure_privileges_for_suspending_processes">8.2.8. Configure privileges for suspending processes</a></li>
-<li><a href="#_start_of_kernel">8.2.9. Start of kernel</a></li>
+<li><a href="#_allocated_mcu_resources">8.3.1. Allocated MCU resources</a></li>
+<li><a href="#_error_codes">8.3.2. Error codes</a></li>
+<li><a href="#secApiCreateEvent">8.3.3. Create an event</a></li>
+<li><a href="#secApiRegisterTask">8.3.4. Registering a task</a></li>
+<li><a href="#secApiInitINTC">8.3.5. Initialize the interrupt hardware</a></li>
+<li><a href="#secApiRegisterIsr">8.3.6. Registering an ISR</a></li>
+<li><a href="#secApiConfRunTask">8.3.7. Configure privileges for inter-process function calls</a></li>
+<li><a href="#secApiConfSuspProc">8.3.8. Configure privileges for suspending processes</a></li>
+<li><a href="#secApiInitKernel">8.3.9. Start of kernel</a></li>
 </ul>
 </li>
-<li><a href="#_run_time_api">8.3. Run-time API</a>
+<li><a href="#_control_tasks_and_processes">8.4. Control tasks and processes</a>
 <ul class="sectlevel3">
-<li><a href="#secApiTriggerEvent">8.3.1. Trigger an event</a></li>
-<li><a href="#_do_a_system_call">8.3.2. Do a system call</a></li>
-<li><a href="#_check_memory_address_for_read_or_write_access">8.3.3. Check memory address for read or write access</a></li>
-<li><a href="#_abort_a_system_call">8.3.4. Abort a system call</a></li>
-<li><a href="#_inter_process_function_call">8.3.5. Inter-process function call</a></li>
-<li><a href="#_task_abortion_or_termination">8.3.6. Task abortion or termination</a></li>
-<li><a href="#_mutual_exclusion_of_all_contexts">8.3.7. Mutual exclusion of all contexts</a></li>
-<li><a href="#_priority_ceiling_protocol_for_tasks">8.3.8. Priority ceiling protocol for tasks</a></li>
-<li><a href="#_suspend_a_process">8.3.9. Suspend a process</a></li>
+<li><a href="#secApiTriggerEvent">8.4.1. Trigger an event</a></li>
+<li><a href="#secApiRunTask">8.4.2. Inter-process function call</a></li>
+<li><a href="#secApiTermTask">8.4.3. Task abortion or termination</a></li>
+<li><a href="#secApiSuspProc">8.4.4. Suspend a process</a></li>
 </ul>
 </li>
-<li><a href="#_diagnostic_api">8.4. Diagnostic API</a>
+<li><a href="#_critical_sections">8.5. Critical sections</a>
 <ul class="sectlevel3">
-<li><a href="#_stack_space">8.4.1. Stack space</a></li>
-<li><a href="#_task_overrun">8.4.2. Task overrun</a></li>
-<li><a href="#_exception_count">8.4.3. Exception count</a></li>
-<li><a href="#_exception_count_by_kind">8.4.4. Exception count by kind</a></li>
-<li><a href="#_process_state">8.4.5. Process state</a></li>
-<li><a href="#_average_cpu_load">8.4.6. Average CPU load</a></li>
+<li><a href="#secApiSuspIrq">8.5.1. Mutual exclusion of all contexts</a></li>
+<li><a href="#secApiPCP">8.5.2. Priority ceiling protocol for tasks</a></li>
+</ul>
+</li>
+<li><a href="#_system_call_interface">8.6. System call interface</a>
+<ul class="sectlevel3">
+<li><a href="#secApiSysCall">8.6.1. Do a system call</a></li>
+<li><a href="#secApiTermSysCall">8.6.2. Abort a system call</a></li>
+<li><a href="#secApiCheckPtr">8.6.3. Check memory address for read or write access</a></li>
+</ul>
+</li>
+<li><a href="#_query_system_state">8.7. Query system state</a>
+<ul class="sectlevel3">
+<li><a href="#secApiGetIdxCore">8.7.1. Get index of executing core</a></li>
+<li><a href="#secApiGetMSR">8.7.2. Get core status register</a></li>
+<li><a href="#secApiGetIrqSusp">8.7.3. Get interrupt suspension status</a></li>
+<li><a href="#secApiGetProcSusp">8.7.4. Process state</a></li>
+</ul>
+</li>
+<li><a href="#_diagnostic_interface">8.8. Diagnostic interface</a>
+<ul class="sectlevel3">
+<li><a href="#secApiActivationLoss">8.8.1. Task overrun</a></li>
+<li><a href="#secApiTaskFailure">8.8.2. Exception count</a></li>
+<li><a href="#secApiStackSpace">8.8.3. Stack space</a></li>
+<li><a href="#secApiCpuLoad">8.8.4. Average CPU load</a></li>
 </ul>
 </li>
 </ul>
@@ -713,15 +732,21 @@ relevant safety standards, like ISO 26262.</p>
 <div class="sectionbody">
 <div class="paragraph">
 <p>safe-RTOS is a successor of the simple RTOS previously published in
-GitHub. The RTOS functionality is not actually extended in comparison to
-the simple one; if there are additional APIs then they will relate to the
-new safety aspects. The scheduler with its capabilities to trigger
-application code tasks on a time or event base has not been modified.
-Consequently, we still have the most simple kernel, which solely
+GitHub. The scheduler implements rate monotonic scheduling, i.e. it
 implements a strictly hierarchical preemption pattern, which is for
 example called tasks of "Basic Conformance Class" in the OSEK/VDX-OS
-standard and which&#8201;&#8212;&#8201;as a matter of experience&#8201;&#8212;&#8201;suffices to drive the
-majority of industrial applications.</p>
+standard and which&#8201;&#8212;&#8201;as a matter of experience and despite of its
+simplicity&#8201;&#8212;&#8201;suffices to drive the majority of industrial applications.</p>
+</div>
+<div class="paragraph">
+<p>By means of compile-time configuration, the kernel can be instantiated on
+any set of cores. Nonetheless, safe-RTOS is still not a multi-core RTOS.
+The different kernel instantiations don&#8217;t have any awareness of one
+another and there are no core-spawning scheduling strategies. However, a
+number of core-to-core comunication basics is offered; we have a shared
+memory concept, which considers the complexity introduced by the cache,
+mutex objects, spin locks and an interrupt based core-to-core notification
+mechanism.</p>
 </div>
 <div class="paragraph">
 <p>To meet the demands of safety-critical software, the concept of processes
@@ -780,22 +805,6 @@ linker script. The essential requirements and implementation elements
 from both linker scripts need to be identified, coordinated and merged</p>
 </li>
 </ul>
-</div>
-<div class="paragraph">
-<p>Note, the MMU is not really used in this RTOS, although it can do
-basically the same as the MPU. The integration with the CPU is even
-tighter and the exception behavior smoother and better. The reason for
-still not using it is the bad granularity of the managed memory areas.
-Using the MPU, we can make the areas match the actual, linker-computed
-memory consumption of the processes but with the MMU we would end up with
-fixed size, pre-defined chunks of memory for the processes, e.g. 4k, 8k,
-16k of RAM.</p>
-</div>
-<div class="paragraph">
-<p>The MMU remains active, it&#8217;s a kind of primary access filter for CPU loads
-and stores, not process specific but catching all accesses, which are
-generally out of bounds, e.g. address space, where no physical memory or
-I/O sits at all.</p>
 </div>
 <div class="paragraph">
 <p>The protection of the other resource, CPU ownership, is mainly done by time
@@ -877,11 +886,14 @@ software in our context in <a href="#secSafetyConcept">Section 6</a>.)</p>
 <div class="ulist">
 <ul>
 <li>
+<p>Configurable to run on any core</p>
+</li>
+<li>
 <p>Preemptive, priority controlled scheduling</p>
 </li>
 <li>
-<p>Up to five processes (including kernel) with disjunct memory address
-spaces and hierarchic privileges</p>
+<p>Five pre-configured processes (including kernel) with disjunct memory
+address spaces and hierarchic privileges</p>
 </li>
 <li>
 <p>Tasks belong to processes and share the process owned memories</p>
@@ -929,7 +941,7 @@ user code (if it has sufficient privileges) or from ISRs belonging to the
 operating system.</p>
 </div>
 <div class="paragraph">
-<p>The RTOS offers a pre-configured set of up to four user processes. The
+<p>The RTOS offers a pre-configured set of four user processes. The
 limitation to four is a hardware constraint and for sake of simplicity no
 virtualizing by software has been shaped. The operating system forms a
 fifth process. The operating system startup code will register the needed
@@ -954,7 +966,7 @@ offered that implements the priority ceiling protocol (PCP). It is secured
 so that supervisory tasks cannot be accidentally or purposely blocked.</p>
 </div>
 <div class="paragraph">
-<p>There are three slightly differing mechanisms to suspend and resume
+<p>There are two slightly differing mechanisms to suspend and resume
 interrupts but they are not available to application code, only the
 operating system may use them (mainly for I/O driver implementation).</p>
 </div>
@@ -986,15 +998,23 @@ a C program, see figure <a href="#figSchemeOfPreemptions">Figure 1</a>.<sup clas
 <div class="title">Figure 1. Hierarchical task scheduling</div>
 </div>
 <div class="paragraph">
+<p>The hierarchical preemption pattern of tasks enables stack re-usage.
+Basically, all tasks could share a single stack. However, the process
+concept requires a separate stack per process, be it kernel or
+user process. Moreover, all cores have an independent instance of the
+kernel. Hence, given the number of user processes on the three cores be
+n1, n2 and n3 then we would have a total of 3+n1+n2+n3 stacks.</p>
+</div>
+<div class="paragraph">
 <p>Although BCC means a significant reduction of complexity and functionality
 in comparison to a full featured real time kernel, the embedded practice
-mostly doesn’t require more than this. The typical data flow paradigm of
+mostly doesn&#8217;t require more than this. The typical data flow paradigm of
 an industrial embbeded application is to have event triggered tasks, which
 serve the asynchronous I/O channels and strictly cyclic application tasks,
 which process the data and implement the control strategies. The
 communication between ISRs and tasks is done either by queues or by
 overwriting (last recent value supersedes earlier ones), that depents.
-It’s a simple model, which has the advantage of being well understood,
+It&#8217;s a simple model, which has the advantage of being well understood,
 transparent and by nature free of dead locks. The latency times are higher
 than for consequently designed event controlled systems but they are
 predictable and have easy to determine upper bounds. Last but not least,
@@ -1003,22 +1023,58 @@ cycle times.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_operating_system_clock">5.3. The operating system clock</h3>
+<h3 id="_events">5.3. Events</h3>
 <div class="paragraph">
-<p>The RTOS is clocked by a timer interrupt. By default, a 1 ms clock tick is
-configured. This clock tick is the resolution of controlling the period of
-cyclic tasks.</p>
+<p>A task activation always happens by means of an event. The event is an
+RTOS object, which is created in the initialization code sequence. A set
+of tasks can be associated with an event. We have the relation 1:n for
+events to tasks. Any task is associated with exactly one event. An event
+has a method to trigger it. When the event is triggered then all
+associated tasks are triggered (and the scheduler will execute them in the
+order of priority).</p>
 </div>
 <div class="paragraph">
-<p>The clock is generated by the MCU&#8217;s device PID0. This timer is not
-available to the application. If the application requires to use the other
-PID timers then the initialization needs to be done with care: There are
-common settings, which affect all PID timers. You need to align your
-initialization code with the RTOS kernel initialization.</p>
+<p>An event can be configured such that it is implicitly triggered by the
+RTOS clock. This functionality is limited to an arbitrary time for the
+first trigger and an infinite, regular sequence of further triggers.
+Evidently, this aims at "normal", regular tasks. However, even these
+events still have the method for explicit trigger by software so that more
+complex activation patterns could be implemented.</p>
+</div>
+<div class="paragraph">
+<p>Triggering an event is a privileged operation. By configuration it is
+decided, which process may use the method for which event. For the
+majority of events, this will only be the kernel process but there are
+reasonable use cases for user tasks triggering specific events, too, and&#8201;&#8212;&#8201;as long as privileges are granted with care&#8201;&#8212;&#8201;without breaking the
+safety concept.</p>
+</div>
+<div class="paragraph">
+<p>The method to trigger an event can be used from ISRs and from tasks. The
+former can be used to implement deferred interrupt handling.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="secPrioTaskAndISR">5.4. Priority of tasks and interrupts</h3>
+<h3 id="_the_operating_system_clock">5.4. The operating system clock</h3>
+<div class="paragraph">
+<p>The RTOS is clocked by a timer interrupt. The clock rate is a compile time
+configuration item and can be adjusted in units of a Millisecond. Most
+sample applications of safe-RTOS use a 1 ms or a 10 ms clock tick. This
+configured clock tick is the resolution of controlling the period of
+cyclic tasks.</p>
+</div>
+<div class="paragraph">
+<p>The clock is generated by one of the MCU&#8217;s PID devices. If safe-RTOS is
+configured to run on different cores then each core uses its dedicated PID
+timer. The configured timers are not available to the application. If the
+application requires to use the other PID timers then the initialization
+needs to be done with care: For the PIT devices, there are common
+settings, which affect all PID timers. You need to align your
+initialization code with the RTOS kernel initialization, see
+<em>rtos_osInitKernel</em>().</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="secPrioTaskAndISR">5.5. Priority of tasks and interrupts</h3>
 <div class="paragraph">
 <p>The priority scheme of tasks is disjunct with that of interrupts. The
 priority range of interrupts is 1..15. The priority range of tasks is
@@ -1039,7 +1095,7 @@ time; in the given situation, the tasks would be executed primarily in
 order of creation of the events, they are associated with, and secondarily
 in order of registration, if they are associated with one and the same
 event; see <em>rtos_osCreateEvent</em>(), <em>rtos_osRegisterOSTask</em>() and
-_rtos_osRegisterUserTask() for details.</p>
+<em>rtos_osRegisterUserTask</em>() for details.</p>
 </div>
 <div class="paragraph">
 <p>What does "become ready at the same time" mean? This can be as easy as two
@@ -1072,11 +1128,11 @@ section code.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_exception_handling">5.5. Exception handling</h3>
+<h3 id="_exception_handling">5.6. Exception handling</h3>
 <div class="paragraph">
 <p>The RTOS catches all possible MCU exceptions. Normal, failure free
-operation of OS and application tasks will not cause any exception; the
-RTOS doesn&#8217;t make use of exceptions as principle of operation - like it
+operation of OS and application tasks will not cause exceptions; the
+RTOS makes barely use of exceptions as principle of operation - like it
 would for example when using the MPU exception for reloading some memory
 descriptors. Therefore, an exception always means reporting an error.</p>
 </div>
@@ -1117,10 +1173,10 @@ state.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_deadline_monitoring">5.6. Deadline monitoring</h3>
+<h3 id="_deadline_monitoring">5.7. Deadline monitoring</h3>
 <div class="paragraph">
 <p>User tasks, regardless if triggered by events or run by services
-<em>rtos_osRunTask</em>() or <em>rtos_runTask</em>(), can have a limited timespan for
+<em>rtos_osRunTask</em>() or <em>rtos_runTask</em>(), can have a bounded timespan for
 completion. The ultimate end time is called the deadline of the task and
 the supervision is called deadline monitoring.</p>
 </div>
@@ -1142,24 +1198,22 @@ triggering till termination. This leads to a strictly hierarchical
 preemption scheme (see <a href="#figSchemeOfPreemptions">Figure 1</a>) and, as a consequence,
 to a single, ordinary stack for the kernel process. Each started task is
 represented by a stack frame on this stack. When starting the task, the
-kernel creates the stack frame and stores the deadline as an element. (The
-deadline is no more than the cyclic, arithmetic sum of the current value
-of the CPU&#8217;s time base and the known, statically defined maximum execution
-time span.) If the task is preempted then a new stack frame is put on the
-stack (for an ISR or a task of higher priority). During the execution of
-the preempting context the kernel doesn&#8217;t care, whether the deadline of
-the preempted task is exceeded or not&#8201;&#8212;&#8201;the task can&#8217;t do any harm, it&#8217;s
-not executing and the kernel could anyway not remove it from somewhere in
-the middle of the stack. Only on return from the preempting context, when
-normally all registers of the preempted context would be restored from the
-stack, the deadline condition is checked. This requires only a few
-instructions; it&#8217;s an arithmetic comparison of the stored end time with
-the CPU&#8217;s time base register. The decision is clear - either we complete
-the return to the preempted context or we raise an exception, which kills
-it. The implementation can be that easy because the check is done when and
-only when we return to the stack frame of the preempted,
-deadline-monitored task: Now the end time is easily accessible and killing
-the task in case is simply doable, because it&#8217;s on top of the stack.</p>
+kernel creates the stack frame and stores the deadline as an element. If
+the task is preempted then a new stack frame is put on the stack (for an
+ISR or a task of higher priority). During the execution of the preempting
+context the kernel doesn&#8217;t care, whether the deadline of the preempted
+task is exceeded or not&#8201;&#8212;&#8201;the task can&#8217;t do any harm, it&#8217;s not executing
+and the kernel could anyway not remove it from somewhere in the middle of
+the stack. Only on return from the preempting context, when normally all
+registers of the preempted context would be restored from the stack, the
+deadline condition is checked. This requires only a few instructions; it&#8217;s
+an arithmetic comparison of the stored end time with the CPU&#8217;s time base
+register. The decision is clear - either we complete the return to the
+preempted context or we raise an exception, which kills it. The
+implementation can be that easy because the check is done when and only
+when we return to the stack frame of the preempted, deadline-monitored
+task: Now the end time is easily accessible and killing the task in case
+is simply doable, because it&#8217;s on top of the stack.</p>
 </div>
 <div class="paragraph">
 <p>The deadline monitoring aims only at protecting a supervisor user task of
@@ -1232,23 +1286,23 @@ functional regardless of the consistency of the data owned by the
 supervised processes.</p>
 </div>
 <div class="sect3">
-<h4 id="_deadline_monitoring_to_be_used_or_better_not">5.6.1. Deadline monitoring: To be used or better not?</h4>
+<h4 id="_deadline_monitoring_to_be_used_or_better_not">5.7.1. Deadline monitoring: To be used or better not?</h4>
 <div class="paragraph">
-<p>The design of an operating system building on this RTOS can make the
+<p>The design of an operating system building on safe-RTOS can make the
 consideration, whether or not deadline monitoring needs to be applied at
 all. If some design rules are obyed then the observation of the event
 activation loss counters from the safety supervisory task will be
-sufficient (see service <em>rtos_getNoActivationLoss()</em>.</p>
+sufficient in most cases (see service <em>rtos_getNoActivationLoss</em>()).</p>
 </div>
 <div class="paragraph">
 <p>Using deadline monitoring is absolutely unavoidable if ISRs make use of
-callbacks into user processes. However, in many situations this construct
-can be replaced by deferred interrupt handling, i.e. by triggering an OS
-task that does do the work from the ISR. The triggered task would have a
-priority below the safety task and if it is blocked by a non-returning,
-bad callback into the user process then the safety task would immediately
-see the activation losses for the event triggered by the ISR and likely
-some other (timer) events.</p>
+callbacks into user processes (using service <em>rtos_osRunTask</em>()). However,
+in many situations this construct can be replaced by deferred interrupt
+handling, i.e. by triggering an OS task that takes over the work from the
+ISR. The triggered task would have a priority below the safety task and if
+it is blocked by a non-returning, bad callback into the user process then
+the safety task would immediately see the activation losses for the event
+triggered by the ISR and likely some other (timer) events.</p>
 </div>
 <div class="paragraph">
 <p>Typically, the latency times resulting from observation of activation
@@ -1258,68 +1312,10 @@ may have an impact on the design decisions.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_differences_to_the_ancestor_rtos">5.7. Differences to the ancestor RTOS</h3>
-<div class="paragraph">
-<p>safe-RTOS is a succesor of the simple RTOS, presented earlier at same
-location. The architecture of safe-RTOS is still much like its ancestor.
-This simplicity significantly supports the validation of the code in a
-safety-critical software development environment. The documentation of the
-simple RTOS may still be a valuable source of information; please have a
-look at the
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/RTOS-VLE#The-RTOS" target="_blank" rel="noopener">readme</a>
-of the simple RTOS.</p>
-</div>
-<div class="paragraph">
-<p>The differences to the simple RTOS are:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>The safety concept</p>
-</li>
-<li>
-<p>Any number of events can be created</p>
-</li>
-<li>
-<p>An event now has an argument. This is a signal, which the associated
-tasks receive as function argument</p>
-</li>
-<li>
-<p>Any number of task priorities is available</p>
-</li>
-<li>
-<p>Any number of tasks can be associated with an event. The simple RTOS had
-used a one-by-one relation between events and tasks. (Which was not a
-weakness; having more than one task per event makes sense only in
-conjunction with the new process concept)</p>
-</li>
-<li>
-<p>The architecture may be similar but the implementation isn&#8217;t:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>The safety demands require a significant portion of assembler code
-for the implementation</p>
-</li>
-<li>
-<p>The implementation of the ancestor RTOS is incredible lean because it
-directly builds on the hardware capabilities of the MCU. safe-RTOS
-uses a normal software implemention of the scheduler</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>The Book E instruction set is no longer supported</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
 <h3 id="_distribution_and_integration">5.8. Distribution and integration</h3>
 <div class="paragraph">
 <p>The RTOS itself is not a runnable piece of software. It requires some
-application code. The RTOS is distributed as set of source files with
+application code. The RTOS is distributed as a set of source files with
 makefile and linker scripts and a few sample applications. The makefile
 can take the name of an arbitrary file folder as root folder of an
 application. This is the way a particular sample application is chosen.
@@ -1337,6 +1333,60 @@ compiling them there&#8201;&#8212;&#8201;the RTOS implementation depends on seve
 definitions made and decisions taken in the linker scripts and these
 needed to be adopted by your compilation process. Please, refer to
 <a href="#secMemoryLayout">Section 9</a> for details about the linker script.</p>
+</div>
+<div class="sect3">
+<h4 id="_single_image_versus_three_images">5.8.1. Single image versus three images</h4>
+<div class="paragraph">
+<p>The NXP code samples for the DEVKIT-MPC5748G produce three separate memory
+images, one per core. Our makefile produces just one for all cores. There are
+several implications:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Debugger configuration: Three instances are launched. In our project
+configuration, only the first one will load the image. The other two will
+just load the symbols</p>
+</li>
+<li>
+<p>In our project we have a single run of the linker; the NXP concept
+requires the run of the linker for each core. Therefore, we don&#8217;t need
+preallocation of memory space to cores as done in the NXP samples.
+Linkage will fail only if the overall consumption of memory exceeds
+the physical limits</p>
+</li>
+<li>
+<p>Code is generally shared between the cores. No need to link identical
+function code repeatedly into the distinct images of the cores. The C
+library code and our RTOS are found once in ROM and executed by all
+cores</p>
+</li>
+<li>
+<p>We have only one symbol and address space for code and data on all cores.
+On source code level, core-to-core communication barely makes a
+difference to task-to-task communication on one core: The code running
+on different cores can simply use the same variable names to access
+shared recourses and they will really address to the same object at the
+same address</p>
+</li>
+<li>
+<p>The NXP approach requires a kind of manual linkage for core-to-core
+communication. Shared definitions in the three linker scripts and/or
+related #<em>define</em>'s in the source code are needed to ensure that the
+basically independent compile-and-link runs all allocate shared data at
+the same absolute address. This reduces the flexibility of interface
+design and implementation and it is error prone</p>
+</li>
+<li>
+<p>Our approach has a single, big disadvantage: By principle, the three
+cores share the SDA and SDA2 address areas. This limits the amount of
+small data address space to a total of 64 kByte each, i.e. the small
+data of all three cores together need to fit into the 64 kByte. The NXP
+approach with independent runs of the linker provides the 64 kByte
+separately to each of the cores.</p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 </div>
@@ -1406,7 +1456,8 @@ for our safe-RTOS:</p>
 <p>If the implementation of a task, which is meant the supervisory or
 safety task, is itself free of faults then the RTOS shall guarantee that
 this task is correctly and timely executed regardless of whatever
-imaginable failures are made by any other processes.</p>
+imaginable failures are made by any other processes, be it on the same
+or another core.</p>
 </li>
 </ul>
 </div>
@@ -1602,8 +1653,8 @@ which is normally expected from interruppt based I/O drivers</p>
 </div>
 <div class="paragraph">
 <p>Please refer to the sample I/O driver
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE/code/system/drivers/ledAndButton" target="_blank" rel="noopener">ledAndButton</a>
-for additional details. This drivers uses the first method to implement an
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/code/system/drivers/ledAndButton" target="_blank" rel="noopener">ledAndButton</a>
+for additional details. This driver uses the first method to implement an
 immediate notification of a user process when a button on the evaluation
 board is pressed or released.</p>
 </div>
@@ -1627,9 +1678,9 @@ The system call function is executed in supervisor mode and
 doesn&#8217;t have exception handling or failure reporting and handling. By
 principle, the implementation belongs into the sphere of proven, trusted
 code. A user or application supplied function must never be accepted or
-installed as a system call, only proven driver code can serve as system
-call. Any exception from this rule will potentially break the safety
-concept.
+installed as a system call or be called as a sub-routine of a system call,
+only proven driver code can serve as system call. Any exception from this
+rule will potentially break the safety concept.
 </td>
 </tr>
 </table>
@@ -1838,6 +1889,11 @@ available. This has several implications:</p>
 trusted code</p>
 </li>
 <li>
+<p>If the implementation of the system call causes an exception then the
+software execution will be halted on the core. It depends on the chosen
+watchdog concept what this means to the safety concept</p>
+</li>
+<li>
 <p>The implementation must not trust any piece of information got from the
 calling user code, which could cause an error or exception:</p>
 <div class="ulist">
@@ -1938,6 +1994,15 @@ can compile the table. The file is named <em>mnm_driverName_defSysCalls.h</em>.
 This involves mechanisms to safely avoid both, conflicting, doubly defined
 table entries and undefined, empty table entries.</p>
 </div>
+<div class="paragraph">
+<p>Each core has its own system call table. This has been decided to allow
+having different implementations of one and the same service on different
+cores. An I/O driver could e.g. be implemented to mainly run on the first
+core. Here, the system call implementation will really service the I/O
+device. On the other cores, the same system call would rather implement
+some core-to-core communication to just get the data, which had already
+been acquired on the first core.</p>
+</div>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -1949,7 +2014,8 @@ After successful compilation of module <em>rtos_systemCall.c</em> and if you
 specify <code>SAVE_TMP=1</code> on the command line of <em>make</em> then you can find the
 actual, complete system call table in file
 <em>bin/(..)/obj/rtos_systemCall.i</em>. Open the file in a text editor and
-search for <code>const systemCallDesc_t rtos_systemCallDescAry</code>.
+search for <code>const rtos_systemCallDesc_t rtos_systemCallDescAry</code>. You will
+have a match per core.
 </td>
 </tr>
 </table>
@@ -1976,14 +2042,14 @@ particularly, no danger of breaking the safety concept due to undefined
 entries.</p>
 </div>
 <div class="sect4">
-<h5 id="_system_calls_of_rtos">System calls of RTOS</h5>
+<h5 id="_system_calls_of_safe_rtos">System calls of safe-RTOS</h5>
 <div class="paragraph">
 <p>The RTOS implementation itself makes use of a few system calls. The index
 range 0 .. 19 is reserved for extensions of the kernel and must therefore
 not be used by user added code.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 1. System call indexes in use by RTOS</caption>
+<caption class="title">Table 1. System call indexes in use by safe-RTOS</caption>
 <colgroup>
 <col style="width: 8.9285%;">
 <col style="width: 39.2857%;">
@@ -2010,14 +2076,14 @@ by user code</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">rtos_scBscHdlr_&#8203;suspendAllTasksByPriority</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Basic</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PCP: get
+<td class="tableblock halign-left valign-top"><p class="tableblock">PCP: Get
 resource or enter critical section</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">2</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">rtos_scBscHdlr_&#8203;resumeAllTasksByPriority</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Basic</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PCP: release
+<td class="tableblock halign-left valign-top"><p class="tableblock">PCP: Release
 resource or leave critical section</p></td>
 </tr>
 <tr>
@@ -2059,10 +2125,10 @@ RTOS extensions</p></td>
 <h5 id="_system_calls_of_sample_io_drivers">System calls of sample I/O drivers</h5>
 <div class="paragraph">
 <p>A few more system call indexes are used by the sample I/O drivers, LED and
-button driver and serial interface driver. If the drivers are not used by
-the client code then these indexes can be reused. Moreover, it is
-straightforward to put the drivers onto another index of your choice. Just
-have a look at the header files of the drivers.</p>
+button driver, serial interface driver and system time service. If the
+drivers are not used by the client code then these indexes can be reused.
+Moreover, it is straightforward to put the drivers onto another index of
+your choice. Just have a look at the header files of the drivers.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 2. System call indexes in use by sample I/O drivers</caption>
@@ -2100,6 +2166,12 @@ into serial port</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LED driver: Get button state</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">30</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">stm_scBscHdlr_getSystemTime</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Basic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">System timers: Get current time</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2107,12 +2179,11 @@ into serial port</p></td>
 <div class="sect3">
 <h4 id="_sample_code">7.3.4. Sample code</h4>
 <div class="paragraph">
-<p>Please refer to the sample I/O drivers
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE/code/system/drivers/ledAndButton" target="_blank" rel="noopener">ledAndButton</a>
-and
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE/code/system/drivers/serial" target="_blank" rel="noopener">serialIO</a>
-for additional details and consider using these files as starting point
-for your own system call based I/O driver.</p>
+<p>Please refer to the
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/code/system/drivers/" target="_blank" rel="noopener">sample I/O drivers</a>
+for additional details and consider using these files as
+starting point for your own system call based I/O driver. The samples
+cover all conformances classes from the I/O driver model.</p>
 </div>
 </div>
 </div>
@@ -2125,10 +2196,15 @@ for your own system call based I/O driver.</p>
 <p>The RTOS offers an API for using it. The available functions are outlined
 here; more detailed information is found as source code comments in the
 files in folder
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/code/system/RTOS" target="_blank" rel="noopener">code/system/RTOS</a>
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/RTOS" target="_blank" rel="noopener">code/system/RTOS</a>
 and particularly in the main header file,
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/code/system/RTOS/rtos.h" target="_blank" rel="noopener">code/system/RTOS/rtos.h</a>. Furthermore, there is the Doxygen API reference at
-<a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/TRK-USB-MPC5643L/master/LSM/safe-RTOS-VLE/doc/doxygen/html/globals_func.html" target="_blank" rel="noopener">doc/doxygen/html</a>.</p>
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/RTOS/rtos.h" target="_blank" rel="noopener">code/system/RTOS/rtos.h</a>.</p>
+</div>
+<div class="paragraph">
+<p>Furthermore, there is the Doxygen API reference at
+<a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/DEVKIT-MPC5748G/master/samples/safe-RTOS-VLE/doc/doxygen/html/globals_func.html" target="_blank" rel="noopener">doc/doxygen/html</a>.
+Unfortunately, it is of limited value; Doxygen doesn&#8217;t scan the assembly
+files and a good portion of the required information is missing.</p>
 </div>
 <div class="sect2">
 <h3 id="_naming_conventions">8.1. Naming conventions</h3>
@@ -2160,10 +2236,11 @@ indicate if it were callable also by OS code.</p>
 </div>
 <div class="paragraph">
 <p>The rest of the application functions is simply not available to OS code
-and an attempt to invoke them from an ISR or OS task will cause a crash.
-In case of these functions, there will&#8201;&#8212;&#8201;with a few exceptions&#8201;&#8212;&#8201;always
-be a pair of API functions, one for OS and one for user code with nearly
-same functionality. The function documentation will name the constraints.</p>
+and an attempt to invoke them from an ISR or OS task will halt the
+software execution. In case of these functions, there will&#8201;&#8212;&#8201;with a few
+exceptions&#8201;&#8212;&#8201;always be a pair of API functions, one for OS and one for
+user code with nearly same functionality. The function documentation will
+name the constraints.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -2182,14 +2259,228 @@ software execution being halted in the kernel.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuration_and_initialization">8.2. Configuration and initialization</h3>
+<h3 id="_table_of_available_services">8.2. Table of available services</h3>
+<div class="paragraph">
+<p>Here is a table with an overview on all services, which are available to
+user and OS tasks, interrupt service routines and bare-metal applications:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Overview on kernel services</caption>
+<colgroup>
+<col style="width: 52.6315%;">
+<col style="width: 31.5789%;">
+<col style="width: 15.7896%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Service</th>
+<th class="tableblock halign-left valign-top">Callable from</th>
+<th class="tableblock halign-left valign-top">Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCreateEvent">rtos_osCreateEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRegisterTask">rtos_osRegisterInitTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRegisterTask">rtos_osRegisterUserTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRegisterTask">rtos_osRegisterOSTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiInitINTC">rtos_osInitINTCInterruptController()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRegisterIsr">rtos_osRegisterInterruptHandler()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiConfRunTask">rtos_osGrantPermissionRunTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiConfSuspProc">rtos_osGrantPermissionSuspendProcess()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiInitKernel">rtos_osInitKernel()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTriggerEvent">rtos_osTriggerEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTriggerEvent">rtos_triggerEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRunTask">rtos_osRunTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRunTask">rtos_runTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTermTask">rtos_terminateTask()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSuspProc">rtos_osSuspendProcess()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSuspProc">rtos_suspendProcess()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSuspIrq">rtos_osSuspendAllInterrupts()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSuspIrq">rtos_osResumeAllInterrupts()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSuspIrq">rtos_osEnterCriticalSection()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSuspIrq">rtos_osLeaveCriticalSection()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiPCP">rtos_osSuspendAllTasksByPriority()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiPCP">rtos_osResumeAllTasksByPriority()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiPCP">rtos_suspendAllTasksByPriority()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiPCP">rtos_resumeAllTasksByPriority()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSysCall">rtos_systemCall()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTermSysCall">rtos_osSystemCallBadArgument()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS (system call)</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCheckPtr">rtos_checkUserCodeReadPtr()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">all</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCheckPtr">rtos_checkUserCodeWritePtr()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">all</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiGetIdxCore">rtos_osGetIdxCore()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiGetIdxCore">rtos_getIdxCore()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS (deprecated)</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiGetMSR">rtos_getCoreStatusRegister()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS (deprecated)</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiGetIrqSusp">rtos_osGetAllInterruptsSuspended()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiGetProcSusp">rtos_isProcessSuspended()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS, ISR</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiActivationLoss">rtos_getNoActivationLoss()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTskFailure">rtos_getNoTotalTaskFailure()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTskFailure">rtos_getNoTaskFailure()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiStackSpace">rtos_getStackReserve()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user, OS, bare-metal</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCpuLoad">gsl_osGetSystemLoad()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS idle</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_system_configuration_and_initialization">8.3. System configuration and initialization</h3>
 <div class="sect3">
-<h4 id="_allocated_mcu_resources">8.2.1. Allocated MCU resources</h4>
+<h4 id="_allocated_mcu_resources">8.3.1. Allocated MCU resources</h4>
 <div class="paragraph">
 <p>The RTOS implementation makes use of a few MCU devices. It takes care of
 their initialization and run-time code. Your code must not touch any of
 the registers of these devices. Additional to these devices there are
-some allocated registers, which you must neither touch. The allocated
+some allocated registers, which you must not touch, neither. The allocated
 MCU resources are:</p>
 </div>
 <div class="ulist">
@@ -2204,6 +2495,9 @@ MCU resources are:</p>
 <p>The process ID register, PID0</p>
 </li>
 <li>
+<p>The cache control registers</p>
+</li>
+<li>
 <p>The interrupt controller, INTC</p>
 </li>
 <li>
@@ -2213,13 +2507,17 @@ MCU resources are:</p>
 <p>The memory protection unit, MPU</p>
 </li>
 <li>
-<p>The periodic interrupt timer 0, PIT0</p>
+<p>A periodic interrupt timer per core running safe-RTOS. Which one is
+compile-time configuration</p>
+</li>
+<li>
+<p>The system timer, STM</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_error_codes">8.2.2. Error codes</h4>
+<h4 id="_error_codes">8.3.2. Error codes</h4>
 <div class="paragraph">
 <p>All of the API functions, which are called at system initialization time
 to configure the RTOS appropriately for the implemented operating system,
@@ -2244,7 +2542,7 @@ even a simple assertion would suffice to evaluate the error return codes.)</p>
 </div>
 <div class="paragraph">
 <p>Please refer to the definition of the enumeration in
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/code/system/RTOS/rtos.h" target="_blank" rel="noopener"><code>rtos.h</code></a>
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/RTOS/rtos.h" target="_blank" rel="noopener"><code>rtos.h</code></a>
 for the list of recognized configuration errors.</p>
 </div>
 <div class="literalblock">
@@ -2255,35 +2553,7 @@ typedef enum rtos_errorCode_t;</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_initialize_the_interrupt_hardware">8.2.3. Initialize the interrupt hardware</h4>
-<div class="paragraph">
-<p>The RTOS communicates intensively with the interrupt controller of the MCU.
-Therefore it has its own initialization routine for this MCU device. You
-will need to call this function prior to the first call of
-<code>rtos_osRegisterInterruptHandler</code> and prior to the kernel startup,
-<code>rtos_osInitKernel</code>.</p>
-</div>
-<div class="paragraph">
-<p>Your own MCU initialization code must not contain any further or
-alternative code, which accesses the registers of the interrupt
-controller.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>#include "rtos.h"
-void rtos_osInitINTCInterruptController(void);</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Most of the MCU hardware initialization required by the RTOS is integrated
-into the function to start the kernel and doesn&#8217;t appear in the API. The
-added value of making the initialization of the interrupt controller appear
-in the API is the option to register your ISRs either before or after the
-start of the kernel. Without, it would only be possible after.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="secApiCreateEvent">8.2.4. Create an event</h4>
+<h4 id="secApiCreateEvent">8.3.3. Create an event</h4>
 <div class="paragraph">
 <p>Tasks are activated by events. At OS initialization time, at first events are
 created to specify conditions under which the aimed tasks shall be
@@ -2305,25 +2575,28 @@ rtos_errorCode_t rtos_osCreateEvent( unsigned int *pEventId
 <div class="paragraph">
 <p>The returned event IDs form a sequence of numbers 0, 1, 2, &#8230;&#8203; in the
 order of creation calls. The ID is required as input to some other API
-functions that relate to an event, <code>rtos_triggerEvent</code> in the first place.</p>
+functions that relate to an event,
+<a href="#secApiTriggerEvent"><code>rtos_triggerEvent</code></a> in the first place.</p>
 </div>
 <div class="paragraph">
 <p>The priority is a non zero integer number. Regardless of the number, any
-event (and thus all of the associated tasks) will a priority below any
-interrupt. See <a href="#secPrioTaskAndISR">Section 5.4</a> and <a href="#secApiRegisterIsr">Section 8.2.6</a> also.</p>
+event (and thus all of the associated tasks) will have a priority below any
+interrupt. See <a href="#secPrioTaskAndISR">Section 5.5</a> and <a href="#secApiRegisterIsr">Section 8.3.6</a> also.</p>
 </div>
 <div class="paragraph">
 <p>Parameter <code>minPIDToTriggerThisEvent</code> restricts the use of the API
-<code>rtos_triggerEvent</code> to processes of sufficient privileges.</p>
+<code>rtos_triggerEvent</code> for the given event to processes of sufficient
+privileges.</p>
 </div>
 <div class="paragraph">
 <p>Parameter <code>taskParam</code> is provided to the task function as argument. It can
-be used as context informtion, e.g. if the same task function should be
-associated with different events.</p>
+be used as context information, e.g. if the same task function should be
+associated with different events. (Which makes them different tasks
+entering the same shared code.)</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_registering_a_task">8.2.5. Registering a task</h4>
+<h4 id="secApiRegisterTask">8.3.4. Registering a task</h4>
 <div class="paragraph">
 <p>Tasks are not created dynamically, on demand, but they are registered at
 the RTOS before the scheduler is started. The registration of a task
@@ -2405,23 +2678,56 @@ goes wrong during initialization.</p>
 <div class="paragraph">
 <p>The task functions receive the 32 Bit argument <code>taskParam</code>. For regular
 timer tasks its widely irrelevant; they receive the constant value, which
-is specified at event creation time (see <a href="#secApiCreateEvent">Section 8.2.4</a>). Event
+is specified at event creation time (see <a href="#secApiCreateEvent">Section 8.3.3</a>). Event
 triggered tasks receive the value, which is sent with
-<em>rtos_osTriggerEvent()</em> or <em>rtos_triggerEvent()</em> (see
-<a href="#secApiTriggerEvent">Section 8.3.1</a>).</p>
+<a href="#secApiTriggerEvent"><em>rtos_osTriggerEvent</em>()</a> or
+<a href="#secApiTriggerEvent"><em>rtos_triggerEvent</em>()</a>.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="secApiRegisterIsr">8.2.6. Registering an ISR</h4>
+<h4 id="secApiInitINTC">8.3.5. Initialize the interrupt hardware</h4>
 <div class="paragraph">
-<p>This function lets your application define a handler (ISR) for all needed
-interrupt sources.</p>
+<p>The RTOS communicates intensively with the interrupt controller of the MCU.
+Therefore it has its own initialization routine for this MCU device. You
+will need to call this function prior to the first call of
+<code>rtos_osRegisterInterruptHandler</code> and prior to the kernel startup,
+<code>rtos_osInitKernel</code>.</p>
+</div>
+<div class="paragraph">
+<p>Your own MCU initialization code must not contain any further or
+alternative code, which accesses the registers of the interrupt
+controller.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+void rtos_osInitINTCInterruptController(void);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Most of the MCU hardware initialization required by the RTOS is integrated
+into the function to start the kernel and doesn&#8217;t appear in the API. The
+added value of making the initialization of the interrupt controller appear
+in the API is the option to register your ISRs either before or after the
+start of the kernel. Without, it would only be possible after.</p>
+</div>
+<div class="paragraph">
+<p>Note, on a multi-core MCU, this function is called only once, usually on
+the boot core and prior to starting the other cores.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secApiRegisterIsr">8.3.6. Registering an ISR</h4>
+<div class="paragraph">
+<p>This function lets your operating system code define a handler (ISR) for
+all needed interrupt sources.</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>#include "rtos.h"
 void rtos_osRegisterInterruptHandler
             ( rtos_interruptServiceRoutine_t interruptServiceRoutine
+            , unsigned int processorID
             , unsigned int vectorNum
             , unsigned int psrPriority
             , bool isPreemptable
@@ -2429,21 +2735,32 @@ void rtos_osRegisterInterruptHandler
 </div>
 </div>
 <div class="paragraph">
+<p><em>processorID</em> selects the core, which runs the ISR if the interrupt
+occurs. Usually, this will be the core the function call is used on (see
+<a href="#secApiGetIdxCore">Section 8.7.1</a> to find out) but it is also possible to centralize
+all interrupt configuration at startup-time on the boot core.</p>
+</div>
+<div class="paragraph">
 <p><em>vectorNum</em> relates to the hard-wired interrupt sources of the MCU, see
-reference manual. Note that the RTOS itself makes use of interrupt source
-59, PIT0, which must thus never be used anywhere else.</p>
+reference manual. Note that the RTOS itself makes use of PID timers as
+interrupt source, one on each core running safe-RTOS. The configured PIT
+timers must thus never be used anywhere else.</p>
 </div>
 <div class="paragraph">
 <p>The priority is an integer number in the range 1..15. See
-<a href="#secPrioTaskAndISR">Section 5.4</a> and <a href="#secApiCreateEvent">Section 8.2.4</a> also.</p>
+<a href="#secPrioTaskAndISR">Section 5.5</a> and <a href="#secApiCreateEvent">Section 8.3.3</a> also.</p>
 </div>
 <div class="paragraph">
 <p>The use case for this function is the initialization code of I/O drivers.
 Such drivers will frequently make use of interrupts.</p>
 </div>
+<div class="paragraph">
+<p>Note, this API may be used on a core running a bare-metal application,
+i.e. a core which doesn&#8217;t start the safe-RTOS kernel.</p>
+</div>
 </div>
 <div class="sect3">
-<h4 id="_configure_privileges_for_inter_process_function_calls">8.2.7. Configure privileges for inter-process function calls</h4>
+<h4 id="secApiConfRunTask">8.3.7. Configure privileges for inter-process function calls</h4>
 <div class="paragraph">
 <p>An OS or a user task can run a task in another process. (Where "task"
 effectively is an arbitrary function with only some constrained function
@@ -2463,7 +2780,7 @@ void rtos_osGrantPermissionRunTask( unsigned int pidOfCallingTask
 </div>
 </div>
 <div class="sect3">
-<h4 id="_configure_privileges_for_suspending_processes">8.2.8. Configure privileges for suspending processes</h4>
+<h4 id="secApiConfSuspProc">8.3.8. Configure privileges for suspending processes</h4>
 <div class="paragraph">
 <p>The OS or a user task can suspend another process from further execution.
 This kernel service is intended for a safety supervisory processes, which
@@ -2484,7 +2801,7 @@ static void rtos_osGrantPermissionSuspendProcess
 </div>
 </div>
 <div class="sect3">
-<h4 id="_start_of_kernel">8.2.9. Start of kernel</h4>
+<h4 id="secApiInitKernel">8.3.9. Start of kernel</h4>
 <div class="paragraph">
 <p>After completing the configuration of events, tasks and privileges, the
 scheduler of the RTOS is started with a simple API call:</p>
@@ -2504,9 +2821,9 @@ task.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_run_time_api">8.3. Run-time API</h3>
+<h3 id="_control_tasks_and_processes">8.4. Control tasks and processes</h3>
 <div class="sect3">
-<h4 id="secApiTriggerEvent">8.3.1. Trigger an event</h4>
+<h4 id="secApiTriggerEvent">8.4.1. Trigger an event</h4>
 <div class="paragraph">
 <p>Most events are typically time triggered. The rest is triggered on demand.
 Here&#8217;s the API to trigger such an event. Use cases are inter-process
@@ -2541,83 +2858,14 @@ communication channel.
 <div class="paragraph">
 <p>Unrestricted use of event triggers would easily break the safety concept
 of the aimed software. Therefore, the use of this kernel service is
-subject to privilege configuration: See function <code>rtos_osCreateEvent</code>,
-argument <code>minPIDToTriggerThisEvent</code>; it&#8217;s a matter of explicit
-configuration to permit certain processes to trigger a particular event.</p>
+subject to privilege configuration: See function
+<a href="#secApiCreateEvent">rtos_osCreateEvent</a>, argument
+<em>minPIDToTriggerThisEvent</em>; it&#8217;s a matter of explicit configuration to
+permit certain processes to trigger a particular event.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_do_a_system_call">8.3.2. Do a system call</h4>
-<div class="paragraph">
-<p>System calls are functions, which are provided by the implementer of an
-operating system, that would build on this RTOS. These function are
-executed in supervisor mode and can e.g. implement I/O drivers. A user
-task invokes such a function with this API:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>#include "rtos.h"
-uint32_t rtos_systemCall(uint32_t idxSysCall, ...);</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The ellipsis stands for the function arguments of the particular system
-call; different system calls will have different argument lists.</p>
-</div>
-<div class="paragraph">
-<p>Note that user source code will barely contain a call of
-<code>rtos_systemCall</code>. It&#8217;s common practice to wrap the call into a function
-or macro with meaningful name and dedicated signature and which hides the
-index <code>idxSysCall</code> of the aimed system call.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_check_memory_address_for_read_or_write_access">8.3.3. Check memory address for read or write access</h4>
-<div class="paragraph">
-<p>The implementation of a system call must take outermost care that any
-imaginable user provided argument data will never be able to harm the
-stability of kernel or other processes. If a pointer is passed in then the
-system call implementation needs to double-check that read or write access
-to the referenced memory addresses is granted to the calling process. See
-<a href="#secMemoryLayout">Section 9</a> for details.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>#include "rtos.h"
-bool rtos_checkUserCodeReadPtr( const void *address
-                              , size_t noBytes
-                              );
-bool rtos_checkUserCodeWritePtr( unsigned int PID
-                               , const void *address
-                               , size_t noBytes
-                               );</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Note, the use of pointers as function call arguments is possible but not
-recommended. The call of these checker functions will mostly be too
-expensive in relation to the intended pointer operation.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_abort_a_system_call">8.3.4. Abort a system call</h4>
-<div class="paragraph">
-<p>The implementation of a system call must take outermost care that any
-imaginable user provided argument data will never be able to harm the
-stability of kernel or other processes. It&#8217;s common practice to let the
-implementation first check all arguments. If anything is suspicious
-then the system call implementation will call this API to report the
-problem to the kernel. It raises an exception in the calling process.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>#include "rtos.h"
-_Noreturn void rtos_osSystemCallBadArgument(void);</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_inter_process_function_call">8.3.5. Inter-process function call</h4>
+<h4 id="secApiRunTask">8.4.2. Inter-process function call</h4>
 <div class="paragraph">
 <p>A preemptable ISR, an OS or user task or a system call handler of full
 conformance class can run a task in another process, where "task"
@@ -2662,7 +2910,7 @@ delivering data.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_task_abortion_or_termination">8.3.6. Task abortion or termination</h4>
+<h4 id="secApiTermTask">8.4.3. Task abortion or termination</h4>
 <div class="paragraph">
 <p>Any task is implemented as a function. The task terminates when this
 function is left. However, the task implementation may decide to terminate
@@ -2671,8 +2919,9 @@ abortion (counted as process failure) or voluntary termination.</p>
 </div>
 <div class="paragraph">
 <p>Only where this makes sense, the return value is delivered to some caller;
-so for tasks started with API <code>rtos_osRunTask</code> or <code>rtos_runTask</code>. Anywhere
-else it just has a Boolean meaning, error or no error.</p>
+so for tasks started with API <a href="#secApiRunTask">rtos_osRunTask()</a> or
+<a href="#secApiRunTask">rtos_runTask()</a>. Anywhere else it just has a Boolean
+meaning, error or no error.</p>
 </div>
 <div class="paragraph">
 <p>Use case is leaving nested, complex operations without concerns about
@@ -2686,12 +2935,47 @@ _Noreturn void rtos_terminateTask(int32_t taskReturnValue);</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mutual_exclusion_of_all_contexts">8.3.7. Mutual exclusion of all contexts</h4>
+<h4 id="secApiSuspProc">8.4.4. Suspend a process</h4>
+<div class="paragraph">
+<p>The execution of the tasks of a process can be halted by another
+process with according privileges. Activated tasks are aborted and no new
+task belonging to that process is activated any more.</p>
+</div>
+<div class="paragraph">
+<p>The kernel has no state machine to alternatingly suspend and resume a
+process. Suspending always is a final decision. Use case is the emergency
+stop; a supervisory safety task can suspend the functional process(es) in
+case of recognized, safety-critical errors.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+void rtos_osSuspendProcess(uint32_t PID);
+void rtos_suspendProcess(uint32_t PID);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, safe-RTOS is rather a single-core kernel with the ability of running
+on several cores but a true multi-core kernel. The operations on the cores
+are widely de-coupled. For suspension of processes it means that the API
+only impacts the tasks of the process, which are configured to run on the
+core, which calls the API. If a supervisory task running one core wants to
+suspend a process entirely then it needs to implement according
+core-to-core communication to all others cores. It could e.g. use service
+<a href="#secApiRunTask">rtos_runTask()</a> to run
+<a href="#secApiSuspProc">rtos_suspendProcess()</a> on all cores.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_critical_sections">8.5. Critical sections</h3>
+<div class="sect3">
+<h4 id="secApiSuspIrq">8.5.1. Mutual exclusion of all contexts</h4>
 <div class="paragraph">
 <p>The RTOS offers the traditional services for mutual exclusion of all
-contexts, i.e. ISRs and tasks, by suspending all interrupt processing on
-the core. Since this service would break any safety concept it is
-generally unavailable to user tasks.</p>
+contexts on a core, i.e. ISRs and tasks, by suspending all interrupt
+processing on the core. Since this service would break any safety concept
+it is generally unavailable to user tasks.</p>
 </div>
 <div class="paragraph">
 <p>Use case is the very efficient avoidance of race conditions in the
@@ -2699,7 +2983,8 @@ implementation of an operating system, e.g. in its I/O drivers.</p>
 </div>
 <div class="paragraph">
 <p>The two pairs of functions differ in that only
-<code>rtos_osEnterCriticalSection</code>/<code>rtos_osLeaveCriticalSection</code> is nestable&#8201;&#8212;&#8201;at the price of an a bit higher execution time.</p>
+<a href="#secApiSuspIrq">rtos_osEnterCriticalSection()</a>/<a href="#secApiSuspIrq">rtos_osLeaveCriticalSection()</a>
+is nestable&#8201;&#8212;&#8201;at the price of an a bit higher execution time.</p>
 </div>
 <div class="paragraph">
 <p>All of these functions are implemented as inline functions, which expand
@@ -2714,9 +2999,13 @@ uint32_t rtos_osEnterCriticalSection(void);
 void rtos_osLeaveCriticalSection(uint32_t oldState);</pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Note, all of these APIs may be used on a core running a bare-metal
+application, i.e. a core which doesn&#8217;t start the safe-RTOS kernel.</p>
+</div>
 </div>
 <div class="sect3">
-<h4 id="_priority_ceiling_protocol_for_tasks">8.3.8. Priority ceiling protocol for tasks</h4>
+<h4 id="secApiPCP">8.5.2. Priority ceiling protocol for tasks</h4>
 <div class="paragraph">
 <p>A common method of inhibiting other tasks from coincidentally accessing
 the same shared resources (mostly data objects in RAM) is the priority
@@ -2757,34 +3046,184 @@ preferably make use of lock-free communication concepts.</p>
 </div>
 <div class="paragraph">
 <p>It is generally not possible for a user task to implement mutual exclusion
-with an ISR. Software design needs to make use of lock-free communication
-concepts, where this matters.</p>
+with an ISR. Where this matters, software design needs to make use of
+lock-free communication concepts.</p>
+</div>
+<div class="paragraph">
+<p>In a typical OS design, these functions won&#8217;t be directly exposed to the
+user. Instead, they will be wrapped in a set of macros, like
+<code>os_getResource(resource)</code> and <code>os_releaseResource(resource)</code>. Such macros
+take the perspective of the user, who is interested in access to data
+objects but doesn&#8217;t want to deal with task priorities. In this concept,
+the "resource" objects in the macros hide the priorities a task must
+(temporarily) have at minimum to surely exclude all possible competitors.</p>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_system_call_interface">8.6. System call interface</h3>
 <div class="sect3">
-<h4 id="_suspend_a_process">8.3.9. Suspend a process</h4>
+<h4 id="secApiSysCall">8.6.1. Do a system call</h4>
 <div class="paragraph">
-<p>The execution of the tasks of a process can be halted by another
-process with according privileges. Activated tasks are aborted and no new
-task belonging to that process is activated any more.</p>
-</div>
-<div class="paragraph">
-<p>The kernel has no state machine to alternatingly suspend and resume a
-process. Suspending always is a final decision. Use case is the emergency
-stop; a supervisory safety task can suspend the functional process(es) in
-case of recognized, safety-critical errors.</p>
+<p>System calls are functions, which are provided by the implementer of an
+operating system, that would build on this RTOS. These function are
+executed in supervisor mode and can e.g. implement I/O drivers. A user
+task invokes such a function with this API:</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>#include "rtos.h"
-void rtos_osSuspendProcess(uint32_t PID);
-void rtos_suspendProcess(uint32_t PID);</pre>
+uint32_t rtos_systemCall(uint32_t idxSysCall, ...);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The ellipsis stands for the function arguments of the particular system
+call; different system calls will have different argument lists.</p>
+</div>
+<div class="paragraph">
+<p>Note that user source code will barely contain a call of
+<a href="#secApiSysCall">rtos_systemCall()</a>. It&#8217;s common practice to wrap the call
+into a function or macro with meaningful name and dedicated signature and
+which hides the index <code>idxSysCall</code> of the aimed system call.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secApiTermSysCall">8.6.2. Abort a system call</h4>
+<div class="paragraph">
+<p>The implementation of a system call must take outermost care that any
+imaginable user provided argument data will never be able to harm the
+stability of kernel or other processes. It&#8217;s common practice to let the
+implementation first check all arguments. If anything is suspicious
+then the system call implementation will call this API to report the
+problem to the kernel. It raises an exception in the calling process and
+control doesn&#8217;t return to the system calling task code.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+_Noreturn void rtos_osSystemCallBadArgument(void);</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secApiCheckPtr">8.6.3. Check memory address for read or write access</h4>
+<div class="paragraph">
+<p>The implementation of a system call must take outermost care that any
+imaginable user provided argument data will never be able to harm the
+stability of kernel or other processes. If a pointer is passed in then the
+system call implementation needs to double-check that read or write access
+to the referenced memory addresses is granted to the calling process. See
+<a href="#secMemoryLayout">Section 9</a> for details.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+bool rtos_checkUserCodeReadPtr( const void *address
+                              , size_t noBytes
+                              );
+bool rtos_checkUserCodeWritePtr( unsigned int PID
+                               , const void *address
+                               , size_t noBytes
+                               );</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, the use of pointers as function call arguments is possible but not
+recommended. The call of these checker functions will mostly be too
+expensive in relation to the intended pointer operation.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_query_system_state">8.7. Query system state</h3>
+<div class="sect3">
+<h4 id="secApiGetIdxCore">8.7.1. Get index of executing core</h4>
+<div class="paragraph">
+<p>If safe-RTOS is run on more than one core then much of the code can be
+shared between these core. For example, the entire RTOS implementation
+itself is shared between them. At some code locations, core specific
+decisions may be required, there are e.g. hardware registers, which are
+core related so that an I/O driver serving these registers would need to
+know, on which core it is executing. These services just return the index
+of the executing core.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+unsigned int rtos_osGetIdxCore(void);
+unsigned int rtos_getIdxCore(void);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, even service <a href="#secApiGetIdxCore">rtos_getIdxCore</a> may be called from
+OS contexts. However, OS contexts shouldn&#8217;t because of the performance
+penalty. They should only use the intrinsic
+<a href="#secApiGetIdxCore">rtos_osGetIdxCore()</a> instead.</p>
+</div>
+<div class="paragraph">
+<p>Note, service <a href="#secApiGetIdxCore">rtos_osGetIdxCore()</a> may be used on a
+core running a bare-metal application, i.e. a core which doesn&#8217;t start the
+safe-RTOS kernel.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secApiGetMSR">8.7.2. Get core status register</h4>
+<div class="paragraph">
+<p>Reading the status register of the core is a privileged operation in the
+Power Architecture although it has no side effects and doesn&#8217;t do any
+harm. This service provides the status of the executing core to a user
+process. Use case is code, which is shared between OS and user tasks and
+which needs to take according decisions, like which particular API to call
+to get a needed service.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+rtos_getCoreStatusRegister</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, this function can be called from OS and user code. OS contexts
+should however better use an intrinsic to read the MSR and in order to
+save the function call overhead.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secApiGetIrqSusp">8.7.3. Get interrupt suspension status</h4>
+<div class="paragraph">
+<p>This is an intrinsic function to read the executing core&#8217;s status register
+and to see, whether processing of External Interrupts is currently
+enabled or not.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+bool rtos_osGetAllInterruptsSuspended(void);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, service <a href="#secApiGetIrqSusp">rtos_osGetAllInterruptsSuspended()</a> may
+be used on a core running a bare-metal application, i.e. a core which
+doesn&#8217;t start the safe-RTOS kernel.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secApiGetProcSusp">8.7.4. Process state</h4>
+<div class="paragraph">
+<p>This API is the counterpart of <a href="#secApiSuspProc">rtos_suspendProcess()</a>.
+Any OS or user task can query if a particular process has been suspended on
+the executing core or not.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+bool rtos_isProcessSuspended(uint32_t PID);</pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_diagnostic_api">8.4. Diagnostic API</h3>
+<h3 id="_diagnostic_interface">8.8. Diagnostic interface</h3>
 <div class="paragraph">
 <p>The kernel recognizes or catches several different failures. The kernel
 hinders the failing code from doing any harm to the other processes but it
@@ -2794,27 +3233,7 @@ looks at the occurring errors and which can then take the appropriate
 decisions.</p>
 </div>
 <div class="sect3">
-<h4 id="_stack_space">8.4.1. Stack space</h4>
-<div class="paragraph">
-<p>The function computes how many bytes of the stack area of a particular
-process are still unused.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>#include "rtos.h"
-unsigned int rtos_getStackReserve(unsigned int PID);</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Note, the computation is expensive and should be done only in a task of
-low priority.</p>
-</div>
-<div class="paragraph">
-<p>The API can be called from OS and user tasks.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_task_overrun">8.4.2. Task overrun</h4>
+<h4 id="secApiActivationLoss">8.8.1. Task overrun</h4>
 <div class="paragraph">
 <p>Tasks are activated by triggering an event. Triggering an event may fail
 if any of its associated tasks have not yet completed after their
@@ -2835,78 +3254,77 @@ unsigned int rtos_getNoActivationLoss(unsigned int idEvent);</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_exception_count">8.4.3. Exception count</h4>
+<h4 id="secApiTaskFailure">8.8.2. Exception count</h4>
 <div class="paragraph">
-<p>The API returns the total number of exceptions caught since system startup
-from any of the tasks belonging to a particular, given process.</p>
+<p>These services return the number of exceptions caught since system startup from
+any of the tasks belonging to a particular, given process, but only for
+the core, which this call is made on.<sup class="footnote">[<a id="_footnoteref_4" class="footnote" href="#_footnotedef_4" title="View footnote.">4</a>]</sup>
+  <a href="#secApiTaskFailure">rtos_getNoTotalTaskFailure()</a> returns the total
+number of exceptions for a given process whereas
+<a href="#secApiTaskFailure">rtos_getNoTaskFailure()</a> breaks the count down into
+several different exception kinds. You could e.g. try to decide, whether
+an exception is a possibly tolerable timeout exception.</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>#include "rtos.h"
-unsigned int rtos_getNoTotalTaskFailure(unsigned int PID);</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Exceptions are really meant exceptional&#8201;&#8212;&#8201;they must not occur and any
-count other than zero will point to a serious programming error in your
-software.</p>
-</div>
-<div class="paragraph">
-<p>There&#8217;s only one exception from the last statement: If your operating
-system make use of time budgets for user tasks than it may be a matter of
-getting occasional time-out exceptions because of temporary high system
-load.</p>
-</div>
-<div class="paragraph">
-<p>The API can be called from OS and user tasks.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_exception_count_by_kind">8.4.4. Exception count by kind</h4>
-<div class="paragraph">
-<p><code>rtos_getNoTotalTaskFailure</code> returns the total number of exceptions for a
-given process but this API here breaks the count down into several different
-exception kinds. You could e.g. try to decide, whether an exception is a
-possibly tolerable timeout exception.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>#include "rtos.h"
+unsigned int rtos_getNoTotalTaskFailure(unsigned int PID);
 unsigned int rtos_getNoTaskFailure( unsigned int PID
                                   , unsigned int kindOfErr
                                   );</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Note, internally, <code>rtos_getNoTotalTaskFailure</code> always is the sum of counts of
-all exception kinds. However, there&#8217;s no API concept to deliver all counts
-coherently to a user task and so this invariant won&#8217;t hold for queried counts.</p>
+<p>In typical application design, exceptions will really be exceptional&#8201;&#8212;&#8201;they must not occur and any count other than zero will point to a serious
+programming error in your software. Nonetheless, there&#8217;s an exception from
+the last statement: If your operating system makes use of time budgets for
+user tasks than it may be a matter of getting occasional time-out
+exceptions because of temporary high system load.</p>
+</div>
+<div class="paragraph">
+<p>Note, internally, <a href="#secApiTaskFailure">rtos_getNoTotalTaskFailure()</a>
+always is the sum of counts of all exception kinds. However, there&#8217;s no
+API concept to deliver all counts coherently to a user task and so this
+invariant won&#8217;t hold for queried counts.</p>
 </div>
 <div class="paragraph">
 <p>The differentiated kinds of exceptions are enumerated and documented in
 the header file <code>rtos.h</code>.</p>
 </div>
 <div class="paragraph">
-<p>The API can be called from OS and user tasks.</p>
+<p>Both services can be used by OS and user tasks.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_process_state">8.4.5. Process state</h4>
+<h4 id="secApiStackSpace">8.8.3. Stack space</h4>
 <div class="paragraph">
-<p>This API is the counterpart of <code>rtos_suspendProcess</code>. An OS or user task
-can query if a particular process has been suspended or not.</p>
+<p>The function computes how many bytes of the stack area of a particular
+process are still unused on the core which this call is made on.</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>#include "rtos.h"
-bool rtos_isProcessSuspended(uint32_t PID);</pre>
+unsigned int rtos_getStackReserve(unsigned int PID);</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Note, the computation is expensive and should be done only in a task of
+low priority.</p>
+</div>
+<div class="paragraph">
+<p>The service can be used by OS and user tasks.</p>
+</div>
+<div class="paragraph">
+<p>The service may be used on a core running a bare-metal application, i.e. a
+core which doesn&#8217;t start the safe-RTOS kernel. In this case, argument
+<em>PID</em> is necessarily zero, the ID of the OS process.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_average_cpu_load">8.4.6. Average CPU load</h4>
+<h4 id="secApiCpuLoad">8.8.4. Average CPU load</h4>
 <div class="paragraph">
-<p>A function is available to estimate the current system load.</p>
+<p>A function is available to estimate the current system load on the core
+which this call is made on.</p>
 </div>
 <div class="paragraph">
 <p>Note, this function doesn&#8217;t really belong to the RTOS but it can be
@@ -2917,15 +3335,15 @@ most of the idle time for load computation.</p>
 <div class="literalblock">
 <div class="content">
 <pre>#include "gsl_systemLoad.h"
-unsigned int gsl_getSystemLoad(void);</pre>
+unsigned int gsl_osGetSystemLoad(void);</pre>
 </div>
 </div>
 <div class="paragraph">
 <p>The load is returned in tens of percent.</p>
 </div>
 <div class="paragraph">
-<p>The function could be called from OS and user tasks, but the only
-meaningful use case is calling it from the OS idle task.</p>
+<p>The function may be called from any OS task, but the only meaningful use
+case is calling it from the OS idle task.</p>
 </div>
 </div>
 </div>
@@ -2934,6 +3352,19 @@ meaningful use case is calling it from the OS idle task.</p>
 <div class="sect1">
 <h2 id="secMemoryLayout">9. Memory layout</h2>
 <div class="sectionbody">
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Text down here has not yet been revised with respect to MPC5748G
+derivative.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>The RTOS comes along with a memory layout, that organizes the memories of
 the software (kernel, OS and application) in a way, which is essential for
@@ -3075,7 +3506,7 @@ given process as long as they appear between the two labels
 <p>The actual size and address location of the areas are communicated to the
 C source code by means of linker defined symbols. By convention, all of
 these symbols begin with <code>ld_</code>. In the MPU configuration code (file
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/code/system/RTOS/rtos_systemMemoryProtectionUnit.c" target="_blank" rel="noopener">rtos_systemMemoryProtectionUnit.c</a>),
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/RTOS/rtos_systemMemoryProtectionUnit.c" target="_blank" rel="noopener">rtos_systemMemoryProtectionUnit.c</a>),
 you can find the initialization of three memory area descriptors, which
 are based on the address boundaries:</p>
 </div>
@@ -3144,7 +3575,7 @@ static uint16_t DATA_P4(myVariable) = 99;</pre>
 <p>Similar macros are defined for uninitialized data objects or to place a
 variable in the SDA or SDA2 RAM or accordingly in the other processes'
 memory areas (including OS memory). They are defined in file
-<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/code/system/startup/typ_types.h" target="_blank" rel="noopener">typ_types.h</a>,
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/startup/typ_types.h" target="_blank" rel="noopener">typ_types.h</a>,
 please #include this header file.</p>
 </div>
 <div class="paragraph">
@@ -3486,7 +3917,7 @@ a terminal program on the development computer is identical to
 <a href="#secAppInitial">Section 10.1</a>.</p>
 </div>
 <div class="paragraph">
-<p>The process related API is used by the controlling tasks to halt software
+<p>The process related API is used by the controlling task to halt software
 execution if any deviation from the expectations should be recognized -
 which must of course never happen. The situation would be observable even
 without connected terminal as the LED stops blinking.</p>
@@ -3579,7 +4010,7 @@ alive counters. So it&#8217;s not only the time spent in actual kernel
 functions.</p>
 </div>
 <div class="paragraph">
-<p>The reported value has not particular meaning on an absolute scale but it
+<p>The reported value has no particular meaning on an absolute scale but it
 can be useful to compare different revisions or variants of the RTOS, like
 with/without safety support or HW versus SW scheduler. It may also be
 useful to compare with other RTOSs, if they offer a similar API.</p>
@@ -3613,12 +4044,15 @@ a terminal program on the development computer is identical to
 <a href="#_footnoteref_2">2</a>. It would be a considerable design decision to implement the safety task in turn as a callback from a (regular timer) ISR of even higher priority to overcome this problem.
 </div>
 <div class="footnote" id="_footnotedef_3">
-<a href="#_footnoteref_3">3</a>. It may look like an inconsistent API design if all associated tasks receive the same value <code>taskParam</code> from the triggering event. The service <em>rtos_triggerEvent()</em> could easily offer an API, which provides an individual value to each associated task. The only reason not to do so is the additional overhead in combination with the very few imaginable use cases. In most cases an explicitly triggered event will have just one associated task; events with more than one task will mostly be regular timer tasks, which make rarely use of the task parameter.
+<a href="#_footnoteref_3">3</a>. It may look like an inconsistent API design if all associated tasks receive the same value <code>taskParam</code> from the triggering event. The service <em>rtos_triggerEvent</em>() could easily offer an API, which provides an individual value to each associated task. The only reason not to do so is the additional overhead in combination with the very few imaginable use cases. In most cases an explicitly triggered event will have just one associated task; events with more than one task will mostly be regular timer tasks, which make rarely use of the task parameter.
+</div>
+<div class="footnote" id="_footnotedef_4">
+<a href="#_footnoteref_4">4</a>. Tasks belonging to the given process but running on another core are not included. Core-to-core communication can be applied to collect all of this information.
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-04-20 21:09:36 +0200
+Last updated 2020-08-24 23:01:27 +0200
 </div>
 </div>
 </body>
