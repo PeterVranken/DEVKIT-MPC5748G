@@ -2046,23 +2046,21 @@ case is calling it from the OS idle task.
 [[secMemoryLayout]]
 == Memory layout
 
-CAUTION: Text down here has not yet been revised with respect to MPC5748G
-derivative.
-
 The RTOS comes along with a memory layout, that organizes the memories of
 the software (kernel, OS and application) in a way, which is essential for
-the safety concept and compatible with the simple static use of the MPU.
+the safety concept and compatible with the simple static use of the two
+MPUs.
 
 The complete address space, we have to control, is depicted in the left
 part of <<figMemMap>>. With respect to flash ROM and address space of the
 peripherals, this part of the image is already detailed enough for the
 further; the used flash ROM and the entire peripheral space are memory
 chunks, which are not further divided and which are controlled with one
-memory area descriptor in the MPU each.
+memory area descriptor each in the first MPU (device _SMPU_0_).
 
 [[figMemMap]]
-.Memory Map of MPC5643L with safe-RTOS
-image::manual_resources/memoryMap.svg[Memory Map of MPC5643L with safe-RTOS, pdfwidth=90%, width=90%, align="center"]
+.Memory Map of MPC5748G with safe-RTOS
+image::manual_resources/memoryMap.svg[Memory Map of MPC5748G with safe-RTOS, pdfwidth=90%, width=90%, align="center"]
 
 With respect to RAM, the chosen memory map ensures that all the memories,
 which are owned by a process, form exactly three solid memory areas in the
@@ -2073,16 +2071,37 @@ all the other, normal data. This is depicted in the right part of
 another inside these areas.
 
 The three areas of a process correspond to three memory area descriptors
-in the MPU; the sixteen available descriptors allow having up to four user
-processes together with the descriptors for ROM, operating system RAM,
-shared RAM and peripherals. The sixteen memory areas specified in the MPU
-are shown as dark blue fields in both parts of <<figMemMap>>.
+in the second MPU (device _SMPU_1_).
 
-Note that the OS process doesn't have the three areas. There are no access
-restrictions for this process and it uses a single memory area descriptor
-to access all of the used RAM space.
+Two additional memory area descriptors are applied to grant write access
+to all used RAM to the operating system process and read access to all
+used RAM for everybody. These area descriptors are used at the same time
+to declare one portion of the RAM as cached and the other one as
+uncached.
+
+An additional memory area descriptor grants write access to all user
+processes. This area is meant for process-to-process communication. In
+order to make this work regardless on which core a process's task is
+running, the area has been laid into the uncached RAM.
+
+The two areas, which spawn the entire used RAM, will often overlap with
+one of the three process-related or the shared memory area. The internal
+priority rules of the MPU device ensure that the write access rights for
+the given process are added and that the cache on/off decision is
+respected.
+
+The sixteen available descriptors allow having up to four user processes
+together with the three additional descriptors. The fifteen memory areas,
+which are configured in _SMPU_1_ are shown as dark blue fields in the
+right part of <<figMemMap>> and in the middle of its left part.
+
+The remaining two dark blue fields in the left part of the figure relate
+to the area descriptors for ROM and peripherals in _SMPU_0_.
 
 === Linker script
+
+CAUTION: Text down here has not yet been revised with respect to MPC5748G
+derivative.
 
 The build scripts, which are part of the repository, contain a linker
 script that implements the memory map from <<figMemMap>>. It redirects the

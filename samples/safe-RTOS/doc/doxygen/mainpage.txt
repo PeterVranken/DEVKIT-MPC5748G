@@ -1,8 +1,8 @@
-/*! @mainpage safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L
+/*! @mainpage safe-RTOS - A simple RTOS with safety support for MPC5748G
 
 @section secIntro Introduction
 
-safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L
+safe-RTOS - A simple RTOS with safety support for MPC5748G
 
 This is not the manual. The purpose of this documentation is to be a kind
 of API browser to support the implementation of the software, which is
@@ -11,7 +11,10 @@ functions of the RTOS and the applied data
 types. Use it as a reference book while working on your embedding
 software.
 
+Caution, Doxygen doesn't scan assembly files and parts of the required
+information may be missing.
+
 For everything else, please refer to the <a
-href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE/">safe-RTOS (VLE) GitHub project</a>.
+href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/">safe-RTOS GitHub project</a>.
 
 */
