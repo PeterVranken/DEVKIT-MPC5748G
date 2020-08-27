@@ -2098,47 +2098,74 @@ right part of <<figMemMap>> and in the middle of its left part.
 The remaining two dark blue fields in the left part of the figure relate
 to the area descriptors for ROM and peripherals in _SMPU_0_.
 
-=== Linker script
+An important particularity is the decision to put the SDA2 sections into
+the uncached RAM. For normal SDA2 data objects this means a performance
+degradation. On the other hand, having one of the three memory chunks of a
+process in uncached RAM supports in-process communication from
+core-to-core. Tasks on different cores, which belong to the same process
+can use simple shared-memory patterns for communication purpose.footnote:[
+  If the application design doesn't make use of processes with tasks on
+more than one core then it'll be likely better to move the SDA2 chunks to
+cached RAM. A small change of the linker script would suffice.]
 
-CAUTION: Text down here has not yet been revised with respect to MPC5748G
-derivative.
+
+=== Linker script
 
 The build scripts, which are part of the repository, contain a linker
 script that implements the memory map from <<figMemMap>>. It redirects the
 data objects and code snippets from all the compilation units into the
 aimed location in this map. Moreover, it communicates the actual area
 address and size information by means of linker defined symbols to the
-source ode of the MPU driver, so that it can configure the MPU
+source code of the MPU driver, so that it can configure the MPUs
 accordingly.
 
 An excerpt from the linker script demonstrates, how input section filters
 are used to form the three memory areas of a process. It doesn't matter,
 which or how many input sections are mapped into such an area, you may add
 more of them. Let's have a look at the definition of the memory area for
-normally addressed RAM data owned by process 4:
+normally addressed data objects in RAM, owned by process 4:
 
 -------
-    /* Data sections for process 4. */
-    . = ALIGN(32);
+.data.P4 : ALIGN(16)
+{
+    /* Data sections for process P4. */
+    . = ALIGN(16);
     ld_dataP4Start = ABSOLUTE(.);
     *_P4_*.o(.data)
     *_P4_*.o(.data.*)
     *(.data.P4)
     *(.data.P4.*)
+
+} >memData AT>memFlash
+
+.bss.P4 (NOLOAD) : ALIGN(16)
+{
     *_P4_*.o(.bss)
     *_P4_*.o(.bss.*)
     *(.bss.P4)
     *(.bss.P4.*)
-    
-    /* Stack of process 4. */
+
+    /* Stacks of process P4, one for each core . */
     . = ALIGN(8); /* Stacks need to be 8 Byte aligned.  */
-    ld_stackStartP4 = ABSOLUTE(.);
-    . += ld_stackSizeP4;
-    . = ALIGN(32);
-    ld_stackEndP4 = ABSOLUTE(.);
+    ld_stackStartP4Core2 = ABSOLUTE(.);
+    . += ld_stackSizeP4Core2;
+    . = ALIGN(8);
+    ld_stackEndP4Core2 = ABSOLUTE(.);
+
+    ld_stackStartP4Core1 = ABSOLUTE(.);
+    . += ld_stackSizeP4Core1;
+    . = ALIGN(8);
+    ld_stackEndP4Core1 = ABSOLUTE(.);
+
+    ld_stackStartP4Core0 = ABSOLUTE(.);
+    . += ld_stackSizeP4Core0;
+    . = ALIGN(8);
+    ld_stackEndP4Core0 = ABSOLUTE(.);
     
-    . = ALIGN(32);
+    . = ALIGN(16);
     ld_dataP4End = ABSOLUTE(.);
+
+} >memData
 -------
 
 The shown, pre-defined filters put all input sections with initialized and
@@ -2152,37 +2179,93 @@ _ld_dataP4Start_ and _ld_dataP4End_ and which are globally visible:
   _.data.*_, _.bss_, _.bss.*_), if they come from a compilation unit with a name
   containing _&#x5f;P4&#x5f;_
 * Stack memory for process 4 is placed here, too, by moving the current address
-  (`. += ld_stackSizeP4`) 
+  (`. += ld_stackSizeP4CoreN`) 
 
 You may add additional input section filters to assign memory to the
 given process as long as they appear between the two labels
 _ld_dataP4Start_ and _ld_dataP4End_.
 
-Similar constructs can be found for SDA and SDA2 data:
+A similar construct can be found for SDA data. A major difference is the
+placement of input section filters for both, initialized and uninitialized
+data, into one and the same output section. This is a compromise between
+different contradictory requirements:
+
+* The linker doesn't support output section names like _.sdata.P1_ or
+  _.sbss.P4_. If the output section has a name other than _.sdata_ or
+  _.sbss_ then the linker will no longer recognize is as small data area.
+  Hence, it will reject relocating code, which tries to access data
+  objects that are placed in that output section with short instructions
+* We want to place all process's short data in one contiguous chunk of
+  memory in order to stick to a total of no more of three chunks per
+  process (limitation of number of memory area descriptors in MPU)
+
+The drawback of placing initialized and uninitialized data into the same
+output section is the waste of ROM. Even for all uninitialized RAM, we
+will end up with a mirror in ROM. Looking at the maximum possible size of
+the small data area, this looks like a tolerable problem.
 
 -------
-    /* Small data sections for process 4. */
-    . = ALIGN(32);
+.sdata : ALIGN(16)
+{
+    (..)
+    /* Small data sections for process P4. */
+    . = ALIGN(16);
     ld_sdaP4Start = ABSOLUTE(.);
+
     *_P4_*.o(.sdata)
-    (...)
+    *_P4_*.o(.sdata.*)
+    *(.sdata.P4)
+    *(.sdata.P4.*)
+
+    *_P4_*.o(.sbss)
+    *_P4_*.o(.sbss.*)
+    *(.sbss.P4)
     *(.sbss.P4.*)
-    . = ALIGN(32);
+
+    . = ALIGN(16);
     ld_sdaP4End = ABSOLUTE(.);
-    
-    /* Small data 2 sections for process 4. */
-    . = ALIGN(32);
-    ld_sda2P4Start = ABSOLUTE(.);
-    *_P4_*.o(.sdata2)
-    (...)
-    *(.sbss2.P4.*)
-    . = ALIGN(32);
-    ld_sda2P4End = ABSOLUTE(.);
+    (..)
+
+} >memData AT>memFlash
 -------
 
-The actual size and address location of the areas are communicated to the
-C source code by means of linker defined symbols. By convention, all of
-these symbols begin with `ld_`. In the MPU configuration code (file
+SDA2 data is handled quite similar to SDA, with one noticeable difference:
+We have input filters for data objects to be placed in process owned
+uncached RAM. The use case are data objects that can be read and written
+from tasks belonging to the same process but running on different cores.
+
+-------
+.sdata2 : ALIGN(16)
+{
+    (..)
+    /* Small data sections for process P4. */
+    . = ALIGN(16);
+    ld_sda2P4Start = ABSOLUTE(.);
+
+    *_P4_*.o(.sdata2)
+    *_P4_*.o(.sdata2.*)
+    *(.sdata2.P4)
+    *(.sdata2.P4.*)
+
+    *_P4_*.o(.sbss2)
+    *_P4_*.o(.sbss2.*)
+    *(.sbss2.P4)
+    *(.sbss2.P4.*)
+
+    *(.uncached.P4)   /* Uncached data for core-to-core in-process */
+    *(.uncached.P4.*) /* communication */
+
+    . = ALIGN(16);
+    ld_sda2P4End = ABSOLUTE(.);
+    (..)
+
+} >memData AT>memFlash
+-------
+
+The actual size and address location of all the memory areas are
+communicated to the C source code by means of linker defined symbols. By
+convention, all of these symbols begin with `ld_`. In the MPU
+configuration code (file
 https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/RTOS/rtos_systemMemoryProtectionUnit.c[rtos_systemMemoryProtectionUnit.c^]),
 you can find the initialization of three memory area descriptors, which
 are based on the address boundaries:
@@ -2191,8 +2274,8 @@ are based on the address boundaries:
 * [_ld_sdaP4Start_, _ld_sdaP4End_-1]
 * [_ld_sda2P4Start_, _ld_sda2P4End_-1]
 
-The frequently appearing statements `. = ALIGN(32);` are required for the
-MPU, it supports an address resolution of 5 Bit.
+The frequently appearing statements `. = ALIGN(16);` are required for the
+MPU, it supports an address resolution of 4 Bit.
 
 The same constructs are of course found for the other processes, too.
 
@@ -2218,7 +2301,7 @@ double-check proper locating of data objects.
 
 The type decoration makes a variable definition somewhat bulky,
 particularly when using the section name with contained variable name.
-Therefore the RTOS offers some convenience macros to hide it. Consider
+Therefore safe-RTOS offers some convenience macros to hide it. Consider
 typing: 
 
     #include "typ_types.h"
@@ -2229,7 +2312,7 @@ instead of the previous example. Both are equivalent.
 Similar macros are defined for uninitialized data objects or to place a
 variable in the SDA or SDA2 RAM or accordingly in the other processes'
 memory areas (including OS memory). They are defined in file
-https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/startup/typ_types.h[typ_types.h^],
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/startup/typ_types.h[typ_types.h^];
 please #include this header file.
 
 If the macros are applied to arrays then the array index(es) are placed
@@ -2243,14 +2326,19 @@ A function pointer definition could look like this:
 
     static uint8_t (* SBSS_P2(myFctPtr))(uint16_t);
 
-A data object, which should be changeable by all processes, needs to be
-located in the shared RAM area:
+A process owned data object, which should be changeable from more than one
+core, needs to be located in the uncached RAM area of that process:
 
-    uint32_t BSS_SHARED(mySharedDataObj);
+    uint32_t UNCACHED_P2(myP2DataObjAccessedFromSeveralCores);
+
+A data object, which should be changeable by all processes and from any
+core, needs to be located in the shared, uncached RAM area:
+
+    uint32_t SHARED(myDataObjSharedBetweenCoresAndProcesses);
 
 CAUTION: Normally, the type decoration is required only for the object
 definition, but rarely you will need to place the same at a publicly
-visible declaration in the header file, too. See next paragraph, why.
+visible declaration in the header file, too. See next paragraphs, why.
 
 Having the type decoration twice -- as usual in the data object definition
 but also in the object's public declaration in a header file -- may
@@ -2267,8 +2355,15 @@ short-addressing-{zwsp}mode-instructions in the object file of that other
 source file.
 
 Note, there's no support for shared objects located in small data areas.
-Therefore, the sketched situation will mainly occur with shared data
-objects.
+This relates to shared (macro _SHARED()_) between cores and processes but
+also to owned by one process but accessed from different cores (marcos
+_UNCACHED_Pi()_). Therefore, the sketched situation will mainly occur with
+such shared data objects.footnote:[
+  Seeing that our concept anyway makes the use of explicit type decorations
+at the data definitions omnipresent in the source code, it may be
+considerable to turn the internal compiler rule off (a single command line
+switch) and to let it assume all data objects be normally addressed by
+default.]
 
 TIP: If you write your first code samples and use these macros the first
 time then you are strongly encouraged to inspect the map file after the
@@ -2277,9 +2372,9 @@ objects really go into the memory area of the aimed processes.
 
 If your code executes with exceptions then the most likely reason is a
 wrong or missing type decoration for a data object. A variable without
-decoration is basically fine, it goes into the memory area of process _P1_,
-but if that variable is written by any other process then an exception is
-raised.
+decoration is basically fine, it goes into the memory area of process
+_P1_, but if that variable is write-accessed by any other process then an
+exception is raised.
 
 Another typical reason for exceptions is the use of a static variable
 inside a function, which is called by different processes. This will fail
@@ -2288,9 +2383,14 @@ write-accessible by all calling processes. Maybe, the solution is the use
 of the shared memory area but this can easily break the safety concept.
 
 Note, automatic variables, which are placed on the stack, are not
-affected. Each process has its own stack in its own memory area.
+affected. Each process has its own stacks (one per core) in its own memory
+area.
 
+//xxx
 === Common access rules
+
+CAUTION: Text down here has not yet been revised with respect to MPC5748G
+derivative.
 
 The memory area descriptors are attributed with access rights for the
 different processes. The set of granted rights can be summarized in the
