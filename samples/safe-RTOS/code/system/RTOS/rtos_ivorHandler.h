@@ -28,6 +28,7 @@
 
 #ifdef __STDC_VERSION__
   /* Place #include statements here, which are only read by C source files. */
+# include "rtos.h"
 #endif
 
 #include "rtos.config.h"

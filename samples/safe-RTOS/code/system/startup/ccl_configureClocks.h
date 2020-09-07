@@ -32,6 +32,9 @@
  * Defines
  */
 
+/** The clock frequency of the external crystal oscillator. */
+#define CCL_XTAL_CLK    40000000u
+
 /** The core clock rate PHI_0 in Hz. See MCU reference manual, section 9.9.1, Figure
     9-16, p. 223f, and 9.9.1.2. */
 #define CCL_PHI_0_CLK   160000000u

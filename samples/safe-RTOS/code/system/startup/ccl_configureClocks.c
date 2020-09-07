@@ -185,7 +185,7 @@ void ccl_configureClocks(void)
     /* Some preprocessor check will help to keep the static definitions in the header file
        consistent with the actual configuration made here. */
 #if CCL_CORE_CLK != 160000000u  ||  CCL_CORE_CLK != CCL_PHI_0_CLK \
-    ||  CCL_PHI_1_CLK != 80000000u
+    ||  CCL_PHI_1_CLK != 80000000u  ||  CCL_XTAL_CLK != 40000000u
 # error Inconsistencies found between public header file and actual clock configuration
 #endif
 
@@ -222,7 +222,8 @@ void ccl_configureClocks(void)
        source, the PLL. */
     
     /* Select the system clock source in a read modify write access to register DRUN_MC. */
-    MC_ME->DRUN_MC = MC_ME->DRUN_MC
+/// @todo Wrong macro used. However identically defined. Use MC_ME_DRUN_MC_FXOSCON, should be binary same
+    MC_ME->DRUN_MC = MC_ME->DRUN_MC 
                      & ~MC_ME_GS_S_SYSCLK_MASK
                      | MC_ME_GS_S_SYSCLK(2u /* clock source is PLL, PHI_0 */);
 
@@ -283,10 +284,11 @@ void ccl_configureClocks(void)
     MC_CGM->AC9_SC = MC_CGM_AC9_SC_SELCTL(0u /* 0: FS80, 1: FXOSC */);
 
     /* The peripherals are clocked in all RUN, DRUN and SAFE mode but not in RESET. See RM,
-       38.3.21. Enabling the peripheral clocks in run configuration 0 means that no
-       peripheral-specific clock enabling needs to be done later - after reset all
-       peripherals refer by default to run configuration 0 (out of eight available
-       configurations). */
+       38.3.21. The reset value of all registers MC_ME_PCTLn is zero, i.e. they select run
+       configuration and low poser configuration 0 by default. Enabling the peripheral
+       clocks in run configuration 0 means that no peripheral-specific clock enabling needs
+       to be done later - after reset all peripherals refer by default to run configuration
+       0 (out of eight available configurations). */
     MC_ME->RUN_PC[0] = 0xfcu;
 
     /* Changes take effect after mode transition. See RM, 38.3.2. */

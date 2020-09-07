@@ -124,9 +124,9 @@
  */
 
 /**
- * Configure and initialize the memory protection unit MPU. The configuration is static; a
- * set of regions suitable for the RTOS (and its project dependent configuration) is
- * defined and then the unit is enabled.\n
+ * Configure and initialize the memory protection units SMPU_0 and SMPU_1. The
+ * configuration is static; a set of regions suitable for the RTOS (and its project
+ * dependent configuration) is defined and then the unit is enabled.\n
  *   See module description for more details.
  *   @remark
  * The processes are shared between the cores and, as a consequence, one static MPU
@@ -136,7 +136,6 @@
  */
 void rtos_osInitMPU(void)
 {
-    /// @todo See rtos_checkUserCodeWritePtr() in this module and rtos_checkUserCodeReadPtr() in rtos.h, too
     /* This function must not be used repeatedly during system initialization. See RM
        21.3.1, p. 491: GVLD should still be in reset state, SMPU disabled. */
     assert((SMPU_0->CES0 & SMPU_CES0_GVLD_MASK) == 0

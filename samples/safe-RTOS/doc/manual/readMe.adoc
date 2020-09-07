@@ -2386,11 +2386,7 @@ Note, automatic variables, which are placed on the stack, are not
 affected. Each process has its own stacks (one per core) in its own memory
 area.
 
-//xxx
 === Common access rules
-
-CAUTION: Text down here has not yet been revised with respect to MPC5748G
-derivative.
 
 The memory area descriptors are attributed with access rights for the
 different processes. The set of granted rights can be summarized in the
@@ -2409,8 +2405,26 @@ following rules:
 * The kernel process has data read- and write access to the I/O address
   space
 
-Any other access is forbidden and will yield an MMU and/or an MPU
-exception.
+Any other access is forbidden and will yield an MPU exception.
+
+=== Common cache rules
+
+The memory area descriptors control the use of the caches. The
+configuration can be summarized in the following rules:
+
+* All instruction read access to the ROM is cached
+* All read access to normally addressed data objects and to SDA data objects
+  are cached
+* All read access to SDA2 data objects is uncached
+* All read access to shared data objects (all processes, all cores, macro
+  _SHARED()_) is uncached
+* All read access to user process-wide shared data objects (all tasks of given
+  process, regardless on which core) is uncached
+* All write access to cached data objects updates the cache
+* All write access is buffered in the eight store buffers. Control returns
+  to the CPU after writing to the buffer. The buffers are immediately
+  transfered to the main memory, but with delay and asynchronously to and
+  in parallel to the execution of the subsequent CPU instructions
 
 === Legacy code
 
@@ -2432,7 +2446,8 @@ privileged process, e.g. _P2_, then you have two choices:
   areas of process _P2_.
 
 Note, automatic variables, which are placed on the stack, are not
-affected. Each process has its own stack in its own memory area.
+affected. Each process has its own stacks (one per core) in its own memory
+area.
 
 === Legacy build environments
 
@@ -2443,7 +2458,7 @@ script and the source code (MPU configuration and ownership of data
 objects) needs to be adopted by the legacy scripts. Which is not
 impossible but it shall be difficult. The existing build scripts will have
 their own requirements concerning partitioning the memory map and
-conflicts with the RTOS' concept of having three solid RAM areas per
+conflicts with safe-RTOS' concept of having three solid RAM areas per
 process can easily arise. Careful analysis and deep understanding of the
 existing linker script will be required to see if a migration is possible.
 No general recipe can be given.
@@ -2470,9 +2485,9 @@ processes, too. Regardless, this is not recommended for these reasons:
   in a multi-threading environment. We use the original, pre-compiled
   binaries, which have not been compiled considering the particularities
   of our multi-threading environment. This makes its concurrent use from
-  more than one thread potentially unsafe -- which may be tolerated for the
-  functional code in _P1_ but surely not for higher privileged safety
-  processes
+  more than one thread, and even more from different cores, potentially
+  unsafe -- which may be tolerated for the functional code in _P1_ but
+  surely not for higher privileged safety processes
 
 Summarizing, a reasonable safety requirement would be allowing the use of
 the C library in process _P1_ (as a matter of experience, we never faced a
@@ -2480,6 +2495,9 @@ problem with concurrent use) but not allowing its use in operating system
 code or in a safety process.
 
 == The sample applications
+
+CAUTION: Text down here has not yet been revised with respect to MPC5748G
+derivative.
 
 The RTOS is a set of services, which permit the implementation of an
 operating system that runs some application code. It is not a

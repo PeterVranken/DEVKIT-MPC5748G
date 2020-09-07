@@ -2,7 +2,67 @@
 #define RTOS_INCLUDED
 /**
  * @file rtos.h
- * Definition of global interface of module rtos.c
+ *
+ * Public interface of safe-RTOS. The functions, which are published here as prototypes or
+ * which are implemented here as inline functions, are intended for use. Most typical, an
+ * operating system (sometimes called Basic Software) will be built on this interface.
+ *
+ * safe-RTOS application interface:
+ *
+ *   System configuration and initialization:
+ *
+ *     rtos_osCreateEvent
+ *     rtos_osRegisterInitTask
+ *     rtos_osRegisterUserTask
+ *     rtos_osRegisterOSTask
+ *     rtos_osInitINTCInterruptController
+ *     rtos_osRegisterInterruptHandler
+ *     rtos_osGrantPermissionRunTask
+ *     rtos_osGrantPermissionSuspendProcess
+ *     rtos_osInitKernel
+ *   
+ *   Control tasks and processes:
+ *
+ *     rtos_osTriggerEvent
+ *     rtos_triggerEvent (inline)
+ *     rtos_osRunTask (inline)
+ *     rtos_runTask (inline)
+ *     rtos_terminateTask (inline)
+ *     rtos_osSuspendProcess
+ *     rtos_suspendProcess (inline)
+ * 
+ *   Critical sections:
+ *
+ *     rtos_osSuspendAllInterrupts (inline)
+ *     rtos_osResumeAllInterrupts (inline)
+ *     rtos_osEnterCriticalSection (inline)
+ *     rtos_osLeaveCriticalSection (inline)
+ *     rtos_osSuspendAllTasksByPriority
+ *     rtos_osResumeAllTasksByPriority
+ *     rtos_suspendAllTasksByPriority
+ *     rtos_resumeAllTasksByPriority
+ * 
+ *   System call interface: 
+ *
+ *     rtos_systemCall
+ *     rtos_osSystemCallBadArgument
+ *     rtos_checkUserCodeReadPtr (inline)
+ *     rtos_checkUserCodeWritePtr
+ *
+ *   Query system state:
+ *
+ *     rtos_osGetIdxCore (inline)
+ *     rtos_getIdxCore
+ *     rtos_getCoreStatusRegister
+ *     rtos_osGetAllInterruptsSuspended (inline)
+ *     rtos_isProcessSuspended
+ * 
+ *   Diagnostic interface:
+ *
+ *     rtos_getNoActivationLoss
+ *     rtos_getNoTotalTaskFailure
+ *     rtos_getNoTaskFailure
+ *     rtos_getStackReserve
  *
  * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -18,20 +78,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-/* Module inline interface
- *   rtos_osGetIdxCore
- *   rtos_osRunTask
- *   rtos_runTask
- *   rtos_terminateTask
- *   rtos_osSuspendAllInterrupts
- *   rtos_osResumeAllInterrupts
- *   rtos_osGetAllInterruptsSuspended
- *   rtos_osEnterCriticalSection
- *   rtos_osLeaveCriticalSection
- *   rtos_triggerEvent
- *   rtos_checkUserCodeReadPtr
- *   rtos_suspendProcess
  */
 
 /*
@@ -345,9 +391,9 @@ rtos_errorCode_t rtos_osInitKernel(void);
 /** Software triggered task activation. Can be called from OS context (incl. interrupts). */
 bool rtos_osTriggerEvent(unsigned int idEvent, uintptr_t taskParam);
 
-/** Enter critcal section; partially suspend task scheduling. */
+/** Enter critical section; partially suspend task scheduling. */
 uint32_t rtos_osSuspendAllTasksByPriority(uint32_t suspendUpToThisTaskPriority);
- 
+
 /** Leave critical section; resume scheduling of tasks. */
 void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
 
@@ -414,7 +460,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  * OS code will lead to a crash.
  */
 uint32_t rtos_suspendAllTasksByPriority(uint32_t suspendUpToThisPriority);
- 
+
 
 /**
  * This function is called to end a critical section of code, which requires mutual
@@ -527,6 +573,32 @@ void rtos_osSuspendProcess(uint32_t PID);
 
 /** Kernel function to read the suspend status of a process. */
 bool rtos_isProcessSuspended(uint32_t PID);
+
+/**
+ *   @rtos_getIdxCore
+ * This function returns the contents of CPU read-only register PIR.
+ *   @return
+ * Get the index of the core the calling code is running on. The range is 0..2, meaning
+ * Z4A, Z4B, Z2, respectively.
+ *   @remark
+ * This function may be called from all contexts. However, OS contexts shouldn't because of
+ * the performance penalty. They should only use the intrinsic rtos_osGetIdxCore() instead.
+ */
+unsigned int rtos_getIdxCore(void);
+
+
+/**
+ *   @func rtos_getCoreStatusRegister
+ * Get the value of the msr. This is an entry point to C code, which can be called from
+ * supervisor and user mode.
+ *   @return
+ * Get the current contents of CPU register MSR on the code executing core.
+ *   @remark
+ * This function can be called from OS and user code. OS code should however better use an
+ * intrinsic to read the MSR and in order to save the function call overhead.
+ */
+uint32_t rtos_getCoreStatusRegister(void);
+
 
 
 /*

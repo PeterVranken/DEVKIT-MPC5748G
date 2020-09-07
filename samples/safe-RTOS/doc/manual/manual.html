@@ -559,9 +559,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_linker_script">9.1. Linker script</a></li>
 <li><a href="#_defining_data_objects">9.2. Defining data objects</a></li>
 <li><a href="#_common_access_rules">9.3. Common access rules</a></li>
-<li><a href="#_legacy_code">9.4. Legacy code</a></li>
-<li><a href="#_legacy_build_environments">9.5. Legacy build environments</a></li>
-<li><a href="#_the_c_library">9.6. The C library</a></li>
+<li><a href="#_common_cache_rules">9.4. Common cache rules</a></li>
+<li><a href="#_legacy_code">9.5. Legacy code</a></li>
+<li><a href="#_legacy_build_environments">9.6. Legacy build environments</a></li>
+<li><a href="#_the_c_library">9.7. The C library</a></li>
 </ul>
 </li>
 <li><a href="#_the_sample_applications">10. The sample applications</a>
@@ -3352,23 +3353,11 @@ case is calling it from the OS idle task.</p>
 <div class="sect1">
 <h2 id="secMemoryLayout">9. Memory layout</h2>
 <div class="sectionbody">
-<div class="admonitionblock caution">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-caution" title="Caution"></i>
-</td>
-<td class="content">
-Text down here has not yet been revised with respect to MPC5748G
-derivative.
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
 <p>The RTOS comes along with a memory layout, that organizes the memories of
 the software (kernel, OS and application) in a way, which is essential for
-the safety concept and compatible with the simple static use of the MPU.</p>
+the safety concept and compatible with the simple static use of the two
+MPUs.</p>
 </div>
 <div class="paragraph">
 <p>The complete address space, we have to control, is depicted in the left
@@ -3376,13 +3365,13 @@ part of <a href="#figMemMap">Figure 2</a>. With respect to flash ROM and address
 peripherals, this part of the image is already detailed enough for the
 further; the used flash ROM and the entire peripheral space are memory
 chunks, which are not further divided and which are controlled with one
-memory area descriptor in the MPU each.</p>
+memory area descriptor each in the first MPU (device <em>SMPU_0</em>).</p>
 </div>
 <div id="figMemMap" class="imageblock text-center">
 <div class="content">
-<img src="manual_resources/memoryMap.svg" alt="Memory Map of MPC5643L with safe-RTOS" width="90%">
+<img src="manual_resources/memoryMap.svg" alt="Memory Map of MPC5748G with safe-RTOS" width="90%">
 </div>
-<div class="title">Figure 2. Memory Map of MPC5643L with safe-RTOS</div>
+<div class="title">Figure 2. Memory Map of MPC5748G with safe-RTOS</div>
 </div>
 <div class="paragraph">
 <p>With respect to RAM, the chosen memory map ensures that all the memories,
@@ -3395,15 +3384,45 @@ another inside these areas.</p>
 </div>
 <div class="paragraph">
 <p>The three areas of a process correspond to three memory area descriptors
-in the MPU; the sixteen available descriptors allow having up to four user
-processes together with the descriptors for ROM, operating system RAM,
-shared RAM and peripherals. The sixteen memory areas specified in the MPU
-are shown as dark blue fields in both parts of <a href="#figMemMap">Figure 2</a>.</p>
+in the second MPU (device <em>SMPU_1</em>).</p>
 </div>
 <div class="paragraph">
-<p>Note that the OS process doesn&#8217;t have the three areas. There are no access
-restrictions for this process and it uses a single memory area descriptor
-to access all of the used RAM space.</p>
+<p>Two additional memory area descriptors are applied to grant write access
+to all used RAM to the operating system process and read access to all
+used RAM for everybody. These area descriptors are used at the same time
+to declare one portion of the RAM as cached and the other one as
+uncached.</p>
+</div>
+<div class="paragraph">
+<p>An additional memory area descriptor grants write access to all user
+processes. This area is meant for process-to-process communication. In
+order to make this work regardless on which core a process&#8217;s task is
+running, the area has been laid into the uncached RAM.</p>
+</div>
+<div class="paragraph">
+<p>The two areas, which spawn the entire used RAM, will often overlap with
+one of the three process-related or the shared memory area. The internal
+priority rules of the MPU device ensure that the write access rights for
+the given process are added and that the cache on/off decision is
+respected.</p>
+</div>
+<div class="paragraph">
+<p>The sixteen available descriptors allow having up to four user processes
+together with the three additional descriptors. The fifteen memory areas,
+which are configured in <em>SMPU_1</em> are shown as dark blue fields in the
+right part of <a href="#figMemMap">Figure 2</a> and in the middle of its left part.</p>
+</div>
+<div class="paragraph">
+<p>The remaining two dark blue fields in the left part of the figure relate
+to the area descriptors for ROM and peripherals in <em>SMPU_0</em>.</p>
+</div>
+<div class="paragraph">
+<p>An important particularity is the decision to put the SDA2 sections into
+the uncached RAM. For normal SDA2 data objects this means a performance
+degradation. On the other hand, having one of the three memory chunks of a
+process in uncached RAM supports in-process communication from
+core-to-core. Tasks on different cores, which belong to the same process
+can use simple shared-memory patterns for communication purpose.<sup class="footnote">[<a id="_footnoteref_5" class="footnote" href="#_footnotedef_5" title="View footnote.">5</a>]</sup></p>
 </div>
 <div class="sect2">
 <h3 id="_linker_script">9.1. Linker script</h3>
@@ -3413,7 +3432,7 @@ script that implements the memory map from <a href="#figMemMap">Figure 2</a>. It
 data objects and code snippets from all the compilation units into the
 aimed location in this map. Moreover, it communicates the actual area
 address and size information by means of linker defined symbols to the
-source ode of the MPU driver, so that it can configure the MPU
+source code of the MPU driver, so that it can configure the MPUs
 accordingly.</p>
 </div>
 <div class="paragraph">
@@ -3421,31 +3440,50 @@ accordingly.</p>
 are used to form the three memory areas of a process. It doesn&#8217;t matter,
 which or how many input sections are mapped into such an area, you may add
 more of them. Let&#8217;s have a look at the definition of the memory area for
-normally addressed RAM data owned by process 4:</p>
+normally addressed data objects in RAM, owned by process 4:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>    /* Data sections for process 4. */
-    . = ALIGN(32);
+<pre>.data.P4 : ALIGN(16)
+{
+    /* Data sections for process P4. */
+    . = ALIGN(16);
     ld_dataP4Start = ABSOLUTE(.);
     *_P4_*.o(.data)
     *_P4_*.o(.data.*)
     *(.data.P4)
     *(.data.P4.*)
+
+} &gt;memData AT&gt;memFlash
+
+.bss.P4 (NOLOAD) : ALIGN(16)
+{
     *_P4_*.o(.bss)
     *_P4_*.o(.bss.*)
     *(.bss.P4)
     *(.bss.P4.*)
 
-    /* Stack of process 4. */
+    /* Stacks of process P4, one for each core . */
     . = ALIGN(8); /* Stacks need to be 8 Byte aligned.  */
-    ld_stackStartP4 = ABSOLUTE(.);
-    . += ld_stackSizeP4;
-    . = ALIGN(32);
-    ld_stackEndP4 = ABSOLUTE(.);
+    ld_stackStartP4Core2 = ABSOLUTE(.);
+    . += ld_stackSizeP4Core2;
+    . = ALIGN(8);
+    ld_stackEndP4Core2 = ABSOLUTE(.);
 
-    . = ALIGN(32);
-    ld_dataP4End = ABSOLUTE(.);</pre>
+    ld_stackStartP4Core1 = ABSOLUTE(.);
+    . += ld_stackSizeP4Core1;
+    . = ALIGN(8);
+    ld_stackEndP4Core1 = ABSOLUTE(.);
+
+    ld_stackStartP4Core0 = ABSOLUTE(.);
+    . += ld_stackSizeP4Core0;
+    . = ALIGN(8);
+    ld_stackEndP4Core0 = ABSOLUTE(.);
+
+    . = ALIGN(16);
+    ld_dataP4End = ABSOLUTE(.);
+
+} &gt;memData</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3469,7 +3507,7 @@ containing <em>&#x5f;P4&#x5f;</em></p>
 </li>
 <li>
 <p>Stack memory for process 4 is placed here, too, by moving the current address
-(<code>. += ld_stackSizeP4</code>)</p>
+(<code>. += ld_stackSizeP4CoreN</code>)</p>
 </li>
 </ul>
 </div>
@@ -3479,33 +3517,99 @@ given process as long as they appear between the two labels
 <em>ld_dataP4Start</em> and <em>ld_dataP4End</em>.</p>
 </div>
 <div class="paragraph">
-<p>Similar constructs can be found for SDA and SDA2 data:</p>
+<p>A similar construct can be found for SDA data. A major difference is the
+placement of input section filters for both, initialized and uninitialized
+data, into one and the same output section. This is a compromise between
+different contradictory requirements:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The linker doesn&#8217;t support output section names like <em>.sdata.P1</em> or
+<em>.sbss.P4</em>. If the output section has a name other than <em>.sdata</em> or
+<em>.sbss</em> then the linker will no longer recognize is as small data area.
+Hence, it will reject relocating code, which tries to access data
+objects that are placed in that output section with short instructions</p>
+</li>
+<li>
+<p>We want to place all process&#8217;s short data in one contiguous chunk of
+memory in order to stick to a total of no more of three chunks per
+process (limitation of number of memory area descriptors in MPU)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The drawback of placing initialized and uninitialized data into the same
+output section is the waste of ROM. Even for all uninitialized RAM, we
+will end up with a mirror in ROM. Looking at the maximum possible size of
+the small data area, this looks like a tolerable problem.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>    /* Small data sections for process 4. */
-    . = ALIGN(32);
+<pre>.sdata : ALIGN(16)
+{
+    (..)
+    /* Small data sections for process P4. */
+    . = ALIGN(16);
     ld_sdaP4Start = ABSOLUTE(.);
-    *_P4_*.o(.sdata)
-    (...)
-    *(.sbss.P4.*)
-    . = ALIGN(32);
-    ld_sdaP4End = ABSOLUTE(.);
 
-    /* Small data 2 sections for process 4. */
-    . = ALIGN(32);
-    ld_sda2P4Start = ABSOLUTE(.);
-    *_P4_*.o(.sdata2)
-    (...)
-    *(.sbss2.P4.*)
-    . = ALIGN(32);
-    ld_sda2P4End = ABSOLUTE(.);</pre>
+    *_P4_*.o(.sdata)
+    *_P4_*.o(.sdata.*)
+    *(.sdata.P4)
+    *(.sdata.P4.*)
+
+    *_P4_*.o(.sbss)
+    *_P4_*.o(.sbss.*)
+    *(.sbss.P4)
+    *(.sbss.P4.*)
+
+    . = ALIGN(16);
+    ld_sdaP4End = ABSOLUTE(.);
+    (..)
+
+} &gt;memData AT&gt;memFlash</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The actual size and address location of the areas are communicated to the
-C source code by means of linker defined symbols. By convention, all of
-these symbols begin with <code>ld_</code>. In the MPU configuration code (file
+<p>SDA2 data is handled quite similar to SDA, with one noticeable difference:
+We have input filters for data objects to be placed in process owned
+uncached RAM. The use case are data objects that can be read and written
+from tasks belonging to the same process but running on different cores.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>.sdata2 : ALIGN(16)
+{
+    (..)
+    /* Small data sections for process P4. */
+    . = ALIGN(16);
+    ld_sda2P4Start = ABSOLUTE(.);
+
+    *_P4_*.o(.sdata2)
+    *_P4_*.o(.sdata2.*)
+    *(.sdata2.P4)
+    *(.sdata2.P4.*)
+
+    *_P4_*.o(.sbss2)
+    *_P4_*.o(.sbss2.*)
+    *(.sbss2.P4)
+    *(.sbss2.P4.*)
+
+    *(.uncached.P4)   /* Uncached data for core-to-core in-process */
+    *(.uncached.P4.*) /* communication */
+
+    . = ALIGN(16);
+    ld_sda2P4End = ABSOLUTE(.);
+    (..)
+
+} &gt;memData AT&gt;memFlash</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The actual size and address location of all the memory areas are
+communicated to the C source code by means of linker defined symbols. By
+convention, all of these symbols begin with <code>ld_</code>. In the MPU
+configuration code (file
 <a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/RTOS/rtos_systemMemoryProtectionUnit.c" target="_blank" rel="noopener">rtos_systemMemoryProtectionUnit.c</a>),
 you can find the initialization of three memory area descriptors, which
 are based on the address boundaries:</p>
@@ -3524,8 +3628,8 @@ are based on the address boundaries:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>The frequently appearing statements <code>. = ALIGN(32);</code> are required for the
-MPU, it supports an address resolution of 5 Bit.</p>
+<p>The frequently appearing statements <code>. = ALIGN(16);</code> are required for the
+MPU, it supports an address resolution of 4 Bit.</p>
 </div>
 <div class="paragraph">
 <p>The same constructs are of course found for the other processes, too.</p>
@@ -3559,7 +3663,7 @@ double-check proper locating of data objects.</p>
 <div class="paragraph">
 <p>The type decoration makes a variable definition somewhat bulky,
 particularly when using the section name with contained variable name.
-Therefore the RTOS offers some convenience macros to hide it. Consider
+Therefore safe-RTOS offers some convenience macros to hide it. Consider
 typing:</p>
 </div>
 <div class="literalblock">
@@ -3575,7 +3679,7 @@ static uint16_t DATA_P4(myVariable) = 99;</pre>
 <p>Similar macros are defined for uninitialized data objects or to place a
 variable in the SDA or SDA2 RAM or accordingly in the other processes'
 memory areas (including OS memory). They are defined in file
-<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/startup/typ_types.h" target="_blank" rel="noopener">typ_types.h</a>,
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/code/system/startup/typ_types.h" target="_blank" rel="noopener">typ_types.h</a>;
 please #include this header file.</p>
 </div>
 <div class="paragraph">
@@ -3598,12 +3702,21 @@ behind the closing parenthesis of the macro:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>A data object, which should be changeable by all processes, needs to be
-located in the shared RAM area:</p>
+<p>A process owned data object, which should be changeable from more than one
+core, needs to be located in the uncached RAM area of that process:</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>uint32_t BSS_SHARED(mySharedDataObj);</pre>
+<pre>uint32_t UNCACHED_P2(myP2DataObjAccessedFromSeveralCores);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A data object, which should be changeable by all processes and from any
+core, needs to be located in the shared, uncached RAM area:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>uint32_t SHARED(myDataObjSharedBetweenCoresAndProcesses);</pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -3615,7 +3728,7 @@ located in the shared RAM area:</p>
 <td class="content">
 Normally, the type decoration is required only for the object
 definition, but rarely you will need to place the same at a publicly
-visible declaration in the header file, too. See next paragraph, why.
+visible declaration in the header file, too. See next paragraphs, why.
 </td>
 </tr>
 </table>
@@ -3637,8 +3750,10 @@ source file.</p>
 </div>
 <div class="paragraph">
 <p>Note, there&#8217;s no support for shared objects located in small data areas.
-Therefore, the sketched situation will mainly occur with shared data
-objects.</p>
+This relates to shared (macro <em>SHARED()</em>) between cores and processes but
+also to owned by one process but accessed from different cores (marcos
+<em>UNCACHED_Pi()</em>). Therefore, the sketched situation will mainly occur with
+such shared data objects.<sup class="footnote">[<a id="_footnoteref_6" class="footnote" href="#_footnotedef_6" title="View footnote.">6</a>]</sup></p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -3658,9 +3773,9 @@ objects really go into the memory area of the aimed processes.
 <div class="paragraph">
 <p>If your code executes with exceptions then the most likely reason is a
 wrong or missing type decoration for a data object. A variable without
-decoration is basically fine, it goes into the memory area of process <em>P1</em>,
-but if that variable is written by any other process then an exception is
-raised.</p>
+decoration is basically fine, it goes into the memory area of process
+<em>P1</em>, but if that variable is write-accessed by any other process then an
+exception is raised.</p>
 </div>
 <div class="paragraph">
 <p>Another typical reason for exceptions is the use of a static variable
@@ -3671,7 +3786,8 @@ of the shared memory area but this can easily break the safety concept.</p>
 </div>
 <div class="paragraph">
 <p>Note, automatic variables, which are placed on the stack, are not
-affected. Each process has its own stack in its own memory area.</p>
+affected. Each process has its own stacks (one per core) in its own memory
+area.</p>
 </div>
 </div>
 <div class="sect2">
@@ -3710,12 +3826,49 @@ space</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Any other access is forbidden and will yield an MMU and/or an MPU
-exception.</p>
+<p>Any other access is forbidden and will yield an MPU exception.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_legacy_code">9.4. Legacy code</h3>
+<h3 id="_common_cache_rules">9.4. Common cache rules</h3>
+<div class="paragraph">
+<p>The memory area descriptors control the use of the caches. The
+configuration can be summarized in the following rules:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>All instruction read access to the ROM is cached</p>
+</li>
+<li>
+<p>All read access to normally addressed data objects and to SDA data objects
+are cached</p>
+</li>
+<li>
+<p>All read access to SDA2 data objects is uncached</p>
+</li>
+<li>
+<p>All read access to shared data objects (all processes, all cores, macro
+<em>SHARED()</em>) is uncached</p>
+</li>
+<li>
+<p>All read access to user process-wide shared data objects (all tasks of given
+process, regardless on which core) is uncached</p>
+</li>
+<li>
+<p>All write access to cached data objects updates the cache</p>
+</li>
+<li>
+<p>All write access is buffered in the eight store buffers. Control returns
+to the CPU after writing to the buffer. The buffers are immediately
+transfered to the main memory, but with delay and asynchronously to and
+in parallel to the execution of the subsequent CPU instructions</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_legacy_code">9.5. Legacy code</h3>
 <div class="paragraph">
 <p>The linker script routes all unspecified data objects into the memory
 areas of process <em>P1</em>. This process has the lowest privileges and is
@@ -3744,11 +3897,12 @@ areas of process <em>P2</em>.</p>
 </div>
 <div class="paragraph">
 <p>Note, automatic variables, which are placed on the stack, are not
-affected. Each process has its own stack in its own memory area.</p>
+affected. Each process has its own stacks (one per core) in its own memory
+area.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_legacy_build_environments">9.5. Legacy build environments</h3>
+<h3 id="_legacy_build_environments">9.6. Legacy build environments</h3>
 <div class="paragraph">
 <p>If there is some legacy application source code then there will likely be
 some legacy build scripts, too. The legacy build scripts can&#8217;t easily be
@@ -3757,14 +3911,14 @@ script and the source code (MPU configuration and ownership of data
 objects) needs to be adopted by the legacy scripts. Which is not
 impossible but it shall be difficult. The existing build scripts will have
 their own requirements concerning partitioning the memory map and
-conflicts with the RTOS' concept of having three solid RAM areas per
+conflicts with safe-RTOS' concept of having three solid RAM areas per
 process can easily arise. Careful analysis and deep understanding of the
 existing linker script will be required to see if a migration is possible.
 No general recipe can be given.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_the_c_library">9.6. The C library</h3>
+<h3 id="_the_c_library">9.7. The C library</h3>
 <div class="paragraph">
 <p>The C library places all its static data objects in the normal <em>data</em> and
 <em>bss</em> sections. Its source code does of course not make use of our macros
@@ -3793,9 +3947,9 @@ code, which should not be applied just like that from a safety process</p>
 in a multi-threading environment. We use the original, pre-compiled
 binaries, which have not been compiled considering the particularities
 of our multi-threading environment. This makes its concurrent use from
-more than one thread potentially unsafe&#8201;&#8212;&#8201;which may be tolerated for the
-functional code in <em>P1</em> but surely not for higher privileged safety
-processes</p>
+more than one thread, and even more from different cores, potentially
+unsafe&#8201;&#8212;&#8201;which may be tolerated for the functional code in <em>P1</em> but
+surely not for higher privileged safety processes</p>
 </li>
 </ul>
 </div>
@@ -3811,6 +3965,19 @@ code or in a safety process.</p>
 <div class="sect1">
 <h2 id="_the_sample_applications">10. The sample applications</h2>
 <div class="sectionbody">
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Text down here has not yet been revised with respect to MPC5748G
+derivative.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>The RTOS is a set of services, which permit the implementation of an
 operating system that runs some application code. It is not a
@@ -4049,10 +4216,16 @@ a terminal program on the development computer is identical to
 <div class="footnote" id="_footnotedef_4">
 <a href="#_footnoteref_4">4</a>. Tasks belonging to the given process but running on another core are not included. Core-to-core communication can be applied to collect all of this information.
 </div>
+<div class="footnote" id="_footnotedef_5">
+<a href="#_footnoteref_5">5</a>. If the application design doesn&#8217;t make use of processes with tasks on more than one core then it&#8217;ll be likely better to move the SDA2 chunks to cached RAM. A small change of the linker script would suffice.
+</div>
+<div class="footnote" id="_footnotedef_6">
+<a href="#_footnoteref_6">6</a>. Seeing that our concept anyway makes the use of explicit type decorations at the data definitions omnipresent in the source code, it may be considerable to turn the internal compiler rule off (a single command line switch) and to let it assume all data objects be normally addressed by default.
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-24 23:01:27 +0200
+Last updated 2020-08-28 08:39:45 +0200
 </div>
 </div>
 </body>
