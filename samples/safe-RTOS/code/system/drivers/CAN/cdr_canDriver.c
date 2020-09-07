@@ -571,7 +571,7 @@ void cdr_osInitCanDriver(void)
         pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
                       | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
                       | CAN_MBCS_ESI(0) /* Error active/passive. TBC: encoding unclear */
-                      | CAN_MBCS_CODE(0)/* 0, INACTIVE, makes it an empty, enable Rx mailbox */
+                      | CAN_MBCS_CODE(0)/* 0, INACTIVE, makes it a disabled Rx mailbox */
                       | CAN_MBCS_SRR(1) /* Needs to be 1 for Tx, doesn't care for Rx */
                       | CAN_MBCS_IDE(0) /* 0: Std CAN ID, 1: ext. 29 Bit CAN ID */
                       | CAN_MBCS_RTR(0) /* Needed for Remote frames, 0 for normal data fr. */
@@ -581,7 +581,7 @@ void cdr_osInitCanDriver(void)
         pMB->canId = CAN_MBID_PRIO(0)   /* We don't use the local prio value. */
                      | CAN_MBID_ID_EXT(0)   /* All 29 Bits of CAN ID set to zero for now. */
                      ;
-//if(u==24)
+//if(u==24) /* Initial Tx test */
 //{
 //    /* See RM, Table 43-9, p. 1775, for the Tx mailbox status and command CODEs. */
 //    pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
@@ -595,6 +595,25 @@ void cdr_osInitCanDriver(void)
 //                  | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care is set on transmission */
 //                  ;
 //}
+if(u==25) /* Initial Rx test */
+{
+    /* See RM 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
+       1772ff, for the Rx mailbox status and command CODEs. */
+    pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
+                  | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
+                  | CAN_MBCS_ESI(0) /* Error active/passive. TBC: encoding unclear */
+                  | CAN_MBCS_CODE(4)/* 0, EMPTY, makes it an empty, enabled Rx mailbox */
+                  | CAN_MBCS_SRR(1) /* Needs to be 1 for Tx, doesn't care for Rx */
+                  | CAN_MBCS_IDE(0) /* 0: Std CAN ID, 1: ext. 29 Bit CAN ID */
+                  | CAN_MBCS_RTR(0) /* Needed for Remote frames, 0 for normal data fr. */
+                  | CAN_MBCS_DLC(0) /* Size of frame, doesn't care for Rx. */
+                  | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care is set on transmission */
+                  ;
+    pMB->canId = CAN_MBID_PRIO(0)   /* We don't use the local prio value. */
+                 | CAN_MBID_ID_STD(0x80)  /* Standard CAN ID 128 enabled for Rx. */
+                 ;
+}
+
     }
     assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
 
@@ -635,8 +654,10 @@ void cdr_osTestSend_task10ms(void)
     CAN_Type * const pCanDevice = CAN_0; /// @todo This preliminary only
 
     /* Get the pointer to the mailbox in use: We take the first one behind the FIFO. */
-    const unsigned int idxFirstMB = 8 + 2*CTRL2_RFFN; // This could become a sub-routine
-    volatile mailbox_t *pMB = ((volatile mailbox_t*)&pCanDevice->RAMn[0]) + idxFirstMB;
+    const unsigned int idxFirstMB = 8 + 2*CTRL2_RFFN // This could become a sub-routine
+                     , idxRxMB = idxFirstMB + 1;
+    volatile mailbox_t * const pTxMB = ((volatile mailbox_t*)&pCanDevice->RAMn[0]) + idxFirstMB
+                     , * const pRxMB = pTxMB + 1;
     
     /* We do all of this cyclically, so we acknowledge the previous message if any. If we
        wouldn't we couldn't proceed - the mailbox is locked.
@@ -656,28 +677,55 @@ void cdr_osTestSend_task10ms(void)
     }
     
     /* Fill data in the mailbox. */
-    pMB->payload_u16[3] = cnt_;
-    memcpy((void*)&pMB->payload[0], "Hello", 5);
-    pMB->payload[5] = (uint8_t)(noTxErr_ & 0x000000ffu);
+    //memcpy((void*)&pTxMB->payload[0], "Hello", 5);
+    static unsigned int SDATA_OS(noRxEvent_) = 0;
+    pTxMB->payload_u16[2] = (uint16_t)(noRxEvent_ & 0x0000ffffu);
+    pTxMB->payload_u16[3] = cnt_;
+    pTxMB->payload[3] = (uint8_t)(noTxErr_ & 0x000000ffu);
 
     /* Set the CAN ID. */
     #define CAN_ID  127
-    pMB->canId = CAN_MBID_PRIO(0)   /* We don't use the local prio value. */
-                 | CAN_MBID_ID_STD(CAN_ID)  /* We use the standard 11 Bit ID. */
-                 ;
+    pTxMB->canId = CAN_MBID_PRIO(0)   /* We don't use the local prio value. */
+                   | CAN_MBID_ID_STD(CAN_ID)  /* We use the standard 11 Bit ID. */
+                   ;
     
     /// @todo TBC RM p. 1788 is not so clear, whether we cann set all fields in C/S word at
     // once or if CODE needs to come later
     /* See RM, Table 43-9, p. 1775, for the Tx mailbox status and command CODEs. */
-    pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
-                  | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
-                  | CAN_MBCS_ESI(0) /* Error active/passive. TBC: encoding unclear */
-                  | CAN_MBCS_CODE(12)   /* 12, DATA, triggers Tx. */
-                  | CAN_MBCS_SRR(1) /* Needs to be 1 for Tx, doesn't care for Rx */
-                  | CAN_MBCS_IDE(0) /* 0: Std CAN ID, 1: ext. 29 Bit CAN ID */
-                  | CAN_MBCS_RTR(0) /* Needed for Remote frames, 0 for normal data fr. */
-                  | CAN_MBCS_DLC(8) /* no FD: n=no bytes, FD: see RM, Table 43-10, p. 1777. */
-                  | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care is set on transmission */
-                  ;
-   
+    pTxMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
+                    | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
+                    | CAN_MBCS_ESI(0) /* Error active/passive. TBC: encoding unclear */
+                    | CAN_MBCS_CODE(12)   /* 12, DATA, triggers Tx. */
+                    | CAN_MBCS_SRR(1) /* Needs to be 1 for Tx, doesn't care for Rx */
+                    | CAN_MBCS_IDE(0) /* 0: Std CAN ID, 1: ext. 29 Bit CAN ID */
+                    | CAN_MBCS_RTR(0) /* Needed for Remote frames, 0 for normal data fr. */
+                    | CAN_MBCS_DLC(8) /* no FD: n=no bytes, FD: see RM, Table 43-10, p. 1777. */
+                    | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care is set on transmission */
+                    ;
+
+    /* Poll for newly received input. */
+    _Static_assert(idxRxMB < 32, "Mailbox associated with wrong flag register");
+    const uint32_t irqMaskRx = 1u << idxRxMB;
+    if((pCanDevice->IFLAG1 & irqMaskRx) != 0)
+    {
+        ++ noRxEvent_;
+        
+        const uint32_t CODE = (pRxMB->csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
+        assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
+        const uint32_t DLC = (pRxMB->csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT;
+        
+        /* Copy first received bytes into Tx test message. 3 Bytes are left. */
+        unsigned int u;
+        for(u=0; u<3 && u<DLC; ++u)
+            pTxMB->payload[u] = pRxMB->payload[u];
+
+        /* Acknwoledge the IRQ. */
+        /// @todo Find out, whether the order of IRQ ack. and MB unlock by reading timer matters
+        pCanDevice->IFLAG1 = irqMaskRx; /* Clear bit by "w1c" */
+        
+        /* RM 43.4.4, p. 1721f: Read the timer register to unlock theevaluated mailbox
+           (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
+           more details. */
+        (void)pCanDevice->TIMER;
+    }        
 } /* cdr_testSend_task10ms */
