@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "rtos.config.h"
 #include "rtos.h"
 
 

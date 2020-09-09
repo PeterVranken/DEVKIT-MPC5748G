@@ -42,6 +42,12 @@
  * Global data declarations
  */
 
+/** Global counter for Rx FIFO overflow events. Each count means a lost Rx message. */
+extern unsigned int cdr_noRxFIFOOverflowEvents;
+
+/** Global counter of successfully received messages since software startup.
+      @remark The counter wrapps around when the implementation maximum is reached. */
+extern unsigned int cdr_noRxMsgsFIFO;
 
 /*
  * Global prototypes

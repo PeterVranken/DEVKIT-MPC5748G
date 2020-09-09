@@ -24,25 +24,38 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   isrRxFIFOOverflow
+ *   isrRxFIFOWarning
+ *   isrRxFIFOFramesAvailable
  *   configSIULForUseWithDEVKIT_MPC5748G
  *   cdr_osInitCanDriver
  *   cdr_testSend_task10ms
  * Local functions
+ *   getMailbox
+ *   getFIFOFilterEntry
  */
+
+/// @todo Define object, which makes ISR implementation independent from CAN device
+// Error/event counters, callback pointers, etc. A trampoline of separate, macro generated
+// trivial functions will select the right object by reference and jump into the common
+// implementation. 
 
 /*
  * Include files
  */
 
 #include <stddef.h>
+#include <stdio.h> /// @todo Remove after temporary use in initial test code
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
 
 #include "MPC5748G.h"
+#include "cdr_MPC5748G_CAN.h"
 
 #include "typ_types.h"
 //#include "rtos.h"
+#include "sio_serialIO.h"
 #include "ccl_configureClocks.h"
 #include "cdr_canDriver.h"
 
@@ -78,128 +91,6 @@
 #define CTRL2_TASD  22
 
 
-/* Here we have the access macros for the fields of the C/S word of a normal (i.e. not
-   FIFO) mailbox. */
-#define CAN_MBCS_EDL_MASK           0x80000000u
-#define CAN_MBCS_EDL_SHIFT          31u
-#define CAN_MBCS_EDL_WIDTH          1u
-#define CAN_MBCS_EDL(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_EDL_SHIFT))&CAN_MBCS_EDL_MASK)
-#define CAN_MBCS_BRS_MASK           0x40000000u
-#define CAN_MBCS_BRS_SHIFT          30u
-#define CAN_MBCS_BRS_WIDTH          1u
-#define CAN_MBCS_BRS(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_BRS_SHIFT))&CAN_MBCS_BRS_MASK)
-#define CAN_MBCS_ESI_MASK           0x20000000u
-#define CAN_MBCS_ESI_SHIFT          29u
-#define CAN_MBCS_ESI_WIDTH          1u
-#define CAN_MBCS_ESI(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_ESI_SHIFT))&CAN_MBCS_ESI_MASK)
-#define CAN_MBCS_CODE_MASK          0x0f000000u
-#define CAN_MBCS_CODE_SHIFT         24u
-#define CAN_MBCS_CODE_WIDTH         4u
-#define CAN_MBCS_CODE(x)            (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_CODE_SHIFT))&CAN_MBCS_CODE_MASK)
-#define CAN_MBCS_SRR_MASK           0x00400000u
-#define CAN_MBCS_SRR_SHIFT          22u
-#define CAN_MBCS_SRR_WIDTH          1u
-#define CAN_MBCS_SRR(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_SRR_SHIFT))&CAN_MBCS_SRR_MASK)
-#define CAN_MBCS_IDE_MASK           0x00200000u
-#define CAN_MBCS_IDE_SHIFT          21u
-#define CAN_MBCS_IDE_WIDTH          1u
-#define CAN_MBCS_IDE(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_IDE_SHIFT))&CAN_MBCS_IDE_MASK)
-#define CAN_MBCS_RTR_MASK           0x00100000u
-#define CAN_MBCS_RTR_SHIFT          20u
-#define CAN_MBCS_RTR_WIDTH          1u
-#define CAN_MBCS_RTR(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_RTR_SHIFT))&CAN_MBCS_RTR_MASK)
-#define CAN_MBCS_DLC_MASK           0x000f0000u
-#define CAN_MBCS_DLC_SHIFT          16u
-#define CAN_MBCS_DLC_WIDTH          4u
-#define CAN_MBCS_DLC(x)             (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_DLC_SHIFT))&CAN_MBCS_DLC_MASK)
-#define CAN_MBCS_TIME_STAMP_MASK    0x0000ffffu
-#define CAN_MBCS_TIME_STAMP_SHIFT   0u
-#define CAN_MBCS_TIME_STAMP_WIDTH   16u
-#define CAN_MBCS_TIME_STAMP(x)      (((uint32_t)(((uint32_t)(x))<<CAN_MBCS_TIME_STAMP_SHIFT))&CAN_MBCS_TIME_STAMP_MASK)
-
-/* Here we have the access macros for the fields of the CAN ID word of a normal (i.e. not
-   FIFO) mailbox.
-     Note, the access macros for standard ID and extended ID overlap. You need to use them
-   either/or. */
-#define CAN_MBID_PRIO_MASK          0xe0000000u
-#define CAN_MBID_PRIO_SHIFT         29u
-#define CAN_MBID_PRIO_WIDTH         3u
-#define CAN_MBID_PRIO(x)            (((uint32_t)(((uint32_t)(x))<<CAN_MBID_PRIO_SHIFT))&CAN_MBID_PRIO_MASK)
-#define CAN_MBID_ID_STD_MASK        0x1ffc0000u
-#define CAN_MBID_ID_STD_SHIFT       18u
-#define CAN_MBID_ID_STD_WIDTH       11u
-#define CAN_MBID_ID_STD(x)          (((uint32_t)(((uint32_t)(x))<<CAN_MBID_ID_STD_SHIFT))&CAN_MBID_ID_STD_MASK)
-#define CAN_MBID_ID_EXT_MASK        0x1fffffffu
-#define CAN_MBID_ID_EXT_SHIFT       0u
-#define CAN_MBID_ID_EXT_WIDTH       29u
-#define CAN_MBID_ID_EXT(x)          (((uint32_t)(((uint32_t)(x))<<CAN_MBID_ID_EXT_SHIFT))&CAN_MBID_ID_EXT_MASK)
-
-/* Here we have the access macros for the fields of the C/S word of the mailbox, which is
-   the head element of the FIFO. The macros map RM 43.4.43, Table 43-17, p. 1786.*/
-#define CAN_FIFOCS_IDHIT_MASK           0xff800000u
-#define CAN_FIFOCS_IDHIT_SHIFT          23u
-#define CAN_FIFOCS_IDHIT_WIDTH          9u
-#define CAN_FIFOCS_IDHIT(x)             (((uint32_t)(((uint32_t)(x))<<CAN_FIFOCS_IDHIT_SHIFT))&CAN_FIFOCS_IDHIT_Mask)
-#define CAN_FIFOCS_SRR_MASK             0x00400000u
-#define CAN_FIFOCS_SRR_SHIFT            22u
-#define CAN_FIFOCS_SRR_WIDTH            1u
-#define CAN_FIFOCS_SRR(x)               (((uint32_t)(((uint32_t)(x))<<CAN_FIFOCS_SRR_SHIFT))&CAN_FIFOCS_SRR_MASK)
-#define CAN_FIFOCS_IDE_MASK             0x00200000u
-#define CAN_FIFOCS_IDE_SHIFT            21u
-#define CAN_FIFOCS_IDE_WIDTH            1u
-#define CAN_FIFOCS_IDE(x)               (((uint32_t)(((uint32_t)(x))<<CAN_FIFOCS_IDE_SHIFT))&CAN_FIFOCS_IDE_MASK)
-#define CAN_FIFOCS_RTR_MASK             0x00100000u
-#define CAN_FIFOCS_RTR_SHIFT            20u
-#define CAN_FIFOCS_RTR_WIDTH            1u
-#define CAN_FIFOCS_RTR(x)               (((uint32_t)(((uint32_t)(x))<<CAN_FIFOCS_RTR_SHIFT))&CAN_FIFOCS_RTR_MASK)
-#define CAN_FIFOCS_DLC_MASK             0x000f0000u
-#define CAN_FIFOCS_DLC_SHIFT            16u
-#define CAN_FIFOCS_DLC_WIDTH            4u
-#define CAN_FIFOCS_DLC(x)               (((uint32_t)(((uint32_t)(x))<<CAN_FIFOCS_DLC_SHIFT))&CAN_FIFOCS_DLC_MASK)
-#define CAN_FIFOCS_TIME_STAMP_MASK      0x0000ffffu
-#define CAN_FIFOCS_TIME_STAMP_SHIFT     0u
-#define CAN_FIFOCS_TIME_STAMP_WIDTH     16u
-#define CAN_FIFOCS_TIME_STAMP(x)        (((uint32_t)(((uint32_t)(x))<<CAN_FIFOCS_TIME_STAMP_SHIFT))&CAN_FIFOCS_TIME_STAMP_MASK)
-
-/* Here we have the access macros for the fields of the received CAN ID word of the
-   mailbox, which is the head element of the FIFO. The macros map RM 43.4.43, Table 43-17,
-   p. 1786.
-     Note, the access macros for standard ID and extended ID overlap. You need to use them
-   either/or. */
-#define CAN_FIFOID_ID_STD_MASK          0x1ffc0000u
-#define CAN_FIFOID_ID_STD_SHIFT         18u
-#define CAN_FIFOID_ID_STD_WIDTH         11u
-#define CAN_FIFOID_ID_STD(x)            (((uint32_t)(((uint32_t)(x))<<CAN_FIFOID_ID_STD_SHIFT))&CAN_FIFOID_ID_STD_MASK)
-#define CAN_FIFOID_ID_EXT_MASK          0x1fffffffu
-#define CAN_FIFOID_ID_EXT_SHIFT         0u
-#define CAN_FIFOID_ID_EXT_WIDTH         29u
-#define CAN_FIFOID_ID_EXT(x)            (((uint32_t)(((uint32_t)(x))<<CAN_FIFOID_ID_EXT_SHIFT))&CAN_FIFOID_ID_EXT_MASK)
-
-/* Here we have the access macros for the fields of the FIFO Filter ID word, i.e. an entry
-   from the FIFO acceptance filter table. The macros map RM 43.4.43, Table 43-18, p. 1786.
-     Note, the access macros for standard ID and extended ID overlap. You need to use them
-   either/or. */
-#define CAN_FIFOFILTER_RTR_MASK         0x80000000u
-#define CAN_FIFOFILTER_RTR_SHIFT        31u
-#define CAN_FIFOFILTER_RTR_WIDTH        1u
-#define CAN_FIFOFILTER_RTR(x)           (((uint32_t)(((uint32_t)(x))<<CAN_FIFOFILTER_RTR_SHIFT))&CAN_FIFOFILTER_RTR_MASK)
-#define CAN_FIFOFILTER_IDE_MASK         0x40000000u
-#define CAN_FIFOFILTER_IDE_SHIFT        30u
-#define CAN_FIFOFILTER_IDE_WIDTH        1u
-#define CAN_FIFOFILTER_IDE(x)           (((uint32_t)(((uint32_t)(x))<<CAN_FIFOFILTER_IDE_SHIFT))&CAN_FIFOFILTER_IDE_MASK)
-#define CAN_FIFOFILTER_RXIDA_STD_MASK   0x3ff80000u
-#define CAN_FIFOFILTER_RXIDA_STD_SHIFT  19u
-#define CAN_FIFOFILTER_RXIDA_STD_WIDTH  11u
-#define CAN_FIFOFILTER_RXIDA_STD(x)     (((uint32_t)(((uint32_t)(x))<<CAN_FIFOFILTER_RXIDA_STD_SHIFT))&CAN_FIFOFILTER_RXIDA_STD_MASK)
-#define CAN_FIFOFILTER_RXIDA_EXT_MASK   0x3ffffffeu
-#define CAN_FIFOFILTER_RXIDA_EXT_SHIFT  1u
-#define CAN_FIFOFILTER_RXIDA_EXT_WIDTH  29u
-#define CAN_FIFOFILTER_RXIDA_EXT(x)     (((uint32_t)(((uint32_t)(x))<<CAN_FIFOFILTER_RXIDA_EXT_SHIFT))&CAN_FIFOFILTER_RXIDA_EXT_MASK)
-
-/// @todo We need similar access macros for the FIFO head mailbox. The C/S word differs a bit
-/// @todo Move all of this to an dedicated file, which makes the relationship with the device header apparent
-
-
 /*
  * Local type definitions
  */
@@ -232,16 +123,198 @@ typedef struct mailbox_t
  * Local prototypes
  */
 
+/* Test of Rx by FIFO: A callback receives the Rx data. */
+/// @todo remove after use
+static void cbOnCANRxFIFO( bool isExtID
+                         , unsigned int canId
+                         , unsigned int DLC
+                         , const uint8_t payload[8]
+                         , unsigned int timeStamp
+                         );
 
 /*
  * Data definitions
  */
 
+/** Global counter for Rx FIFO overflow events. Each count means a lost Rx message. The
+    counter is saturated at its implementation maximum. */
+unsigned int BSS_OS(cdr_noRxFIFOOverflowEvents) = 0;
+
+/** Counter for Rx FIFO warning events. Each count means a temporary high load of the FIFO
+    with the involved risk of loosing a message. The counter is saturated at its
+    implementation maximum. */
+static unsigned int BSS_OS(_noRxFIFOWarningEvents) = 0;
+
+/** Global counter of successfully received messages since software startup.
+      @remark The counter wrapps around when the implementation maximum is reached. */
+unsigned int BSS_OS(cdr_noRxMsgsFIFO) = 0;
 
 /*
  * Function implementation
  */
  
+
+/**
+ * Get a mailbox in the CAN device's RAM by index.
+ *   @return
+ * The pointer to the mailbox is returned.
+ *   @param pCanDevice
+ * The CAN device in use is passed by reference. It'll be one entry out of #CAN_BASE_PTRS
+ * (see MPC5748G.h); this is however not checked.
+ *   @param idxMB
+ * The index of the mailbox. The index relates to the non-FD CAN situation, where all MBs
+ * have the same size, according to RM, Table 43-13, p 1779ff.\n
+ *   The range is 0..95, which is checked by assertion.
+ *   @remark
+ * The current configuration of the device, e.g. FD or not or FIFO filter table size, is
+ * not considered by the function. It just provides the simple address calculation.
+ */
+static inline volatile mailbox_t *getMailbox( const CAN_Type * const pCanDevice
+                                            , unsigned int idxMB
+                                            )
+{
+    assert(idxMB < 96);
+    return ((volatile mailbox_t*)&pCanDevice->RAMn[0]) + idxMB;
+    
+} /* End of getMailbox */
+
+
+
+
+
+/**
+ * Get an entry from the FIFO filter table. In our configuration, an entry is of type A
+ * only. Effectively it is a
+ * CAN ID, which can be received through the FIFO. See RM 43.4.43, Tables 43-17 and 43-18,
+ * on p. 1786 for details.
+ *   @return
+ * The pointer to the filter entry is returned.
+ *   @param pCanDevice
+ * The CAN device in use is passed by reference. It'll be one entry out of #CAN_BASE_PTRS
+ * (see MPC5748G.h); this is however not checked.
+ *   @param idxFilterEntry
+ * The index of the filter entry.\n
+ *   The range is 0..max, which is checked by assertion. "max" depends on the FIFO
+ * configuration. In our configuration (CTRL2[RFFN]=8) it is 71. See RM 43.4.14, p. 1740.
+ *   @remark
+ * The current configuration of the device, e.g. FIFO enabled or not or the filter table
+ * size, is not considered by the function. It just provides the simple address
+ * calculation.
+ */
+static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
+                                          , unsigned int idxFilterEntry
+                                          )
+{
+    assert(idxFilterEntry < 8*(CTRL2_RFFN+1) /* see RM p. 1740 */);
+    /* The filter table starts a byte offset 0xe0, the RAM starts at byte offset 0x80. */
+    return (uint32_t*)((uint8_t*)&pCanDevice->RAMn[0]
+                       + (0xe0 - 0x80)
+                       + idxFilterEntry*sizeof(uint32_t)
+                      );
+} /* End of getFIFOFilterEntry */
+
+
+
+
+
+/**
+ * This is the ISR to handle the situation that a received CAN message can't be placed into
+ * the Rx FIFO because it is still full. The message is lost. The ISR records the situation
+ * but can recover from the data loss.
+ */
+static void isrRxFIFOOverflow(void)
+{
+    /* For now, we just record the situation in a global counter. */
+    const unsigned int noErr = cdr_noRxFIFOOverflowEvents+1;
+    if(noErr != 0)
+        cdr_noRxFIFOOverflowEvents = noErr;
+    
+} /* End of isrRxFIFOOverflow */
+
+
+
+
+/**
+ * This is the ISR to handle the situation that Rx FIFO is nearly full. A message is
+ * however not lost yet. The ISR just records the situation but doesn't take an action.
+ */
+static void isrRxFIFOWarning(void)
+{
+    /* For now, we just record the situation in a counter. */
+    const unsigned int noWarn = _noRxFIFOWarningEvents+1;
+    if(noWarn != 0)
+        _noRxFIFOWarningEvents = noWarn;
+    
+} /* End of isrRxFIFOWarning */
+
+
+
+
+/**
+ * This is the principal ISR of the Rx FIFO. It is called on completion of an reception.
+ * The ISR fetches the payload and some additional information from the CAN device's
+ * registers and invokes a callback to some external code, that does do the further
+ * evalutaion of the received message data.
+ */
+static void isrRxFIFOFramesAvailable(void)
+{
+    /// @todo Replace this by trampoline of ISRs
+    CAN_Type * const pCanDevice = CAN_0;
+    
+    /* RM 43.4.43, p. 1785: The FIFO is read through the first mailbox in the device RAM.
+         Note, the fields inside the C/S word are a bit differently defined as for normal
+       mailboxes and we need to apply other access macros. */
+    volatile mailbox_t * const pRxMB = getMailbox(pCanDevice, /* idxMB */ 0);
+
+    /* The ISR doesn't need to loop over all messages currently held in the FIFO. The HW
+       maintains the flag coherently with the FIFO contents. If several messages are
+       contained then it'll re-assert the flag and we will enter this ISR immediately
+       again. (See RM 43.5.8, p. 1810) */
+    const uint32_t irqMaskRxFIFO = CAN_IFLAG1_BUF5I_MASK;
+    assert((pCanDevice->IFLAG1 & irqMaskRxFIFO) != 0);
+    
+    /* Record the Rx situation in a counter. */
+    ++ cdr_noRxMsgsFIFO;
+
+    const uint32_t csWord = pRxMB->csWord
+                 , canIdWord = pRxMB->canId;
+    const bool isExtID = (csWord & CAN_FIFOCS_IDE_MASK) != 0;
+    const unsigned int DLC = (csWord & CAN_FIFOCS_DLC_MASK) >> CAN_FIFOCS_DLC_SHIFT
+                     , timeStamp = (csWord & CAN_FIFOCS_TIME_STAMP_MASK) 
+                                   >> CAN_FIFOCS_TIME_STAMP_SHIFT
+                     , canId = isExtID? (canIdWord & CAN_FIFOID_ID_EXT_MASK)
+                                        >> CAN_FIFOID_ID_EXT_SHIFT
+                                      : (canIdWord & CAN_FIFOID_ID_STD_MASK)
+                                        >> CAN_FIFOID_ID_STD_SHIFT
+                     ;
+                     
+    /* Copy received bytes into local buffer for callback invokation. We copy
+       unconditionally. Having conditional code or a byte loop would not save any time. */
+    assert(DLC <= 8);
+    uint32_t payload_u32[2];
+    payload_u32[0] = pRxMB->payload_u32[0];
+    payload_u32[1] = pRxMB->payload_u32[1];
+
+    /* Invoke the callback for further data processing. */
+    /// @todo Make this a parameter
+    cbOnCANRxFIFO(isExtID, canId, DLC, (const uint8_t *)&payload_u32[0], timeStamp);
+    
+    /* Acknowledge the IRQ. For normal MBs, we need to do this prior to reading the
+       timer (which unlocks the MB and would enable a re-assertion of the interrupt
+       flag). */
+    /// @todo Find out, if this is relevamt for reading from the FIFO, too.
+    pCanDevice->IFLAG1 = irqMaskRxFIFO; /* Clear bit by "w1c" */
+
+    /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
+       (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff, for
+       more details. */
+    (void)pCanDevice->TIMER;
+
+} /* End of isrRxFIFOFramesAvailable */
+
+
+
+
 /**
  * Do the configuration of the MCU pins such that CAN device CAN_0 can communicated through
  * the CAN transceiver, which is mounted on the board.\n
@@ -292,7 +365,94 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
 
 
 
+/**
+ * Our locally implemented interrupt handlers are registered at the operating system for
+ * serving the mailbox and FIFO interrupts.
+ */
+static void registerInterrupts(void)
+{
+    /* Interrupt offsets are taken from MCU reference manual, see 23.1.2 INTC interrupt
+       sources, p. 523ff, Table 23-1.
+         The interrupts are regularly defined, therefore we can compute the wanted
+       number. The only exception is the very first IRQ, related to pretended network,
+       which is available only in device CAN_0. */
+#define IDX_IRQ_CAN_ERROR(idxDev)                   (CAN0_Error_IRQn + 12*(idxDev))
+#define IDX_IRQ_CAN_BOFF_OR_TX_WARN(idxDev)         (CAN0_ORed_IRQn + 12*(idxDev))
+#define IDX_IRQ_CAN_MB(idxDev, idxMB)                                                         \
+                            (CAN0_ORed_00_03_MB_IRQn + 12u*(idxDev)                           \
+                             + ((idxMB)<16u? (idxMB)/4u: ((idxMB)<32u? 4u: (idxMB-32)/32u+5u))\
+                            )
 
+    /* A few sample tests. */
+    _Static_assert( IDX_IRQ_CAN_ERROR(0) == CAN0_Error_IRQn 
+                    &&  IDX_IRQ_CAN_ERROR(7) == CAN7_Error_IRQn
+                    &&  IDX_IRQ_CAN_BOFF_OR_TX_WARN(1) == CAN1_ORed_IRQn
+                    &&  IDX_IRQ_CAN_BOFF_OR_TX_WARN(6) == CAN6_ORed_IRQn
+                    &&  IDX_IRQ_CAN_BOFF_OR_TX_WARN(7) == CAN7_ORed_IRQn
+                    &&  IDX_IRQ_CAN_MB(0, 0) == CAN0_ORed_00_03_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(0, 3) == CAN0_ORed_00_03_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(0, 5) == CAN0_ORed_04_07_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(0, 7) == CAN0_ORed_04_07_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(1, 4) == CAN1_ORed_04_07_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(2, 8) == CAN2_ORed_08_11_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(3, 11) == CAN3_ORed_08_11_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(3, 12) == CAN3_ORed_12_15_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(3, 15) == CAN3_ORed_12_15_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(4, 16) == CAN4_ORed_16_31_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(5, 17) == CAN5_ORed_16_31_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(5, 31) == CAN5_ORed_16_31_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(6, 32) == CAN6_ORed_32_63_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(6, 33) == CAN6_ORed_32_63_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(7, 32) == CAN7_ORed_32_63_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(7, 63) == CAN7_ORed_32_63_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(7, 64) == CAN7_ORed_64_95_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(7, 95) == CAN7_ORed_64_95_MB_IRQn
+                    &&  IDX_IRQ_CAN_MB(7, 0) == CAN7_ORed_00_03_MB_IRQn
+                  , "Test of computation of IRQ vector numbers failed"
+                  );
+    
+    /* Register our IRQ handlers. */
+    /// @todo Everything is specific for this particular first test. Make it configurable
+    /// @todo Wrong: We use three times the same IRQ number. The ISR needs to sort that out!
+//    rtos_osRegisterInterruptHandler( &isrRxFIFOOverflow
+//                                   , /* processorID */ 0
+//                                   , /* vectorNum */ IDX_IRQ_CAN_MB( /* idxDev */ 0
+//                                                                   , /* idxMB */  7
+//                                                                   )
+//                                   , /* psrPriority */ 2
+//                                   , /* isPreemptable */ true
+//                                   );
+//    rtos_osRegisterInterruptHandler( &isrRxFIFOWarning
+//                                   , /* processorID */ 0
+//                                   , /* vectorNum */ IDX_IRQ_CAN_MB( /* idxDev */ 0
+//                                                                   , /* idxMB */  6
+//                                                                   )
+//                                   , /* psrPriority */ 2
+//                                   , /* isPreemptable */ true
+//                                   );
+    rtos_osRegisterInterruptHandler( &isrRxFIFOFramesAvailable
+                                   , /* processorID */ 0
+                                   , /* vectorNum */ IDX_IRQ_CAN_MB( /* idxDev */ 0
+                                                                   , /* idxMB */  5
+                                                                   )
+                                   , /* psrPriority */ 2
+                                   , /* isPreemptable */ true
+                                   );
+#undef IDX_LINFLEX_RX_IRQ
+} /* End of registerInterrupts */
+
+
+
+/**
+ * Initialization of the CAN driver. Call this function once after startup of the software
+ * and only from a single core.
+ *   @return
+ * \a true, if function succeeded, else \a false.
+ *   @param 
+ * 
+ *   @remark
+ * Needs to be called from supervisor code only.
+ */
 /// @todo Doc it
 void cdr_osInitCanDriver(void)
 {
@@ -304,6 +464,12 @@ void cdr_osInitCanDriver(void)
                   , "Bad model of CAN mailbox"
                   );
     
+    /* Check helper function by sample tests. */
+    assert((uintptr_t)getFIFOFilterEntry(CAN_0, 0) == 0xffec00e0u
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_0, 71) == 0xffec00e0u + 71*4
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_7, 71) == 0xfbecc0e0u + 71*4
+          );
+
     /// @TODO No MBs: Could become a function argument
     /* The number of mailboxes in use including those, whose space is occupied by FIFO and
        its filters. Must not be changed - there are other dependent settings, like
@@ -315,7 +481,7 @@ void cdr_osInitCanDriver(void)
 
     /* RM 43.6.1, initialization: First, we need to bring the device in disabled mode to
        set the clock source. On leaving the disabled mode, the device automatically enters
-       the freeze mode, which is a prerequiste for being able to write the majority of
+       the freeze mode, which is a prerequisite for being able to write the majority of
        registers. After configuration of all needed registers, we leave the freeze mode and
        the device becomes active.
          Note, a (soft) reset of the device is possible. Maybe, we need to consider it if
@@ -331,7 +497,7 @@ void cdr_osInitCanDriver(void)
     
     /* Select the clock input. The device can be clocked either by the peripheral clock or
        by the external crystal oscillator. The RM (43.5.9.7 Protocol timing, p. 1824)
-       recomments the crystal clock because of lower jitter. Note, this setting must not be
+       recommends the crystal clock because of lower jitter. Note, this setting must not be
        changed without adapting dependent settings below; in particular the time quantum
        must not be altered - most other timing parameter refer to it as unit.
          0: External crystal oscillator, 1: peripheral clock. */
@@ -419,7 +585,7 @@ void cdr_osInitCanDriver(void)
                   , "CAN timer configuration doesn't hit intended Baud rate"
                   );
 
-    /* RM 43.5.4, p. 1795ff, and in particular Table 43-22, p. 1798f, prvide the best
+    /* RM 43.5.4, p. 1795ff, and in particular Table 43-22, p. 1798f, provide the best
        explanation of the arbitration bits CTRL1[IRMQ] and CTRL2[MRP]. They control, which
        messages go into individual mailboxes and which go into the shared FIFO. Our
        strategy (IRMQ=1, MRP=1) give priority to the MBs. We can have a number of MBs with
@@ -427,7 +593,7 @@ void cdr_osInitCanDriver(void)
        So the message goes into the MB is any is defined but arbitrary messages go into the
        FIFO. 
          Note an additional complexity. If a message has a dedicated MB and it is received
-       while the MB is still occupied by the predessor then the newly received message is
+       while the MB is still occupied by the predecessor then the newly received message is
        put in the FIFO. A polling strategy is hence not easily possible implementable, not
        even for messages with dedicated MB. */
     /// @todo This is potentially unsafe as all foreign message were received, too, and
@@ -528,7 +694,7 @@ void cdr_osInitCanDriver(void)
     
     /* The remaining registers are not touched for now. They relate to
        - pretended networking
-       - CAN wakeup
+       - CAN wake-up
        - CAN FD */
        
     /* RM, 43.4.22, p. 1749: We need to program all mailbox mask registers explicitly. For
@@ -613,14 +779,35 @@ if(u==25) /* Initial Rx test */
                  | CAN_MBID_ID_STD(0x80)  /* Standard CAN ID 128 enabled for Rx. */
                  ;
 }
-
-    }
+    } /* End for(All acceptance masks of the normal MBs) */
     assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
+
+/// @todo Remove temporary test code
+*getFIFOFilterEntry(pCanDevice, 0) = CAN_FIFOFILTER_IDE(0)
+                                     | CAN_FIFOFILTER_RXIDA_STD(0x81);
+*getFIFOFilterEntry(pCanDevice, 1) = CAN_FIFOFILTER_IDE(0)
+                                     | CAN_FIFOFILTER_RXIDA_STD(0x82);
+*getFIFOFilterEntry(pCanDevice, 2) = CAN_FIFOFILTER_IDE(0)
+                                     | CAN_FIFOFILTER_RXIDA_STD(0x83);
+*getFIFOFilterEntry(pCanDevice, 71) = CAN_FIFOFILTER_IDE(0)
+                                      | CAN_FIFOFILTER_RXIDA_STD(0x7ff);
+*getFIFOFilterEntry(pCanDevice, 4) = CAN_FIFOFILTER_IDE(1)
+                                     | CAN_FIFOFILTER_RXIDA_EXT(0x81);
+*getFIFOFilterEntry(pCanDevice, 23) = CAN_FIFOFILTER_IDE(1)
+                                      | CAN_FIFOFILTER_RXIDA_EXT(0x82);
+*getFIFOFilterEntry(pCanDevice, 25) = CAN_FIFOFILTER_IDE(1)
+                                      | CAN_FIFOFILTER_RXIDA_EXT(0x83);
+*getFIFOFilterEntry(pCanDevice, 70) = CAN_FIFOFILTER_IDE(1)
+                                      | CAN_FIFOFILTER_RXIDA_EXT(0x7ff);
 
     /* Configure the MCU pins so that the external circuitry is connected to the MCU
        internal CAN device we've just configured. */
     configSIULForUseWithDEVKIT_MPC5748G();
     
+    /* Install required interrupt handlers. By default, we have the three FIFO related
+       IRQs. Later, at registration time of mailboxes, there may come many more. */
+    registerInterrupts();
+
     /* Finally, leave the freeze mode. Wait for state transition. */
 //    pCanDevice->MCR &= ~CAN_MCR_HALT_MASK;
 pCanDevice->MCR &= ~(CAN_MCR_FRZ_MASK | CAN_MCR_HALT_MASK);
@@ -631,7 +818,7 @@ pCanDevice->MCR &= ~(CAN_MCR_FRZ_MASK | CAN_MCR_HALT_MASK);
     
 #undef NO_MAILBOXES
 #undef CLKSRC
-} /* cdr_osInitCanDriver */
+} /* End of cdr_osInitCanDriver */
 
 
 /* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently received
@@ -727,5 +914,62 @@ void cdr_osTestSend_task10ms(void)
            (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
            more details. */
         (void)pCanDevice->TIMER;
-    }        
+    }
 } /* cdr_testSend_task10ms */
+
+
+/* Test of Rx by FIFO: A callback receives the Rx data. */
+static void cbOnCANRxFIFO( bool isExtId
+                         , unsigned int canId
+                         , unsigned int DLC
+                         , const uint8_t payload[8]
+                         , unsigned int timeStamp
+                         )
+{
+    char msg[128]
+       , *pWr = &msg[0];
+    size_t noAvailChar = sizeof(msg);
+    
+    int noChars = sniprintf( pWr, noAvailChar
+                           , " %u (%s) at %u us: %u Bytes"
+                           , canId
+                           , isExtId? "ext": "std"
+                           , timeStamp/2 /* unit: 1/500000Bd */
+                           , DLC
+                           );
+    if(noChars > 0)
+    {
+        pWr += (unsigned)noChars;
+        noAvailChar -= (unsigned)noChars;
+    }
+    else
+        return;
+
+    unsigned int u;
+    assert(DLC <= 8);
+    for(u=0; u<DLC; ++u)
+    {
+        noChars = sniprintf(pWr, noAvailChar, " %02x", payload[u]);
+        if(noChars > 0)
+        {
+            pWr += (unsigned)noChars;
+            noAvailChar -= (unsigned)noChars;
+        }
+        else
+            return;
+    }
+    
+    noChars = sniprintf(pWr, noAvailChar, "\r\n");
+    if(noChars > 0)
+    {
+        pWr += (unsigned)noChars;
+        noAvailChar -= (unsigned)noChars;
+    }
+    else
+        return;
+
+    noChars = pWr - msg;
+    assert((unsigned)noChars < sizeOfAry(msg));
+    sio_osWriteSerial(msg, (unsigned)noChars);
+    
+} /* End of cbOnCANRxFIFO */
