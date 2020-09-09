@@ -114,8 +114,8 @@
  * executed with EE=0 and must not rely on sp, r2 and r13
  */
     .section    .text.ivor.assert_scBscHdlr_assert_func_\core\()
-    .globl      assert_scBscHdlr_assert_func_\core\()
-    .align      2
+    .global     assert_scBscHdlr_assert_func_\core\()
+    .p2align    2
 
 assert_scBscHdlr_assert_func_\core\():
     /* Globaly store fault location related information, file name, line number, etc.,
@@ -175,16 +175,71 @@ ass_contUserTask_\core\():
 /* End of assert_scBscHdlr_assert_func */
     .endm
 
+
+
+/**
+ * Here, we have a wrapper for the system call handler so that it can be invoked as a
+ * normal C style function -- however, only from supervisior code. This enty point into the
+ * same assert function makes the C assert macro usable from bare-metal applications and in
+ * the safe-RTOS initialization code, i.e. before the system call mechanism is set up. In
+ * either cases, the supervisor mode prerequisite is fulfilled.
+ *   @param fileName
+ * On entry, r3 holds a pointer to the constant string with the name of source, which the
+ * failing assertion is located in.
+ *   @param line
+ * On entry, r4 holds a pointer to the constant string with the line number, which the
+ * failing assertion is located at.
+ *   @param funcName
+ * On entry, r5 holds a pointer to the constant string with the name of C function, which
+ * the failing assertion is located in.
+ *   @param expression
+ * On entry, r6 holds a pointer to the constant string with the failing expression in the
+ * assertion.
+ */
+
+    .section    .text.ivor.assert_os_assert_func
+    .global     assert_os_assert_func
+    .p2align    2
+
+assert_os_assert_func:
+    /* The system call handler has the system call index as first argument. This function
+       doesn't. Move registers accordingly. */
+    se_mr       r7, r6
+    se_mr       r6, r5
+    se_mr       r5, r4
+    se_mr       r4, r3
+    
+    /* The reason, why we can't directly call the system handler code is the register set
+       SRRn. Here, the handler looks for the problem state in order to decide, whether to
+       return to user code or to halt the SW execution (no failure can be tolerated in SV
+       code). If SRR1 is correctly set then we won't return from the handler and the return
+       address in SRR0 doesn't care. Therefore, we mainly need to fake/prepare SRR1. */
+    wrteei      0   /* A true interrupt would set the register coherently with negating the
+                       MSR[EE] bit. we can't emulate that and need to clear the EE first. */
+    mfmsr       r3
+    mtsrr1      r3
+
+    /* It's for granted that the problem state bit is negated in SRR1: Otherwise we
+       wouldn't get here - the last two instructions are privileged.
+         With other words: If we would call this function from safe-RTOS user code then we
+       would get a caught privileged exception instead of assertion functionality. */
+
+    /* Now we can branch into the system call handler. Unfortunately, the three cores use
+       different ones. We need to branch conditionally. */
+    mfpir       r3
+    se_cmpli    r3, 1
+    se_li       r3, 6   /* This is the normal system call index of the assert function. But
+                           it doesn't care, actually. */
+    se_blt      assert_scBscHdlr_assert_func_core0
+    se_beq      assert_scBscHdlr_assert_func_core1
+    se_bgt      assert_scBscHdlr_assert_func_core2
+    se_b        .       /* assert(false); We should never get here. */
+
+
     /* Instantiate the macro up to three times to have an individual implementation for
        each core, which is running safe-RTOS. */
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
     macroAssert_scBscHdlr_assert_func core0
-#endif
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
     macroAssert_scBscHdlr_assert_func core1
-#endif
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
     macroAssert_scBscHdlr_assert_func core2
-#endif
 
 #endif /* DEBUG */

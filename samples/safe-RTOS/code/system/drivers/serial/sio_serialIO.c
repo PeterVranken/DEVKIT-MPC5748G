@@ -799,12 +799,12 @@ static void linFlexRxInterrupt(void)
 
 /**
  * Our locally implemented interrupt handlers are registered at the operating system for
- * serving the required I/O devices (DMA and LINFlex).
+ * serving the required I/O devices (LINFlex).
  */
 static void registerInterrupts(void)
 {
-/* Interrupt offsets taken from MCU reference manual, p. 936. The DMA interrupts for the
-   different channels start with 11, e.g. 26 for DMA channel 15. */
+    /* Interrupt offsets taken from MCU reference manual, see 23.1.2 INTC interrupt
+       sources, p. 523ff, Table 23-1. */
 #define IDX_LINFLEX_RX_IRQ  (376+3*(IDX_LINFLEX_D))
 
     /* Register our IRQ handler. */

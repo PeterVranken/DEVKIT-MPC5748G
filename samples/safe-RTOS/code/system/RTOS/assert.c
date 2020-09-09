@@ -36,6 +36,8 @@
 
 #include "typ_types.h"
 #include "rtos_ivorHandler.h"
+#include "rtos_kernelInstanceData.h"
+#include "assert_sysCall.h"
 #include "assert_defSysCalls.h"
 
 
@@ -67,7 +69,6 @@
  * Data definitions
  */
 
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
 /** The number of passed assert macros with \a false condition. If the assert function is
     configured to halt the SW in case (see #ASSERT_FAILURE_BEHAVIOR) then it becomes a
     Boolean flag, which indicates, whether an assertion has fired since reset. */
@@ -89,10 +90,8 @@ volatile const char * DATA_OS(assert_expression_core0) = NULL;
     With other words, the ID of the process with highest privileges, which had failed so
     far. The value is -1 as long as no assertion had fired at all. */
 volatile int8_t DATA_OS(assert_PID_core0) = -1;
-#endif
 
 
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
 /** The number of passed assert macros with \a false condition. If the assert function is
     configured to halt the SW in case (see #ASSERT_FAILURE_BEHAVIOR) then it becomes a
     Boolean flag, which indicates, whether an assertion has fired since reset. */
@@ -114,10 +113,8 @@ volatile const char * DATA_OS(assert_expression_core1) = NULL;
     With other words, the ID of the process with highest privileges, which had failed so
     far. The value is -1 as long as no assertion had fired at all. */
 volatile int8_t DATA_OS(assert_PID_core1) = -1;
-#endif
 
 
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
 /** The number of passed assert macros with \a false condition. If the assert function is
     configured to halt the SW in case (see #ASSERT_FAILURE_BEHAVIOR) then it becomes a
     Boolean flag, which indicates, whether an assertion has fired since reset. */
@@ -139,7 +136,6 @@ volatile const char * DATA_OS(assert_expression_core2) = NULL;
     With other words, the ID of the process with highest privileges, which had failed so
     far. The value is -1 as long as no assertion had fired at all. */
 volatile int8_t DATA_OS(assert_PID_core2) = -1;
-#endif
 
 
 
@@ -157,12 +153,33 @@ volatile int8_t DATA_OS(assert_PID_core2) = -1;
  */
 void _EXFUN(__assert_func, (const char *fileName, int line, const char *funcName, const char *expression))
 {
-    /* The actual implementation of the assert function is a system call. This makes the
-       assert macro usable in OS and user contexts. Whether the next function returns or
-       not depends on the chosen behavior of the assert function. See
-       #ASSERT_FAILURE_BEHAVIOR for details. */
-    rtos_systemCall(ASSERT_SYSCALL_ASSERT_FUNC, fileName, line, funcName, expression);
-    
+    /* We need to check whether we are a bare-metal application (including startup code on
+       a not yet fully initialized safe-RTOS core) or a safe-RTOS core. The system call
+       implementation is only available to the latter.
+         The check requires two steps. First we check the kernel instance pointer. On a
+       bare-metal core, it is NULL. If not NULL then we can still have the situation that
+       the safe-RTOS kernel is not yet fully initialized so that the system call table is
+       not initialized yet. The compile-time default value is NULL, too. */
+    const rtos_kernelInstanceData_t * const pKernelData = rtos_getInstancePtr();
+    if(pKernelData != NULL  &&  pKernelData->systemCallDescAry != NULL)
+    {
+        /* Normal safe-RTOS operation. The actual implementation of the assert function is
+           a system call. This makes the assert macro usable in OS and user contexts.
+           Whether the next function returns or not depends on the chosen behavior of the
+           assert function. See #ASSERT_FAILURE_BEHAVIOR for details. */
+        rtos_systemCall(ASSERT_SYSCALL_ASSERT_FUNC, fileName, line, funcName, expression);
+    }
+    else
+    {
+        /* Non RTOS code calls the system call implementation through a wrapper, which
+           emulates the true interrupt. SW execution in supervisor mode is halted. This
+           will be the case in nearly all use cases.
+             If we get here in user mode then the call of the wrapper will end with a
+           privileged exception. 
+             In either case, the next function call will never return. */
+        assert_os_assert_func(fileName, line, funcName, expression);
+    }
+
     /* The assert system call will return if the assertion is in user mode code and if the
        compiled behavior is either #ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_FIRST or
        #ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_LAST. Unfortunately, we can't return

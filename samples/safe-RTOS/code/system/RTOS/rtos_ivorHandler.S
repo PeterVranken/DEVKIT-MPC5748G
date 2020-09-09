@@ -1412,7 +1412,6 @@ rtos_ivor7Handler:
  * them needs to have up to 32 Bit. 64 Bit arguments are not supported for function calls.
  */
     .section    .text.ivor
-    .extern     rtos_systemCallDescAry
     .global     rtos_ivor8Handler
     .p2align    4
 
