@@ -16,14 +16,36 @@ endef
 # Example:
 # $(info first line$(EOL)second line)
 
+# Function isInDefineList
+#   The main makefile offers a variable "defineList", with user configurable settings for
+# the build. This function supports the use of the list in conditional parts of the
+# makfile, i.e. using ifeq/ifneq/ifdef/ifndef.
+#   The call of this function returns the word true if $(1) is element of $(defineList) and
+# the word false otherwise. Note, "true" and "false" are symbols but no Boolean constants.
+# The use of these particular result values has no technical significance but supports
+# having readable conditional makefile code. See example.
+#   $(1): The name of a define to be checked for presence in $(defineList).
+isInDefineList = $(if $(filter $(1),$(defineList)),true,false)
+# Example:
+#ifeq ($(call isInDefineList,DEFINE_OF_INTEREST),true)
+#$(info DEFINE_OF_INTEREST is element of $(defineList))
+#else
+#$(info DEFINE_OF_INTEREST isn't element of $(defineList))
+#endif
+
 
 # Function binFolder
 #   Determine the name of the root folder of all build products. The name should
 # distinguish between all supported target systems. Furthermore, under Windows it should if
 # possible distinguish between 32 or 64 Bit systems.
+ifeq ($(call isInDefineList,LINK_IN_RAM),true)
+binFolder = bin/ppc/$(CONFIG)-RAM/
+else
 binFolder = bin/ppc/$(CONFIG)/
+endif
 # Example:
 # $(info Target folder for produced binaries is $(call binFolder))
+
 
 
 # Function pathSearch
