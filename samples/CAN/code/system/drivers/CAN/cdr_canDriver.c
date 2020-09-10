@@ -782,7 +782,20 @@ if(u==25) /* Initial Rx test */
     } /* End for(All acceptance masks of the normal MBs) */
     assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
 
-/// @todo Remove temporary test code
+    /* The FIFO filters don't have a state "disabled" like normal mailboxes have. If we
+       initialize them to zero then standad CAN ID 0 will be received. Although this is
+       normally not in use and not an issue, it is a potential risk for attacs. Bursts of
+       CAN ID 0 Rx messages could produce high interrupt laod and even confuse some
+       application SW, which gets a callback with a message notification for a message it
+       had never registered.
+         As a countermeasure we initialize the filter such that the situation becomes more
+       unlikely. We set IDE bit to react only on the less common extended IDs and we set
+       the bit RTR, which rejects normal data messages. Setting the filter to the CAN ID of
+       lowest priority further lowers the risk of blocking by message burst. */
+    /// @todo Additional idea: Set all filters to the first registered message, when later doing first registration
+    /// @todo Have config dependend no filters and add a loop
+
+/// @todo Remove temporary test code.
 *getFIFOFilterEntry(pCanDevice, 0) = CAN_FIFOFILTER_IDE(0)
                                      | CAN_FIFOFILTER_RXIDA_STD(0x81);
 *getFIFOFilterEntry(pCanDevice, 1) = CAN_FIFOFILTER_IDE(0)

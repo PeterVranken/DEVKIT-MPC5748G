@@ -1,0 +1,79 @@
+= Driver for inter-core notifications
+:Author:            Peter Vranken
+:Email:             mailto:Peter_Vranken@Yahoo.de[P. Vranken]
+:Revision:          1
+//:doctype:           book
+:title-page:
+//:table-caption:     Tabelle // TODO Extract all german label settings into new template
+//:toc:               left
+//:toc-title:         Inhaltsverzeichnis
+:toc:
+:toclevels:         3
+//:numbered:
+:xrefstyle:         short
+//:sectanchors:       // Have URLs for chapters (http://.../#section-name
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+// https://asciidoctor.org/docs/user-manual/
+
+= Overview
+
+This folder contains the implementation of a driver for interrupt based
+core-to-core notifications. The hardware (INTC) based service to generate
+interrupts an a core of choice is wrapped into a driver, that offers a
+notification service as a further core-to-core communication channel.
+
+The concept is simple. A core has an API to assert a SW settable
+interrupt. The interrupt is configured to be handled by another core. This
+other core will preempt the running task and it executes the ISR, which is
+part of this driver too. The ISR can be configured for two basic actions:
+
+* It may trigger an RTOS event (on the notified core)
+* It may run a handler on the notified core
+
+In particular the first action is beneficial: A task of sufficiently high
+priority will execute the operation, which is deemed suitable for the kind
+of notification.
+
+However, the second action, effectively an ISR on the notified core, has
+its own charme: The notifier receives a receipt when it is done. Memory
+mapped data flow without additional synchronization means and still
+without race conditions can be easily implemented.
+
+TODOC:
+
+* Notification parameter
+* Notification and activation losses
+ 
+== Relationsship with kernel of safe-RTOS
+
+The service is not considered an element of the kernel itself. safe-RTOS
+implements a simple BCC scheduling, which doesn't support voluntary
+suspension of threads. A beneficial integration of the service with the
+kernel is therefore not possible. It would e.g. be possible to let the
+notifier wait until the notified acknowledges -- but not without busy wait
+and the busy wait -- if considered appropriate -- can be implemented as
+easy in the application code using the API of this driver.
+
+Consequently, the implementation of this driver could be used even without
+the RTOS, e.g. on a core with bare-metal application code. Only the
+notification by triggering an RTOS event must of course not be configured
+in that case.
+
+== Differing configuration concept
+
+This driver uses a different configuration concept than the others. The
+RTOS itself and most of our simple drivers so far use a run-time API for
+configuration. This is transparent, elegant and user-friendly but means
+putting some constant data into expensive RAM. In this driver, we use a C
+implementation file with initialzed constant data objects for
+configuration. Each application needs to have its individual
+implementation file.
+
+:Local Variables:
+:coding:    utf-8
+:End:

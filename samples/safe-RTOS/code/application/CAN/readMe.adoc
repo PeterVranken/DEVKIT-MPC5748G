@@ -1,5 +1,0 @@
-= Development of a CAN I/O driver for safe-RTOS
-
-This sample application for safe-RTOS on the DEVKIT-MPC5748G is the
-platform for development of a CAN driver for safe-RTOS. It has been
-derived from sample "initial" and only the boot core Z4A is in use.
