@@ -101,15 +101,6 @@
  * Local prototypes
  */
 
-/* Test of Rx by FIFO: A callback receives the Rx data. */
-/// @todo remove after use
-static void cbOnCANRx( bool isExtID
-                     , unsigned int canId
-                     , unsigned int DLC
-                     , const uint8_t payload[8]
-                     , unsigned int timeStamp
-                     );
-
 
 /*
  * Data definitions
@@ -816,59 +807,3 @@ void cdr_osTestSend_task10ms(cdr_canDevice_t canDevice)
 } /* cdr_testSend_task10ms */
 
 
-/// @todo Put the reference to this callback in the configuration table and use that
-/* Test of Rx by FIFO: A callback receives the Rx data. */
-static void cbOnCANRx( bool isExtId
-                     , unsigned int canId
-                     , unsigned int DLC
-                     , const uint8_t payload[8]
-                     , unsigned int timeStamp
-                     )
-{
-    char msg[128]
-       , *pWr = &msg[0];
-    size_t noAvailChar = sizeof(msg);
-
-    int noChars = sniprintf( pWr, noAvailChar
-                           , " %u (%s) at %u us: %u Bytes"
-                           , canId
-                           , isExtId? "ext": "std"
-                           , timeStamp/2 /* unit: 1/500000Bd */
-                           , DLC
-                           );
-    if(noChars > 0)
-    {
-        pWr += (unsigned)noChars;
-        noAvailChar -= (unsigned)noChars;
-    }
-    else
-        return;
-
-    unsigned int u;
-    assert(DLC <= 8);
-    for(u=0; u<DLC; ++u)
-    {
-        noChars = sniprintf(pWr, noAvailChar, " %02x", payload[u]);
-        if(noChars > 0)
-        {
-            pWr += (unsigned)noChars;
-            noAvailChar -= (unsigned)noChars;
-        }
-        else
-            return;
-    }
-
-    noChars = sniprintf(pWr, noAvailChar, "\r\n");
-    if(noChars > 0)
-    {
-        pWr += (unsigned)noChars;
-        noAvailChar -= (unsigned)noChars;
-    }
-    else
-        return;
-
-    noChars = pWr - msg;
-    assert((unsigned)noChars < sizeOfAry(msg));
-    sio_osWriteSerial(msg, (unsigned)noChars);
-
-} /* End of cbOnCANRx */

@@ -47,6 +47,15 @@
  * Global prototypes
  */
 
+/* CAN Rx callback. Used for CAN I/O driver configuration. */
+void mza_osCbOnCANRx( unsigned int hMsg
+                    , bool isExtId
+                    , unsigned int canId
+                    , unsigned int DLC
+                    , const uint8_t payload[8]
+                    , unsigned int timeStamp
+                    );
+                    
 /** Main entry point of code execution for core Z4A. */
 int main(int noArgs, const char *argAry[]);
 

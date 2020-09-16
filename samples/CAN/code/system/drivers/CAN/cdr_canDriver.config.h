@@ -60,6 +60,104 @@
  * Global type definitions
  */
 
+/**
+ *   @func callbackOnRx_t
+ * The type of a callback for Rx events, defined in the client code of this driver. This
+ * callback into external client code is invoked on message reception. The callback is used
+ * for normal mailboxes and when a message is received via the FIFO.\n
+ *   While the FIFO will always notify Rx events by interrupt, it depends for normal
+ * mailboxes. Each mailbox can decide individually if or if not an interrupt is raised on
+ * reception. (If not, a polling API allows to still make use of the mailbox.) The decision
+ * is made with the mailbox registration API.\n
+ *   Note that the FIFO and all the different mailbox groups can be configured to have
+ * different interrupt priorities, although served by the same core. If so, then the
+ * callback needs to be implemented re-entrant: It won't be preempted by Rx events from the
+ * same mailbox group or -- for the FIFO ISR -- from a subsequent FIFO Rx event but another
+ * mailbox can preempt in this case. See configuration of interrupt priorities
+ * (configuration items \a irqGroup*IrqPrio and -- related -- \a irqGroup*TargetCore in
+ * struct \a cdr_canDeviceConfig_t).
+ *   @param hMsg
+ * The handle of the message as agreed on at messge registration time is returned to support
+ * a simple association of the Rx event with the data content.
+ *   @param isExtId
+ * Standard and extended CAN IDs partly share the same space of number. Hence, we need the
+ * additional Boolean information, which of the two the ID \a canId belongs to.
+ *   @param canId
+ * The standard or extended ID of the received CAN message.
+ *   @param DLC
+ * Data length code, the number of received content bytes.
+ *   @param payload
+ * The received payload data. The first \a DLC bytes in the array contain the received
+ * data. The remaining 8 - \a DLC bytes may be read but they are undefined.\n
+ *   Note, the array is guaranteed to be uint32_t aligned. This can be exploited for a
+ * faster copy operation.
+ *   @param timeStamp
+ * The time of reception of the message is recorded by hardware and the value is forwarded
+ * to the callback. The absolute value has not meaning, time-base is a free running 16 Bit
+ * counter. The frequency of the timer is the CAN bit rate; having a bus with 500 kBd the
+ * unit of the timer would be 2µs. The timer wraps around at 2^16-1.
+ *   @remark
+ * The callback is invoked from one of the CAN device's interrupt contexts. It is executed
+ * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
+ * if two of them should be configured not to have the same interrupt priority.
+ */
+typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMsg
+                                    , bool isExtId
+                                    , unsigned int canId
+                                    , unsigned int DLC
+                                    , const uint8_t payload[8]
+                                    , unsigned int timeStamp
+                                    );
+
+
+/**
+ * Callback for Tx events. This callback into external client code is invoked on
+ * completion of message sending. Completion means that the message has been successfully
+ * serialized on the bus or that sending had to be aborted for some error condition.
+ * (The most relevant error condition is the client code overwriting a mailbox, which
+ * had not yet signalled completion.)\n
+ *   Each Tx mailbox can decide individually if or if not an interrupt is raised
+ * on reception. The decision is made with the mailbox registration API.\n
+ *   The function pointer must not be NULL if at least one Tx mailbox interrupt is
+ * enabled.\n
+ *   Note that all the different mailbox groups can be configured to have different
+ * interrupt priorities, although served by the same core. If so, then the callback
+ * needs to be implemented re-entrant: It won't be preempted by Tx events from the
+ * same mailbox group but another Tx mailbox can preempt in this case. See
+ * configuration of interrupt priorities (configuration items \a irqGroup*IrqPrio and
+ * -- related -- \a irqGroup*TargetCore).
+ *   @param hMsg
+ * The handle of the message as agreed on at messge registration time is returned to support
+ * a simple association of the Tx event with the transmitted data content.
+ *   @param isExtId
+ * Standard and extended CAN IDs partly share the same space of number. Hence, we need the
+ * additional Boolean information, which of the two the ID \a canId belongs to.
+ *   @param canId
+ * The standard or extended ID of the transmitted CAN message.
+ *   @param DLC
+ * Data length code, the number of transmitted content bytes.
+ *   @param isAborted
+ * A Tx mailbox can be re-filled by the client code before the predesessor had been
+ * serialized on the bus. This is called an abort. An abort still yields an acknowledging
+ * IRQ and this Boolean flag is set to \a true.
+ *   @param timeStamp
+ * The time of completing the transmission of the message is recorded by hardware and the
+ * value is forwarded to the callback. The absolute value has not meaning, time-base is a
+ * free running 16 Bit counter. The frequency of the timer is the CAN bit rate; having a
+ * bus with 500 kBd the unit of the timer would be 2µs. The timer wraps around at 2^16-1.
+ *   @remark
+ * The callback is invoked from one of the CAN device's interrupt contexts. It is executed
+ * in supervisor mode. All Tx interrupts share this callback, so it needs to be reentrant
+ * if two of them should be configured not to have the same interrupt priority.
+ */
+typedef void (*cdr_osCallbackOnTx_t)( unsigned int hMsg
+                                    , bool isExtId
+                                    , unsigned int canId
+                                    , unsigned int DLC
+                                    , bool isAborted
+                                    , unsigned int timeStamp
+                                    );
+
 /** An instance of this type collects all constant cnfiguration data for one CAN device. */
 typedef struct cdr_canDeviceConfig_t
 {
@@ -141,15 +239,11 @@ typedef struct cdr_canDeviceConfig_t
           Note that the FIFO and all the different mailbox groups can be configured to have
         different interrupt priorities, although served by the same core. If so, then the
         callback needs to be implemented re-entrant: It won't be preempted by Rx events
-        from the same mailbox group or from a subsequent FIFO Rx event but another mailbox
-        can preempt in this case. See configuration of interrupt priorities (configuration
-        items \a irqGroup*IrqPrio and -- related -- \a irqGroup*TargetCore). */
-    void (*callbackOnRx)( bool isExtId
-                        , unsigned int canId
-                        , unsigned int DLC
-                        , const uint8_t payload[8]
-                        , unsigned int timeStamp
-                        );
+        from the same mailbox group or -- for the FIFO ISR -- from a subsequent FIFO Rx
+        event but another mailbox can preempt in this case. See configuration of interrupt
+        priorities (configuration items \a irqGroup*IrqPrio and -- related -- \a
+        irqGroup*TargetCore). */
+    cdr_osCallbackOnRx_t osCallbackOnRx;
    
     /** Callback for Tx events. This callback into external client code is invoked on
         completion of message sending. Completion means that the message has been successfully
@@ -166,12 +260,7 @@ typedef struct cdr_canDeviceConfig_t
         same mailbox group but another Tx mailbox can preempt in this case. See
         configuration of interrupt priorities (configuration items \a irqGroup*IrqPrio and
         -- related -- \a irqGroup*TargetCore). */
-    void (*callbackOnTx)( bool isExtId
-                        , unsigned int canId
-                        , unsigned int DLC
-                        , bool isAborted
-                        , unsigned int timeStamp
-                        );
+    cdr_osCallbackOnTx_t osCallbackOnTx;
 
 } cdr_canDeviceConfig_t;
 

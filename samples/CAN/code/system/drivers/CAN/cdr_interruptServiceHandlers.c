@@ -213,7 +213,8 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
     const uint32_t csWord = pRxMB->csWord
                  , canIdWord = pRxMB->canId;
     const bool isExtID = (csWord & CAN_FIFOCS_IDE_MASK) != 0;
-    const unsigned int DLC = (csWord & CAN_FIFOCS_DLC_MASK) >> CAN_FIFOCS_DLC_SHIFT
+    const unsigned int idHit = (csWord & CAN_FIFOCS_IDHIT_MASK) >> CAN_FIFOCS_IDHIT_SHIFT
+                     , DLC = (csWord & CAN_FIFOCS_DLC_MASK) >> CAN_FIFOCS_DLC_SHIFT
                      , timeStamp = (csWord & CAN_FIFOCS_TIME_STAMP_MASK)
                                    >> CAN_FIFOCS_TIME_STAMP_SHIFT
                      , canId = isExtID? (canIdWord & CAN_FIFOID_ID_EXT_MASK)
@@ -244,8 +245,9 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
          Note, a NULL Pointer check is not needed at run-time. We have double
        checked the configuration at driver initialization time. (Which won't hinder
        us from having an assertion here.) */
-    assert(pDeviceConfig->callbackOnRx != NULL);
-    (*pDeviceConfig->callbackOnRx)( isExtID
+    assert(pDeviceConfig->osCallbackOnRx != NULL);
+    (*pDeviceConfig->osCallbackOnRx)( /* hMsg */ idHit
+                                  , isExtID
                                   , canId
                                   , DLC
                                   , (const uint8_t *)&payload_u32[0]
@@ -395,13 +397,14 @@ static void isrMailbox( CAN_Type * const pDevice
                  Note, a NULL Pointer check is not needed at run-time. We have double
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
-            assert(pDeviceConfig->callbackOnRx != NULL);
-            (*pDeviceConfig->callbackOnRx)( isExtID
-                                          , canId
-                                          , DLC
-                                          , (const uint8_t *)&payload_u32[0]
-                                          , timeStamp
-                                          );
+            assert(pDeviceConfig->osCallbackOnRx != NULL);
+            (*pDeviceConfig->osCallbackOnRx)( /* hMsg */ idxMBOffset
+                                            , isExtID
+                                            , canId
+                                            , DLC
+                                            , (const uint8_t *)&payload_u32[0]
+                                            , timeStamp
+                                            );
         }
         else
         {
@@ -413,13 +416,14 @@ static void isrMailbox( CAN_Type * const pDevice
                  Note, a NULL Pointer check is not needed at run-time. We have double
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
-            assert(pDeviceConfig->callbackOnRx != NULL);
-            (*pDeviceConfig->callbackOnTx)( isExtID
-                                          , canId
-                                          , DLC
-                                          , /* isAborted */ CODE == 9
-                                          , timeStamp
-                                          );
+            assert(pDeviceConfig->osCallbackOnRx != NULL);
+            (*pDeviceConfig->osCallbackOnTx)( /* hMsg */ idxMBOffset
+                                            , isExtID
+                                            , canId
+                                            , DLC
+                                            , /* isAborted */ CODE == 9
+                                            , timeStamp
+                                            );
         }
     }
 } /* End of isrMailbox */

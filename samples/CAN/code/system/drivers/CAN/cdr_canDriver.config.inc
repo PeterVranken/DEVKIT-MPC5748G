@@ -41,7 +41,7 @@
  * Defines
  */
 
-/*
+/** @todo Revise this text block and integrate it
 Concept: We have a configuration file with the settings as initialized const struct. The
 designated initializer expressions keep this well-maintainable. The driver implementation
 offeres a default or standard configuration. This is part of the driver implementation. Any
@@ -87,6 +87,14 @@ limitation for any realistic use-case.
  * Global data declarations
  */
 
+/// @todo Preliminary solution. Will later be handled by application owned copy of this file
+extern void mza_osCbOnCANRx( unsigned int hMsg
+                           , bool isExtId
+                           , unsigned int canId
+                           , unsigned int DLC
+                           , const uint8_t payload[8]
+                           , unsigned int timeStamp
+                           );
 
 /*
  * Local data definitions
@@ -98,7 +106,6 @@ limitation for any realistic use-case.
     devices are operated widely independent from one another). You will edit the initializer
     expressions for those CAN devices, which are enabled by macros
     #CDR_ENABLE_USE_OF_CAN_0, #CDR_ENABLE_USE_OF_CAN_1, etc. The rest doesn't care. */
-/// @todo Double check if we need explicit object placing like CONST_OS
 const cdr_canDriverConfig_t cdr_canDriverConfig =
 {
 #if 0 /* Don't enable this code block: This is our template for the configuration of one
@@ -194,7 +201,7 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
             another mailbox can preempt in this case. See configuration of interrupt
             priorities (configuration items \a irqGroup*IrqPrio and -- related -- \a
             irqGroup*TargetCore). */
-        .callbackOnRx = cbOnCANRx,
+        .osCallbackOnRx = mza_osCbOnCANRx,
 
         /** Callback for Tx events. This callback into external client code is invoked on
             completion of message sending. Completion means that the message has been
@@ -211,7 +218,7 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
             events from the same mailbox group but another Tx mailbox can preempt in this
             case. See configuration of interrupt priorities (configuration items \a
             irqGroup*IrqPrio and -- related -- \a irqGroup*TargetCore). */
-        .callbackOnTx = NULL,
+        .osCallbackOnTx = NULL,
     },
 #endif
 #if CDR_ENABLE_USE_OF_CAN_1 == 1

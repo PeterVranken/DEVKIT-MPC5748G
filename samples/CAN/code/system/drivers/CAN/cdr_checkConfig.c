@@ -148,11 +148,33 @@ bool cdr_checkDriverConfiguration(void)
                 &&  pDevCfg->irqGroupErrorIrqPrio <= 15
                 &&  pDevCfg->irqGroupMB0_3IrqPrio <= 15
                 &&  pDevCfg->irqGroupMB4_7IrqPrio <= 15
-                &&  pDevCfg->irqGroupMB8_11TargetCore  < RTOS_NO_CORES
+                &&  pDevCfg->irqGroupMB8_11IrqPrio <= 15
                 &&  pDevCfg->irqGroupMB12_15IrqPrio <= 15
                 &&  pDevCfg->irqGroupMB16_31IrqPrio <= 15
                 &&  pDevCfg->irqGroupMB32_63IrqPrio <= 15
                 &&  pDevCfg->irqGroupMB64_95IrqPrio <= 15
+              );
+
+        /* If we have a FIFO then we need to have an enabled IRQ, too. And the opposite. */
+        ASSERT(!pDevCfg->isFIFOEnabled  &&  pDevCfg->irqGroupFIFOIrqPrio == 0
+               ||  pDevCfg->isFIFOEnabled  &&  pDevCfg->irqGroupFIFOIrqPrio > 0
+              );
+        
+        /* If we have a FIFO then we need to have an Rx callback, too. */
+        ASSERT(!pDevCfg->isFIFOEnabled  ||  pDevCfg->osCallbackOnRx != NULL);
+        
+        /* If we have a mailbox IRQ enabled then we need to have a callback, too. */
+        ASSERT(!(pDevCfg->irqGroupFIFOIrqPrio > 0
+                 ||  pDevCfg->irqGroupErrorIrqPrio > 0
+                 ||  pDevCfg->irqGroupMB0_3IrqPrio > 0
+                 ||  pDevCfg->irqGroupMB4_7IrqPrio > 0
+                 ||  pDevCfg->irqGroupMB8_11IrqPrio > 0
+                 ||  pDevCfg->irqGroupMB12_15IrqPrio > 0
+                 ||  pDevCfg->irqGroupMB16_31IrqPrio > 0
+                 ||  pDevCfg->irqGroupMB32_63IrqPrio > 0
+                 ||  pDevCfg->irqGroupMB64_95IrqPrio > 0
+                )
+               ||  pDevCfg->osCallbackOnRx != NULL  ||  pDevCfg->osCallbackOnTx != NULL
               );
 
     } /* End for(All enabled CAN devices) */

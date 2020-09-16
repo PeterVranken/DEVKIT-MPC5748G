@@ -157,6 +157,92 @@ extern void (*volatile SECTION(.bss.startup) sup_main_Z2)(signed int, const char
 
 
 /**
+ * Test of Rx by FIFO: A callback receives the Rx data and reports the event via the serial
+ * output.
+ *   @param hMsg
+ * The handle of the message as agreed on at messge registration time is returned to support
+ * a simple association of the Tx event with the transmitted data content.
+ *   @param isExtId
+ * Standard and extended CAN IDs partly share the same space of number. Hence, we need the
+ * additional Boolean information, which of the two the ID \a canId belongs to.
+ *   @param canId
+ * The standard or extended ID of the transmitted CAN message.
+ *   @param DLC
+ * Data length code, the number of transmitted content bytes.
+ *   @param isAborted
+ * A Tx mailbox can be re-filled by the client code before the predesessor had been
+ * serialized on the bus. This is called an abort. An abort still yields an acknowledging
+ * IRQ and this Boolean flag is set to \a true.
+ *   @param timeStamp
+ * The time of completing the transmission of the message is recorded by hardware and the
+ * value is forwarded to the callback. The absolute value has not meaning, time-base is a
+ * free running 16 Bit counter. The frequency of the timer is the CAN bit rate; having a
+ * bus with 500 kBd the unit of the timer would be 2µs. The timer wraps around at 2^16-1.
+ *   @remark
+ * This function is called from one of the CAN device's interrupt contexts. It is executed
+ * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
+ * if two of them shouldn't have the same interrupt priority.
+ */
+void mza_osCbOnCANRx( unsigned int hMsg
+                    , bool isExtId
+                    , unsigned int canId
+                    , unsigned int DLC
+                    , const uint8_t payload[8]
+                    , unsigned int timeStamp
+                    )
+{
+    char msg[128]
+       , *pWr = &msg[0];
+    size_t noAvailChar = sizeof(msg);
+
+    int noChars = sniprintf( pWr, noAvailChar
+                           , " Msg %u, ID %u (%s) at %u us: %u Bytes"
+                           , hMsg
+                           , canId
+                           , isExtId? "ext": "std"
+                           , timeStamp/2 /* unit: 1/500000Bd */
+                           , DLC
+                           );
+    if(noChars > 0)
+    {
+        pWr += (unsigned)noChars;
+        noAvailChar -= (unsigned)noChars;
+    }
+    else
+        return;
+
+    unsigned int u;
+    assert(DLC <= 8);
+    for(u=0; u<DLC; ++u)
+    {
+        noChars = sniprintf(pWr, noAvailChar, " %02x", payload[u]);
+        if(noChars > 0)
+        {
+            pWr += (unsigned)noChars;
+            noAvailChar -= (unsigned)noChars;
+        }
+        else
+            return;
+    }
+
+    noChars = sniprintf(pWr, noAvailChar, "\r\n");
+    if(noChars > 0)
+    {
+        pWr += (unsigned)noChars;
+        noAvailChar -= (unsigned)noChars;
+    }
+    else
+        return;
+
+    noChars = pWr - msg;
+    assert((unsigned)noChars < sizeOfAry(msg));
+    sio_osWriteSerial(msg, (unsigned)noChars);
+
+} /* End of mza_cbOnCANRx */
+
+
+
+/**
  * Initialization task of process \a PID.
  *   @return
  * The function returns the Boolean descision, whether the initialization was alright and
