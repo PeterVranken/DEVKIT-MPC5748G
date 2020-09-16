@@ -324,7 +324,7 @@ cFlags = $(targetFlags)                                                         
          -Werror=missing-declarations -Werror=implicit-function-declaration                 \
          -Wno-nested-externs -Werror=int-to-pointer-cast -Werror=pointer-sign               \
          -Werror=pointer-to-int-cast -Werror=return-local-addr -Werror=missing-prototypes   \
-         -Werror=missing-field-initializers                                                 \
+         -Werror=missing-field-initializers -Werror=overflow                                \
          $(cClibSpec) -MMD -Wa,-a=$(patsubst %.o,%.lst,$@) -std=gnu11                       \
          $(foreach path,$(call noTrailingSlash,$(APP) $(incDirList) $(srcDirListExpanded)),-I$(path))\
          $(cDefines) $(foreach def,$(defineList),-D$(def))
