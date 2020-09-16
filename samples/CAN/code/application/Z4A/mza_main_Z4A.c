@@ -56,7 +56,7 @@
 #include "sio_serialIO.h"
 #include "del_delay.h"
 #include "stm_systemTimer.h"
-#include "cdr_canDriver.h"
+#include "cdr_canDriverAPI.h"
 #include "mza_main_Z4A.h"
 
 
@@ -299,7 +299,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     
     /// @todo Temoprily used only: Send a CAN message.
     if((mai_cntTaskOs1ms % 10) == 1)
-        cdr_osTestSend_task10ms();
+        cdr_osTestSend_task10ms(cdr_canDev_CAN_0);
 
 } /* End of taskOs1ms */
 
@@ -449,7 +449,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the serial output channel as prerequisite of using printf. */
     sio_osInitSerialInterface(/* baudRate */ 115200);
 
-    /* Initialze the CAN driver. */
+    /* Initialize the CAN driver. */
     cdr_osInitCanDriver();
 
     /* Route the CLOCKOUTs 0 and 1 from the clock generation module to the external pins
