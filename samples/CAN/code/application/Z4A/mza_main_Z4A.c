@@ -385,7 +385,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     
     /// @todo Temoprily used only: Send a CAN message.
     if((mai_cntTaskOs1ms % 10) == 1)
-        cdr_osTestSend_task10ms(cdr_canDev_CAN_0);
+        cdr_osTestRxTx_task10ms(cdr_canDev_CAN_0);
 
 } /* End of taskOs1ms */
 
@@ -538,6 +538,9 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the CAN driver. */
     cdr_osInitCanDriver();
 
+    /* Configure the CAN driver appropriately for our test. */
+    cdr_osTestRxTx_init(cdr_canDev_CAN_0);
+    
     /* Route the CLOCKOUTs 0 and 1 from the clock generation module to the external pins
        PG7 and PG6, respectively. They are available at connector J3-16 and J3-14. The
        devided core clocks should be visible as a 10 and a 2 MHz signal. */

@@ -29,7 +29,6 @@
 
 #include "MPC5748G.h"
 #include "cdr_canDriver.config.h"
-#include "cdr_canDriverAPI.h"
 
 
 /*
@@ -148,10 +147,31 @@ extern cdr_canDriverData_t cdr_canDriverData;
  */
 
 
-
 /*
  * Global inline functions
  */
+
+/**
+ * Get the number of FIFO CAN ID filter entries in the filter table.
+ *   @return
+ * Get the number in the range 0..128.
+ *   @param pCanDevConfig
+ * The result depends on the device configuration. It is passed in by reference.
+ */
+static inline unsigned int cdr_getNoFIFOFilterEntries
+                                        (const cdr_canDeviceConfig_t *pCanDevConfig)
+{
+    /* Initialize the FIFO filter table. See RM 43.4.43, p. 1785ff, for the binary
+       structure.
+         See RM 43.4.14, table on p. 1740, for the number of table entries depending on
+       CTRL2[RFFN]. */
+    return 8u*(pCanDevConfig->CTRL2_RFFN+1u);
+
+} /* End of cdr_getNoFIFOFilterEntries */
+
+
+
+
 
 /**
  * Get the index of the first normal mailbox in the CAN device's RAM. The index is zero if
@@ -161,7 +181,7 @@ extern cdr_canDriverData_t cdr_canDriverData;
  *   @param pDeviceConfig
  * The configuration data set of the given CAN device by reference.
  */
-static inline unsigned int cdr_osGetIdxOfFirstMailbox
+static inline unsigned int cdr_getIdxOfFirstMailbox
                                         (const cdr_canDeviceConfig_t * const pDeviceConfig)
 {
     /* See RM, table on p.1740. */
@@ -169,7 +189,7 @@ static inline unsigned int cdr_osGetIdxOfFirstMailbox
            ? 8u + 2u*pDeviceConfig->CTRL2_RFFN
            : 0u;
 
-} /* End of cdr_osGetIdxOfFirstMailbox */
+} /* End of cdr_getIdxOfFirstMailbox */
 
 
 
@@ -189,14 +209,14 @@ static inline unsigned int cdr_osGetIdxOfFirstMailbox
  * The current configuration of the device, e.g. FD or not or FIFO filter table size, is
  * not considered by the function. It just provides the simple address calculation.
  */
-static inline volatile cdr_mailbox_t *cdr_osGetMailbox( const CAN_Type * const pCanDevice
-                                                      , unsigned int idxMB
-                                                      )
+static inline volatile cdr_mailbox_t *cdr_getMailbox( const CAN_Type * const pCanDevice
+                                                    , unsigned int idxMB
+                                                    )
 {
     assert(idxMB < 96);
     return ((volatile cdr_mailbox_t*)&pCanDevice->RAMn[0]) + idxMB;
 
-} /* End of cdr_osGetMailbox */
+} /* End of cdr_getMailbox */
 
 
 

@@ -51,7 +51,7 @@
 #include "cdr_MPC5748G_CAN.h"
 
 #include "rtos.h"
-#include "cdr_canDriver.h"
+#include "cdr_canDriverAPI.h"
 #include "cdr_interruptServiceHandlers.h"
 
 
@@ -198,7 +198,7 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
     /* RM 43.4.43, p. 1785: The FIFO is read through the first mailbox in the device RAM.
          Note, the fields inside the C/S word are a bit differently defined as for normal
        mailboxes and we need to apply other access macros. */
-    volatile cdr_mailbox_t * const pRxMB = cdr_osGetMailbox(pDevice, /* idxMB */ 0);
+    volatile cdr_mailbox_t * const pRxMB = cdr_getMailbox(pDevice, /* idxMB */ 0);
 
     /* The ISR doesn't need to loop over all messages currently held in the FIFO. The HW
        maintains the flag coherently with the FIFO contents. If several messages are
@@ -341,7 +341,7 @@ static void isrMailbox( CAN_Type * const pDevice
 
         /* If we get here then we have found the causing mailbox. It is mailbox
            idxMBOffset. */
-        volatile cdr_mailbox_t * const pMB = cdr_osGetMailbox(pDevice, idxMBOffset);
+        volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMBOffset);
 
         /* Read the mailbox CODE: It tells whether we have an Rx or Tx message and what
            happened. See RM 43.4.40, p. 1771ff, Tables 43-8 and 43-9, for the different
@@ -358,8 +358,26 @@ static void isrMailbox( CAN_Type * const pDevice
                                             >> CAN_MBID_ID_STD_SHIFT
                          ;
         const uint32_t CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
-        const bool isRx = (CODE & 0x8) != 0;
+        const bool isRx = (CODE & 0x8) == 0;
 
+        /* Inside the ISR, the busy bit in CODE should never be asserted. */
+        assert((CODE & 0x1) == 0);
+
+        /* For Rx messages, we save the payload data prior to acknowledgingthe reception at
+           the HW. */
+        uint32_t payload_u32[2]; /* Definition as u32 ensures a safe alignment. */
+        if(isRx)
+        {
+            /* We have an Rx mailbox interrupt. */
+            assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
+
+            /* Copy received bytes into local buffer for callback invokation. We copy
+               unconditionally. Having conditional code or a byte loop would not save any
+               time. */
+            assert(DLC <= 8);
+            payload_u32[0] = pMB->payload_u32[0];
+            payload_u32[1] = pMB->payload_u32[1];
+        }
 
         /* RM 43.4.12/13/21, p. 1735ff: Acknowledge the IRQ. We need to do this prior to
            reading the timer (which unlocks the MB and would enable a re-assertion of the
@@ -383,17 +401,7 @@ static void isrMailbox( CAN_Type * const pDevice
         {
             /* We have an Rx mailbox interrupt. */
 
-            assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
-
-            /* Copy received bytes into local buffer for callback invokation. We copy
-               unconditionally. Having conditional code or a byte loop would not save any
-               time. */
-            assert(DLC <= 8);
-            uint32_t payload_u32[2]; /* Definition as u32 ensures a safe alignment. */
-            payload_u32[0] = pMB->payload_u32[0];
-            payload_u32[1] = pMB->payload_u32[1];
-
-            /* Invoke the callback for further data processing.
+            /* Invoke the callback in the client code for further data processing.
                  Note, a NULL Pointer check is not needed at run-time. We have double
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
@@ -412,7 +420,7 @@ static void isrMailbox( CAN_Type * const pDevice
 
             assert(CODE == 8 /* INACTIVE */  ||  CODE == 9 /* ABORT */);
 
-            /* Invoke the callback for further data processing.
+            /* Invoke the callback in the client code for further data processing.
                  Note, a NULL Pointer check is not needed at run-time. We have double
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
@@ -645,7 +653,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
 
     /* With enabled FIFO, the first mailboxes are not in normal operation and we must
        not register their interrupts. */
-    const unsigned int idxFirstNormalMailbox = cdr_osGetIdxOfFirstMailbox(pDeviceConfig);
+    const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
     #define REGISTER_ISR(idxFrom, idxTo)                                                    \
     if(idxFirstNormalMailbox <= (idxTo))                                                    \
     {                                                                                       \

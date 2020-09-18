@@ -80,7 +80,7 @@
  * The handle of the message as agreed on at messge registration time is returned to support
  * a simple association of the Rx event with the data content.
  *   @param isExtId
- * Standard and extended CAN IDs partly share the same space of number. Hence, we need the
+ * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
  * additional Boolean information, which of the two the ID \a canId belongs to.
  *   @param canId
  * The standard or extended ID of the received CAN message.
@@ -130,7 +130,7 @@ typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMsg
  * The handle of the message as agreed on at messge registration time is returned to support
  * a simple association of the Tx event with the transmitted data content.
  *   @param isExtId
- * Standard and extended CAN IDs partly share the same space of number. Hence, we need the
+ * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
  * additional Boolean information, which of the two the ID \a canId belongs to.
  *   @param canId
  * The standard or extended ID of the transmitted CAN message.

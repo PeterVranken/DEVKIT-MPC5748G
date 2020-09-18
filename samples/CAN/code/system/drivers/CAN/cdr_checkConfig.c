@@ -65,6 +65,9 @@
  * Compile-time code checks
  */
  
+_Static_assert( sizeOfAry(cdr_canDriverConfig) == sizeOfAry(cdr_mapIdxToCanDevice)
+              , "Invalid CAN driver configuration"
+              );
 _Static_assert( cdr_canDev_noCANDevicesEnabled <= CAN_INSTANCE_COUNT
               , "Inconsistent configuration, too many CAN devices enabled"
               );
@@ -118,12 +121,24 @@ bool cdr_checkDriverConfiguration(void)
     {
         const cdr_canDeviceConfig_t * const pDevCfg = &cdr_canDriverConfig[idxDev];
 
+        /* The number of mailboxes is hardware limited. Unfortunately, we don't have found a
+           related macro in the NXP derivative header. */
+        ASSERT(pDevCfg->noMailboxes <= 96);
+        
+        /* The FIFO requires at least 6 Mailboxes and more, dependent on the size of the
+           filter table. */
+        ASSERT(cdr_getIdxOfFirstMailbox(pDevCfg) <= pDevCfg->noMailboxes);
+        
+        /* Technically feasible: No single CAN message can be configured. Nonetheless, we
+           rate this an error. */
+        ASSERT(pDevCfg->isFIFOEnabled ||  pDevCfg->noMailboxes > 0);
+        
         /* CAN error interrupts are configured but not implemented yet. */
         ASSERT(pDevCfg->irqGroupErrorIrqPrio == 0);
         
         /* FIFO is enabled but mailboxes interrupts are configured for mailboxes, which are
            not available with FIFO enabled. */
-        const unsigned int idxFirstNormalMailbox = cdr_osGetIdxOfFirstMailbox(pDevCfg);
+        const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDevCfg);
         ASSERT(idxFirstNormalMailbox <= 3  ||  pDevCfg->irqGroupMB0_3IrqPrio == 0);
         ASSERT(idxFirstNormalMailbox <= 7  ||  pDevCfg->irqGroupMB4_7IrqPrio == 0);
         ASSERT(idxFirstNormalMailbox <= 11  ||  pDevCfg->irqGroupMB8_11IrqPrio == 0);
