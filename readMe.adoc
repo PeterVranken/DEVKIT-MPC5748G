@@ -72,7 +72,7 @@ section gives an overview.
 
 == The samples
 
-=== "startup"
+=== startup
 
 The most prominent embedded sample is the blinking LED, called
 https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/startup["startup"]
@@ -112,7 +112,16 @@ paradigm. It can be run on one or more cores. If a core decides not to run
 the RTOS then it can still make use of some low-level communication
 services to safely exchange data across core-boundaries.
 
-Both samples are self-contained. There are some common elements, which are
+=== CAN
+
+The sample application
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN["CAN"]
+presents a CAN driver, which supports up to eight CAN devices. One of them
+is externally connected to a transceiver and a connector. Connect your CAN
+equipment to connector P5 of the DEVKIT-MPC5748G and try the CAN
+communication.
+
+All samples are self-contained. There are some common elements, which are
 same in both samples, like startup code and makefile. It would be natural
 to put them in a shared directory and reuse them across the samples. We
 decided not to do so in order to make the reuse of the samples as simple
