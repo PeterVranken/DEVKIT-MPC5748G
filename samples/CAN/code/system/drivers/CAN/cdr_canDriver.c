@@ -64,6 +64,7 @@
  *   cdr_osMakeMailboxReservation
  *   cdr_osSendMessage
  *   cdr_osSendMessageEx
+ *   cdr_osReadMessage
  *   cdr_testSend_task10ms
  * Local functions
  *   getFIFOFilterEntry
@@ -1133,7 +1134,7 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
     /* Complete send operation if preparation reports success. */
     if(pTxMB != NULL)
     {
-        /* Setthe CAN ID to be used this time with the mailbox. */
+        /* Set the CAN ID to be used this time with the mailbox. */
         pTxMB->canId = CAN_MBID_PRIO(0u)   /* We don't use the local prio value. */
                        | (isExtId? CAN_MBID_ID_EXT(canId): CAN_MBID_ID_STD(canId));
 
@@ -1167,260 +1168,158 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
 
 
 
-void cdr_osTestRxTx_init(cdr_canDevice_t canDevice)
+/**
+ * Read an Rx message from the mailbox. This is the polling based receive API of the CAN
+ * driver. The contents of the mailbox are returned if a message had been received since
+ * the preceding invocation of this function for the same mailbox.\n
+ *   Regularly polling a mailbox is an alternative to notification of reception by
+ * interrupt and callback. For a given mailbox, either technologies can't be combined. This
+ * is double-checked by assertion in DEBUG compilation.
+ *   @return
+ * If the function returns either \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow
+ * then a new message had been arrived and the mailbox contents are returned to the
+ * caller.\n
+ *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
+ * indcates that the call of the function came too late to read all incoming messages; at
+ * least one preceeding message had been lost and overwritten by it successor.\n
+ *   If no new message had been received since the previous call of this function for the
+ * same mailbox then the function retuens \a cdr_errApi_rxMailboxEmpty. None of the other
+ * (pointer based) function results is set in this case.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * device. This parameter chooses the affected CAN device.\n
+ *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion.
+ *   @param hMsg
+ * The mailbox to poll is identified by the handle. A message can be received only if it
+ * had been associated with a mailbox in the hardware, i.e. a successful call of
+ * cdr_osMakeMailboxReservation() is prerequisite of using this function. The handle to use
+ * here is the same as used when having done the related call of
+ * cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
+ *   @param pDLC
+ * At entry into this functio, * \a pDLC is the size in Byte of the output buffer \a
+ * payload. No more than this number of payload bytes will be returned.\n
+ *   After return, the caller will find the received number of bytes in * \a pDLC.
+ *   @param payload
+ * The received \a DLC message content bytes are placed into this buffer.
+ *   @param pTimeStamp
+ * The time of reception of the message is recorded by hardware and the value is returned
+ * as * \a pTimeStamp. The absolute value has not meaning, time-base is a free running 16
+ * Bit counter. The frequency of the timer is the CAN bit rate; having a bus with 500 kBd
+ * the unit of the timer would be 2µs. The timer wraps around at 2^16-1.\n
+ *   \a pTimeStamp can be NULL if the called doesn't want to make use of the time stamp.
+ */
+cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
+                                , unsigned int hMsg
+                                , unsigned int * const pDLC
+                                , uint8_t payload[]
+                                , unsigned int * const pTimeStamp
+                                )
 {
-//  if(u==25) /* Initial Rx test */
-//  {
-//      /* See RM 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
-//         1772ff, for the Rx mailbox status and command CODEs. */
-//      pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
-//                    | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
-//                    | CAN_MBCS_ESI(0) /* Error active/passive. TBC: encoding unclear */
-//                    | CAN_MBCS_CODE(4)/* 0, EMPTY, makes it an empty, enabled Rx mailbox */
-//                    | CAN_MBCS_SRR(1) /* Needs to be 1 for Tx, doesn't care for Rx */
-//                    | CAN_MBCS_IDE(0) /* 0: Std CAN ID, 1: ext. 29 Bit CAN ID */
-//                    | CAN_MBCS_RTR(0) /* Needed for Remote frames, 0 for normal data fr. */
-//                    | CAN_MBCS_DLC(0) /* Size of frame, doesn't care for Rx. */
-//                    | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care is set on transmission */
-//                    ;
-//      pMB->canId = CAN_MBID_PRIO(0)   /* We don't use the local prio value. */
-//                   | CAN_MBID_ID_STD(0x80)  /* Standard CAN ID 128 enabled for Rx. */
-//                   ;
-//  }
-
-    cdr_errorAPI_t err;
-
-    /* Register outbound message 0x7f in the first normal mailbox. */
-#define H_MSG_CAN_ID_0X7F   72
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ H_MSG_CAN_ID_0X7F
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x7f
-                                      , /* isReceived */ false
-                                      , /* TxDLC */ 8
-                                      , /* doNotify */ false
-                                      );
-    assert(err == cdr_errApi_noError);
-
-    /* Register Rx test message 0x80 in the second normal mailbox for polling. */
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 73
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x80
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ false
-                                      );
-    assert(err == cdr_errApi_noError);
-
-    /* Register some FIFO Rx messages. */
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 0
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x81
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 1
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x82
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 2
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x83
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 71
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x7ff
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-
-//    *getFIFOFilterEntry(pCanDevice, 0) = CAN_FIFOFILTER_IDE(0)
-//                                         | CAN_FIFOFILTER_RXIDA_STD(0x81);
-//    *getFIFOFilterEntry(pCanDevice, 1) = CAN_FIFOFILTER_IDE(0)
-//                                         | CAN_FIFOFILTER_RXIDA_STD(0x82);
-//    *getFIFOFilterEntry(pCanDevice, 2) = CAN_FIFOFILTER_IDE(0)
-//                                         | CAN_FIFOFILTER_RXIDA_STD(0x83);
-//    *getFIFOFilterEntry(pCanDevice, 71) = CAN_FIFOFILTER_IDE(0)
-//                                          | CAN_FIFOFILTER_RXIDA_STD(0x7ff);
-
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 4
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x81
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 23
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x82
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 25
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x83
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 70
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x7ff
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
-    assert(err == cdr_errApi_noError);
-
-//    *getFIFOFilterEntry(pCanDevice, 4) = CAN_FIFOFILTER_IDE(1)
-//                                         | CAN_FIFOFILTER_RXIDA_EXT(0x81);
-//    *getFIFOFilterEntry(pCanDevice, 23) = CAN_FIFOFILTER_IDE(1)
-//                                          | CAN_FIFOFILTER_RXIDA_EXT(0x82);
-//    *getFIFOFilterEntry(pCanDevice, 25) = CAN_FIFOFILTER_IDE(1)
-//                                          | CAN_FIFOFILTER_RXIDA_EXT(0x83);
-//    *getFIFOFilterEntry(pCanDevice, 70) = CAN_FIFOFILTER_IDE(1)
-//                                          | CAN_FIFOFILTER_RXIDA_EXT(0x7ff);
-
-} /* cdr_osTestRxTx_init */
-
-
-
-/* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently received
-   message but the bits are sticky. If the status is read by the CPU then they are reset
-   otherwise they are held. So the CPU should read the word on each Rx event and relate the
-   bits to the received message.
-     Careful: The bits are obviously meant to be read by interrupt (which is caused by
-   them). Both at a time is impossible due to the reset-on-read and we tend to offer the
-   interrupt. */
-
-/// @todo Configure a Tx mailbox and try sending regularly. Then configure Rx MB (no IRQ)
-/// and try reception by polling. Then try MB IRQs
-void cdr_osTestRxTx_task10ms(cdr_canDevice_t canDevice)
-{
-    /* Make an integer from the zero based device enumeration. */
-    const unsigned idxCanDevice = (unsigned)canDevice;
-
-    static uint16_t SBSS_OS(cnt_) = 0;
-    ++ cnt_;
-
-    /* Initial test: Send a message every 10ms. */
-    assert((unsigned)idxCanDevice == 0);
-
-    /// @todo TBC: Do we need to initialize a mailbox for TX by setting CODE to INACTIVE (8)?
     /* A pointer to the device in operation and its configuration is basis of the next
        steps. */
     assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
     CAN_Type * const pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
-    const cdr_canDeviceConfig_t * const pCanDevConfig = &cdr_canDriverConfig[idxCanDevice];
+    const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
 
-    /* Get the pointer to the mailbox in use: We take the first one behind the FIFO. */
-    const unsigned int idxFirstMB = 8u + 2u*pCanDevConfig->CTRL2_RFFN
-                     , idxRxMB = idxFirstMB + 1;
-    assert(idxFirstMB == 24);
-    volatile cdr_mailbox_t * const pRxMB = cdr_getMailbox(pDevice, idxRxMB);
+    /* Rx polling is only possible with normal mailboxes. */
+    const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
+                     , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
+    assert(hMsg >= noFIFOMsgs);
 
-    static unsigned int SDATA_OS(noRxEvent_) = 0;
-    static unsigned int SDATA_OS(noTxErr_) = 0;
+    /* hMsg needs a simple transformation to become the index of the mailboxes in the
+       device. */
+    const unsigned int idxMB = hMsg + idxFirstNormalMailbox - noFIFOMsgs;
+    assert(idxMB < pDeviceConfig->noMailboxes);
 
-    /* Fill data in the mailbox. */
-    static union
+    /* Identify the interrupt bit that belongs to the given mailbox (RM 43.4.12/13/21, p.
+       1735ff). */
+    uint32_t irqMask;
+    volatile uint32_t *pIFLAG;
+#ifdef DEBUG
+    volatile uint32_t IMASK;
+#endif
+    if(idxMB < 32)
     {
-        uint8_t payload[8];
-        uint16_t payload_u16[4];
-        uint32_t payload_u32[2];
-
-    } payload_ = { .payload_u32 = {[0] = 0, [1] = 0} };
-    payload_.payload_u16[2] = (uint16_t)(noRxEvent_ & 0x0000ffffu);
-    payload_.payload_u16[3] = cnt_;
-    payload_.payload[3] = (uint8_t)(noTxErr_ & 0x000000ffu);
-
-    /* Send the message. We try both alternative APIs. One of them permits using the
-       mailbox for different DLC and CAN Id, too.*/
-    if((cnt_ & 0x70) != 0)
+        irqMask = 1u << idxMB;
+        pIFLAG = &pDevice->IFLAG1;
+#ifdef DEBUG
+        IMASK = pDevice->IMASK1;
+#endif
+    }
+    else if(idxMB < 64)
     {
-        /* Most of the time we use the simple API. */
-        if(!cdr_osSendMessage( /* idxCanDevice */ cdr_canDev_CAN_0
-                             , /* hMsg */ H_MSG_CAN_ID_0X7F
-                             , &payload_.payload[0]
-                             )
-          )
-        {
-            ++ noTxErr_;
-        }
+        irqMask = 1u << (idxMB-32u);
+        pIFLAG = &pDevice->IFLAG2;
+#ifdef DEBUG
+        IMASK = pDevice->IMASK2;
+#endif
     }
     else
     {
-        /* From time to time we use the extended API. DLC and CAN ID are chosen such that
-           they end with 8 or 127, respectively before we switch back to the simple API -
-           which continues with these values. */ 
-        unsigned int DLC = ((cnt_ & 0xfu)+1u) / 2u
-                   , canId = 127u - 8u + DLC;
-        bool isExtId = canId <= 125;
-        if(!cdr_osSendMessageEx( /* idxCanDevice */ cdr_canDev_CAN_0
-                               , /* hMsg */ H_MSG_CAN_ID_0X7F
-                               , isExtId
-                               , canId
-                               , DLC
-                               , &payload_.payload[0]
-                               )
-          )
-        {
-            ++ noTxErr_;
-        }
-        
+        assert(idxMB < 96);
+        irqMask = 1u << (idxMB-64u);
+        pIFLAG = &pDevice->IFLAG3;
+#ifdef DEBUG
+        IMASK = pDevice->IMASK3;
+#endif
     }
-    
-    
-    /* Poll for newly received input. */
-    assert(idxRxMB < 32); /* Mailbox associated with right flag register? */
-    const uint32_t irqMaskRx = 1u << idxRxMB;
-    if((pDevice->IFLAG1 & irqMaskRx) != 0)
-    {
-        ++ noRxEvent_;
 
-        const uint32_t CODE = (pRxMB->csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
+    /* To avoid race conditions, we don't allow using this API for mailboxes, which are
+       configured to send an IRQ based notification. This is double-checked in DEBUG
+       compilation. */
+    assert((IMASK & irqMask) == 0);
+
+    /* Poll for newly received input; a new message is reported by interrupt flag. */
+    if((*pIFLAG & irqMask) != 0)
+    {
+        /* Get the pointer to the mailbox in use. */
+        volatile cdr_mailbox_t * const pRxMB = cdr_getMailbox(pDevice, idxMB);
+
+        /* Read status word of MB. Field CODE tells more about normal reception or
+           overflow. */
+        const uint32_t csWord = pRxMB->csWord
+                     , CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
         assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
         const uint32_t DLC = (pRxMB->csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT;
 
-        /* Copy first received bytes into Tx test message. 3 Bytes are left. */
-        unsigned int u;
-        for(u=0; u<3 && u<DLC; ++u)
-            payload_.payload[u] = pRxMB->payload[u];
+        /* Copy received bytes into caller provided result buffer. The loop considers both
+           the provided buffer's size and the number of received bytes. The received DLC is
+           limited to 8 by HW. */
+        assert(DLC <= 8);
+        unsigned int u = *pDLC;
+        if(u > DLC)
+            u = DLC;
+        while(u-- > 0)
+            payload[u] = pRxMB->payload[u];
+        *pDLC = DLC;
 
         /* Acknwoledge the IRQ. */
-        /// @todo Find out, whether the order of IRQ ack. and MB unlock by reading timer matters
-        pDevice->IFLAG1 = irqMaskRx; /* Clear bit by "w1c" */
+        *pIFLAG = irqMask; /* Clear bit by "w1c" */
 
-        /* RM 43.4.4, p. 1721f: Read the timer register to unlock theevaluated mailbox
+        /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
            (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
            more details. */
         (void)pDevice->TIMER;
+        
+        /* The time stamp of reception is returned on demand. */
+        if(pTimeStamp != NULL)
+            *pTimeStamp = (csWord & CAN_MBCS_TIME_STAMP_MASK) >> CAN_MBCS_TIME_STAMP_SHIFT;
+
+        /* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently
+           received message but the bits are sticky. If the status is read by the CPU then
+           they are reset otherwise they are held. So the CPU should read the word on each
+           Rx event and relate the bits to the received message.
+             Careful: The bits are obviously meant to be read by interrupt (which is caused
+           by them). Both at a time is impossible due to the reset-on-read and we tend to
+           offer the interrupt. */
+
+        return CODE == 2 /* FULL */? cdr_errApi_noError: cdr_errApi_warningRxOverflow;
     }
-} /* cdr_testSend_task10ms */
+    else
+        return cdr_errApi_rxMailboxEmpty;
+
+} /* End of cdr_osReadMessage */
+
 
 

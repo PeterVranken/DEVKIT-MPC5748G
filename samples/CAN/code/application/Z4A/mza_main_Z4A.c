@@ -29,6 +29,8 @@
 /* Module interface
  *   main
  * Local functions
+ *   osTestRxTx_init
+ *   osTestRxTx_task10ms
  *   taskInitProcess
  *   task1ms
  *   taskOs1ms
@@ -241,6 +243,213 @@ void mza_osCbOnCANRx( unsigned int hMsg
 } /* End of mza_cbOnCANRx */
 
 
+/**
+ * First test: Initialize some mialboxes for Rx and Tx.
+ *   @param canDevice
+ * This is the CAN device to use by index. See \a cdr_canDevice_t, which enumerates all
+ * enabled devices. Actually, this needs to be cdr_canDev_CAN_0, since this is the only CAN
+ * device, which is externally connected on the DEVKIT-MPC5748G.
+ */
+static void osTestRxTx_init(cdr_canDevice_t canDevice)
+{
+    cdr_errorAPI_t err;
+
+    /* Register outbound message 0x7f in the first normal mailbox. */
+#define H_MBTX_CAN_ID_0X7F   72
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ H_MBTX_CAN_ID_0X7F
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x7f
+                                      , /* isReceived */ false
+                                      , /* TxDLC */ 8
+                                      , /* doNotify */ false
+                                      );
+    assert(err == cdr_errApi_noError);
+
+    /* Register Rx test message 0x80 in the second normal mailbox for polling. */
+#define H_MBRX_CAN_ID_0X80   73
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ H_MBRX_CAN_ID_0X80
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x80
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ false
+                                      );
+    assert(err == cdr_errApi_noError);
+
+    /* Register some FIFO Rx messages. */
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 0
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x81
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 1
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x82
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 2
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x83
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 71
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x7ff
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 4
+                                      , /* isExtId */ true
+                                      , /* canId */ 0x81
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 23
+                                      , /* isExtId */ true
+                                      , /* canId */ 0x82
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 25
+                                      , /* isExtId */ true
+                                      , /* canId */ 0x83
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMsg */ 70
+                                      , /* isExtId */ true
+                                      , /* canId */ 0x7ff
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+
+} /* osTestRxTx_init */
+
+
+
+/**
+ * First test: Get/send some Rx/Tx messages.
+ *   @param canDevice
+ * This is the CAN device to use by index. See \a cdr_canDevice_t, which enumerates all
+ * enabled devices. Actually, this needs to be cdr_canDev_CAN_0, since this is the only CAN
+ * device, which is externally connected on the DEVKIT-MPC5748G.
+ */
+/// @todo Try MB IRQs
+static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
+{
+    /* Make an integer from the zero based device enumeration. */
+    const unsigned idxCanDevice = (unsigned)canDevice;
+    assert(idxCanDevice == 0);
+
+    static uint16_t SBSS_OS(cnt_) = 0;
+    ++ cnt_;
+    
+    static unsigned int SDATA_OS(noRxEvent_) = 0;
+    static unsigned int SDATA_OS(noTxErr_) = 0;
+
+    /* Initial test: Send a message every 10ms. */
+    
+    /* Fill data in the mailbox. */
+    static union
+    {
+        uint8_t payload[8];
+        uint16_t payload_u16[4];
+        uint32_t payload_u32[2];
+
+    } payload_ = { .payload_u32 = {[0] = 0, [1] = 0} };
+    payload_.payload_u16[2] = (uint16_t)(noRxEvent_ & 0x0000ffffu);
+    payload_.payload_u16[3] = cnt_;
+    payload_.payload[3] = (uint8_t)(noTxErr_ & 0x000000ffu);
+
+    /* Send the message. We try both alternative APIs. One of them permits using the
+       mailbox for different DLC and CAN Id, too.*/
+    if((cnt_ & 0x70) != 0)
+    {
+        /* Most of the time we use the simple API. */
+        if(!cdr_osSendMessage( /* idxCanDevice */ cdr_canDev_CAN_0
+                             , /* hMsg */ H_MBTX_CAN_ID_0X7F
+                             , &payload_.payload[0]
+                             )
+          )
+        {
+            ++ noTxErr_;
+        }
+    }
+    else
+    {
+        /* From time to time we use the extended API. DLC and CAN ID are chosen such that
+           they end with 8 or 127, respectively before we switch back to the simple API -
+           which continues with these values. */ 
+        unsigned int DLC = ((cnt_ & 0xfu)+1u) / 2u
+                   , canId = 127u - 8u + DLC;
+        bool isExtId = canId <= 125;
+        if(!cdr_osSendMessageEx( /* idxCanDevice */ cdr_canDev_CAN_0
+                               , /* hMsg */ H_MBTX_CAN_ID_0X7F
+                               , isExtId
+                               , canId
+                               , DLC
+                               , &payload_.payload[0]
+                               )
+          )
+        {
+            ++ noTxErr_;
+        }
+        
+    }
+    
+    
+    /* Poll for newly received input. */
+    unsigned int DLC = 8;
+    uint8_t payloadRx[DLC];
+    unsigned int timeStampRx;
+    const cdr_errorAPI_t resultRx = cdr_osReadMessage( /* idxCanDevice */ cdr_canDev_CAN_0
+                                                     , /* hMsg */ H_MBRX_CAN_ID_0X80
+                                                     , &DLC
+                                                     , &payloadRx[0]
+                                                     , &timeStampRx
+                                                     );
+    if(resultRx != cdr_errApi_rxMailboxEmpty)
+    {
+        ++ noRxEvent_;
+
+        /* Copy first received bytes into Tx test message. 3 Bytes are left. */
+        unsigned int u;
+        for(u=0; u<3 && u<DLC; ++u)
+            payload_.payload[u] = payloadRx[u];
+    }
+} /* osTestRxTx_task10ms */
+
+
+
 
 /**
  * Initialization task of process \a PID.
@@ -385,7 +594,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     
     /// @todo Temoprily used only: Send a CAN message.
     if((mai_cntTaskOs1ms % 10) == 1)
-        cdr_osTestRxTx_task10ms(cdr_canDev_CAN_0);
+        osTestRxTx_task10ms(cdr_canDev_CAN_0);
 
 } /* End of taskOs1ms */
 
@@ -538,8 +747,8 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the CAN driver. */
     cdr_osInitCanDriver();
 
-    /* Configure the CAN driver appropriately for our test. */
-    cdr_osTestRxTx_init(cdr_canDev_CAN_0);
+    /* Configure the mailboxes in the CAN driver appropriately for our test. */
+    osTestRxTx_init(cdr_canDev_CAN_0);
     
     /* Route the CLOCKOUTs 0 and 1 from the clock generation module to the external pins
        PG7 and PG6, respectively. They are available at connector J3-16 and J3-14. The

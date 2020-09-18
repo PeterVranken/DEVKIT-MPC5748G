@@ -80,6 +80,8 @@ typedef enum cdr_canDevice_t
 /** An enumeration of error code, which can be returned by the API functions. */
 typedef enum cdr_errorAPI_t
 { cdr_errApi_noError,
+  cdr_errApi_warningRxOverflow,
+  cdr_errApi_rxMailboxEmpty,
   cdr_errApi_deviceHandleOutOfRange,
   cdr_errApi_fifoMailboxUsedForTx,
   cdr_errApi_fifoMailboxRequiresNotification,
@@ -116,6 +118,14 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                            , bool doNotify
                                            );
 
+/* Rx polling API. Check if a message has been received and get it. */
+cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
+                                , unsigned int hMsg
+                                , unsigned int * const pDLC
+                                , uint8_t payload[]
+                                , unsigned int * const pTimeStamp
+                                );
+                                
 /* Send a single Tx message from a reserved mailbox with pre-configured ID and DLC. */
 bool cdr_osSendMessage( unsigned int idxCanDevice
                       , unsigned int hMsg
