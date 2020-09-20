@@ -252,7 +252,7 @@ void mza_osCbOnCANRx( unsigned int hMsg
  */
 static void osTestRxTx_init(cdr_canDevice_t canDevice)
 {
-    cdr_errorAPI_t err;
+    cdr_errorAPI_t err ATTRIB_DBG_ONLY;
 
     /* Register outbound message 0x7f in the first normal mailbox. */
 #define H_MBTX_CAN_ID_0X7F   72
@@ -367,7 +367,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
 static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
 {
     /* Make an integer from the zero based device enumeration. */
-    const unsigned idxCanDevice = (unsigned)canDevice;
+    const unsigned idxCanDevice ATTRIB_DBG_ONLY = (unsigned)canDevice;
     assert(idxCanDevice == 0);
 
     static uint16_t SBSS_OS(cnt_) = 0;

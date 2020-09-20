@@ -155,70 +155,104 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
         /** The interrupts from the CAN device can be handled on any core; the HW is widely
             paralel and different mailboxes can be accessed without conflicts or race
             conditions from different cores. For the same reason, it is possible to have
-            preempting ISRs -- serving a mailbox can be preempted by serving another mailbox
-            of higher priority. Therefore we allow to configure individually for each
-            interrupt, on which core is is served and at which priority.\n
-              Note, if the FIFO is enabled then the first n mailboxes are not available and
-            the settings for these mailboxes have no true effect. The only effect is a
-            configuration check: To avoid misunderstanding or wrong expectations we force
-            disabling the interrupts of these mailboxes by setting the priority to 0. (n is
-            8 + 2 * \a CTRL2_RFFN)\n
-              Here, the target core for the FIFO interrupts of this device. Range is
-            0..#RTOS_NO_CORES: Any core can handle the IRQ, even a bare-metal core. */
-        .irqGroupFIFOTargetCore    = RTOS_CORE_Z4A,
-        .irqGroupFIFOIrqPrio       = 5, /** IRQ prio in INTC for the Rx FIFO Interrupts */
-        .irqGroupErrorTargetCore   = RTOS_CORE_Z4A, /** Target core for bus off etc. IRQs */
-        .irqGroupErrorIrqPrio      = 0,             /** Prio for error/warning IRQs */
-        .irqGroupMB0_3TargetCore   = RTOS_CORE_Z4A, /** Target core, IRQs of mailboxes 0..3 */
-        .irqGroupMB0_3IrqPrio      = 0,             /** Prio for IRQS mailboxes 0..3 */
-        .irqGroupMB4_7TargetCore   = RTOS_CORE_Z4A, /** Target core, IRQs of mailboxes 4..7 */
-        .irqGroupMB4_7IrqPrio      = 0,             /** Prio for IRQS mailboxes 4..7 */
-        .irqGroupMB8_11TargetCore  = RTOS_CORE_Z4A, /** Target core, IRQs of mailboxes 8..11 */
-        .irqGroupMB8_11IrqPrio     = 0,             /** Prio for IRQS mailboxes 8..11 */
-        .irqGroupMB12_15TargetCore = RTOS_CORE_Z4A, /** Target core, IRQs of mailboxes 12_15 */
-        .irqGroupMB12_15IrqPrio    = 0,             /** Prio for IRQS mailboxes 12_15 */
-        .irqGroupMB16_31TargetCore = RTOS_CORE_Z4A, /** Target core IRQs of mailboxes 16..31 */
-        .irqGroupMB16_31IrqPrio    = 5,             /** Prio for IRQS mailboxes 16..31 */
-        .irqGroupMB32_63TargetCore = RTOS_CORE_Z4A, /** Target core IRQs of mailboxes 32..63 */
-        .irqGroupMB32_63IrqPrio    = 5,             /** Prio for IRQS mailboxes 32..63 */
-        .irqGroupMB64_95TargetCore = RTOS_CORE_Z4A, /** Target core IRQs of mailboxes 64..95 */
-        .irqGroupMB64_95IrqPrio    = 5,             /** Prio for IRQS mailboxes 64..95 */
-
-        /** Callback for Rx events. This callback into external client code is invoked on
-            message reception. The callback is used for normal mailboxes and when a message
-            is received via the FIFO.\n
-              While the FIFO will always notify Rx events by interrupt, it depends for
-            normal mailboxes. Each mailbox can decide individually if or if not an
-            interrupt is raised on reception. (If not, a polling API allows to still make
-            use of the mailbox.) The decision is made with the mailbox registration API.\n
-              The function pointer must not be NULL if at least one Rx interrupt is
-            enabled, be it the FIFO enabled or any mailbox configured to generate an
-            interrupt.\n
-              Note that the FIFO and all the different mailbox groups can be configured to
-            have different interrupt priorities, although served by the same core. If so,
-            then the callback needs to be implemented re-entrant: It won't be preempted by
-            Rx events from the same mailbox group or from a subsequent FIFO Rx event but
-            another mailbox can preempt in this case. See configuration of interrupt
-            priorities (configuration items \a irqGroup*IrqPrio and -- related -- \a
-            irqGroup*TargetCore). */
-        .osCallbackOnRx = mza_osCbOnCANRx,
-
-        /** Callback for Tx events. This callback into external client code is invoked on
-            completion of message sending. Completion means that the message has been
-            successfully serialized on the bus or that sending had to be aborted for some
-            error condition. (The most relevant error condition is the client code
-            overwriting a mailbox, which had not yet signalled completion.)\n
-              Each Tx mailbox can decide individually if or if not an interrupt is raised
-            on reception. The decision is made with the mailbox registration API.\n
-              The function pointer must not be NULL if at least one Tx mailbox interrupt is
-            enabled.\n
-              Note that all the different mailbox groups can be configured to have
-            different interrupt priorities, although served by the same core. If so, then
-            the callback needs to be implemented re-entrant: It won't be preempted by Tx
-            events from the same mailbox group but another Tx mailbox can preempt in this
-            case. See configuration of interrupt priorities (configuration items \a
-            irqGroup*IrqPrio and -- related -- \a irqGroup*TargetCore). */
-        .osCallbackOnTx = NULL,
+            preempting ISRs -- serving a mailbox can be preempted by serving another
+            mailbox of higher priority. Therefore we allow to configure individually for
+            each interrupt, which core is is served on and at which priority.\n
+              If message Rx and Tx events produce an interrupt then the information is
+            forwarded to the driver's client code by notification callback. Where
+            applicable, these callbacks are configured, too. Otherwise, they need to be set
+            to NULL.\n
+              Mailbox group interrupts support Rx and Tx notifications. The FIFO interrupt
+            group supports only an Rx notification and the error interrrupt group doesn't
+            support any of the notifications.\n
+              Here, we have the interrupt configuration for the group of FIFO interrupts. */
+        .irqGroupFIFO =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 5,
+            .osCallbackOnRx = mza_osCbOnCANRx,
+            .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
+        },
+        
+        /** IRQ configuration for bus off etc. IRQs */
+        .irqGroupError =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,   /* Not applicable, needs to be NULL. */
+            .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
+        },   
+        
+        /** IRQ configuration, IRQs of mailboxes 0..3. This interrupt group is not
+            available for our configuration: FIFO on, with 72 entries in the filter table
+            (CTRL2_RFFN = 8). */
+        .irqGroupMB0_3 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        },   
+        
+        /** IRQ configuration, IRQs of mailboxes 0..3. This interrupt group is not
+            available for our configuration: FIFO on, with 72 entries in the filter table
+            (CTRL2_RFFN = 8). */
+        .irqGroupMB4_7 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        },   
+        
+        /** IRQ configuration, IRQs of mailboxes 0..3. This interrupt group is not
+            available for our configuration: FIFO on, with 72 entries in the filter table
+            (CTRL2_RFFN = 8). */
+        .irqGroupMB8_11 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        },  
+        
+        /** IRQ configuration, IRQs of mailboxes 0..3. This interrupt group is not
+            available for our configuration: FIFO on, with 72 entries in the filter table
+            (CTRL2_RFFN = 8). */
+        .irqGroupMB12_15 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQs of mailboxes 16..31. */
+        .irqGroupMB16_31 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQs of mailboxes 32..63. */
+        .irqGroupMB32_63 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        },
+        
+        /** IRQ configuration, IRQs of mailboxes 64..95. */
+        .irqGroupMB64_95 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z4A,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        },              
     },
 #endif
 #if CDR_ENABLE_USE_OF_CAN_1 == 1

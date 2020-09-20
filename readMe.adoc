@@ -114,7 +114,7 @@ services to safely exchange data across core-boundaries.
 
 === CAN
 
-The sample application
+Sample application
 https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN["CAN"]
 presents a CAN driver, which supports up to eight CAN devices. One of them
 is externally connected to a transceiver and a connector. Connect your CAN

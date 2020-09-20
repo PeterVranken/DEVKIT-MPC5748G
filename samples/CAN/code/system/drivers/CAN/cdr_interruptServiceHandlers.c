@@ -187,12 +187,12 @@ static void isrRxFIFOWarning( CAN_Type * const pDevice
  *   @param pDeviceData
  * The ISR is shared between all CAN devices. The run-time data of the device to operate on
  * is passed in by reference.
- *   @param pDeviceConfig
- * The configuration data set of the given CAN device by reference.
+ *   @param osCallbackOnRx
+ * The notification callback into the client code of the driver.
  */
 static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
                                     , cdr_canDeviceData_t * const pDeviceData
-                                    , const cdr_canDeviceConfig_t * const pDeviceConfig
+                                    , cdr_osCallbackOnRx_t osCallbackOnRx
                                     )
 {
     /* RM 43.4.43, p. 1785: The FIFO is read through the first mailbox in the device RAM.
@@ -245,14 +245,14 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
          Note, a NULL Pointer check is not needed at run-time. We have double
        checked the configuration at driver initialization time. (Which won't hinder
        us from having an assertion here.) */
-    assert(pDeviceConfig->osCallbackOnRx != NULL);
-    (*pDeviceConfig->osCallbackOnRx)( /* hMsg */ idHit
-                                  , isExtID
-                                  , canId
-                                  , DLC
-                                  , (const uint8_t *)&payload_u32[0]
-                                  , timeStamp
-                                  );
+    assert(osCallbackOnRx != NULL);
+    (*osCallbackOnRx)( /* hMsg */ idHit
+                     , isExtID
+                     , canId
+                     , DLC
+                     , (const uint8_t *)&payload_u32[0]
+                     , timeStamp
+                     );
 } /* End of isrRxFIFOFramesAvailable */
 
 
@@ -268,10 +268,11 @@ static void isrGroupRxFIFO_##canDev(void)                                       
     CAN_Type * const pDevice = (canDev);                                                    \
     if((pDevice->IFLAG1 & CAN_IFLAG1_BUF5I_MASK) != 0)                                      \
     {                                                                                       \
-        isrRxFIFOFramesAvailable( pDevice                                                   \
-                                , &cdr_canDriverData[cdr_canDev_##canDev]                   \
-                                , &cdr_canDriverConfig[cdr_canDev_##canDev]                 \
-                                );                                                          \
+        isrRxFIFOFramesAvailable                                                            \
+                    ( pDevice                                                               \
+                    , &cdr_canDriverData[cdr_canDev_##canDev]                               \
+                    , cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupFIFO.osCallbackOnRx  \
+                    );                                                                      \
     }                                                                                       \
     else if((pDevice->IFLAG1 & CAN_IFLAG1_BUF6I_MASK) != 0)                                 \
         isrRxFIFOWarning(pDevice, &cdr_canDriverData[cdr_canDev_##canDev]);                 \
@@ -290,8 +291,6 @@ static void isrGroupRxFIFO_##canDev(void)                                       
  *   @param pDevice
  * The ISR is shared between all CAN devices. The device to operate on is passed in by
  * reference.
- *   @param pDeviceConfig
- * The configuration data set of the given CAN device by reference.
  *   @param pIFLAG
  * The ISR is shared between all mailboxes. The information to identify the IRQ requesting
  * mailbox is passed in. Here related register IFLAG1/2/3 of the CAN device by reference.
@@ -307,13 +306,16 @@ static void isrGroupRxFIFO_##canDev(void)                                       
  * The ISR is shared between all mailboxes. The information to identify the IRQ requesting
  * mailbox is passed in. Here the bit mask to touch the interrupt flag of the last
  * mailbox in the given group, which possibly requested the IRQ.
+ *   @param pIrqConfig
+ * The user provided configuration of the applicable interrupt group is passed by
+ * reference. It is required to identify the notification callback into the client code.
  */
 static void isrMailbox( CAN_Type * const pDevice
-                      , const cdr_canDeviceConfig_t * const pDeviceConfig
                       , volatile uint32_t *pIFLAG
                       , unsigned int idxMBOffset
                       , uint32_t maskFrom
                       , uint32_t maskTo
+                      , const cdr_mailboxIrqConfig_t * const pIrqConfig
                       )
 {
     while(true)
@@ -405,14 +407,14 @@ static void isrMailbox( CAN_Type * const pDevice
                  Note, a NULL Pointer check is not needed at run-time. We have double
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
-            assert(pDeviceConfig->osCallbackOnRx != NULL);
-            (*pDeviceConfig->osCallbackOnRx)( /* hMsg */ idxMBOffset
-                                            , isExtID
-                                            , canId
-                                            , DLC
-                                            , (const uint8_t *)&payload_u32[0]
-                                            , timeStamp
-                                            );
+            assert(pIrqConfig->osCallbackOnRx != NULL);
+            (*pIrqConfig->osCallbackOnRx)( /* hMsg */ idxMBOffset
+                                         , isExtID
+                                         , canId
+                                         , DLC
+                                         , (const uint8_t *)&payload_u32[0]
+                                         , timeStamp
+                                         );
         }
         else
         {
@@ -424,14 +426,14 @@ static void isrMailbox( CAN_Type * const pDevice
                  Note, a NULL Pointer check is not needed at run-time. We have double
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
-            assert(pDeviceConfig->osCallbackOnRx != NULL);
-            (*pDeviceConfig->osCallbackOnTx)( /* hMsg */ idxMBOffset
-                                            , isExtID
-                                            , canId
-                                            , DLC
-                                            , /* isAborted */ CODE == 9
-                                            , timeStamp
-                                            );
+            assert(pIrqConfig->osCallbackOnRx != NULL);
+            (*pIrqConfig->osCallbackOnTx)( /* hMsg */ idxMBOffset
+                                         , isExtID
+                                         , canId
+                                         , DLC
+                                         , /* isAborted */ CODE == 9
+                                         , timeStamp
+                                         );
         }
     }
 } /* End of isrMailbox */
@@ -461,16 +463,18 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
     /* Here, we know very well, which device and interrupt we are. We can figure out, which \
        interrupt flag register to use with which masks and all of this without any runtime  \
        overhead: The macro arguments idxFrom and idxTo are constants and what looks like    \
-       runtime computation in the source code is just loading a constant value in the       \
-       executed code. */                                                                    \
+       runtime computation in the source code is just loading a constant value into the     \
+       register the compiled code. */                                                       \
     volatile uint32_t * const pIFLAG = &canDev->IFLAG##idxIFLAG;                            \
     const uint32_t maskFrom = 1u << ((idxFrom)-32u*((idxIFLAG)-1u))                         \
                  , maskTo   = 1u << ((idxTo)  -32u*((idxIFLAG)-1u));                        \
-                                                                                            \
-    const cdr_canDeviceConfig_t * const pDeviceConfig =                                     \
-                                            &cdr_canDriverConfig[cdr_canDev_##canDev];      \
-    isrMailbox(canDev, pDeviceConfig, pIFLAG, (idxFrom), maskFrom, maskTo);                 \
-                                                                                            \
+    isrMailbox( canDev                                                                      \
+              , pIFLAG                                                                      \
+              , (idxFrom)                                                                   \
+              , maskFrom                                                                    \
+              , maskTo                                                                      \
+              , &cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupMB##idxFrom##_##idxTo     \
+              );                                                                            \
 } /* End of isrGroupMB##idxFrom##_##idxTo##_##canDev */
 
 
@@ -644,9 +648,9 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
         /* Register the FIFO interrupts. */
         rtos_osRegisterInterruptHandler
                 ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupFIFO
-                , /* processorID */   pDeviceConfig->irqGroupFIFOTargetCore
+                , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
                 , /* vectorNum */     IDX_IRQ_CAN_FIFO(idxCanDevice)
-                , /* psrPriority */   pDeviceConfig->irqGroupFIFOIrqPrio
+                , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
                 , /* isPreemptable */ true
                 );
     }
@@ -659,9 +663,9 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
     {                                                                                       \
         rtos_osRegisterInterruptHandler                                                     \
             ( /* ISR */ mapDevIdxToISRGroup_[idxCanDevice].isrGroupMB##idxFrom##_##idxTo    \
-            , /* processorID */ pDeviceConfig->irqGroupMB##idxFrom##_##idxTo##TargetCore    \
+            , /* processorID */ pDeviceConfig->irqGroupMB##idxFrom##_##idxTo.idxTargetCore  \
             , /* vectorNum */ IDX_IRQ_CAN_MB(idxCanDevice, /* idxMB */ (idxTo))             \
-            , /* psrPriority */ pDeviceConfig->irqGroupMB##idxFrom##_##idxTo##IrqPrio       \
+            , /* psrPriority */ pDeviceConfig->irqGroupMB##idxFrom##_##idxTo.irqPrio        \
             , /* isPreemptable */ true                                                      \
             );                                                                              \
     }

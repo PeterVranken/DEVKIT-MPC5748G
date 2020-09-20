@@ -358,7 +358,7 @@ static void initCanDevice(unsigned int idxCanDevice)
        reduced usability. Moreover, CAN FD would not allow using the Rx queue, which is
        most suitable for our CAN stack. */
     pCanDevice->MCR = CAN_MCR_MDIS(0)       /* For now keep device disabled. */
-                      | CAN_MCR_FRZ(1)      /// @todo TBC: Needed for debugging? Do we stay frozen after debugger interaction?
+                      | CAN_MCR_FRZ(1)      /* During configuration, we need to stay frozen */
                       | CAN_MCR_RFEN(1)     /* Don't use FIFO, not compatible with FD */
                       | CAN_MCR_HALT(1)     /* 1: Stay in halted mode for now */
                       | CAN_MCR_WAKMSK(0)   /* No wakeup IRQ needed */
@@ -404,6 +404,7 @@ static void initCanDevice(unsigned int idxCanDevice)
        designation.)
          Note, if three samples are taken then the additional two occur at two and one time
        quantum earlier than with one sample. */
+    /// @todo Support at least 500k and 1M
     #define CAN_BD_RATE 500000
     #define PRESDIV     4
     #define PROPSEG     6
@@ -590,7 +591,7 @@ static void initCanDevice(unsigned int idxCanDevice)
                       | CAN_MBCS_DLC(0) /* Size of frame, doesn't care for Rx. */
                       | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care is set on transmission */
                       ;
-        pMB->canId = CAN_MBID_PRIO(0)   /* We don't use the local prio value. */
+        pMB->canId = CAN_MBID_PRIO(0)       /* We don't use the local prio value. */
                      | CAN_MBID_ID_EXT(0)   /* All 29 Bits of CAN ID set to zero for now. */
                      ;
 
@@ -606,8 +607,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     cdr_osRegisterInterrupts(idxCanDevice);
 
     /* Finally, leave the freeze mode. Wait for state transition. */
-//    pCanDevice->MCR &= ~CAN_MCR_HALT_MASK;
-pCanDevice->MCR &= ~(CAN_MCR_FRZ_MASK | CAN_MCR_HALT_MASK);
+    pCanDevice->MCR &= ~(CAN_MCR_FRZ_MASK | CAN_MCR_HALT_MASK);
     #define STS_MASK_RUNNING   (CAN_MCR_FRZACK_MASK | CAN_MCR_NOTRDY_MASK)
     while((pCanDevice->MCR & STS_MASK_RUNNING) != 0)
         ;
@@ -615,6 +615,7 @@ pCanDevice->MCR &= ~(CAN_MCR_FRZ_MASK | CAN_MCR_HALT_MASK);
 
 #undef CLKSRC
 } /* End of initCanDevice */
+
 
 
 
@@ -642,6 +643,8 @@ void cdr_osInitCanDriver(void)
         initCanDevice(idxCanDev);
 
 } /* End of cdr_osInitCanDriver */
+
+
 
 
 
@@ -815,13 +818,15 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
            possible decisions but hinders the compiler from issuing a warning becasue of
            otherwise comparing an unsigned value on greater or equal to zero (always true,
            -Wtype-limits). */
-        #define CHECK_GROUP_IRQ(from, to)                                               \
-                (!((int)idxMB >= (from)  &&  idxMB <= (to))                             \
-                 || (pDeviceConfig->irqGroupMB##from##_##to##IrqPrio > 0                \
-                     && (isReceived? pDeviceConfig->osCallbackOnRx != NULL              \
-                                   : pDeviceConfig->osCallbackOnTx != NULL              \
-                        )                                                               \
-                    )                                                                   \
+        #define CHECK_GROUP_IRQ(from, to)                                                   \
+                (!((int)idxMB >= (from)  &&  idxMB <= (to))                                 \
+                 || (pDeviceConfig->irqGroupMB##from##_##to.irqPrio > 0                     \
+                     && (isReceived? pDeviceConfig->irqGroupMB##from##_##to.osCallbackOnRx  \
+                                     != NULL                                                \
+                                   : pDeviceConfig->irqGroupMB##from##_##to.osCallbackOnTx  \
+                                     != NULL                                                \
+                        )                                                                \
+                    )                                                                       \
                 )
         if(doNotify
            && (!CHECK_GROUP_IRQ(0, 3)
@@ -1294,7 +1299,7 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
             payload[u] = pRxMB->payload[u];
         *pDLC = DLC;
 
-        /* Acknwoledge the IRQ. */
+        /* Acknowledge the IRQ. */
         *pIFLAG = irqMask; /* Clear bit by "w1c" */
 
         /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox

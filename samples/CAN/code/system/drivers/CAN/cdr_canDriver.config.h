@@ -158,6 +158,71 @@ typedef void (*cdr_osCallbackOnTx_t)( unsigned int hMsg
                                     , unsigned int timeStamp
                                     );
 
+/** This structure bundles the configuration items that are needed for a mailbox group
+    interrupt. For simplicity, the same structures is applied to the FIFO interrupt,
+    although it can't produce a Tx notification, so that one field of the struct is
+    superfluous in this case. */
+typedef struct cdr_mailboxIrqConfig_t
+{
+    /** The interrupts from the CAN device can be handled on any core; the HW is widely
+        parallel and different mailboxes can be accessed without conflicts or race
+        conditions from different cores. For the same reason, it is possible to have
+        preempting ISRs -- serving a mailbox can be preempted by serving another mailbox
+        of higher priority. Therefore we allow to configure individually for each
+        interrupt, which core is is served on and at which priority.\n
+          Here, we have the target core by index for the interrupt of the given mailbox
+        group (or the FIFO). Range is 0..#RTOS_NO_CORES: Any core can handle the IRQ, even
+        a bare-metal core. */
+    uint8_t idxTargetCore;
+    
+    /** Here, we have the interrupt priority in INTC for the the interrupt of the given
+        mailbox group (or the FIFO). Range is 1..15 if the interrupt is enabled for at
+        least one mailbox in the group; otherwise it needs to be zero.\n
+          Note, the FIFO can only be used with interrupt notification, so here we have a
+        range of 1..15 if the FIFO is enabled and zero otherwise. */
+    uint8_t irqPrio;
+
+    /** Callback for Rx events. This callback into external client code is invoked on
+        message reception in any of the mailboxes belonging to the given group.\n
+          While the FIFO will always notify Rx events by interrupt, it depends for normal
+        mailboxes. Each mailbox can decide individually if or if not an interrupt is raised
+        on reception. (If not, a polling API allows to still make use of the mailbox.) The
+        decision is made with the mailbox registration API.\n
+          The function pointer must not be NULL if at least one Rx interrupt is enabled, be
+        it the FIFO enabled or any mailbox in the gropu configured to generate an
+        interrupt. Otherwise it needs to be NULL.\n
+          Note that the FIFO and all the different mailbox groups can be configured to have
+        different interrupt priorities, although served by the same core. Regardless, they
+        may share the same callback. If so, then the callback needs to be implemented
+        re-entrant: It won't be preempted by Rx events from the same mailbox group or --
+        for the FIFO ISR -- from a subsequent FIFO Rx event but a mailbox from another
+        group can preempt in this case. See configuration of interrupt priorities
+        (configuration items \a irqPrio and -- related -- \a idxTargetCore). */
+    cdr_osCallbackOnRx_t osCallbackOnRx;
+   
+    /** Callback for Tx events. This callback into external client code is invoked on
+        completion of message sending. Completion means that the message has been
+        successfully serialized on the bus or that sending had to be aborted for some error
+        condition.\n
+          Each mailbox group can decide individually if or if not an interrupt is raised on
+        transmission complete. The decision is made with the mailbox registration API.\n
+          The function pointer must not be NULL if at least one mailbox in the group has
+        enabled a Tx interrupt. Otherwise it needs to be NULL.\n
+          There is no Tx notifictaion from the FIFO. For the group of FIFO IRQ, this item
+        need to be set to NULL.\n
+          Note that all the different mailbox groups can be configured to have different
+        interrupt priorities, although served by the same core. Regardless, they may share
+        the same callback. If so, then the callback needs to be implemented re-entrant: It
+        won't be preempted by Tx events from the same mailbox group but a mailbox from
+        another group can preempt in this case. See configuration of interrupt priorities
+        (configuration items \a irqPrio and -- related -- \a idxTargetCore). */
+    cdr_osCallbackOnTx_t osCallbackOnTx;
+
+} cdr_mailboxIrqConfig_t;
+
+
+
+
 /** An instance of this type collects all constant cnfiguration data for one CAN device. */
 typedef struct cdr_canDeviceConfig_t
 {
@@ -204,63 +269,22 @@ typedef struct cdr_canDeviceConfig_t
         preempting ISRs -- serving a mailbox can be preempted by serving another mailbox
         of higher priority. Therefore we allow to configure individually for each
         interrupt, which core is is served on and at which priority.\n
-          Note, if the FIFO is enabled then the settings for mailboxes 0..3 have not
-        effect.\n
-          Here, the target core for the FIFO interrupts of this device. Range is
-        0..#RTOS_NO_CORES: Any core can handle the IRQ, even a bare-metal core. */
-    uint8_t irqGroupFIFOTargetCore;
-    uint8_t irqGroupFIFOIrqPrio;        /** IRQ prio in INTC for the Rx FIFO Interrupts */
-    uint8_t irqGroupErrorTargetCore;    /** Target core for bus off etc. IRQs */
-    uint8_t irqGroupErrorIrqPrio;       /** Prio for error/warning IRQs */
-    uint8_t irqGroupMB0_3TargetCore;    /** Target core, IRQs of mailboxes 0..3 */
-    uint8_t irqGroupMB0_3IrqPrio;       /** Prio for IRQS mailboxes 0..3 */
-    uint8_t irqGroupMB4_7TargetCore;    /** Target core, IRQs of mailboxes 4..7 */
-    uint8_t irqGroupMB4_7IrqPrio;       /** Prio for IRQS mailboxes 4..7 */
-    uint8_t irqGroupMB8_11TargetCore;   /** Target core, IRQs of mailboxes 8..11 */
-    uint8_t irqGroupMB8_11IrqPrio;      /** Prio for IRQS mailboxes 8..11 */
-    uint8_t irqGroupMB12_15TargetCore;  /** Target core, IRQs of mailboxes 12_15 */
-    uint8_t irqGroupMB12_15IrqPrio;     /** Prio for IRQS mailboxes 12_15 */
-    uint8_t irqGroupMB16_31TargetCore;  /** Target core IRQs of mailboxes 16..31 */
-    uint8_t irqGroupMB16_31IrqPrio;     /** Prio for IRQS mailboxes 16..31 */
-    uint8_t irqGroupMB32_63TargetCore;  /** Target core IRQs of mailboxes 32..63 */
-    uint8_t irqGroupMB32_63IrqPrio;     /** Prio for IRQS mailboxes 32..63 */
-    uint8_t irqGroupMB64_95TargetCore;  /** Target core IRQs of mailboxes 64..95 */
-    uint8_t irqGroupMB64_95IrqPrio;     /** Prio for IRQS mailboxes 64..95 */
-
-    /** Callback for Rx events. This callback into external client code is invoked on
-        message reception. The callback is used for normal mailboxes and when a message is
-        received via the FIFO.\n
-          While the FIFO will always notify Rx events by interrupt, it depends for normal
-        mailboxes. Each mailbox can decide individually if or if not an interrupt is raised
-        on reception. (If not, a polling API allows to still make use of the mailbox.) The
-        decision is made with the mailbox registration API.\n
-          The function pointer must not be NULL if at least one Rx interrupt is enabled, be
-        it the FIFO enabled or any mailbox configured to generate an interrupt.\n
-          Note that the FIFO and all the different mailbox groups can be configured to have
-        different interrupt priorities, although served by the same core. If so, then the
-        callback needs to be implemented re-entrant: It won't be preempted by Rx events
-        from the same mailbox group or -- for the FIFO ISR -- from a subsequent FIFO Rx
-        event but another mailbox can preempt in this case. See configuration of interrupt
-        priorities (configuration items \a irqGroup*IrqPrio and -- related -- \a
-        irqGroup*TargetCore). */
-    cdr_osCallbackOnRx_t osCallbackOnRx;
-   
-    /** Callback for Tx events. This callback into external client code is invoked on
-        completion of message sending. Completion means that the message has been successfully
-        serialized on the bus or that sending had to be aborted for some error condition.
-        (The most relevant error condition is the client code overwriting a mailbox, which
-        had not yet signalled completion.)\n
-          Each Tx mailbox can decide individually if or if not an interrupt is raised
-        on reception. The decision is made with the mailbox registration API.\n
-          The function pointer must not be NULL if at least one Tx mailbox interrupt is
-        enabled.\n
-          Note that all the different mailbox groups can be configured to have different
-        interrupt priorities, although served by the same core. If so, then the callback
-        needs to be implemented re-entrant: It won't be preempted by Tx events from the
-        same mailbox group but another Tx mailbox can preempt in this case. See
-        configuration of interrupt priorities (configuration items \a irqGroup*IrqPrio and
-        -- related -- \a irqGroup*TargetCore). */
-    cdr_osCallbackOnTx_t osCallbackOnTx;
+          If message Rx and Tx events produce an interrupt then the information is
+        forwarded to the driver's client code by notification callback. Where applicable,
+        these callbacks are configured, too. Otherwise, they need to be set to NULL.\n
+          Mailbox group interrupts support Rx and Tx notifications. The FIFO interrupt
+        group supports only an Rx notification and the error interrrupt group doesn't
+        support any of the notifications.\n
+          Here, we have the interrupt configuration for the group of FIFO interrupts. */
+    cdr_mailboxIrqConfig_t irqGroupFIFO;
+    cdr_mailboxIrqConfig_t irqGroupError;  /** IRQ configuration for bus off etc. IRQs */
+    cdr_mailboxIrqConfig_t irqGroupMB0_3;  /** IRQ configuration, IRQs of mailboxes 0..3 */
+    cdr_mailboxIrqConfig_t irqGroupMB4_7;  /** IRQ configuration, IRQs of mailboxes 4..7 */
+    cdr_mailboxIrqConfig_t irqGroupMB8_11; /** IRQ configuration, IRQs of mailboxes 8..11 */
+    cdr_mailboxIrqConfig_t irqGroupMB12_15;/** IRQ configuration, IRQs of mailboxes 12_15 */
+    cdr_mailboxIrqConfig_t irqGroupMB16_31;/** IRQ configuration, IRQs of mailboxes 16..31 */
+    cdr_mailboxIrqConfig_t irqGroupMB32_63;/** IRQ configuration, IRQs of mailboxes 32..63 */
+    cdr_mailboxIrqConfig_t irqGroupMB64_95;/** IRQ configuration, IRQs of mailboxes 64..95 */
 
 } cdr_canDeviceConfig_t;
 
