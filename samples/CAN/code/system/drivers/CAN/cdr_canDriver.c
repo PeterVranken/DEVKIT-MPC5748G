@@ -1,17 +1,6 @@
 /// @todo Clarify whether to use enum or unsigned int as device index. Make more transparent what device by enum is opposed to device by MPC pointer
 /// @todo Check if we considered the dependencies on NO_MAILBOXES
-/// @todo Read CAN error bits on each Rx and Tx event and put the result into the callbacks
 /// @todo Check all global data objects if they are located in the right, protected section
-/// @todo All Rx and all Tx events share one and the same callback into the client code. It
-// would be very easy and straight forward to have a distinct callback for each IRQ on the
-// static config level. Only additional complexity would be the more selective error checking
-// code. Likely, we would end up with more IRG group related macros. Use case is immediate,
-// efficient splitting of CAN IDs at the root: E.g. Normal CAN, safety CAN, UDS protocol,
-// XCP protocol, all having their individual handler
-/// @todo The term \a hMsg ("message handle") does not perfectly match the situation any
-// more. Using the extended API for sending, \a hMsg rather gets the meaning "mailbox
-// handle".
-
 /**
  * @file cdr_canDriver.c
  * CAN communication driver for DEVKIT-MPC5748G.
@@ -671,21 +660,23 @@ void cdr_osInitCanDriver(void)
  * device. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices.\n
- *   @param hMsg
+ *   @param hMB
  * The driver has a fixed structure of mailboxes. (A structure, which is modifiable by
  * configuration only to little extend: FIFO on/off, size of FIFO filter table).
  * Consequently, all mailboxes have a fixed index and we use this index as a handle to
- * refer to a particular mailbox. Usually, a driver will deal out a handle. We don't do but
- * let the client code choose the appropriate handle. The reason is that the mailboxes have
- * differing properties, which are known to the client code. By letting it chosse the
- * handle, hence the mailbox, it can decide, which mailbox suits best.\n
- *   Relevant differences between mailboxes are:\n
+ * refer to a particular mailbox. Usually, a driver will deal out a handle. Our driver
+ * doesn't do but lets the client code choose the appropriate handle. The reason is that
+ * the mailboxes have differing properties, which are known to the client code. By letting
+ * it chosse the handle, hence the mailbox, it can decide, which mailbox suits best.
+ * Relevant differences between mailboxes are:\n
  *   - The first n mailboxes belong to the Rx FIFO. They can't by used for transmission. n
  * depends on the configuration of the FIFO. The remaining, normal mailboxes are available
  * to Rx or Tx\n
  *   - The normal mailboxes are organized in groups of 4, 16 or 32. Each of these groups
- * can have a different interrupt priority (depending on the driver configuration)\n
- *   The range of hMsg is 0..N, where N depends on the chosen configuration.\n
+ * can have a different interrupts, depending on the driver configuration. Different
+ * interrupts means different priority, processed on different cores and/or using
+ * different notification callbacks.\n
+ *   The range of hMB is 0..N, where N depends on the chosen configuration.\n
  *   Details on how n and N relate to the made configuration can be found below.\n
  *   An out of range handle or using a handle, which had already been used in an earlier
  * call of this function, is considered an error.\n
@@ -730,13 +721,13 @@ void cdr_osInitCanDriver(void)
  * and isFIFOEnabled are compile-time constants in the driver configuration. This number is
  * available as cdr_maxNoCanIds(), too.
  *   @remark
- * The hardware provides plenty of mailbox. Therefore, we decided not make the acceptance
- * mask available to the client code. This mask would allow sharing a mailbox between a set
- * of CAN messages with similar CAN IDs. This mechanism has some deficiencies in terms of
- * ease of use and wouldn't be available to all mailboxes in a homgenous way.
+ * The hardware provides plenty of mailboxes. Therefore, we decided not to make the
+ * acceptance mask available to the client code. This mask would allow sharing a mailbox
+ * between a set of CAN messages with similar CAN IDs. This mechanism has some deficiencies
+ * in terms of ease of use and wouldn't be available to all mailboxes in a homogenous way.
  */
 cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
-                                           , unsigned int hMsg
+                                           , unsigned int hMB
                                            , bool isExtId
                                            , unsigned int canId
                                            , bool isReceived
@@ -762,14 +753,15 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
        FIFO filter entries. */
     const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
                      , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
-    if(hMsg < noFIFOMsgs)
+    if(hMB < noFIFOMsgs)
     {
         /* The reservation addresses to a FIFO Rx mailbox. Tx is forbidden and a
            notification request is essential, since FIFO mailboxes can't be read by
            polling. */
 
-        /* Msg is identical to the index of the FIFO filter table entries. */
-        const unsigned int idxFilterEntry = hMsg;
+        /* In the FIFO context, the "mailbox handle" actually is the index of the FIFO
+           filter table entry. */
+        const unsigned int idxFilterEntry = hMB;
 
         if(!isReceived)
             return cdr_errApi_fifoMailboxUsedForTx;
@@ -797,13 +789,13 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                     );
         *getFIFOFilterEntry(pDevice, idxFilterEntry) = rxFilter;
     }
-    else if(hMsg + idxFirstNormalMailbox < noFIFOMsgs + pDeviceConfig->noMailboxes)
+    else if(hMB + idxFirstNormalMailbox < noFIFOMsgs + pDeviceConfig->noMailboxes)
     {
         /* A normal mailbox is reserved. */
 
-        /* hMsg needs a simple transformation to become the index of the mailboxes in the
+        /* hMB needs a simple transformation to become the index of the mailboxes in the
            device. */
-        const unsigned int idxMB = hMsg + idxFirstNormalMailbox - noFIFOMsgs;
+        const unsigned int idxMB = hMB + idxFirstNormalMailbox - noFIFOMsgs;
         assert(idxMB < pDeviceConfig->noMailboxes);
 
         volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMB);
@@ -914,8 +906,8 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
  *   If the function returns \a NULL then the caller must not proceed with sending.
  *   @param idxCanDevice
  * The affected CAN device (see enumeration \a cdr_canDevice_t).
- *   @param hMsg
- * The message to send is identified by the handle.
+ *   @param hMB
+ * The mailbox to serialize onto the CAN bus is identified by the handle.
  *   @remark
  * It is permitted to call this function from the context of the notification IRQ for the
  * same message. This function can be used to implement a send queue: If it returns \a
@@ -928,7 +920,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
  * or full flexibility with maximum overhead.
  */
 static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
-                                                   , unsigned int hMsg
+                                                   , unsigned int hMB
                                                    )
 {
     /* A pointer to the device in operation and its configuration is basis of the next
@@ -940,11 +932,11 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
     /* Tx is only possible with normal mailboxes. */
     const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
                      , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
-    assert(hMsg >= noFIFOMsgs);
+    assert(hMB >= noFIFOMsgs);
 
-    /* hMsg needs a simple transformation to become the index of the mailboxes in the
+    /* hMB needs a simple transformation to become the index of the mailboxes in the
        device. */
-    const unsigned int idxMB = hMsg + idxFirstNormalMailbox - noFIFOMsgs;
+    const unsigned int idxMB = hMB + idxFirstNormalMailbox - noFIFOMsgs;
     assert(idxMB < pDeviceConfig->noMailboxes);
 
     /* Get the pointer to the mailbox in use. */
@@ -1022,12 +1014,12 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
  * device. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
- *   @param hMsg
- * The message to send is identified by the handle. Any message can be send only if it had
- * been associated with a mailbox in the hardware, i.e. a successful call of
- * cdr_osMakeMailboxReservation() is prerequisite of using this function. The handle to use
- * here is the same as used when having done the related call of
- * cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
+ *   @param hMB
+ * The message to send is identified by the handle of the mailbox it is associated with. A
+ * message can be send only if it had been associated with a mailbox in the hardware, i.e.
+ * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
+ * function. The handle to use here is the same as used when having done the related call
+ * of cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
  *   @param payload
  * The message content bytes to sent. The number of bytes to send is taken from the current
  * mailbox configuration. Normally, it'll be the never changed value aggreed on during the
@@ -1044,12 +1036,12 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
  * non-overlapping over time, alternating use is permitted, too.
  */
 bool cdr_osSendMessage( unsigned int idxCanDevice
-                      , unsigned int hMsg
+                      , unsigned int hMB
                       , const uint8_t payload[]
                       )
 {
     /* Check and prepare the mailbox to be used and get the pointer to it. */
-    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(idxCanDevice, hMsg);
+    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(idxCanDevice, hMB);
 
     /* Complete send operation if preparation reports success. */
     if(pTxMB != NULL)
@@ -1098,12 +1090,12 @@ bool cdr_osSendMessage( unsigned int idxCanDevice
  * device. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
- *   @param hMsg
- * The message to send is identified by the handle. Any message can be send only if it had
- * been associated with a mailbox in the hardware, i.e. a successful call of
- * cdr_osMakeMailboxReservation() is prerequisite of using this function. The handle to use
- * here is the same as used when having done the related call of
- * cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
+ *   @param hMB
+ * The message to send is identified by the handle of the mailbox it is associated with. A
+ * message can be send only if it had been associated with a mailbox in the hardware, i.e.
+ * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
+ * function. The handle to use here is the same as used when having done the related call
+ * of cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
  *   @param isExtId
  * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
  * additional Boolean information, which of the two the ID \a canId belongs to.
@@ -1126,7 +1118,7 @@ bool cdr_osSendMessage( unsigned int idxCanDevice
  * non-overlapping over time, alternating use is permitted, too.
  */
 bool cdr_osSendMessageEx( unsigned int idxCanDevice
-                        , unsigned int hMsg
+                        , unsigned int hMB
                         , bool isExtId
                         , unsigned int canId
                         , unsigned int DLC
@@ -1134,7 +1126,7 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
                         )
 {
     /* Check and prepare the mailbox to be used and get the pointer to it. */
-    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(idxCanDevice, hMsg);
+    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(idxCanDevice, hMB);
 
     /* Complete send operation if preparation reports success. */
     if(pTxMB != NULL)
@@ -1195,12 +1187,12 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  * device. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
- *   @param hMsg
- * The mailbox to poll is identified by the handle. A message can be received only if it
- * had been associated with a mailbox in the hardware, i.e. a successful call of
- * cdr_osMakeMailboxReservation() is prerequisite of using this function. The handle to use
- * here is the same as used when having done the related call of
- * cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
+ *   @param hMB
+ * The message to send is identified by the handle of the mailbox it is associated with. A
+ * message can be received only if it had been associated with a mailbox in the hardware, i.e.
+ * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
+ * function. The handle to use here is the same as used when having done the related call
+ * of cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
  *   @param pDLC
  * At entry into this functio, * \a pDLC is the size in Byte of the output buffer \a
  * payload. No more than this number of payload bytes will be returned.\n
@@ -1215,7 +1207,7 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  *   \a pTimeStamp can be NULL if the called doesn't want to make use of the time stamp.
  */
 cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
-                                , unsigned int hMsg
+                                , unsigned int hMB
                                 , unsigned int * const pDLC
                                 , uint8_t payload[]
                                 , unsigned int * const pTimeStamp
@@ -1230,11 +1222,11 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
     /* Rx polling is only possible with normal mailboxes. */
     const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
                      , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
-    assert(hMsg >= noFIFOMsgs);
+    assert(hMB >= noFIFOMsgs);
 
-    /* hMsg needs a simple transformation to become the index of the mailboxes in the
+    /* hMB needs a simple transformation to become the index of the mailboxes in the
        device. */
-    const unsigned int idxMB = hMsg + idxFirstNormalMailbox - noFIFOMsgs;
+    const unsigned int idxMB = hMB + idxFirstNormalMailbox - noFIFOMsgs;
     assert(idxMB < pDeviceConfig->noMailboxes);
 
     /* Identify the interrupt bit that belongs to the given mailbox (RM 43.4.12/13/21, p.

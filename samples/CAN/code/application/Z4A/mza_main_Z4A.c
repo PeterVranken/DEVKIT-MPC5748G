@@ -161,7 +161,7 @@ extern void (*volatile SECTION(.bss.startup) sup_main_Z2)(signed int, const char
 /**
  * Test of Rx by FIFO: A callback receives the Rx data and reports the event via the serial
  * output.
- *   @param hMsg
+ *   @param hMB
  * The handle of the message as agreed on at messge registration time is returned to support
  * a simple association of the Tx event with the transmitted data content.
  *   @param isExtId
@@ -185,7 +185,7 @@ extern void (*volatile SECTION(.bss.startup) sup_main_Z2)(signed int, const char
  * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
  * if two of them shouldn't have the same interrupt priority.
  */
-void mza_osCbOnCANRx( unsigned int hMsg
+void mza_osCbOnCANRx( unsigned int hMB
                     , bool isExtId
                     , unsigned int canId
                     , unsigned int DLC
@@ -199,7 +199,7 @@ void mza_osCbOnCANRx( unsigned int hMsg
 
     int noChars = sniprintf( pWr, noAvailChar
                            , " Msg %u, ID %u (%s) at %u us: %u Bytes"
-                           , hMsg
+                           , hMB
                            , canId
                            , isExtId? "ext": "std"
                            , timeStamp/2 /* unit: 1/500000Bd */
@@ -257,7 +257,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
     /* Register outbound message 0x7f in the first normal mailbox. */
 #define H_MBTX_CAN_ID_0X7F   72
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ H_MBTX_CAN_ID_0X7F
+                                      , /* hMB */ H_MBTX_CAN_ID_0X7F
                                       , /* isExtId */ false
                                       , /* canId */ 0x7f
                                       , /* isReceived */ false
@@ -269,7 +269,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
     /* Register Rx test message 0x80 in the second normal mailbox for polling. */
 #define H_MBRX_CAN_ID_0X80   73
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ H_MBRX_CAN_ID_0X80
+                                      , /* hMB */ H_MBRX_CAN_ID_0X80
                                       , /* isExtId */ false
                                       , /* canId */ 0x80
                                       , /* isReceived */ true
@@ -280,7 +280,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
 
     /* Register some FIFO Rx messages. */
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 0
+                                      , /* hMB */ 0
                                       , /* isExtId */ false
                                       , /* canId */ 0x81
                                       , /* isReceived */ true
@@ -289,7 +289,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 1
+                                      , /* hMB */ 1
                                       , /* isExtId */ false
                                       , /* canId */ 0x82
                                       , /* isReceived */ true
@@ -298,7 +298,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 2
+                                      , /* hMB */ 2
                                       , /* isExtId */ false
                                       , /* canId */ 0x83
                                       , /* isReceived */ true
@@ -307,7 +307,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 71
+                                      , /* hMB */ 71
                                       , /* isExtId */ false
                                       , /* canId */ 0x7ff
                                       , /* isReceived */ true
@@ -316,7 +316,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 4
+                                      , /* hMB */ 4
                                       , /* isExtId */ true
                                       , /* canId */ 0x81
                                       , /* isReceived */ true
@@ -325,7 +325,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 23
+                                      , /* hMB */ 23
                                       , /* isExtId */ true
                                       , /* canId */ 0x82
                                       , /* isReceived */ true
@@ -334,7 +334,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 25
+                                      , /* hMB */ 25
                                       , /* isExtId */ true
                                       , /* canId */ 0x83
                                       , /* isReceived */ true
@@ -343,7 +343,7 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMsg */ 70
+                                      , /* hMB */ 70
                                       , /* isExtId */ true
                                       , /* canId */ 0x7ff
                                       , /* isReceived */ true
@@ -396,7 +396,7 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
     {
         /* Most of the time we use the simple API. */
         if(!cdr_osSendMessage( /* idxCanDevice */ cdr_canDev_CAN_0
-                             , /* hMsg */ H_MBTX_CAN_ID_0X7F
+                             , /* hMB */ H_MBTX_CAN_ID_0X7F
                              , &payload_.payload[0]
                              )
           )
@@ -413,7 +413,7 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
                    , canId = 127u - 8u + DLC;
         bool isExtId = canId <= 125;
         if(!cdr_osSendMessageEx( /* idxCanDevice */ cdr_canDev_CAN_0
-                               , /* hMsg */ H_MBTX_CAN_ID_0X7F
+                               , /* hMB */ H_MBTX_CAN_ID_0X7F
                                , isExtId
                                , canId
                                , DLC
@@ -432,7 +432,7 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
     uint8_t payloadRx[DLC];
     unsigned int timeStampRx;
     const cdr_errorAPI_t resultRx = cdr_osReadMessage( /* idxCanDevice */ cdr_canDev_CAN_0
-                                                     , /* hMsg */ H_MBRX_CAN_ID_0X80
+                                                     , /* hMB */ H_MBRX_CAN_ID_0X80
                                                      , &DLC
                                                      , &payloadRx[0]
                                                      , &timeStampRx

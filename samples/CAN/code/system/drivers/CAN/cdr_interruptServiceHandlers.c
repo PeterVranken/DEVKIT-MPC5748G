@@ -246,7 +246,7 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
        checked the configuration at driver initialization time. (Which won't hinder
        us from having an assertion here.) */
     assert(osCallbackOnRx != NULL);
-    (*osCallbackOnRx)( /* hMsg */ idHit
+    (*osCallbackOnRx)( /* hMB */ idHit
                      , isExtID
                      , canId
                      , DLC
@@ -408,7 +408,7 @@ static void isrMailbox( CAN_Type * const pDevice
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
             assert(pIrqConfig->osCallbackOnRx != NULL);
-            (*pIrqConfig->osCallbackOnRx)( /* hMsg */ idxMBOffset
+            (*pIrqConfig->osCallbackOnRx)( /* hMB */ idxMBOffset
                                          , isExtID
                                          , canId
                                          , DLC
@@ -427,7 +427,7 @@ static void isrMailbox( CAN_Type * const pDevice
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
             assert(pIrqConfig->osCallbackOnRx != NULL);
-            (*pIrqConfig->osCallbackOnTx)( /* hMsg */ idxMBOffset
+            (*pIrqConfig->osCallbackOnTx)( /* hMB */ idxMBOffset
                                          , isExtID
                                          , canId
                                          , DLC

@@ -88,7 +88,7 @@ limitation for any realistic use-case.
  */
 
 /// @todo Preliminary solution. Will later be handled by application owned copy of this file
-extern void mza_osCbOnCANRx( unsigned int hMsg
+extern void mza_osCbOnCANRx( unsigned int hMB
                            , bool isExtId
                            , unsigned int canId
                            , unsigned int DLC

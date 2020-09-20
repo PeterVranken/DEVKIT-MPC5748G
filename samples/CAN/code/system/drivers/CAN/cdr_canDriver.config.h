@@ -76,9 +76,9 @@
  * mailbox can preempt in this case. See configuration of interrupt priorities
  * (configuration items \a irqGroup*IrqPrio and -- related -- \a irqGroup*TargetCore in
  * struct \a cdr_canDeviceConfig_t).
- *   @param hMsg
- * The handle of the message as agreed on at messge registration time is returned to support
- * a simple association of the Rx event with the data content.
+ *   @param hMB
+ * The handle of the notifying mailbox as agreed on at messge registration time is returned
+ * to support a simple association of the Rx event with the data content.
  *   @param isExtId
  * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
  * additional Boolean information, which of the two the ID \a canId belongs to.
@@ -101,7 +101,7 @@
  * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
  * if two of them should be configured not to have the same interrupt priority.
  */
-typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMsg
+typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMB
                                     , bool isExtId
                                     , unsigned int canId
                                     , unsigned int DLC
@@ -126,9 +126,9 @@ typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMsg
  * same mailbox group but another Tx mailbox can preempt in this case. See
  * configuration of interrupt priorities (configuration items \a irqGroup*IrqPrio and
  * -- related -- \a irqGroup*TargetCore).
- *   @param hMsg
- * The handle of the message as agreed on at messge registration time is returned to support
- * a simple association of the Tx event with the transmitted data content.
+ *   @param hMB
+ * The handle of the notifying mailbox as agreed on at messge registration time is returned
+ * to support a simple association of the Tx event with the transmitted data content.
  *   @param isExtId
  * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
  * additional Boolean information, which of the two the ID \a canId belongs to.
@@ -150,7 +150,7 @@ typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMsg
  * in supervisor mode. All Tx interrupts share this callback, so it needs to be reentrant
  * if two of them should be configured not to have the same interrupt priority.
  */
-typedef void (*cdr_osCallbackOnTx_t)( unsigned int hMsg
+typedef void (*cdr_osCallbackOnTx_t)( unsigned int hMB
                                     , bool isExtId
                                     , unsigned int canId
                                     , unsigned int DLC

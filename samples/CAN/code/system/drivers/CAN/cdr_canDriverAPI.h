@@ -110,7 +110,7 @@ void cdr_osInitCanDriver(void);
 
 /** After driver initialization, associate all CAN messages for Rx or Tx with mailboxes. */
 cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
-                                           , unsigned int hMsg
+                                           , unsigned int hMB
                                            , bool isExtId
                                            , unsigned int canId
                                            , bool isReceived
@@ -120,7 +120,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
 
 /* Rx polling API. Check if a message has been received and get it. */
 cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
-                                , unsigned int hMsg
+                                , unsigned int hMB
                                 , unsigned int * const pDLC
                                 , uint8_t payload[]
                                 , unsigned int * const pTimeStamp
@@ -128,13 +128,13 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
                                 
 /* Send a single Tx message from a reserved mailbox with pre-configured ID and DLC. */
 bool cdr_osSendMessage( unsigned int idxCanDevice
-                      , unsigned int hMsg
+                      , unsigned int hMB
                       , const uint8_t payload[]
                       );
 
 /* Send a single Tx message from a reserved mailbox with variable ID and DLC. */
 bool cdr_osSendMessageEx( unsigned int idxCanDevice
-                        , unsigned int hMsg
+                        , unsigned int hMB
                         , bool isExtId
                         , unsigned int canId
                         , unsigned int DLC
