@@ -294,10 +294,15 @@ static void isrGroupRxFIFO_##canDev(void)                                       
  *   @param pIFLAG
  * The ISR is shared between all mailboxes. The information to identify the IRQ requesting
  * mailbox is passed in. Here related register IFLAG1/2/3 of the CAN device by reference.
- *   @param idxMBOffset
+ *   @param idxMBFrom
  * This is the mailbox index of the first mailbox, in the group, which possibly requested
  * the IRQ. It is the index of the mailbox, whose interrupt flag is found with \a maskFrom
  * in flag register * \a pIFLAG.
+ *   @param offsMBIdxToHdl
+ * For normal mailboxes, their handle value is larger than their index in the hardware
+ * array. (Because the lower index range designates the FIFI filter entries, which are more
+ * than the mailboxes that are substituted by the FIFO.) Here, we have the offset between
+ * the two - needed for the feedback to the client code.
  *   @param maskFrom
  * The ISR is shared between all mailboxes. The information to identify the IRQ requesting
  * mailbox is passed in. Here the bit mask to touch the interrupt flag of the first
@@ -312,7 +317,8 @@ static void isrGroupRxFIFO_##canDev(void)                                       
  */
 static void isrMailbox( CAN_Type * const pDevice
                       , volatile uint32_t *pIFLAG
-                      , unsigned int idxMBOffset
+                      , unsigned int idxMBFrom
+                      , unsigned int offsMBIdxToHdl
                       , uint32_t maskFrom
                       , uint32_t maskTo
                       , const cdr_mailboxIrqConfig_t * const pIrqConfig
@@ -335,15 +341,15 @@ static void isrMailbox( CAN_Type * const pDevice
             else
             {
                 /* This is not the causing mailbox - try next one. */
-                ++ idxMBOffset;
+                ++ idxMBFrom;
                 maskFrom <<= 1;
                 continue;
             }
         } /* End if(Did we identify the interrupt requesting mailbox?) */
 
         /* If we get here then we have found the causing mailbox. It is mailbox
-           idxMBOffset. */
-        volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMBOffset);
+           idxMBFrom. */
+        volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMBFrom);
 
         /* Read the mailbox CODE: It tells whether we have an Rx or Tx message and what
            happened. See RM 43.4.40, p. 1771ff, Tables 43-8 and 43-9, for the different
@@ -399,6 +405,10 @@ static void isrMailbox( CAN_Type * const pDevice
 
         /* Down here, no access to the device hardware is allowed any more. */
 
+        /* The index of the mailbox in the device requires a simple transformation to
+           become the mailbox handle. */
+        const unsigned int hMB = idxMBFrom + offsMBIdxToHdl;
+
         if(isRx)
         {
             /* We have an Rx mailbox interrupt. */
@@ -408,7 +418,7 @@ static void isrMailbox( CAN_Type * const pDevice
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
             assert(pIrqConfig->osCallbackOnRx != NULL);
-            (*pIrqConfig->osCallbackOnRx)( /* hMB */ idxMBOffset
+            (*pIrqConfig->osCallbackOnRx)( hMB
                                          , isExtID
                                          , canId
                                          , DLC
@@ -427,7 +437,7 @@ static void isrMailbox( CAN_Type * const pDevice
                checked the configuration at driver initialization time. (Which won't hinder
                us from having an assertion here.) */
             assert(pIrqConfig->osCallbackOnRx != NULL);
-            (*pIrqConfig->osCallbackOnTx)( /* hMB */ idxMBOffset
+            (*pIrqConfig->osCallbackOnTx)( hMB
                                          , isExtID
                                          , canId
                                          , DLC
@@ -456,9 +466,17 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
                     &&  (idxTo)-(idxFrom)+1 >= 4  &&  (idxTo)-(idxFrom)+1 <= 32             \
                     &&  ((idxTo)-(idxFrom)+1) % 4 == 0                                      \
                     &&  (idxFrom)/32 == (idxTo)/32                                          \
+                    &&  cdr_canDev_##canDev < sizeOfAry(cdr_canDriverConfig)                \
                   , "Bad arguments passed to macro ISR_GROUP_MAILBOX to generate mailbox"   \
                     " ISR"                                                                  \
                   );                                                                        \
+                                                                                            \
+    const cdr_canDeviceConfig_t * const pDeviceConfig =                                     \
+                                        &cdr_canDriverConfig[cdr_canDev_##canDev];          \
+                                                                                            \
+    /* The index of the mailbox in the device and the mailbox handle are related by a */    \
+    /* non-zero offset if the FIFO is enabled. Needed for client notification. */           \
+    const unsigned int MBHdlMinusIdx = 6u*pDeviceConfig->CTRL2_RFFN;                        \
                                                                                             \
     /* Here, we know very well, which device and interrupt we are. We can figure out, which \
        interrupt flag register to use with which masks and all of this without any runtime  \
@@ -471,9 +489,10 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
     isrMailbox( canDev                                                                      \
               , pIFLAG                                                                      \
               , (idxFrom)                                                                   \
+              , MBHdlMinusIdx                                                               \
               , maskFrom                                                                    \
               , maskTo                                                                      \
-              , &cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupMB##idxFrom##_##idxTo     \
+              , &pDeviceConfig->irqGroupMB##idxFrom##_##idxTo                               \
               );                                                                            \
 } /* End of isrGroupMB##idxFrom##_##idxTo##_##canDev */
 

@@ -165,6 +165,7 @@ static inline unsigned int cdr_getNoFIFOFilterEntries
        structure.
          See RM 43.4.14, table on p. 1740, for the number of table entries depending on
        CTRL2[RFFN]. */
+/// @todo Check at all client code locations whether we need if(pDeviceConfig->isFIFOEnabled). If not document it
     return 8u*(pCanDevConfig->CTRL2_RFFN+1u);
 
 } /* End of cdr_getNoFIFOFilterEntries */
