@@ -1,0 +1,114 @@
+= CAN I/O Driver
+:Author:            Peter Vranken
+:Email:             mailto:Peter_Vranken@Yahoo.de[P. Vranken]
+:Revision:          1
+//:doctype:           book
+:title-page:
+//:table-caption:     Tabelle // TODO Extract all german label settings into new template
+:toc:               left
+//:toc-title:         Inhaltsverzeichnis
+//:toc:
+:toclevels:         3
+//:numbered:
+:xrefstyle:         short
+//:sectanchors:       // Have URLs for chapters (http://.../#section-name
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+// https://asciidoctor.org/docs/user-manual/
+
+== Overview
+
+This folder contains a CAN communication I/O driver for MPC5748G and
+safe-RTOS. Features:
+
+* Support of one to eight available CAN devices
+* Pin configuration only for CAN device 0: On the PCB of the
+  DEVKIT-MPC5748G, this one is equiped with a tranceiver chip and connected
+  to connector P5. Just connect your Vector, Kvaser or PEAK CAN device and
+  run first tests
+* The driver supports standard CAN
+* Ease of use: One-by-one relation between hardware mailboxes and CAN ID.
+  We have plenty of mailboxes so that sharing of mailboxes between
+  different CAN IDs won't ever pay off
+* Rx FIFO can be enabled to further increase the number of maiboxes. We
+  have a maximum of 96 to 186 mailboxes available per device, depending on
+  how many are processed by the FIFO
+ ** This number can even be increased to 276 if no extended CAN IDs are in
+    use
+* Mailboxes can be operated by polling or by interrupt
+ ** Mailboxes are organized in groups of 4, 8, 16 or 32. Each group can
+    have its own interrupt - processed by the same or individual handlers,
+    having same or different interrupt prriority, processed on the same or
+    on different cores
+* Mailbox groups have their individual privileges configuration. A group
+  can e.g. be dedicated to the safety process only. A task from the
+  QM process will neither be able to see the interrupt notification (if
+  any) nor to use the polling or transmission APIs
+* Configuration with compile-time expressions. Applying C99's designated
+  initializer expressions, the readability and maintainabilty of the
+  configuration file is pretty good
+
+== Why don't we offer CAN FD?
+
+Basicall, CAN FD can be enabled by a few addtional register configurations
+and setting the enable bit. The complexity results from the now
+inhomogenous layout of the mailbox memory. For standard CAN it's easy. ALl
+messages have a payload of 8 Byte and the form an array. For FD, one has
+to decide how many message have 8 Byte size, how many have 16 Byte, etc.
+Defining a generic and easy to use API (both run-time and compile-time
+configuration) becomes more difficult.
+
+Moreover, the larger mailboxes together with the given size of available
+memory reduce the number of mailboxes significantly, so that a driver
+without some built-in buffering strategies may even be insufficient for
+the client code. Such a startegy would mean a significant increase of the
+required lines of code.
+
+Last but not least, we simply lack the experience with CAN FD. Having
+never seen a true life CAN FD application so far (and nor an according
+network configuration or DBC file) it's even more difficult to invent a
+generic API for this use case.
+
+== How to use
+
+The driver has one principal header file,
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/cdr_canDriverAPI.h[cdr_canDriverAPI.h^].
+It contains the definition of the global interface of the CAN driver. Any
+client code of the driver should normally not need definitions from other
+header files - with the big exception of the definitions for the
+compile-time configuration of the driver.
+
+This header contains the data types and function prototypes to directly
+use. Client code of the driver will solely include this header.
+Nonetheless, this doesn't mean that this header file self-contained. It's
+not the encapsulation of an obscured driver implementation but includes
+other nested headers, which still need to be available for compilation of
+the client code.
+
+The other relevant header file is cdr_canDriver.config.h. Client code
+won't directly include it but you need to open it for configuration of the
+driver appropriately for your specific application. The principal element
+is the list of #defines to enable one or more of the physically available
+CAN devices; see e.g. #CDR_ENABLE_USE_OF_CAN_0. (Most applications won't
+use all of them.) By means of preprocessor switches, the driver
+configuration is produced only for the enabled set of devices (and alike
+for some runtime data objects). Disabled CAN devices are not touched at
+all by the driver and remain in reset state.
+
+cdr_canDriver.config.h is not only needed to enable the CAN devices but
+it's also a source of information for doing the compile-time configuration
+of the driver. The configuration items are explained.
+
+The actual configuration is made in file cdr_canDriver.config.inc. This is
+a C implementation file, that contains the definition of the configuration
+data object. Here, you specify your particular configuration in the
+initializer expression of the data object. This is strongly facilitated by
+using C99's designated initializer expressions.
+
+:Local Variables:
+:coding:    utf-8
+:End:

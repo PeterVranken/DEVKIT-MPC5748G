@@ -152,23 +152,28 @@ extern cdr_canDriverData_t cdr_canDriverData;
  */
 
 /**
- * Get the number of FIFO CAN ID filter entries in the filter table.
+ * Get the additional number of CAN messages, which can processed due to an enabled FIFO.
+ * The FIFO filter table utilizes the driver RAM more efficiently than the normal mailboxes
+ * and in our configuration both can be applied for one CAN ID. Therefore, the larger the
+ * FIFO filter table is configured the more different CAN IDs can be processed.
  *   @return
- * Get the number in the range 0..128.
- *   @param pCanDevConfig
+ * Get the number of additionally processable CAN IDs. The result is zero if the FIFO is
+ * switched off.
+ *   @param pDeviceConfig
  * The result depends on the device configuration. It is passed in by reference.
  */
-static inline unsigned int cdr_getNoFIFOFilterEntries
-                                        (const cdr_canDeviceConfig_t *pCanDevConfig)
+static inline unsigned int cdr_getAdditionalCapacityDueToFIFO
+                                        (const cdr_canDeviceConfig_t *pDeviceConfig)
 {
     /* Initialize the FIFO filter table. See RM 43.4.43, p. 1785ff, for the binary
        structure.
          See RM 43.4.14, table on p. 1740, for the number of table entries depending on
-       CTRL2[RFFN]. */
-/// @todo Check at all client code locations whether we need if(pDeviceConfig->isFIFOEnabled). If not document it
-    return 8u*(pCanDevConfig->CTRL2_RFFN+1u);
+       CTRL2[RFFN].
+         Note, we don't need to have confitional code whether FIFO is on; if off than RFFN
+       is surely zero. */
+    return 6u*pDeviceConfig->CTRL2_RFFN;
 
-} /* End of cdr_getNoFIFOFilterEntries */
+} /* End of cdr_getAdditionalCapacityDueToFIFO */
 
 
 
@@ -182,7 +187,7 @@ static inline unsigned int cdr_getNoFIFOFilterEntries
  *   @param pDeviceConfig
  * The configuration data set of the given CAN device by reference.
  */
-static inline unsigned int cdr_getIdxOfFirstMailbox
+static inline unsigned int cdr_getIdxOfFirstNormalMailbox
                                         (const cdr_canDeviceConfig_t * const pDeviceConfig)
 {
     /* See RM, table on p.1740. */
@@ -190,7 +195,7 @@ static inline unsigned int cdr_getIdxOfFirstMailbox
            ? 8u + 2u*pDeviceConfig->CTRL2_RFFN
            : 0u;
 
-} /* End of cdr_getIdxOfFirstMailbox */
+} /* End of cdr_getIdxOfFirstNormalMailbox */
 
 
 

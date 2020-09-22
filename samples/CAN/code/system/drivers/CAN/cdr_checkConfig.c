@@ -127,18 +127,26 @@ bool cdr_checkDriverConfiguration(void)
         
         /* The FIFO requires at least 6 Mailboxes and more, dependent on the size of the
            filter table. */
-        ASSERT(cdr_getIdxOfFirstMailbox(pDevCfg) <= pDevCfg->noMailboxes);
+        ASSERT(cdr_getIdxOfFirstNormalMailbox(pDevCfg) <= pDevCfg->noMailboxes);
         
         /* Technically feasible: No single CAN message can be configured. Nonetheless, we
            rate this an error. */
         ASSERT(pDevCfg->isFIFOEnabled ||  pDevCfg->noMailboxes > 0);
         
+        /* Our different index and table sizes computing convenience functions, like
+           cdr_getAdditionalCapacityDueToFIFO() require a "neutral setting" of the FIFO
+           filter table size if FIFO is not enabled. */
+        ASSERT(pDevCfg->isFIFOEnabled  &&  pDevCfg->CTRL2_RFFN <= 15
+               ||  !pDevCfg->isFIFOEnabled  &&  pDevCfg->CTRL2_RFFN == 0
+              );
+        
         /* CAN error interrupts are configured but not implemented yet. */
+        /// @todo Modify this check once the error IRQs are implemented
         ASSERT(pDevCfg->irqGroupError.irqPrio == 0);
         
         /* FIFO is enabled but mailboxes interrupts are configured for mailboxes, which are
            not available with FIFO enabled. */
-        const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDevCfg);
+        const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstNormalMailbox(pDevCfg);
         ASSERT(idxFirstNormalMailbox <= 3  ||  pDevCfg->irqGroupMB0_3.irqPrio == 0);
         ASSERT(idxFirstNormalMailbox <= 7  ||  pDevCfg->irqGroupMB4_7.irqPrio == 0);
         ASSERT(idxFirstNormalMailbox <= 11  ||  pDevCfg->irqGroupMB8_11.irqPrio == 0);
@@ -151,7 +159,7 @@ bool cdr_checkDriverConfiguration(void)
                 &&  pDevCfg->irqGroupError.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB0_3.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB4_7.idxTargetCore < RTOS_NO_CORES
-                &&  pDevCfg->irqGroupMB8_11.idxTargetCore  < RTOS_NO_CORES
+                &&  pDevCfg->irqGroupMB8_11.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB12_15.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB16_31.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB32_63.idxTargetCore < RTOS_NO_CORES
@@ -210,7 +218,6 @@ bool cdr_checkDriverConfiguration(void)
                &&  pDevCfg->irqGroupError.osCallbackOnRx == NULL
                &&  pDevCfg->irqGroupError.osCallbackOnTx == NULL
               );
-
     } /* End for(All enabled CAN devices) */
 
     return true;

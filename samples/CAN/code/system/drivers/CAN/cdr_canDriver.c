@@ -1,5 +1,3 @@
-/// @todo Clarify whether to use enum or unsigned int as device index. Make more transparent what device by enum is opposed to device by MPC pointer
-/// @todo Check if we considered the dependencies on NO_MAILBOXES
 /// @todo Check all global data objects if they are located in the right, protected section
 /**
  * @file cdr_canDriver.c
@@ -45,8 +43,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   cdr_getNoFIFOFilterEntries (global inline)
- *   cdr_getIdxOfFirstMailbox (global inline)
+ *   cdr_getIdxOfFirstNormalMailbox (global inline)
  *   cdr_getMailbox (global inline)
  *   configSIULForUseWithDEVKIT_MPC5748G
  *   cdr_osInitCanDriver
@@ -56,21 +53,16 @@
  *   cdr_osReadMessage
  *   cdr_testSend_task10ms
  * Local functions
+ *   getNoFIFOFilterEntries
  *   getFIFOFilterEntry
  *   osPrepareSendMessage
  */
-
-/// @todo Define object, which makes ISR implementation independent from CAN device
-// Error/event counters, callback pointers, etc. A trampoline of separate, macro generated
-// trivial functions will select the right object by reference and jump into the common
-// implementation.
 
 /*
  * Include files
  */
 
 #include <stddef.h>
-#include <stdio.h> /// @todo Remove after temporary use in initial test code
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
@@ -189,11 +181,36 @@ cdr_canDriverData_t DATA_OS(cdr_canDriverData) =
 
 
 /**
+ * Get the number of FIFO CAN ID filter entries in the filter table.
+ *   @return
+ * Get the number in the range 0..128. 0 is returned if the FIFO is not enabled.
+ *   @param pDeviceConfig
+ * The result depends on the CAN device configuration. It is passed in by reference.
+ */
+static inline unsigned int getNoFIFOFilterEntries
+                                        (const cdr_canDeviceConfig_t *pDeviceConfig)
+{
+    /* Initialize the FIFO filter table. See RM 43.4.43, p. 1785ff, for the binary
+       structure.
+         See RM 43.4.14, table on p. 1740, for the number of table entries depending on
+       CTRL2[RFFN]. */
+    return pDeviceConfig->isFIFOEnabled
+           ? 8u*(pDeviceConfig->CTRL2_RFFN+1u)
+           : 0;
+
+} /* End of getNoFIFOFilterEntries */
+
+
+
+
+
+/**
  * Get an entry from the FIFO filter table. In our configuration, an entry is of type A
  * only. Effectively it is the CAN ID, which can be received through the FIFO. See RM
  * 43.4.43, Tables 43-17 and 43-18, on p. 1786 for details.
  *   @return
- * The pointer to the filter entry is returned.
+ * The pointer to the filter entry is returned. The result is undefined if the FIFO is not
+ * enabled.
  *   @param pCanDevice
  * The CAN device in use is passed by reference. It'll be one entry out of #CAN_BASE_PTRS
  * (see MPC5748G.h); this is however not checked.
@@ -211,8 +228,6 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
                                           , unsigned int idxFilterEntry
                                           )
 {
-/// @todo Modify function signature so that the asertion becomes possible again
-//    assert(idxFilterEntry < 8u*(CTRL2_RFFN+1u) /* see RM p. 1740 */);
     /* The filter table starts a byte offset 0xe0, the RAM starts at byte offset 0x80. */
     return (uint32_t*)((uint8_t*)&pCanDevice->RAMn[0]
                        + (0xe0 - 0x80)
@@ -348,7 +363,8 @@ static void initCanDevice(unsigned int idxCanDevice)
        most suitable for our CAN stack. */
     pCanDevice->MCR = CAN_MCR_MDIS(0)       /* For now keep device disabled. */
                       | CAN_MCR_FRZ(1)      /* During configuration, we need to stay frozen */
-                      | CAN_MCR_RFEN(1)     /* Don't use FIFO, not compatible with FD */
+                      | CAN_MCR_RFEN(pCanDevConfig->isFIFOEnabled)/* Enable FIFO? Note, FIFO
+                                                                     not compatible with FD */ 
                       | CAN_MCR_HALT(1)     /* 1: Stay in halted mode for now */
                       | CAN_MCR_WAKMSK(0)   /* No wakeup IRQ needed */
                       | CAN_MCR_SOFTRST(0)  /* No reset needed */
@@ -521,7 +537,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     /* RM, 43.4.22, p. 1749: We set all mailbox mask registers. Because we have plenty of
        mailboxes no sharing of mailboxes between several CAN IDs will ever be required and
-       we set them all to "all CAN ID bits care". This make using the CAN driver most
+       we set them all to "all CAN ID bits care". This makes using the CAN driver most
        simple. */
     unsigned int u;
     for(u=0; u<CAN_RXIMR_COUNT; ++u)
@@ -539,7 +555,7 @@ static void initCanDevice(unsigned int idxCanDevice)
        structure.
          See RM 43.4.14, table on p. 1740, for the number of table entries depending on
        CTRL2[RFFN]. */
-    const unsigned int noFilterTableEntries = cdr_getNoFIFOFilterEntries(pCanDevConfig);
+    const unsigned int noFilterTableEntries = getNoFIFOFilterEntries(pCanDevConfig);
     for(u=0; u<noFilterTableEntries; ++u)
     {
         /* The FIFO filters don't have a state "disabled" like normal mailboxes have. If we
@@ -562,10 +578,12 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     /* Reset all normal mailboxes. Caution, this code depends on the FIFO enable and the
        chosen size of the FIFO filter table, see RM 43.4.14, table on p. 1740. */
-    const unsigned int idxFirstMB = cdr_getIdxOfFirstMailbox(pCanDevConfig);
+    const unsigned int idxFirstMB = cdr_getIdxOfFirstNormalMailbox(pCanDevConfig);
     _Static_assert(CAN_RXIMR_COUNT == 96, "Missing macro for available number of mailboxes");
     volatile cdr_mailbox_t *pMB = cdr_getMailbox(pCanDevice, idxFirstMB);
-    assert((void*)getFIFOFilterEntry(pCanDevice, noFilterTableEntries) == (void*)pMB);
+    assert(!pCanDevConfig->isFIFOEnabled
+           ||  (void*)getFIFOFilterEntry(pCanDevice, noFilterTableEntries) == (void*)pMB
+          );
     for(u=idxFirstMB; u<CAN_RXIMR_COUNT; ++u, ++pMB)
     {
         /* See RM 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
@@ -586,10 +604,6 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     } /* End for(All normal MBs) */
     assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
-
-    /* Configure the MCU pins so that the external circuitry is connected to the MCU
-       internal CAN device we've just configured. */
-    configSIULForUseWithDEVKIT_MPC5748G();
 
     /* Install required interrupt handlers. By default, we have the three FIFO related
        IRQs. Later, at registration time of mailboxes, there may come many more. */
@@ -616,9 +630,10 @@ static void initCanDevice(unsigned int idxCanDevice)
  */
 void cdr_osInitCanDriver(void)
 {
-    /* Check user provided driver configuration. A check in DEBUG compilation is sufficient
-       as it is all compile-time constant data. There won't ever be a problem in the
-       PRODUCTION code if the check succeeded once in DEBUG compilation. */
+    /* Check user provided driver configuration. Note, even a check only in DEBUG
+       compilation is sufficient as it is all about static compile-time constant data.
+       There won't ever be a problem in the PRODUCTION code if the check succeeded once in
+       DEBUG compilation. */
     assert(cdr_checkDriverConfiguration());
 
     /* Check helper function by sample tests. */
@@ -630,6 +645,10 @@ void cdr_osInitCanDriver(void)
     unsigned int idxCanDev;
     for(idxCanDev=0; idxCanDev<(unsigned)cdr_canDev_noCANDevicesEnabled; ++idxCanDev)
         initCanDevice(idxCanDev);
+
+    /* Configure the MCU pins so that the external circuitry is connected to the MCU
+       internal CAN device we've just configured. */
+    configSIULForUseWithDEVKIT_MPC5748G();
 
 } /* End of cdr_osInitCanDriver */
 
@@ -751,8 +770,8 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
        configuration differs.
          The message handle space for the client code appends the normal mailboxes to the
        FIFO filter entries. */
-    const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
-                     , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
+    const unsigned int noFIFOMsgs = getNoFIFOFilterEntries(pDeviceConfig)
+                     , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
     if(hMB < noFIFOMsgs)
     {
         /* The reservation addresses to a FIFO Rx mailbox. Tx is forbidden and a
@@ -789,13 +808,13 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                     );
         *getFIFOFilterEntry(pDevice, idxFilterEntry) = rxFilter;
     }
-    else if(hMB + idxFirstNormalMailbox < noFIFOMsgs + pDeviceConfig->noMailboxes)
+    else if(hMB < pDeviceConfig->noMailboxes + additionalCapaFIFO)
     {
         /* A normal mailbox is reserved. */
 
         /* hMB needs a simple transformation to become the index of the mailboxes in the
            device. */
-        const unsigned int idxMB = hMB + idxFirstNormalMailbox - noFIFOMsgs;
+        const unsigned int idxMB = hMB - additionalCapaFIFO;
         assert(idxMB < pDeviceConfig->noMailboxes);
 
         volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMB);
@@ -930,13 +949,13 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
 
     /* Tx is only possible with normal mailboxes. */
-    const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
-                     , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
+    const unsigned int noFIFOMsgs ATTRIB_DBG_ONLY = getNoFIFOFilterEntries(pDeviceConfig)
+                     , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
     assert(hMB >= noFIFOMsgs);
 
     /* hMB needs a simple transformation to become the index of the mailboxes in the
        device. */
-    const unsigned int idxMB = hMB + idxFirstNormalMailbox - noFIFOMsgs;
+    const unsigned int idxMB = hMB - additionalCapaFIFO;
     assert(idxMB < pDeviceConfig->noMailboxes);
 
     /* Get the pointer to the mailbox in use. */
@@ -1220,13 +1239,13 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
 
     /* Rx polling is only possible with normal mailboxes. */
-    const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
-                     , idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
+    const unsigned int noFIFOMsgs ATTRIB_DBG_ONLY = getNoFIFOFilterEntries(pDeviceConfig)
+                     , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
     assert(hMB >= noFIFOMsgs);
 
     /* hMB needs a simple transformation to become the index of the mailboxes in the
        device. */
-    const unsigned int idxMB = hMB + idxFirstNormalMailbox - noFIFOMsgs;
+    const unsigned int idxMB = hMB - additionalCapaFIFO;
     assert(idxMB < pDeviceConfig->noMailboxes);
 
     /* Identify the interrupt bit that belongs to the given mailbox (RM 43.4.12/13/21, p.

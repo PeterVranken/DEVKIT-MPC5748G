@@ -676,7 +676,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
 
     /* With enabled FIFO, the first mailboxes are not in normal operation and we must
        not register their interrupts. */
-    const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstMailbox(pDeviceConfig);
+    const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstNormalMailbox(pDeviceConfig);
     #define REGISTER_ISR(idxFrom, idxTo)                                                    \
     if(idxFirstNormalMailbox <= (idxTo))                                                    \
     {                                                                                       \

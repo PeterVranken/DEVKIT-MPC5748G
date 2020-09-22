@@ -2,7 +2,30 @@
 #define CDR_CANDRIVER_API_INCLUDED
 /**
  * @file cdr_canDriver.h
- * Definition of global interface of module cdr_canDriver.c
+ * Definition of global interface of the CAN driver. Client code of the driver should
+ * normally not need definitions from other header files - with the big exception of the
+ * definitions for the compile-time configuration of the driver.\n
+ *   This header contains the data types and function prototypes to directly use. Client
+ * code of the driver will solely include this header. Nonetheless, this doesn't mean that
+ * this header file self-contained. It's not the encapsulation of an obscured driver
+ * implementation but includes other nested headers, which still need to be available for
+ * compilation of the client code.\n
+ *   The other relevant header file is cdr_canDriver.config.h. Client code won't directly
+ * include it but you need to open it for configuration of the driver appropriately for
+ * your specific application. The principal element is the list of #defines to enable one
+ * or more of the physically available CAN devices; see e.g. #CDR_ENABLE_USE_OF_CAN_0.
+ * (Most applications won't use all of them.) By means of preprocessor switches, the driver
+ * configuration is produced only for the enabled set of devices (and alike for some
+ * runtime data objects). Disabled CAN devices are not touched at all by the driver and
+ * remain in reset state.\n
+ *   cdr_canDriver.config.h is not only needed to enable the CAN devices but it's also a
+ * source of information for doing the compile-time configuration of the driver. The
+ * configuration items are explained.\n
+ *   The actual configuration is made in file cdr_canDriver.config.inc. This is a C
+ * implementation file, that contains the definition of the configuration data object.
+ * Here, you specify your particular configuration in the initializer expression of the
+ * data object. This is strongly facilitated by using C99's designated initializer
+ * expressions.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -45,7 +68,9 @@
 /** This is the enumeration of enabled CAN devices. The naming of the enumeration values is
     chosen similar to the naming of the devices in MPC5748G.h.\n
       The enumeration values form a zero based index of all devices that are enabled in the
-    configuration file cdr_canDriver.config.inc. */
+    configuration file cdr_canDriver.config.inc.\n
+      The enumeration values are intended for use as first argument, \a idxCanDevice, in
+    the public API of the CAN driver. */
 typedef enum cdr_canDevice_t
 {
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
@@ -141,13 +166,6 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
                         , const uint8_t payload[]
                         );
 
-/** Temporarily used test routine. Configure driver for test purpose. */
-void cdr_osTestRxTx_init(cdr_canDevice_t canDevice);
-
-/** Temporarily used test routine. Send a message on every invocation. */
-void cdr_osTestRxTx_task10ms(cdr_canDevice_t canDevice);
-
-
 
 /*
  * Global inline functions
@@ -158,7 +176,9 @@ void cdr_osTestRxTx_task10ms(cdr_canDevice_t canDevice);
  * processed. Basically, this number depends on the hardware, in particular the number of
  * mailboxes in the CAN device. However, the result is also dependent on the chosen
  * (constant) driver configuration: The use of the FIFO can significantly enlarge the
- * number.
+ * number.\n
+ *   The result of this function denotes the upper boundary for mailbox handles inthe
+ * public interface of the CAN driver, e.g. cdr_osMakeMailboxReservation().
  *   @return
  * Get the number in the range 0..186. The count is the total number, including Rx and Tx
  * messages.
@@ -170,8 +190,7 @@ static inline unsigned int cdr_maxNoCanIds(cdr_canDevice_t idxCanDevice)
     assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
     
-    return cdr_getNoFIFOFilterEntries(pDeviceConfig)
-           + (pDeviceConfig->noMailboxes - cdr_getIdxOfFirstMailbox(pDeviceConfig));
+    return pDeviceConfig->noMailboxes + cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
 
 } /* End of cdr_maxNoCanIds */
 
