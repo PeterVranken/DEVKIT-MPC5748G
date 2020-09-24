@@ -93,11 +93,30 @@ typedef struct cdr_canDeviceData_t
         contexts on the same core. It can't be accessed at all from other cores. */
     bool isBusOff;
 
+    /** Global counter for bus-off events. Each count means once entering the bus-off
+        state. The counter is saturated at its implementation maximum. 
+          @remark The counter is maintained by the core, which serves the group of bus off
+        interrupts from the given CAN device (see configuration item
+        cdr_canDriverConfig[idxCanDev].irqGroupBusOff.idxTargetCore) and can be read by other
+        contexts on the same core. It can't be accessed at all from other cores. */
+    unsigned int noBusOffEvents;
+    
+    /** Global counter of error interrupts (ESR1[ERRINT], RM 43.4.9, p. 1727ff) since
+        software startup. The counter is saturated at its implementation maximum.
+          @remark The counter is maintained by the core, which serves the group of error
+        interrupts from the given CAN device (see configuration item
+        cdr_canDriverConfig[idxCanDev].irqGroupError) and can be read by other contexts on
+        the same core. It can't be accessed at all from other cores. */
+    unsigned int noErrEvents;
+    
+    /** Last recently seen error in lower halfword of ESR1. */
+    uint16_t lastErrEvent;
+
     /** Global counter for Rx FIFO overflow events. Each count means a lost Rx message. The
         counter is saturated at its implementation maximum.
           @remark The counter is maintained by the core, which serves the group of FIFO
         interrupts from the given CAN device (see configuration item
-        cdr_canDriverConfig[idxCanDev].irqGroupFIFOTargetCore) and can be read by other
+        cdr_canDriverConfig[idxCanDev].irqGroupFIFO.idxTargetCore) and can be read by other
         contexts on the same core. It can't be accessed at all from other cores. */
     unsigned int noRxFIFOOverflowEvents;
 
@@ -106,7 +125,7 @@ typedef struct cdr_canDeviceData_t
         implementation maximum.
           @remark The counter is maintained by the core, which serves the group of FIFO
         interrupts from the given CAN device (see configuration item
-        cdr_canDriverConfig[idxCanDev].irqGroupFIFOTargetCore) and can be read by other
+        cdr_canDriverConfig[idxCanDev].irqGroupFIFO.idxTargetCore) and can be read by other
         contexts on the same core. It can't be accessed at all from other cores. */
     unsigned int noRxFIFOWarningEvents;
 
@@ -116,7 +135,7 @@ typedef struct cdr_canDeviceData_t
         reached.
           @remark The counter is maintained by the core, which serves the group of FIFO
         interrupts from the given CAN device (see configuration item
-        cdr_canDriverConfig[idxCanDev].irqGroupFIFOTargetCore) and can be read by other
+        cdr_canDriverConfig[idxCanDev].irqGroupFIFO.idxTargetCore) and can be read by other
         contexts on the same core. It can't be accessed at all from other cores. */
     unsigned int noRxMsgsFIFO;
 
@@ -215,14 +234,14 @@ static inline unsigned int cdr_getIdxOfFirstNormalMailbox
  * The current configuration of the device, e.g. FD or not or FIFO filter table size, is
  * not considered by the function. It just provides the simple address calculation.
  */
-static inline volatile cdr_mailbox_t *cdr_getMailbox( const CAN_Type * const pCanDevice
-                                                    , unsigned int idxMB
-                                                    )
+static inline volatile cdr_mailbox_t *cdr_getMailboxByIdx( const CAN_Type * const pCanDevice
+                                                         , unsigned int idxMB
+                                                         )
 {
     assert(idxMB < 96);
     return ((volatile cdr_mailbox_t*)&pCanDevice->RAMn[0]) + idxMB;
 
-} /* End of cdr_getMailbox */
+} /* End of cdr_getMailboxByIdx */
 
 
 

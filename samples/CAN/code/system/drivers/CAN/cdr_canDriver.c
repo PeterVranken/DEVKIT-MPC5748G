@@ -1,32 +1,8 @@
 /// @todo Check all global data objects if they are located in the right, protected section
 /**
  * @file cdr_canDriver.c
- * CAN communication driver for DEVKIT-MPC5748G.
- *   The CAN device has two interesting but contradictory features: It supports sharing of
- * Rx mailboxes (MB) between several or many CAN IDs in the structure of a FIFO and it
- * supports CAN FD. Both features are essential but they can't be used at a time.
- * Therefore, the implementation needs to support two configuration and code structures.
- * The user needs to decide, which configuration to apply. Using the FIFO means other
- * interrupts and other constraints with respect to available CAN IDs.
+ * CAN communication driver for DEVKIT-MPC5748G and safe-RTOS.
  *
-
-    @todo Use this text snippet in an overview documentation
-    The partitioning of the mailbox RAM space of the CAN device is difficult as it opens a
-    large range of possible configurations. It is not easily possible to decide, which one
-    is best and, as a matter of fact, it'll always depend on the given network database. At
-    the moment it is unclear to which extend this flexibility needs to be visible in the
-    driver configuration. In the current stage, we implement one configuratio, which will
-    suffice in many cases. This macro can't be changes as there are mutual dependencies with
-    other settings.\n
-           The use of the FIFO is not possible with CAN FD. If we enable CAN FD then we have
-        the additional complexity of mailboxes of different size. Their total number depends on
-        the chosen sizes and this can be hardly decided without knowing the specific network
-        database to serve. Anyway, the total number of supported mailboxes will be significantly
-        lower so that sharing of mailboxes will become unavoidable. This means another strong
-        dependency of the driver configuration on the given network database. A generic driver
-        configuration will be hard to find with CAN FD.
-
-
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -44,7 +20,7 @@
  */
 /* Module interface
  *   cdr_getIdxOfFirstNormalMailbox (global inline)
- *   cdr_getMailbox (global inline)
+ *   cdr_getMailboxByIdx (global inline)
  *   configSIULForUseWithDEVKIT_MPC5748G
  *   cdr_osInitCanDriver
  *   cdr_osMakeMailboxReservation
@@ -55,6 +31,7 @@
  * Local functions
  *   getNoFIFOFilterEntries
  *   getFIFOFilterEntry
+ *   getBaudRateSettings
  *   osPrepareSendMessage
  */
 
@@ -290,6 +267,105 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
 
 
 /**
+ * Helper function: Figure out, how to set the prescaler and counter regsiters of the
+ * device to achieve a given Baud rate.\n
+ *  The function doesn't return an error. All possible fault conditions have been checked
+ * before.
+ *   @param pPRESDIV 
+ * The required value PRESDIV is returned by reference.
+ *   @param pPROPSEG  
+ * The required value PROPSEG is returned by reference.
+ *   @param pPSEG1    
+ * The required value PSEG1 is returned by reference.
+ *   @param pPSEG2    
+ * The required value PSEG2 is returned by reference.
+ *   @param baudRate
+ * The desired Baud rate in the unit 10 kBd.
+ */
+static void getBaudRateSettings( unsigned int * const pPRESDIV
+                               , unsigned int * const pPROPSEG
+                               , unsigned int * const pPSEG1  
+                               , unsigned int * const pPSEG2
+                               , unsigned int baudRate
+                               )
+{
+    /* Bit-Timing: See RM 43.5.9.7, p. 1823ff and in particular Figure 43-7, p. 1826.
+         A CAN bit is splitted into two halfs to set the 1 or 3 sample points somewhere in
+       the middle. All units are the "time quantum", which is the "serial clock", the input
+       clock diveded by (PRESDIV+1). We choose 5 MHz as serial clock or 200ns as time
+       quantum.
+         The time span prior to sampling (in case of taking 1 sample) has a length of
+       PROPSEG+PSEG1+3 quanta and the time after has PSEG2+1 quanta. (The constant
+       addends result from the encoding of the registers; register+1 yields time
+       designation.)
+         Note, if three samples are taken then the additional two occur at two and one time
+       quantum earlier than with one sample. */
+    #define BD250_CAN_BD_RATE 250000
+    #define BD250_PRESDIV     9
+    #define BD250_PROPSEG     6
+    #define BD250_PSEG1       3
+    #define BD250_PSEG2       3
+    _Static_assert( ((float)(BD250_PRESDIV+1)/CCL_XTAL_CLK) /* time quantum in s as float */
+                    * (BD250_PROPSEG+BD250_PSEG1+3 + BD250_PSEG2+1) /* no quant. per CAN bit */
+                    == 1.0f/BD250_CAN_BD_RATE
+                  , "CAN timer configuration doesn't hit intended Baud rate 250 kBd"
+                  );
+
+    #define BD500_CAN_BD_RATE 500000
+    #define BD500_PRESDIV     4
+    #define BD500_PROPSEG     6
+    #define BD500_PSEG1       3
+    #define BD500_PSEG2       3
+    _Static_assert( ((float)(BD500_PRESDIV+1)/CCL_XTAL_CLK) /* time quantum in s as float */
+                    * (BD500_PROPSEG+BD500_PSEG1+3 + BD500_PSEG2+1) /* no quant. per CAN bit */
+                    == 1.0f/BD500_CAN_BD_RATE
+                  , "CAN timer configuration doesn't hit intended Baud rate 500 kBd"
+                  );
+
+    #define BD1000_CAN_BD_RATE 1000000
+    #define BD1000_PRESDIV     4
+    #define BD1000_PROPSEG     2
+    #define BD1000_PSEG1       1
+    #define BD1000_PSEG2       1
+    _Static_assert( ((float)(BD1000_PRESDIV+1)/CCL_XTAL_CLK) /* time quantum in s as float */
+                    * (BD1000_PROPSEG+BD1000_PSEG1+3 + BD1000_PSEG2+1) /* no quant. per bit */
+                    == 1.0f/BD1000_CAN_BD_RATE
+                  , "CAN timer configuration doesn't hit intended Baud rate 1 MBd"
+                  );
+
+    switch(baudRate)
+    {
+    case 25:
+        *pPRESDIV = BD250_PRESDIV;
+        *pPROPSEG = BD250_PROPSEG;
+        *pPSEG1   = BD250_PSEG1;
+        *pPSEG2   = BD250_PSEG2;
+        break;
+
+    default:
+        assert(false);
+    case 50:
+        *pPRESDIV = BD500_PRESDIV;
+        *pPROPSEG = BD500_PROPSEG;
+        *pPSEG1   = BD500_PSEG1;
+        *pPSEG2   = BD500_PSEG2;
+        break;
+
+    case 100:
+        *pPRESDIV = BD1000_PRESDIV;
+        *pPROPSEG = BD1000_PROPSEG;
+        *pPSEG1   = BD1000_PSEG1;
+        *pPSEG2   = BD1000_PSEG2;
+        break;
+    }
+
+
+
+} /* End of getBaudRateSettings */
+
+
+
+/**
  * Initialization of one CAN device. This function is called once per enabled CAN device
  * from the driver initialization.
  *   @return
@@ -364,7 +440,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     pCanDevice->MCR = CAN_MCR_MDIS(0)       /* For now keep device disabled. */
                       | CAN_MCR_FRZ(1)      /* During configuration, we need to stay frozen */
                       | CAN_MCR_RFEN(pCanDevConfig->isFIFOEnabled)/* Enable FIFO? Note, FIFO
-                                                                     not compatible with FD */ 
+                                                                     not compatible with FD */
                       | CAN_MCR_HALT(1)     /* 1: Stay in halted mode for now */
                       | CAN_MCR_WAKMSK(0)   /* No wakeup IRQ needed */
                       | CAN_MCR_SOFTRST(0)  /* No reset needed */
@@ -397,30 +473,21 @@ static void initCanDevice(unsigned int idxCanDevice)
     _Static_assert( CCL_XTAL_CLK == 40000000u
                   , "Configuration of CAN driver doesn't suit for the given board"
                   );
+    
+    /* Get the bit timing controlling device parameters. The function call implements a
+       table lookup for the supported Baud rates. */
+    unsigned int PRESDIV
+               , PROPSEG
+               , PSEG1  
+               , PSEG2;
+    getBaudRateSettings(&PRESDIV, &PROPSEG, &PSEG1, &PSEG2, pCanDevConfig->baudRate);
 
-    /* Bit-Timing: See RM 43.5.9.7, p. 1823ff and in particular Figure 43-7, p. 1826.
-         A CAN bit is splitted into two halfs to set the 1 or 3 sample points somewhere in
-       the middle. All units are the "time quantum", which is the "serial clock", the input
-       clock diveded by (PRESDIV+1). We choose 5 MHz as serial clock or 200ns as time
-       quantum.
-         The time span prior to sampling (in case of taking 1 sample) has a length of
-       PROPSEG+PSEG1+3 quanta and the time after has PSEG2+1 quanta. (The constant
-       addends result from the encoding of the registers; register+1 yields time
-       designation.)
-         Note, if three samples are taken then the additional two occur at two and one time
-       quantum earlier than with one sample. */
-    /// @todo Support at least 500k and 1M
-    #define CAN_BD_RATE 500000
-    #define PRESDIV     4
-    #define PROPSEG     6
-    #define PSEG1       3
-    #define PSEG2       3
-    _Static_assert( ((float)(PRESDIV+1)/CCL_XTAL_CLK)   /* time quantum in s as float */
-                    * (PROPSEG+PSEG1+3 + PSEG2+1)       /* no quantums per CAN bit */
-                    == 1.0f/CAN_BD_RATE
-                  , "CAN timer configuration doesn't hit intended Baud rate"
-                  );
-
+    /* The interrupt groups for CAN transmission errors (ERRINT and ERRINIT_FAST) and for the
+       bus off related errors (bus off/on ad Rx/Tx warning) are enabled by configuration.
+       If the priority is above zero, then they are enabled. */
+    const bool enableERRIrq = pCanDevConfig->irqGroupError.irqPrio > 0
+             , enableBOffIrq = pCanDevConfig->irqGroupBusOff.irqPrio > 0;
+    
     /* RM 43.5.4, p. 1795ff, and in particular Table 43-22, p. 1798f, provide the best
        explanation of the arbitration bits CTRL1[IRMQ] and CTRL2[MRP]. They control, which
        messages go into individual mailboxes and which go into the shared FIFO. Our
@@ -440,8 +507,8 @@ static void initCanDevice(unsigned int idxCanDevice)
                         | CAN_CTRL1_RJW(3)      /* Resync jump width=n+1, n=0..3. */
                         | CAN_CTRL1_PSEG1(PSEG1)/* PSEG1=n+1, n=0..7. */
                         | CAN_CTRL1_PSEG2(PSEG2)/* PSEG2=n+1, n=0..7. */
-                        | CAN_CTRL1_BOFFMSK(0)  /* Bus off IRQ enable */
-                        | CAN_CTRL1_ERRMSK(0)   /* Error IRQ enable */
+                        | CAN_CTRL1_BOFFMSK(enableBOffIrq? 1: 0) /* Bus off IRQ enable */
+                        | CAN_CTRL1_ERRMSK(enableERRIrq? 1: 0)   /* Error IRQ enable */
                         | CAN_CTRL1_CLKSRC(CLKSRC) /* Clock: We write same value as above. */
                         | CAN_CTRL1_LPB(0)  /* Enable loop back, a test mode without I/O. */
                         | CAN_CTRL1_TWRNMSK(0)  /* Tx warning IRQ enable */
@@ -461,7 +528,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     /* RM 43.4.14, Control 2 register, p. 1739. */
     pCanDevice->CTRL2 = CAN_CTRL2_ERRMSK_FAST(0)    /* IRQ enable ERRINT */
-                        | CAN_CTRL2_BOFFDONEMSK(0)  /* IRQ enable BOFFDONE */
+                        | CAN_CTRL2_BOFFDONEMSK(enableBOffIrq? 1: 0) /* IRQ enable BOFFDONE */
                         | CAN_CTRL2_RFFN(pCanDevConfig->CTRL2_RFFN)/* Balance between FIFO
                                                                       and MBs, 43.4.14 */
                         | CAN_CTRL2_TASD(pCanDevConfig->CTRL2_TASD)/* 43.5.9.9, start time
@@ -580,7 +647,7 @@ static void initCanDevice(unsigned int idxCanDevice)
        chosen size of the FIFO filter table, see RM 43.4.14, table on p. 1740. */
     const unsigned int idxFirstMB = cdr_getIdxOfFirstNormalMailbox(pCanDevConfig);
     _Static_assert(CAN_RXIMR_COUNT == 96, "Missing macro for available number of mailboxes");
-    volatile cdr_mailbox_t *pMB = cdr_getMailbox(pCanDevice, idxFirstMB);
+    volatile cdr_mailbox_t *pMB = cdr_getMailboxByIdx(pCanDevice, idxFirstMB);
     assert(!pCanDevConfig->isFIFOEnabled
            ||  (void*)getFIFOFilterEntry(pCanDevice, noFilterTableEntries) == (void*)pMB
           );
@@ -676,7 +743,7 @@ void cdr_osInitCanDriver(void)
  * code in PRODUCTION compilation.
  *   @param idxCanDevice
  * The administration of messages and mailboxes is made independently for all enabled CAN
- * device. This parameter chooses the affected CAN device.\n
+ * devices. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices.\n
  *   @param hMB
@@ -817,7 +884,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
         const unsigned int idxMB = hMB - additionalCapaFIFO;
         assert(idxMB < pDeviceConfig->noMailboxes);
 
-        volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMB);
+        volatile cdr_mailbox_t * const pMB = cdr_getMailboxByIdx(pDevice, idxMB);
 
         if((pMB->csWord & (CAN_MBCS_CODE_MASK | CAN_MBCS_IDE_MASK)) != 0)
             return cdr_errApi_mailboxReconfigured;
@@ -959,7 +1026,7 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
     assert(idxMB < pDeviceConfig->noMailboxes);
 
     /* Get the pointer to the mailbox in use. */
-    volatile cdr_mailbox_t * const pTxMB = cdr_getMailbox(pDevice, idxMB);
+    volatile cdr_mailbox_t * const pTxMB = cdr_getMailboxByIdx(pDevice, idxMB);
 
     /* Read status word of MB and decide whether we may send (already again). */
     const uint32_t csWord = pTxMB->csWord
@@ -972,10 +1039,10 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
            (RM 43.5.1, p. 1789). If notification is enabled then there are possible race
            conditions: Will the ISR or do we here reset the flag?
              The normal usecase of Tx notifications is virtualization of MBs by buffering:
-           The application code interface sends by putting the messge in a SW buffer only.
-           On each Tx notification from the CAN driver, the next element from the buffer is
-           passed on to the driver, i.e. to this function. In this use case, the
-           notifiocation IRQ will always come prior to the next call of this function and
+           The application code interface "sends" the message by putting it in a SW buffer
+           only. On each Tx notification from the CAN driver, the next element from the
+           buffer is passed on to the driver, i.e. to this function. In this use case, the
+           notification IRQ will always come prior to the next call of this function and
            so the interrupt is already negated on entry into this function.
              Consequently, if we unconditionally negate the flag here, then we either do,
            what we need to do (if no Tx notification is configured) or what is useless but
@@ -1030,7 +1097,7 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
  *   If the function returns \a false then it had no effect.
  *   @param idxCanDevice
  * The administration of messages and mailboxes is made independently for all enabled CAN
- * device. This parameter chooses the affected CAN device.\n
+ * devices. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
  *   @param hMB
@@ -1106,7 +1173,7 @@ bool cdr_osSendMessage( unsigned int idxCanDevice
  *   If the function returns \a false then it had no effect.
  *   @param idxCanDevice
  * The administration of messages and mailboxes is made independently for all enabled CAN
- * device. This parameter chooses the affected CAN device.\n
+ * devices. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
  *   @param hMB
@@ -1196,14 +1263,14 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  * then a new message had been arrived and the mailbox contents are returned to the
  * caller.\n
  *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
- * indcates that the call of the function came too late to read all incoming messages; at
+ * indicates that the call of the function came too late to read all incoming messages; at
  * least one preceeding message had been lost and overwritten by it successor.\n
  *   If no new message had been received since the previous call of this function for the
- * same mailbox then the function retuens \a cdr_errApi_rxMailboxEmpty. None of the other
+ * same mailbox then the function returns \a cdr_errApi_rxMailboxEmpty. None of the other
  * (pointer based) function results is set in this case.
  *   @param idxCanDevice
  * The administration of messages and mailboxes is made independently for all enabled CAN
- * device. This parameter chooses the affected CAN device.\n
+ * devices. This parameter chooses the affected CAN device.\n
  *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
  *   @param hMB
@@ -1213,7 +1280,7 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  * function. The handle to use here is the same as used when having done the related call
  * of cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
  *   @param pDLC
- * At entry into this functio, * \a pDLC is the size in Byte of the output buffer \a
+ * At entry into this function, * \a pDLC is the size in Byte of the output buffer \a
  * payload. No more than this number of payload bytes will be returned.\n
  *   After return, the caller will find the received number of bytes in * \a pDLC.
  *   @param payload
@@ -1225,6 +1292,9 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  * the unit of the timer would be 2µs. The timer wraps around at 2^16-1.\n
  *   \a pTimeStamp can be NULL if the called doesn't want to make use of the time stamp.
  */
+/// @todo Remove temporary test code
+unsigned int BSS_OS(cdr_test_cntMoveInClash) = 0;
+
 cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
                                 , unsigned int hMB
                                 , unsigned int * const pDLC
@@ -1290,47 +1360,67 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
     if((*pIFLAG & irqMask) != 0)
     {
         /* Get the pointer to the mailbox in use. */
-        volatile cdr_mailbox_t * const pRxMB = cdr_getMailbox(pDevice, idxMB);
+        volatile cdr_mailbox_t * const pRxMB = cdr_getMailboxByIdx(pDevice, idxMB);
 
         /* Read status word of MB. Field CODE tells more about normal reception or
            overflow. */
         const uint32_t csWord = pRxMB->csWord
                      , CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
-        assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
-        const uint32_t DLC = (pRxMB->csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT;
+                     
+        /* There is a little chance to access the mailbox during the move-in; data has not
+           fully arrived yet, which is the same logical situation as an entirely empty
+           mailbox. The situation is recognized by a set LSB.
+             Note that this happens occasionally although we have first checked the
+           interrupt flag but not yet released the mailbox. The move-in seems to take place
+           after the interrupt has raised - this can have a significant impact on IRQ based
+           reception: We are in the ISR but can't access the data yet? */
+/// @todo Should become if(4 || 6) then read else empty: This way the API is safe in be
+// applied to an Tx MB - which is required to make user API safe against mis-use
+        if((CODE & 1) != 0)
+/// @todo Remove temporary test code
+{
+++ cdr_test_cntMoveInClash;
+            return cdr_errApi_rxMailboxEmpty;
+}
+        else
+        {
+            assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
 
-        /* Copy received bytes into caller provided result buffer. The loop considers both
-           the provided buffer's size and the number of received bytes. The received DLC is
-           limited to 8 by HW. */
-        assert(DLC <= 8);
-        unsigned int u = *pDLC;
-        if(u > DLC)
-            u = DLC;
-        while(u-- > 0)
-            payload[u] = pRxMB->payload[u];
-        *pDLC = DLC;
+            const uint32_t DLC = (pRxMB->csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT;
 
-        /* Acknowledge the IRQ. */
-        *pIFLAG = irqMask; /* Clear bit by "w1c" */
+            /* Copy received bytes into caller provided result buffer. The loop considers both
+               the provided buffer's size and the number of received bytes. The received DLC is
+               limited to 8 by HW. */
+            assert(DLC <= 8);
+            unsigned int u = *pDLC;
+            if(u > DLC)
+                u = DLC;
+            while(u-- > 0)
+                payload[u] = pRxMB->payload[u];
+            *pDLC = DLC;
 
-        /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
-           (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
-           more details. */
-        (void)pDevice->TIMER;
-        
-        /* The time stamp of reception is returned on demand. */
-        if(pTimeStamp != NULL)
-            *pTimeStamp = (csWord & CAN_MBCS_TIME_STAMP_MASK) >> CAN_MBCS_TIME_STAMP_SHIFT;
+            /* Acknowledge the IRQ. */
+            *pIFLAG = irqMask; /* Clear bit by "w1c" */
 
-        /* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently
-           received message but the bits are sticky. If the status is read by the CPU then
-           they are reset otherwise they are held. So the CPU should read the word on each
-           Rx event and relate the bits to the received message.
-             Careful: The bits are obviously meant to be read by interrupt (which is caused
-           by them). Both at a time is impossible due to the reset-on-read and we tend to
-           offer the interrupt. */
+            /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
+               (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
+               more details. */
+            (void)pDevice->TIMER;
 
-        return CODE == 2 /* FULL */? cdr_errApi_noError: cdr_errApi_warningRxOverflow;
+            /* The time stamp of reception is returned on demand. */
+            if(pTimeStamp != NULL)
+                *pTimeStamp = (csWord & CAN_MBCS_TIME_STAMP_MASK) >> CAN_MBCS_TIME_STAMP_SHIFT;
+
+            /* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently
+               received message but the bits are sticky. If the status is read by the CPU then
+               they are reset otherwise they are held. So the CPU should read the word on each
+               Rx event and relate the bits to the received message.
+                 Careful: The bits are obviously meant to be read by interrupt (which is caused
+               by them). Both at a time is impossible due to the reset-on-read and we tend to
+               offer the interrupt. */
+
+            return CODE == 2 /* FULL */? cdr_errApi_noError: cdr_errApi_warningRxOverflow;
+        }
     }
     else
         return cdr_errApi_rxMailboxEmpty;

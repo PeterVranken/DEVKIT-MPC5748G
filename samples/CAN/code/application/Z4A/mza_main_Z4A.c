@@ -159,6 +159,119 @@ extern void (*volatile SECTION(.bss.startup) sup_main_Z2)(signed int, const char
 
 
 /**
+ * Test of error notification from CAN driver.
+ *   @param isCanFD
+ * The callback is shared between the two interrupts for normal CAN and CAN FD. So far, our
+ * driver doesn't support CAN FD, so this flag should always be \a false.
+ *   @param ESR1
+ * The value of the CAN devices status register ESR1 on entry into the error interrupt. The
+ * bits can be evaluated to see what caused the problem. For details, please refer to RM
+ * 43.4.9, p. 1727ff.
+ *   @remark
+ * This function is called from one of the CAN device's interrupt contexts. It is executed
+ * in supervisor mode.
+ */
+void mza_osCbOnCanError(bool isCanFD ATTRIB_DBG_ONLY, uint32_t ESR1)
+{
+    assert(!isCanFD);
+    
+    /* Count occurences. */
+    static unsigned int SBSS_OS(noErr_) = 0;
+    ++ noErr_;
+
+    /* This notification is made very frequently in case of a persistent problem. Most
+       likely is the acknowledge error; no consumer of a Tx message is connected to the bus
+       and our CAN device will permanently try to send the message. The bus load rises to
+       nearly 100% and we can see a notification frequency of several kHz. (Example: 500
+       kBd bus, DLC is 8 Byte, the un-acknowledged message has the highest priority among
+       all pending messages: this yields about 4k notifications per Second - and this is
+       not even the maximum).
+         We look at the causing bits and write a message once a second. */
+    #define TI_REPORT_IN_TICKS  ((uint32_t)(1000000000u/STM_TIMER_1_PERIOD_IN_NS))
+    static uint32_t SBSS_OS(tiLastReport_) = 0;
+    uint32_t tiNow = stm_osGetSystemTime(/* idxTimer */ 1);
+    if(tiNow - tiLastReport_ > TI_REPORT_IN_TICKS)
+    {
+        /* The minimum time span to make next report has elapsed. */
+        char msg[128]
+           , *pWr = &msg[0];
+        size_t noAvailChar = sizeof(msg);
+
+        int noChars = sniprintf( pWr, noAvailChar
+                               , "mza_osCbOnCanError: %u errors since last report. Last error"
+                                 " (ESR1): %08lx. Acknowledge: %u\r\n"
+                               , noErr_, ESR1, (ESR1 & CAN_ESR1_ACKERR_MASK) != 0
+                               );
+        if(noChars > 0)
+        {
+            pWr += (unsigned)noChars;
+            noAvailChar -= (unsigned)noChars;
+            noChars = pWr - msg;
+            assert((unsigned)noChars < sizeOfAry(msg));
+            sio_osWriteSerial(msg, (unsigned)noChars);
+        }
+        else
+            sio_osWriteSerial(SIO_STR(mza_osCbOnCanError: message too long));
+
+        /* We report the delta value of occurences - reset counter. */
+        noErr_ = 0;
+        tiLastReport_ = tiNow;
+    }
+    #undef TI_REPORT_IN_TICKS
+       
+} /* End of mza_cbOnCanError */
+
+
+
+
+/**
+ * Test of bus-off notification from CAN driver.
+ *   @param enteringBusOff
+ * The callback is shared between the two interrupts for entering bus-off state and for
+ * recovery from bus-off state. This flag indicates if we now enter the state.
+ *   @param ESR1
+ * The value of the CAN devices status register ESR1 on entry into the error interrupt. The
+ * bits can be evaluated to see what caused the problem. For details, please refer to RM
+ * 43.4.9, p. 1727ff.
+ *   @remark
+ * This function is called from one of the CAN device's interrupt contexts. It is executed
+ * in supervisor mode.
+ */
+void mza_osCbOnCanBusOff(bool enteringBusOff, uint32_t ESR1 ATTRIB_UNUSED)
+{
+    /* Count occurences and states. Should have ratio 2:1 but who knows. */
+    static unsigned int SBSS_OS(noIrqs_) = 0;
+    ++ noIrqs_;
+    static unsigned int SBSS_OS(noBusOff_) = 0;
+    if(enteringBusOff)
+        ++ noBusOff_;
+
+    char msg[128]
+       , *pWr = &msg[0];
+    size_t noAvailChar = sizeof(msg);
+
+    int noChars = sniprintf( pWr, noAvailChar
+                           , "mza_osCbOnCanBusOff: %s %uth bus-off situation\r\n"
+                           , enteringBusOff? "Entering": "Recovered from"
+                           , noBusOff_
+                           );
+    if(noChars > 0)
+    {
+        pWr += (unsigned)noChars;
+        noAvailChar -= (unsigned)noChars;
+        noChars = pWr - msg;
+        assert((unsigned)noChars < sizeOfAry(msg));
+        sio_osWriteSerial(msg, (unsigned)noChars);
+    }
+    else
+        sio_osWriteSerial(SIO_STR(mza_osCbOnCanError: message too long));
+
+} /* End of mza_cbOnCanError */
+
+
+
+
+/**
  * Test of Rx by FIFO: A callback receives the Rx data and reports the event via the serial
  * output.
  *   @param hMB
@@ -386,9 +499,9 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
         uint32_t payload_u32[2];
 
     } payload_ = { .payload_u32 = {[0] = 0, [1] = 0} };
-    payload_.payload_u16[2] = (uint16_t)(noRxEvent_ & 0x0000ffffu);
+    payload_.payload_u16[1] = (uint16_t)(noRxEvent_ & 0x0000ffffu);
+    payload_.payload_u16[2] = (uint16_t)(noTxErr_ & 0x0000ffffu);
     payload_.payload_u16[3] = cnt_;
-    payload_.payload[3] = (uint8_t)(noTxErr_ & 0x000000ffu);
 
     /* Send the message. We try both alternative APIs. One of them permits using the
        mailbox for different DLC and CAN Id, too.*/
@@ -441,9 +554,9 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
     {
         ++ noRxEvent_;
 
-        /* Copy first received bytes into Tx test message. 3 Bytes are left. */
+        /* Copy first received bytes into Tx test message. 2 Bytes are left. */
         unsigned int u;
-        for(u=0; u<3 && u<DLC; ++u)
+        for(u=0; u<2 && u<DLC; ++u)
             payload_.payload[u] = payloadRx[u];
     }
 } /* osTestRxTx_task10ms */

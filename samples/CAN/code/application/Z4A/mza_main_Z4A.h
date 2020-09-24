@@ -47,6 +47,12 @@
  * Global prototypes
  */
 
+/* CAN error notification callback. Used for CAN I/O driver configuration. */
+void mza_osCbOnCanError(bool isCanFD, uint32_t ESR1);
+
+/* CAN bus-off notification callback. Used for CAN I/O driver configuration. */
+void mza_osCbOnCanBusOff(bool enteringBusOff, uint32_t ESR1);
+
 /* CAN Rx callback. Used for CAN I/O driver configuration. */
 void mza_osCbOnCANRx( unsigned int hMsg
                     , bool isExtId

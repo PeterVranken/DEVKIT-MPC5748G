@@ -32,9 +32,16 @@
 /* Module interface
  *   cdr_osRegisterInterrupts
  * Local functions
+ *   isrError
+ *   ISR_GROUP_ERROR (macro to produce error group ISR)
+ *   isrBusOff
+ *   ISR_GROUP_BUS_OFF (macro to produce group ISR for bus-off related events)
  *   isrRxFIFOOverflow
  *   isrRxFIFOWarning
  *   isrRxFIFOFramesAvailable
+ *   ISR_GROUP_RX_FIFO (macro to produce FIFO group ISR)
+ *   isrMailbox
+ *   ISR_GROUP_MAILBOX (macro to produce mailbox group ISRs)
  */
 
 /*
@@ -118,6 +125,201 @@ PROTOTYPES_OF_CAN_ISRS(CAN_7)
  */
 
 /**
+ * This is the ISR to handle the FLEXCAN_0_ESR interrupt. It reports that at least one of
+ * the Error Bits (BIT1ERR, BIT0ERR, ACKERR. CRCERR, FRMERR or STFERR) is set. (See RM
+ * 43.4.9, p. 1733.) The handler counts the event, records the cause and optionally invokes
+ * a notification callback for further processing in the client code.
+ *   @param pDevice
+ * The ISR is shared between all CAN devices. The device to operate on is passed in by
+ * reference.
+ *   @param pDeviceData
+ * The ISR is shared between all CAN devices. The run-time data of the device to operate on
+ * is passed in by reference.
+ *   @param osCallbackOnErr
+ * The notification callback into the client code of the driver. Can be NULL to indicate
+ * "no notification requested".
+ *   @param ESR1
+ * The value of the status register ESR1 as found on entry into the ISR.
+ */
+static void isrError( CAN_Type * const pDevice
+                    , cdr_canDeviceData_t * const pDeviceData
+                    , cdr_osCallbackOnError_t osCallbackOnErr
+                    , uint32_t ESR1
+                    )
+{
+    assert((ESR1 & CAN_ESR1_ERRINT_MASK) != 0);
+
+    /* We record the situation in a global counter. */
+    const unsigned int noErr = pDeviceData->noErrEvents+1;
+    if(noErr != 0)
+        pDeviceData->noErrEvents = noErr;
+
+    /* Check error condition. */
+    const uint32_t errMask = CAN_ESR1_STFERR_MASK | CAN_ESR1_FRMERR_MASK | CAN_ESR1_CRCERR_MASK
+                             | CAN_ESR1_BIT0ERR_MASK | CAN_ESR1_BIT1ERR_MASK
+                             | CAN_ESR1_ACKERR_MASK
+                             ;
+
+    /* We record the last recently seen error bits in a global variable. */
+    _Static_assert((errMask & 0xffff) == errMask, "Invalid truncation to 16 Bit");
+    pDeviceData->lastErrEvent = (uint16_t)(ESR1 & errMask);
+
+    /* Reset the interrupt and overflow flag prior to doing the notification. This
+       enables the hardware to catch the next problem already while the callback is
+       executing.
+         RM 43.4.9, p. 1727ff: The error word contains the interrupt flag aside to the
+       status and error bits. Acknowledge the IRQ by w1c.
+         Note, this doesn't affect the status and error bits. These had already been
+       negated by the read of the ESR1. */
+    pDevice->ESR1 = CAN_ESR1_ERRINT_MASK | CAN_ESR1_ERROVR_MASK; /* Clear bits by "w1c" */
+
+    /* Do a notification of the client code if configured. */
+    if(osCallbackOnErr != NULL)
+        osCallbackOnErr(/* isCanFD */ false, ESR1);
+
+} /* End of isrError */
+
+
+
+
+#define ISR_GROUP_ERROR(canDev)                                                            \
+/**                                                                                        \
+ * Common ISR for the two Error interrupts (INTERR and INTERR_FAST). It looks for the      \
+ * causing IRQ and branches in the dedicated handler. Interrupt acknowledge needs to be    \
+ * done in the dedicated handler.                                                          \
+ */                                                                                        \
+static void isrGroupError_##canDev(void)                                                   \
+{                                                                                          \
+    CAN_Type * const pDevice = (canDev);                                                   \
+                                                                                           \
+    /* Read the cause of the error. RM 43.4.9, p. 1727ff. Note, the error bits (not */     \
+    /* the interrupt flags and the over overflow bit) are reset by this read. */           \
+    const uint32_t ESR1 = pDevice->ESR1;                                                   \
+                                                                                           \
+    if((ESR1 & CAN_ESR1_ERRINT_MASK) != 0)                                                 \
+    {                                                                                      \
+        isrError( pDevice                                                                  \
+                , &cdr_canDriverData[cdr_canDev_##canDev]                                  \
+                , cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupError.osCallbackOnError \
+                , ESR1                                                                     \
+                );                                                                         \
+    }                                                                                      \
+    else if((ESR1 & CAN_ESR1_ERRINT_FAST_MASK) != 0)                                       \
+        assert(false); /* FD not supported, ISR not implemented. */                        \
+    else                                                                                   \
+        assert(false);                                                                     \
+                                                                                           \
+} /* End of isrGroupError_##canDev */
+
+
+
+/**
+ * This is the ISR to handle the enter/leave bus off state interrupts (ESR1[BOFF_INT] and
+ * ESR1[BOFFDONEINT], see RM 43.4.9, p. 1733 and RM 23.1.2 INTC interrupt sources, Table
+ * 23-1, p.532. The handler counts occurances, maintains the bus off state for the device
+ * and optionally invokes a notification callback for further processing in the client
+ * code.
+ *   @param pDevice
+ * The ISR is shared between all CAN devices. The device to operate on is passed in by
+ * reference.
+ *   @param pDeviceData
+ * The ISR is shared between all CAN devices. The run-time data of the device to operate on
+ * is passed in by reference.
+ *   @param osCallbackOnBusOff
+ * The notification callback into the client code of the driver. Can be NULL to indicate
+ * "no notification requested".
+ *   @param ESR1
+ * The value of the status register ESR1 as found on entry into the ISR.
+ *   @remark
+ * Our CAN driver has enabled the optio auto-recover from a bus-off state. Therefore,
+ * letting the ISR record and notify the situation may already be sufficient. We don't need
+ * to actually do something.
+ */
+static void isrBusOff( CAN_Type * const pDevice
+                     , cdr_canDeviceData_t * const pDeviceData
+                     , cdr_osCallbackOnError_t osCallbackOnBusOff
+                     , uint32_t ESR1
+                     )
+{
+    assert((ESR1 & (CAN_ESR1_BOFFINT_MASK | CAN_ESR1_BOFFDONEINT_MASK)) != 0);
+
+    if((ESR1 & CAN_ESR1_BOFFINT_MASK) != 0)
+    {
+        /* This IRQ notifies entering the bus off state. */
+        pDeviceData->isBusOff = true;
+
+        /* We record the situation in a global counter. */
+        const unsigned int noErr = pDeviceData->noBusOffEvents+1;
+        if(noErr != 0)
+            pDeviceData->noBusOffEvents = noErr;
+
+        /* Reset the interrupt flag prior to doing the notification. This enables the
+           hardware to catch the next problem already while the callback is executing.
+             RM 43.4.9, p. 1727ff: The error word contains the interrupt flag aside to the
+           status and error bits. Acknowledge the IRQ by w1c.
+             Note, this doesn't affect the status and error bits. These had already been
+           negated by the read of the ESR1. */
+        pDevice->ESR1 = CAN_ESR1_BOFFINT_MASK; /* Clear bits by "w1c" */
+    }
+    else
+    {
+        /* This IRQ notifies leaving the bus off state, returning to normal operation. */
+        assert((ESR1 & CAN_ESR1_BOFFDONEINT_MASK) != 0);
+        pDeviceData->isBusOff = false;
+
+        /* Reset the interrupt flag prior to doing the notification. This enables the
+           hardware to catch the next problem already while the callback is executing.
+             RM 43.4.9, p. 1727ff: The error word contains the interrupt flag aside to the
+           status and error bits. Acknowledge the IRQ by w1c.
+             Note, this doesn't affect the status and error bits. These had already been
+           negated by the read of the ESR1. */
+        pDevice->ESR1 = CAN_ESR1_BOFFDONEINT_MASK; /* Clear bits by "w1c" */
+
+    } /* End if(Enter or leave bus-off state?) */
+
+    /* Do a notification of the client code if configured. */
+    if(osCallbackOnBusOff != NULL)
+        osCallbackOnBusOff(/* enteringBusOff */ pDeviceData->isBusOff, ESR1);
+
+} /* End of isrBusOff */
+
+
+
+
+#define ISR_GROUP_BUS_OFF(canDev)                                                            \
+/**                                                                                          \
+ * Common ISR for the bus off related interrupts (BOFFERR, BOFFDONEINT, TWRNINT and          \
+ * RWRNINT). It looks for the causing IRQ and branches in the dedicated handler. Interrupt   \
+ * acknowledge needs to be done in the dedicated handler.                                    \
+ */                                                                                          \
+static void isrGroupBusOff_##canDev(void)                                                    \
+{                                                                                            \
+    CAN_Type * const pDevice = (canDev);                                                     \
+                                                                                             \
+    /* Read the cause of the error. RM 43.4.9, p. 1727ff. Note, the error bits (not */       \
+    /* the interrupt flags and the over overflow bit) are reset by this read. */             \
+    const uint32_t ESR1 = pDevice->ESR1;                                                     \
+                                                                                             \
+    if((ESR1 & (CAN_ESR1_BOFFINT_MASK | CAN_ESR1_BOFFDONEINT_MASK)) != 0)                    \
+    {                                                                                        \
+        isrBusOff( pDevice                                                                   \
+                 , &cdr_canDriverData[cdr_canDev_##canDev]                                   \
+                 , cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupBusOff.osCallbackOnBusOff\
+                 , ESR1                                                                      \
+                 );                                                                          \
+    }                                                                                        \
+    else if((ESR1 & CAN_ESR1_TWRNINT_MASK) != 0)                                             \
+        assert(false); /* This IRQ is not enabled in our driver. */                          \
+    else if((ESR1 & CAN_ESR1_RWRNINT_MASK) != 0)                                             \
+        assert(false); /* This IRQ is not enabled in our driver. */                          \
+    else                                                                                     \
+        assert(false);                                                                       \
+                                                                                             \
+} /* End of isrGroupBusOff_##canDev */
+
+
+
+/**
  * This is the ISR to handle the situation that a received CAN message can't be placed into
  * the Rx FIFO because it is still full. The message is lost. The ISR records the situation
  * but can recover from the data loss.
@@ -198,7 +400,7 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
     /* RM 43.4.43, p. 1785: The FIFO is read through the first mailbox in the device RAM.
          Note, the fields inside the C/S word are a bit differently defined as for normal
        mailboxes and we need to apply other access macros. */
-    volatile cdr_mailbox_t * const pRxMB = cdr_getMailbox(pDevice, /* idxMB */ 0);
+    volatile cdr_mailbox_t * const pRxMB = cdr_getMailboxByIdx(pDevice, /* idxMB */ 0);
 
     /* The ISR doesn't need to loop over all messages currently held in the FIFO. The HW
        maintains the flag coherently with the FIFO contents. If several messages are
@@ -321,7 +523,7 @@ static void isrMailbox( CAN_Type * const pDevice
                       , unsigned int offsMBIdxToHdl
                       , uint32_t maskFrom
                       , uint32_t maskTo
-                      , const cdr_mailboxIrqConfig_t * const pIrqConfig
+                      , const cdr_irqConfig_t * const pIrqConfig
                       )
 {
     while(true)
@@ -349,7 +551,7 @@ static void isrMailbox( CAN_Type * const pDevice
 
         /* If we get here then we have found the causing mailbox. It is mailbox
            idxMBFrom. */
-        volatile cdr_mailbox_t * const pMB = cdr_getMailbox(pDevice, idxMBFrom);
+        volatile cdr_mailbox_t * const pMB = cdr_getMailboxByIdx(pDevice, idxMBFrom);
 
         /* Read the mailbox CODE: It tells whether we have an Rx or Tx message and what
            happened. See RM 43.4.40, p. 1771ff, Tables 43-8 and 43-9, for the different
@@ -369,6 +571,15 @@ static void isrMailbox( CAN_Type * const pDevice
         const bool isRx = (CODE & 0x8) == 0;
 
         /* Inside the ISR, the busy bit in CODE should never be asserted. */
+        /// @todo The polling function occasionally saw the interrupt flag set but CODE
+        // still signalling "busy with move-in". So this may happen here, too. In which
+        // case we would return from interrupt without acknowledging the interrupt - such
+        // that it is raised immediately again (or a while loop, busy waiting for
+        // CODE[0]=0?) Effectively, not acknowledging the IRQ is the same as a buys-wait
+        // loop but with much longer cycle time. So the local busy wait surely is the
+        // better way. Maybe, we will never see this effect due to the latency time of the
+        // interrupt - should we then still implement the loop? What about delayed IRQ
+        // processing, so that we hit the move-in of the successor message?
         assert((CODE & 0x1) == 0);
 
         /* For Rx messages, we save the payload data prior to acknowledgingthe reception at
@@ -500,10 +711,12 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
 
 /* We need the ISRs for each device separately. This is done easiest by making the set of
    ISRs for a single device a define, which is then repeatedly applied. */
-/// @todo Error interrupts (bus off, etc.) have been promised in the configuration but not
-/// been implemented yet
+/// @todo Error interrupts (bus off, Rx and Tx Warning) have been promised in the
+/// configuration but not been implemented yet
 #define SET_OF_DEVICE_ISRS(idxCanDev)                                                       \
 ISR_GROUP_RX_FIFO(CAN_##idxCanDev)                                                          \
+ISR_GROUP_ERROR(CAN_##idxCanDev)                                                            \
+ISR_GROUP_BUS_OFF(CAN_##idxCanDev)                                                          \
 ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 0, /* idxTo */ 3)        \
 ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 4, /* idxTo */ 7)        \
 ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 8, /* idxTo */ 11)       \
@@ -561,7 +774,8 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
         a constant table of interrupt handlers. */
     #define SET_OF_CAN_ISRS(canDev)                 \
     { .isrGroupFIFO = isrGroupRxFIFO_##canDev,      \
-      .isrGroupError = NULL,                        \
+      .isrGroupError = isrGroupError_##canDev,      \
+      .isrGroupBusOff = isrGroupBusOff_##canDev,    \
       .isrGroupMB0_3 = isrGroupMB0_3_##canDev,      \
       .isrGroupMB4_7 = isrGroupMB4_7_##canDev,      \
       .isrGroupMB8_11 = isrGroupMB8_11_##canDev,    \
@@ -578,7 +792,8 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
     static const struct setOfCanISRs_t
     {
         void (*isrGroupFIFO)(void);   /** Hdlr for all Rx FIFO related interrupts. */
-        void (*isrGroupError)(void);  /** Hdlr for all device error related interrupts. */
+        void (*isrGroupError)(void);  /** Hdlr for all interrupts ERRINT and ERRINT_FAST. */
+        void (*isrGroupBusOff)(void); /** Hdlr for all Bus off and warning interrupts. */
         void (*isrGroupMB0_3)(void);  /** Hdlr for all Rc/Tx interrupts of mailboxes 0..3. */
         void (*isrGroupMB4_7)(void);  /** Hdlr for all Rc/Tx interrupts of mailboxes 4..7. */
         void (*isrGroupMB8_11)(void); /** Hdlr for all Rc/Tx interrupts of mailboxes 8..11. */
@@ -662,6 +877,28 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
 
     /* Register our IRQ handlers. */
     assert(idxCanDevice < sizeOfAry(mapDevIdxToISRGroup_));
+
+    /* Register the error interrupts. Actually, we just have ERRINT. The only other
+       interrupt in this group, ERRINT_FAST, relates to CAN FD. */
+    rtos_osRegisterInterruptHandler
+            ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupError
+            , /* processorID */   pDeviceConfig->irqGroupError.idxTargetCore
+            , /* vectorNum */     IDX_IRQ_CAN_ERROR(idxCanDevice)
+            , /* psrPriority */   pDeviceConfig->irqGroupError.irqPrio
+            , /* isPreemptable */ true
+            );
+
+    /* Register the bus off interrupts. Actually, we only support BOFFINT and BOFFDONEINT.
+       The two warning IRQs (error counter exceeds first watermark) are not handled and not
+       enabled. */
+    rtos_osRegisterInterruptHandler
+            ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupBusOff
+            , /* processorID */   pDeviceConfig->irqGroupBusOff.idxTargetCore
+            , /* vectorNum */     IDX_IRQ_CAN_BOFF_OR_TX_WARN(idxCanDevice)
+            , /* psrPriority */   pDeviceConfig->irqGroupBusOff.irqPrio
+            , /* isPreemptable */ true
+            );
+
     if(pDeviceConfig->isFIFOEnabled)
     {
         /* Register the FIFO interrupts. */

@@ -95,6 +95,9 @@ extern void mza_osCbOnCANRx( unsigned int hMB
                            , const uint8_t payload[8]
                            , unsigned int timeStamp
                            );
+void mza_osCbOnCanError(bool isCanFD, uint32_t ESR1);
+void mza_osCbOnCanBusOff(bool enteringBusOff, uint32_t ESR1);
+
 
 /*
  * Local data definitions
@@ -118,6 +121,10 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
     [cdr_canDev_CAN_0] =
     {
+        /** Select the Baud rate. Supported are 250 kBd, 500 kBd and 1 MBd. The unit is
+            10000 Bd. */
+        .baudRate = 50 /* *10^4 Bd */,
+        
         /** Enable the FIFO for Rx messages. This will normally increase the number of
             different processable CAN IDs with the need for a SW queue concept. */
         .isFIFOEnabled = true,
@@ -163,9 +170,30 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
             applicable, these callbacks are configured, too. Otherwise, they need to be set
             to NULL.\n
               Mailbox group interrupts support Rx and Tx notifications. The FIFO interrupt
-            group supports only an Rx notification and the error interrrupt group doesn't
-            support any of the notifications.\n
-              Here, we have the interrupt configuration for the group of FIFO interrupts. */
+            group supports only an Rx notification.\n
+              The error and bus off interrrupt groups have their internal handlers plus an
+            optional notification handler. They may be enabled (priority > 0) without
+            configuring a notifcation (i.e. callback is NULL).\n
+              Here, we have the interrupt configuration for error interrupts, ERRINT,
+            ERRINT_FAST. */
+        .irqGroupError =
+        {
+            .idxTargetCore     = RTOS_CORE_Z4A,
+            .irqPrio           = 6,
+            .osCallbackOnError = mza_osCbOnCanError,
+            .osCallbackOnTx    = NULL,   /* Not applicable, needs to be NULL. */
+        },   
+        
+        /** IRQ configuration for bus off etc. IRQs */
+        .irqGroupBusOff =
+        {
+            .idxTargetCore      = RTOS_CORE_Z4A,
+            .irqPrio            = 7,
+            .osCallbackOnBusOff = mza_osCbOnCanBusOff,
+            .osCallbackOnTx     = NULL,   /* Not applicable, needs to be NULL. */
+        },   
+        
+        /** Here, we have the interrupt configuration for the group of FIFO interrupts. */
         .irqGroupFIFO =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
@@ -173,15 +201,6 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
             .osCallbackOnRx = mza_osCbOnCANRx,
             .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
         },
-        
-        /** IRQ configuration for bus off etc. IRQs */
-        .irqGroupError =
-        {
-            .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 0,
-            .osCallbackOnRx = NULL,   /* Not applicable, needs to be NULL. */
-            .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
-        },   
         
         /** IRQ configuration, IRQs of mailboxes 0..3. This interrupt group is not
             available for our configuration: FIFO on, with 72 entries in the filter table
@@ -252,7 +271,14 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
-        },              
+        },
+        
+        /** Privileges for mailboxes: By default code in user processes can't access the
+            mailboxes. */
+        .userAccessMailboxAry = 
+        {
+            [24 ... 95] = {.minPIDToAccess = 2},
+        },
     },
 #endif
 #if CDR_ENABLE_USE_OF_CAN_1 == 1

@@ -59,7 +59,7 @@ and setting the enable bit. The complexity results from the now
 inhomogeneous layout of the mailbox memory. For standard CAN it's easy. All
 messages have a payload of 8 Byte and the form an array. For FD, one has
 to decide how many message have 8 Byte size, how many have 16 Byte, etc.
-Defining a generic and easy to use API (both run-time and compile-time
+Defining a generic and easy to use API (both, run-time and compile-time
 configuration) becomes more difficult.
 
 Moreover, the larger mailboxes together with the given size of available

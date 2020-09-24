@@ -121,6 +121,11 @@ bool cdr_checkDriverConfiguration(void)
     {
         const cdr_canDeviceConfig_t * const pDevCfg = &cdr_canDriverConfig[idxDev];
 
+        /* We have a fixed set of supported Baud rates only. */
+        ASSERT(pDevCfg->baudRate == 25  ||  pDevCfg->baudRate == 50
+               ||  pDevCfg->baudRate == 100
+              );
+
         /* The number of mailboxes is hardware limited. Unfortunately, we don't have found a
            related macro in the NXP derivative header. */
         ASSERT(pDevCfg->noMailboxes <= 96);
@@ -140,10 +145,6 @@ bool cdr_checkDriverConfiguration(void)
                ||  !pDevCfg->isFIFOEnabled  &&  pDevCfg->CTRL2_RFFN == 0
               );
         
-        /* CAN error interrupts are configured but not implemented yet. */
-        /// @todo Modify this check once the error IRQs are implemented
-        ASSERT(pDevCfg->irqGroupError.irqPrio == 0);
-        
         /* FIFO is enabled but mailboxes interrupts are configured for mailboxes, which are
            not available with FIFO enabled. */
         const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstNormalMailbox(pDevCfg);
@@ -157,6 +158,7 @@ bool cdr_checkDriverConfiguration(void)
         /* The target core for any IRQ needs to be in range. */
         ASSERT( pDevCfg->irqGroupFIFO.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupError.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqGroupBusOff.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB0_3.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB4_7.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB8_11.idxTargetCore < RTOS_NO_CORES
@@ -169,6 +171,7 @@ bool cdr_checkDriverConfiguration(void)
         /* The INTC priority of any IRQ needs to be in range. */
         ASSERT( pDevCfg->irqGroupFIFO.irqPrio <= 15
                 &&  pDevCfg->irqGroupError.irqPrio <= 15
+                &&  pDevCfg->irqGroupBusOff.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB0_3.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB4_7.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB8_11.irqPrio <= 15
@@ -176,6 +179,22 @@ bool cdr_checkDriverConfiguration(void)
                 &&  pDevCfg->irqGroupMB16_31.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB32_63.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB64_95.irqPrio <= 15
+              );
+
+        /* Error interrupts: We have some simple internal handling and the notification in
+           just an option. However, there's no Tx notification and the optional
+           notification must not be configured if the interrupt is configured off. */
+        ASSERT(!(pDevCfg->irqGroupError.irqPrio == 0
+                 &&  pDevCfg->irqGroupError.osCallbackOnError != NULL
+                )
+               &&  pDevCfg->irqGroupError.osCallbackOnTx == NULL
+              );
+
+        /* Bus off interrupts: Same considerations as for error interrupts. */
+        ASSERT(!(pDevCfg->irqGroupBusOff.irqPrio == 0
+                 &&  pDevCfg->irqGroupBusOff.osCallbackOnBusOff != NULL
+                )
+               &&  pDevCfg->irqGroupBusOff.osCallbackOnTx == NULL
               );
 
         /* If we have a FIFO then we need to have an enabled IRQ, too. And the opposite. */
@@ -202,7 +221,6 @@ bool cdr_checkDriverConfiguration(void)
                            )                                                                \
                   );
         ASSERT_IRQ_HAS_CB(FIFO)
-        ASSERT_IRQ_HAS_CB(Error)
         ASSERT_IRQ_HAS_CB(MB0_3)
         ASSERT_IRQ_HAS_CB(MB4_7)
         ASSERT_IRQ_HAS_CB(MB8_11)
@@ -212,12 +230,6 @@ bool cdr_checkDriverConfiguration(void)
         ASSERT_IRQ_HAS_CB(MB64_95)
         #undef ASSERT_IRQ_HAS_CB
         
-        /* Temporary check: Error fgroup is not yet implemented. It must not be configured. */
-        /// @todo Remove this assertion once the IRQ is implemented
-        ASSERT(pDevCfg->irqGroupError.irqPrio == 0
-               &&  pDevCfg->irqGroupError.osCallbackOnRx == NULL
-               &&  pDevCfg->irqGroupError.osCallbackOnTx == NULL
-              );
     } /* End for(All enabled CAN devices) */
 
     return true;
