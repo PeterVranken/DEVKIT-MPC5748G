@@ -250,8 +250,8 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
         .irqGroupMB16_31 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 0,
-            .osCallbackOnRx = NULL,
+            .irqPrio        = 1,
+            .osCallbackOnRx = mza_osCbOnCANRx,
             .osCallbackOnTx = NULL,
         }, 
         

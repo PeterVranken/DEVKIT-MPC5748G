@@ -76,44 +76,6 @@
  * Local prototypes
  */
 
-/* Prototypes for all ISRs on all enabled devices. */
-#define PROTOTYPES_OF_CAN_ISRS(canDev)              \
-static void isrGroupRxFIFO_##canDev(void);          \
-/* static void isrGroupError_##canDev(void);   */       \
-static void isrGroupMB0_3_##canDev(void);           \
-static void isrGroupMB4_7_##canDev(void);           \
-static void isrGroupMB8_11_##canDev (void);         \
-static void isrGroupMB12_15_##canDev(void);         \
-static void isrGroupMB16_31_##canDev(void);         \
-static void isrGroupMB32_63_##canDev(void);         \
-static void isrGroupMB64_95_##canDev(void);
-
-#if CDR_ENABLE_USE_OF_CAN_0 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_0)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_1 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_1)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_2 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_2)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_3 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_3)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_4 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_4)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_5 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_5)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_6 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_6)
-#endif
-#if CDR_ENABLE_USE_OF_CAN_7 == 1
-PROTOTYPES_OF_CAN_ISRS(CAN_7)
-#endif
-#undef PROTOTYPES_OF_CAN_ISRS
-
 
 /*
  * Data definitions
@@ -518,7 +480,7 @@ static void isrGroupRxFIFO_##canDev(void)                                       
  * reference. It is required to identify the notification callback into the client code.
  */
 static void isrMailbox( CAN_Type * const pDevice
-                      , volatile uint32_t *pIFLAG
+                      , volatile uint32_t * const pIFLAG
                       , unsigned int idxMBFrom
                       , unsigned int offsMBIdxToHdl
                       , uint32_t maskFrom
@@ -526,136 +488,149 @@ static void isrMailbox( CAN_Type * const pDevice
                       , const cdr_irqConfig_t * const pIrqConfig
                       )
 {
-    while(true)
+    /* The address of the mask register can be derived from the address of the flag
+       register. */
+    _Static_assert
+            ( offsetof(CAN_Type, IMASK1) + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG1)
+              &&  offsetof(CAN_Type, IMASK2) + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG2)
+              &&  offsetof(CAN_Type, IMASK3) + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG3)
+            , "Implementation doesn't match the register structure of the CAN device"
+            );
+    
+    volatile const uint32_t * const pIMASK = pIFLAG-2;
+    const uint32_t maskedIFLAG = *pIFLAG & *pIMASK;
+    
+    /* Check mailbox candidates one after another for newly received input. */
+    while((maskedIFLAG & maskFrom) == 0)
     {
-        /* Check mailbox candidate for newly received input. */
-        if((*pIFLAG & maskFrom) == 0)
+        /// @todo TBC: Binary search would be applicable, too. Straight forward with a binary tree of predefined masks?
+        /* This is not the causing mailbox - try next one. */
+        if(maskFrom == maskTo)
         {
-            /* This is not the causing mailbox - try next one. */
-            if(maskFrom == maskTo)
-            {
-                /* This code must be never reached. We are in the ISR but don't see any of
-                   the related interrupt flags set. All we can do is ignoring the interrupt
-                   request. Evidently, there's not even a flag bit to reset. */
-                assert(false);
-                return;
-            }
-            else
-            {
-                /* This is not the causing mailbox - try next one. */
-                ++ idxMBFrom;
-                maskFrom <<= 1;
-                continue;
-            }
-        } /* End if(Did we identify the interrupt requesting mailbox?) */
-
-        /* If we get here then we have found the causing mailbox. It is mailbox
-           idxMBFrom. */
-        volatile cdr_mailbox_t * const pMB = cdr_getMailboxByIdx(pDevice, idxMBFrom);
-
-        /* Read the mailbox CODE: It tells whether we have an Rx or Tx message and what
-           happened. See RM 43.4.40, p. 1771ff, Tables 43-8 and 43-9, for the different
-           status codes. */
-        const uint32_t csWord = pMB->csWord
-                     , canIdWord = pMB->canId;
-        const bool isExtID = (csWord & CAN_FIFOCS_IDE_MASK) != 0;
-        const unsigned int DLC = (csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT
-                         , timeStamp = (csWord & CAN_MBCS_TIME_STAMP_MASK)
-                                       >> CAN_MBCS_TIME_STAMP_SHIFT
-                         , canId = isExtID? (canIdWord & CAN_MBID_ID_EXT_MASK)
-                                            >> CAN_MBID_ID_EXT_SHIFT
-                                          : (canIdWord & CAN_MBID_ID_STD_MASK)
-                                            >> CAN_MBID_ID_STD_SHIFT
-                         ;
-        const uint32_t CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
-        const bool isRx = (CODE & 0x8) == 0;
-
-        /* Inside the ISR, the busy bit in CODE should never be asserted. */
-        /// @todo The polling function occasionally saw the interrupt flag set but CODE
-        // still signalling "busy with move-in". So this may happen here, too. In which
-        // case we would return from interrupt without acknowledging the interrupt - such
-        // that it is raised immediately again (or a while loop, busy waiting for
-        // CODE[0]=0?) Effectively, not acknowledging the IRQ is the same as a buys-wait
-        // loop but with much longer cycle time. So the local busy wait surely is the
-        // better way. Maybe, we will never see this effect due to the latency time of the
-        // interrupt - should we then still implement the loop? What about delayed IRQ
-        // processing, so that we hit the move-in of the successor message?
-        assert((CODE & 0x1) == 0);
-
-        /* For Rx messages, we save the payload data prior to acknowledgingthe reception at
-           the HW. */
-        uint32_t payload_u32[2]; /* Definition as u32 ensures a safe alignment. */
-        if(isRx)
-        {
-            /* We have an Rx mailbox interrupt. */
-            assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
-
-            /* Copy received bytes into local buffer for callback invokation. We copy
-               unconditionally. Having conditional code or a byte loop would not save any
-               time. */
-            assert(DLC <= 8);
-            payload_u32[0] = pMB->payload_u32[0];
-            payload_u32[1] = pMB->payload_u32[1];
-        }
-
-        /* RM 43.4.12/13/21, p. 1735ff: Acknowledge the IRQ. We need to do this prior to
-           reading the timer (which unlocks the MB and would enable a re-assertion of the
-           interrupt flag). */
-        *pIFLAG = maskFrom; /* Clear bit by "w1c" */
-
-        /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
-           (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
-           more details.
-             From now on, the mailbox is ready for next reception/transmission. At least
-           for Tx, it is essential that we release it prior to invokingthe notification
-           callback into the client code: The client could implement a buffering strategy
-           that wants to re-use the mailboxe immediately again for the subsequent message.
-           For Rx, it just better to do this before notifying; mailbox hardware and
-           callback software can run in parallel. */
-        (void)pDevice->TIMER;
-
-        /* Down here, no access to the device hardware is allowed any more. */
-
-        /* The index of the mailbox in the device requires a simple transformation to
-           become the mailbox handle. */
-        const unsigned int hMB = idxMBFrom + offsMBIdxToHdl;
-
-        if(isRx)
-        {
-            /* We have an Rx mailbox interrupt. */
-
-            /* Invoke the callback in the client code for further data processing.
-                 Note, a NULL Pointer check is not needed at run-time. We have double
-               checked the configuration at driver initialization time. (Which won't hinder
-               us from having an assertion here.) */
-            assert(pIrqConfig->osCallbackOnRx != NULL);
-            (*pIrqConfig->osCallbackOnRx)( hMB
-                                         , isExtID
-                                         , canId
-                                         , DLC
-                                         , (const uint8_t *)&payload_u32[0]
-                                         , timeStamp
-                                         );
+            /* This code must be never reached. We are in the ISR but don't see any of
+               the related interrupt flags set. All we can do is ignoring the interrupt
+               request. Evidently, there's not even a flag bit to reset. */
+            assert(false);
+            return;
         }
         else
         {
-            /* We have a Tx mailbox interrupt. */
-
-            assert(CODE == 8 /* INACTIVE */  ||  CODE == 9 /* ABORT */);
-
-            /* Invoke the callback in the client code for further data processing.
-                 Note, a NULL Pointer check is not needed at run-time. We have double
-               checked the configuration at driver initialization time. (Which won't hinder
-               us from having an assertion here.) */
-            assert(pIrqConfig->osCallbackOnRx != NULL);
-            (*pIrqConfig->osCallbackOnTx)( hMB
-                                         , isExtID
-                                         , canId
-                                         , DLC
-                                         , /* isAborted */ CODE == 9
-                                         , timeStamp
-                                         );
+            /* This is not the causing mailbox - try next one. */
+            ++ idxMBFrom;
+            maskFrom <<= 1;
         }
+    } /* End while(Interrupt requesting MB not found in flag register  yet) */
+    
+    /* If we get here then we have found the causing mailbox. It is mailbox
+       idxMBFrom. */
+    volatile cdr_mailbox_t * const pMB = cdr_getMailboxByIdx(pDevice, idxMBFrom);
+
+    /* Read the mailbox CODE: It tells whether we have an Rx or Tx message and what
+       happened. See RM 43.4.40, p. 1771ff, Tables 43-8 and 43-9, for the different
+       status codes. */
+    const uint32_t csWord = pMB->csWord
+                 , canIdWord = pMB->canId;
+    const bool isExtID = (csWord & CAN_FIFOCS_IDE_MASK) != 0;
+    const unsigned int DLC = (csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT
+                     , timeStamp = (csWord & CAN_MBCS_TIME_STAMP_MASK)
+                                   >> CAN_MBCS_TIME_STAMP_SHIFT
+                     , canId = isExtID? (canIdWord & CAN_MBID_ID_EXT_MASK)
+                                        >> CAN_MBID_ID_EXT_SHIFT
+                                      : (canIdWord & CAN_MBID_ID_STD_MASK)
+                                        >> CAN_MBID_ID_STD_SHIFT
+                     ;
+    const uint32_t CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
+    const bool isRx = (CODE & 0x8) == 0;
+
+    /* Inside the ISR, the busy bit in CODE should never be asserted. */
+    /// @todo The polling function occasionally saw the interrupt flag set but CODE
+    // still signaling "busy with move-in". So this may happen here, too. In which
+    // case we would return from interrupt without acknowledging the interrupt - such
+    // that it is raised immediately again (or a while loop, busy waiting for
+    // CODE[0]=0?) Effectively, not acknowledging the IRQ is the same as a busy-wait
+    // loop but with much longer cycle time. So the local busy wait surely is the
+    // better way. Maybe, we will never see this effect due to the latency time of the
+    // interrupt - should we then still implement the loop? What about delayed IRQ
+    // processing, so that we hit the move-in of the successor message?
+    //   But: This way (above checking IRQ flag, here, later, again reading CODE in
+    // busy-wait loop) can by principle not achieve coherency - e.g. the new move-in can
+    // happen as easy shortly after the busy-wait as before. Better not to have it - it
+    // would pretend doing something it can't actually do
+    assert((CODE & 0x1) == 0);
+
+    /* For Rx messages, we save the payload data prior to acknowledgingthe reception at
+       the HW. */
+    uint32_t payload_u32[2]; /* Definition as u32 ensures a safe alignment. */
+    if(isRx)
+    {
+        /* We have an Rx mailbox interrupt. */
+        assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
+
+        /* Copy received bytes into local buffer for callback invocation. We copy
+           unconditionally. Having conditional code or a byte loop would not save any
+           time. */
+        assert(DLC <= 8);
+        payload_u32[0] = pMB->payload_u32[0];
+        payload_u32[1] = pMB->payload_u32[1];
+    }
+
+    /* RM 43.4.12/13/21, p. 1735ff: Acknowledge the IRQ. We need to do this prior to
+       reading the timer (which unlocks the MB and would enable a re-assertion of the
+       interrupt flag). */
+    *pIFLAG = maskFrom; /* Clear bit by "w1c" */
+
+    /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
+       (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
+       more details.
+         From now on, the mailbox is ready for next reception/transmission. At least
+       for Tx, it is essential that we release it prior to invoking the notification
+       callback into the client code: The client could implement a buffering strategy
+       that wants to re-use the mailbox immediately again for the subsequent message.
+       For Rx, it just better to do this before notifying; mailbox hardware and
+       callback software can run in parallel. */
+    (void)pDevice->TIMER;
+
+    /* Down here, no access to the device hardware is allowed any more. */
+
+    /* The index of the mailbox in the device requires a simple transformation to
+       become the mailbox handle. */
+    const unsigned int hMB = idxMBFrom + offsMBIdxToHdl;
+
+    if(isRx)
+    {
+        /* We have an Rx mailbox interrupt. */
+
+        /* Invoke the callback in the client code for further data processing.
+             Note, a NULL Pointer check is not needed at run-time. We have double
+           checked the configuration at driver initialization time. (Which won't hinder
+           us from having an assertion here.) */
+        assert(pIrqConfig->osCallbackOnRx != NULL);
+        (*pIrqConfig->osCallbackOnRx)( hMB
+                                     , isExtID
+                                     , canId
+                                     , DLC
+                                     , (const uint8_t *)&payload_u32[0]
+                                     , timeStamp
+                                     );
+    }
+    else
+    {
+        /* We have a Tx mailbox interrupt. */
+
+        assert(CODE == 8 /* INACTIVE */  ||  CODE == 9 /* ABORT */);
+
+        /* Invoke the callback in the client code for further data processing.
+             Note, a NULL Pointer check is not needed at run-time. We have double
+           checked the configuration at driver initialization time. (Which won't hinder
+           us from having an assertion here.) */
+        assert(pIrqConfig->osCallbackOnTx != NULL);
+        (*pIrqConfig->osCallbackOnTx)( hMB
+                                     , isExtID
+                                     , canId
+                                     , DLC
+                                     , /* isAborted */ CODE == 9
+                                     , timeStamp
+                                     );
     }
 } /* End of isrMailbox */
 
@@ -694,7 +669,7 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
        overhead: The macro arguments idxFrom and idxTo are constants and what looks like    \
        runtime computation in the source code is just loading a constant value into the     \
        register the compiled code. */                                                       \
-    volatile uint32_t * const pIFLAG = &canDev->IFLAG##idxIFLAG;                            \
+    volatile uint32_t *pIFLAG = &canDev->IFLAG##idxIFLAG;                                   \
     const uint32_t maskFrom = 1u << ((idxFrom)-32u*((idxIFLAG)-1u))                         \
                  , maskTo   = 1u << ((idxTo)  -32u*((idxIFLAG)-1u));                        \
     isrMailbox( canDev                                                                      \

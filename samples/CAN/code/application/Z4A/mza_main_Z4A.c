@@ -391,6 +391,17 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
 
+    /* Register an Rx message with IRQ notification. */
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 74
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x100
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    
     /* Register some FIFO Rx messages. */
     err = cdr_osMakeMailboxReservation( canDevice
                                       , /* hMB */ 0
