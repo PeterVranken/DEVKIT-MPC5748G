@@ -311,7 +311,7 @@ void mza_osCbOnCANRx( unsigned int hMB
     size_t noAvailChar = sizeof(msg);
 
     int noChars = sniprintf( pWr, noAvailChar
-                           , " Msg %u, ID %u (%s) at %u us: %u Bytes"
+                           , "Msg %u, ID %u (%s) at %u us: %u Bytes"
                            , hMB
                            , canId
                            , isExtId? "ext": "std"
@@ -391,11 +391,77 @@ static void osTestRxTx_init(cdr_canDevice_t canDevice)
                                       );
     assert(err == cdr_errApi_noError);
 
-    /* Register an Rx message with IRQ notification. */
+    /* Register some Rx messages with IRQ notification. We want to see some in the same
+       mailbox group and at least one in each group.
+         Note, the MB handle here is (due to the chosen FIFO size) 48 greater than the HW
+       index of the MB. */
     err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 74
+                                      , /* hMB */ 74        /* MB 26, group 16..31 */
                                       , /* isExtId */ false
                                       , /* canId */ 0x100
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 76       /* MB 28, group 16..31 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x101
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 79       /* MB 31, group 16..31 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x102
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 80       /* MB 32, group 32..63 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x103
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 111       /* MB 63, group 32..63 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x104
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 112       /* MB 64, group 64..95 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x105
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 127       /* MB 79, group 64..95 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x106
+                                      , /* isReceived */ true
+                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                      , /* doNotify */ true
+                                      );
+    assert(err == cdr_errApi_noError);
+    err = cdr_osMakeMailboxReservation( canDevice
+                                      , /* hMB */ 143       /* MB 95, group 64..95 */
+                                      , /* isExtId */ false
+                                      , /* canId */ 0x107
                                       , /* isReceived */ true
                                       , /* TxDLC */ 0 /* value doesn't care for Rx */
                                       , /* doNotify */ true

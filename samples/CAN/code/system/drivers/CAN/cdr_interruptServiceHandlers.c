@@ -58,6 +58,7 @@
 #include "cdr_MPC5748G_CAN.h"
 
 #include "rtos.h"
+#include "cdr_searchIFlag.h"
 #include "cdr_canDriverAPI.h"
 #include "cdr_interruptServiceHandlers.h"
 
@@ -481,49 +482,15 @@ static void isrGroupRxFIFO_##canDev(void)                                       
  */
 static void isrMailbox( CAN_Type * const pDevice
                       , volatile uint32_t * const pIFLAG
-                      , unsigned int idxMBFrom
+                      , uint32_t irqMask
+                      , unsigned int idxMB
                       , unsigned int offsMBIdxToHdl
-                      , uint32_t maskFrom
-                      , uint32_t maskTo
                       , const cdr_irqConfig_t * const pIrqConfig
                       )
 {
-    /* The address of the mask register can be derived from the address of the flag
-       register. */
-    _Static_assert
-            ( offsetof(CAN_Type, IMASK1) + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG1)
-              &&  offsetof(CAN_Type, IMASK2) + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG2)
-              &&  offsetof(CAN_Type, IMASK3) + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG3)
-            , "Implementation doesn't match the register structure of the CAN device"
-            );
-    
-    volatile const uint32_t * const pIMASK = pIFLAG-2;
-    const uint32_t maskedIFLAG = *pIFLAG & *pIMASK;
-    
-    /* Check mailbox candidates one after another for newly received input. */
-    while((maskedIFLAG & maskFrom) == 0)
-    {
-        /// @todo TBC: Binary search would be applicable, too. Straight forward with a binary tree of predefined masks?
-        /* This is not the causing mailbox - try next one. */
-        if(maskFrom == maskTo)
-        {
-            /* This code must be never reached. We are in the ISR but don't see any of
-               the related interrupt flags set. All we can do is ignoring the interrupt
-               request. Evidently, there's not even a flag bit to reset. */
-            assert(false);
-            return;
-        }
-        else
-        {
-            /* This is not the causing mailbox - try next one. */
-            ++ idxMBFrom;
-            maskFrom <<= 1;
-        }
-    } /* End while(Interrupt requesting MB not found in flag register  yet) */
-    
-    /* If we get here then we have found the causing mailbox. It is mailbox
-       idxMBFrom. */
-    volatile cdr_mailbox_t * const pMB = cdr_getMailboxByIdx(pDevice, idxMBFrom);
+    /* The IRQ causing mailbox has HW index idxMBFrom (which is due to a possible FFO not
+       the handle visible to the client code. */
+    volatile cdr_mailbox_t * const pMB = cdr_getMailboxByIdx(pDevice, idxMB);
 
     /* Read the mailbox CODE: It tells whether we have an Rx or Tx message and what
        happened. See RM 43.4.40, p. 1771ff, Tables 43-8 and 43-9, for the different
@@ -553,12 +520,12 @@ static void isrMailbox( CAN_Type * const pDevice
     // interrupt - should we then still implement the loop? What about delayed IRQ
     // processing, so that we hit the move-in of the successor message?
     //   But: This way (above checking IRQ flag, here, later, again reading CODE in
-    // busy-wait loop) can by principle not achieve coherency - e.g. the new move-in can
+    // busy-wait loop) can by principle not achieve coherence - e.g. the new move-in can
     // happen as easy shortly after the busy-wait as before. Better not to have it - it
     // would pretend doing something it can't actually do
     assert((CODE & 0x1) == 0);
 
-    /* For Rx messages, we save the payload data prior to acknowledgingthe reception at
+    /* For Rx messages, we save the payload data prior to acknowledging the reception at
        the HW. */
     uint32_t payload_u32[2]; /* Definition as u32 ensures a safe alignment. */
     if(isRx)
@@ -577,7 +544,8 @@ static void isrMailbox( CAN_Type * const pDevice
     /* RM 43.4.12/13/21, p. 1735ff: Acknowledge the IRQ. We need to do this prior to
        reading the timer (which unlocks the MB and would enable a re-assertion of the
        interrupt flag). */
-    *pIFLAG = maskFrom; /* Clear bit by "w1c" */
+    assert((*pIFLAG & irqMask) != 0);
+    *pIFLAG = irqMask; /* Clear bit by "w1c" */
 
     /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
        (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
@@ -594,7 +562,7 @@ static void isrMailbox( CAN_Type * const pDevice
 
     /* The index of the mailbox in the device requires a simple transformation to
        become the mailbox handle. */
-    const unsigned int hMB = idxMBFrom + offsMBIdxToHdl;
+    const unsigned int hMB = idxMB + offsMBIdxToHdl;
 
     if(isRx)
     {
@@ -637,7 +605,7 @@ static void isrMailbox( CAN_Type * const pDevice
 
 
 
-#define ISR_GROUP_MAILBOX(canDev, idxIFLAG, idxFrom, idxTo)                                 \
+#define ISR_GROUP_MAILBOX(canDev, idxIFLAG, idxFrom, idxTo, sizeGrpAsPow2)                  \
 /**                                                                                         \
  * Common ISR for the mailbox interrupts of mailboxes idxFrom till and including idxTo. It  \
  * branches in the common mailbox interrupt handler implementation with the information     \
@@ -650,6 +618,7 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
     _Static_assert( (idxIFLAG) >= 1  &&  (idxIFLAG) <= 3                                    \
                     &&  (idxFrom) >= 0  &&  (idxFrom) <= 64                                 \
                     &&  (idxTo)-(idxFrom)+1 >= 4  &&  (idxTo)-(idxFrom)+1 <= 32             \
+                    &&  (idxTo)-(idxFrom)+1 == 1u<<(sizeGrpAsPow2)                          \
                     &&  ((idxTo)-(idxFrom)+1) % 4 == 0                                      \
                     &&  (idxFrom)/32 == (idxTo)/32                                          \
                     &&  cdr_canDev_##canDev < sizeOfAry(cdr_canDriverConfig)                \
@@ -662,22 +631,32 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
                                                                                             \
     /* The index of the mailbox in the device and the mailbox handle are related by a */    \
     /* non-zero offset if the FIFO is enabled. Needed for client notification. */           \
-    const unsigned int MBHdlMinusIdx = 6u*pDeviceConfig->CTRL2_RFFN;                        \
+    const unsigned int MBHdlMinusIdx = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);   \
                                                                                             \
     /* Here, we know very well, which device and interrupt we are. We can figure out, which \
        interrupt flag register to use with which masks and all of this without any runtime  \
        overhead: The macro arguments idxFrom and idxTo are constants and what looks like    \
        runtime computation in the source code is just loading a constant value into the     \
-       register the compiled code. */                                                       \
-    volatile uint32_t *pIFLAG = &canDev->IFLAG##idxIFLAG;                                   \
-    const uint32_t maskFrom = 1u << ((idxFrom)-32u*((idxIFLAG)-1u))                         \
-                 , maskTo   = 1u << ((idxTo)  -32u*((idxIFLAG)-1u));                        \
+       register or using an immediate shift distance in the compiled code. */               \
+    _Static_assert                                                                          \
+            ( offsetof(CAN_Type, IMASK##idxIFLAG)                                           \
+              + 2*sizeof(uint32_t) == offsetof(CAN_Type, IFLAG##idxIFLAG)                   \
+            , "Implementation doesn't match the register structure of the CAN device"       \
+            );                                                                              \
+    volatile uint32_t * const pIFLAG = &canDev->IFLAG##idxIFLAG                             \
+                    , * const pIMASK = pIFLAG-2;                                            \
+    const unsigned int shiftGrpInIFLAG = (idxFrom)-32u*((idxIFLAG)-1u);                     \
+    const uint32_t maskedIFLAGRightAligned = (*pIFLAG & *pIMASK) >> shiftGrpInIFLAG;        \
+    const unsigned int idxIFlag = cdr_findAssertedBitInWord( maskedIFLAGRightAligned        \
+                                                           , sizeGrpAsPow2                  \
+                                                           )                                \
+                                  + shiftGrpInIFLAG;                                        \
+    assert(idxIFlag - shiftGrpInIFLAG <= (idxTo)-(idxFrom)+1);                              \
     isrMailbox( canDev                                                                      \
               , pIFLAG                                                                      \
-              , (idxFrom)                                                                   \
+              , /* irqMask */ 1u<<idxIFlag                                                  \
+              , /* idxMB */ idxIFlag + 32u*((idxIFLAG)-1u)                                  \
               , MBHdlMinusIdx                                                               \
-              , maskFrom                                                                    \
-              , maskTo                                                                      \
               , &pDeviceConfig->irqGroupMB##idxFrom##_##idxTo                               \
               );                                                                            \
 } /* End of isrGroupMB##idxFrom##_##idxTo##_##canDev */
@@ -692,13 +671,13 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
 ISR_GROUP_RX_FIFO(CAN_##idxCanDev)                                                          \
 ISR_GROUP_ERROR(CAN_##idxCanDev)                                                            \
 ISR_GROUP_BUS_OFF(CAN_##idxCanDev)                                                          \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 0, /* idxTo */ 3)        \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 4, /* idxTo */ 7)        \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 8, /* idxTo */ 11)       \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 12, /* idxTo */ 15)      \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 16, /* idxTo */ 31)      \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 2, /* idxFrom */ 32, /* idxTo */ 63)      \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 3, /* idxFrom */ 64, /* idxTo */ 95)
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 0, /* idxTo */ 3, 2)     \
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 4, /* idxTo */ 7, 2)     \
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 8, /* idxTo */ 11, 2)    \
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 12, /* idxTo */ 15, 2)   \
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 16, /* idxTo */ 31, 4)   \
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 2, /* idxFrom */ 32, /* idxTo */ 63, 5)   \
+ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 3, /* idxFrom */ 64, /* idxTo */ 95, 5)
 
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
 SET_OF_DEVICE_ISRS(/* idxCanDev */ 0)

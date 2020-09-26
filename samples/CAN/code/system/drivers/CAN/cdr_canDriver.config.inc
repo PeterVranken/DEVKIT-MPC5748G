@@ -259,8 +259,8 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
         .irqGroupMB32_63 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 0,
-            .osCallbackOnRx = NULL,
+            .irqPrio        = 2,
+            .osCallbackOnRx = mza_osCbOnCANRx,
             .osCallbackOnTx = NULL,
         },
         
@@ -268,8 +268,8 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
         .irqGroupMB64_95 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 0,
-            .osCallbackOnRx = NULL,
+            .irqPrio        = 3,
+            .osCallbackOnRx = mza_osCbOnCANRx,
             .osCallbackOnTx = NULL,
         },
         
