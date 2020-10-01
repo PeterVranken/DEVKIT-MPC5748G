@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #include "MPC5748G.h"
 #include "cdr_canDriver.config.h"
@@ -39,6 +40,25 @@
 /*
  * Global type definitions
  */
+
+/** Identification of a particular HW mailbox in terms of CAN device and index of the
+    mailbox in the HW array. This way to address to a mailbox is used only internally. The
+    driver's public API uses a mailbox handle instaed. Both are not equivalent because of
+    the additionally receivable message by FIFO. */
+typedef struct cdr_idMailbox_t
+{
+    /** The enumerated CAN device has been resolved to the HW CAN device by reference. */
+    CAN_Type *pDevice;
+    
+    /** The configuration information of the CAN device by reference. */
+    const cdr_canDeviceConfig_t *pDeviceConfig;
+    
+    /** The index of the addressed mailbox in the HW array of those inside the device. */
+    unsigned int idxMailbox;
+
+} cdr_idMailbox_t;
+
+
 
 /** The structure of a mailbox. For now, we don't support CAN FD and therefore we have a
     fixed size. With FD, we could consider using a variable size struct.\n
@@ -154,7 +174,7 @@ typedef cdr_canDeviceData_t cdr_canDriverData_t[CDR_NO_CAN_DEVICES_ENABLED];
  */
 
 /** This is a lookup table, which maps a zero based CAN device index (enumeration
-    cdr_canDevice_t) to a CAN peripheral (according to MPC5748G.h) */
+    cdr_enumCanDevice_t) to a CAN peripheral (according to MPC5748G.h) */
 extern CAN_Type * const cdr_mapIdxToCanDevice[CDR_NO_CAN_DEVICES_ENABLED];
 
 /** The run-time data of the CAN driver. */
@@ -165,10 +185,45 @@ extern cdr_canDriverData_t cdr_canDriverData;
  * Global prototypes
  */
 
+/** Internally used Tx variant of cdr_osSendMessage(). */
+enum cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
+                                          , const uint8_t payload[]
+                                          );
+                                     
+/** Internally used Rx variant of cdr_osReadMessage(). */
+enum cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
+                                          , uint8_t * const pDLC
+                                          , uint8_t payload[]
+                                          , uint16_t * const pTimeStamp
+                                          );
 
 /*
  * Global inline functions
  */
+
+/**
+ * Get the number of FIFO CAN ID filter entries in the filter table.
+ *   @return
+ * Get the number in the range 0..128. 0 is returned if the FIFO is not enabled.
+ *   @param pDeviceConfig
+ * The result depends on the CAN device configuration. It is passed in by reference.
+ */
+static inline unsigned int cdr_getNoFIFOFilterEntries
+                                        (const cdr_canDeviceConfig_t *pDeviceConfig)
+{
+    /* Initialize the FIFO filter table. See RM 43.4.43, p. 1785ff, for the binary
+       structure.
+         See RM 43.4.14, table on p. 1740, for the number of table entries depending on
+       CTRL2[RFFN]. */
+    return pDeviceConfig->isFIFOEnabled
+           ? 8u*(pDeviceConfig->CTRL2_RFFN+1u)
+           : 0;
+
+} /* End of cdr_getNoFIFOFilterEntries */
+
+
+
+
 
 /**
  * Get the additional number of CAN messages, which can processed due to an enabled FIFO.
@@ -218,6 +273,59 @@ static inline unsigned int cdr_getIdxOfFirstNormalMailbox
 
 
 
+/**
+ * At the API of the driver, the client code addresses to a particular mailbox by
+ * enumerated device and mailbox handle. Internally, we identify a mailbox in terms of
+ * device and HW index of mailbox. This helper function maps the former on the latter and
+ * implements a validation of the input at the same time.\n
+ *   Note, the operation is not defined for FIFO mailbox handles. FIFO entries don't have
+ * a one-by-one related HW mailbox.
+ *   @return
+ * The function returns \a true if it succeeds. It returns \a false if the arguments are
+ * out of range. In this case * \a pIdMB has not been touched.
+ *   @param pIdMB
+ * The internally used identification of the mailbox is returned as * \a pIdMB if the
+ * function succeeds.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * devices. This parameter chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices.
+ *   @param hMB
+ * The handle of the mailbox. The handle to use here is the same as used when having done
+ * the call of cdr_osMakeMailboxReservation() for the given mailbox.
+ */
+static inline bool cdr_mapMailboxHandleToId( cdr_idMailbox_t * const pIdMB
+                                           , unsigned int idxCanDevice
+                                           , unsigned int hMB
+                                           )
+{
+    if(idxCanDevice >= sizeOfAry(cdr_canDriverConfig))
+        return false;
+
+    /* A pointer to the configuration of the device in operation is basis of the next
+       steps. */
+    const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
+    const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
+                     , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig)
+                     , idxMB = hMB - additionalCapaFIFO;
+    
+    /* hMB needs a simple transformation to become the index of the mailboxes in the
+       device. */
+    if(hMB >= noFIFOMsgs  &&  idxMB < pDeviceConfig->noMailboxes)
+    {
+        pIdMB->pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
+        pIdMB->pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
+        pIdMB->idxMailbox = idxMB;
+        return true;
+    }
+    else
+        return false;
+        
+} /* End of cdr_mapMailboxHandleToId */
+
+
+
 
 /**
  * Get a mailbox in the CAN device's RAM by index.
@@ -242,8 +350,6 @@ static inline volatile cdr_mailbox_t *cdr_getMailboxByIdx( const CAN_Type * cons
     return ((volatile cdr_mailbox_t*)&pCanDevice->RAMn[0]) + idxMB;
 
 } /* End of cdr_getMailboxByIdx */
-
-
 
 
 

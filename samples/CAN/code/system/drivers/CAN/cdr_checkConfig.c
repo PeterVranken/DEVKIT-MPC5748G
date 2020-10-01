@@ -33,11 +33,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "typ_types.h"
 #include "rtos.h"
 #include "cdr_canDriverAPI.h"
+#include "cdr_canDriver.config.inc"
 #include "cdr_checkConfig.h"
 
 
@@ -111,6 +113,15 @@ bool cdr_checkDriverConfiguration(void)
        PRODUCTION, we just return false and the SW must not start up. */
     #define ASSERT(cond)    if(!(cond)){assert(false); return false;}
     
+    /* The number of HW mailboxes in one CAN device. Unfortunately, we don't have found a
+       related macro in the NXP derivative header. */
+    #define NO_HW_MAILBOXES_PER_CAN_DEVICE  96
+    
+    /* A buffer for checking consistent specification of API buffer indexes. */
+    unsigned int noUserEnabledRxMBs = 0;
+    uint8_t isAPIBufferInUse[CDR_NO_RX_USER_CODE_POLLING_MAILBOXES];
+    memset(isAPIBufferInUse, 0, sizeof(isAPIBufferInUse));
+
     /* To support debugging, we make the device index static in DEBUG compilation. */
 #ifdef DEBUG
     static unsigned int DATA_OS(idxDev);
@@ -126,8 +137,7 @@ bool cdr_checkDriverConfiguration(void)
                ||  pDevCfg->baudRate == 100
               );
 
-        /* The number of mailboxes is hardware limited. Unfortunately, we don't have found a
-           related macro in the NXP derivative header. */
+        /* The number of mailboxes is hardware limited. */
         ASSERT(pDevCfg->noMailboxes <= 96);
         
         /* The FIFO requires at least 6 Mailboxes and more, dependent on the size of the
@@ -230,10 +240,51 @@ bool cdr_checkDriverConfiguration(void)
         ASSERT_IRQ_HAS_CB(MB64_95)
         #undef ASSERT_IRQ_HAS_CB
         
+        /* Check the configuration of privileges for the user code API. */
+        unsigned int idxMB;
+        for(idxMB=0; idxMB<NO_HW_MAILBOXES_PER_CAN_DEVICE; ++idxMB)
+        {
+            const struct cdr_mailboxAccessConfig_t configMB =
+                                                pDevCfg->userAccessMailboxAry[idxMB];
+
+            /* We don't want to see polling enabled mailboxes out of range or with mailbox
+               indexes, which point into the FIFO memory area. */
+            ASSERT(idxMB >= idxFirstNormalMailbox  &&  idxMB < pDevCfg->noMailboxes
+                   ||  configMB.minPIDToAccess == 0 &&  configMB.idxAPIBuffer == 0 
+                  );
+
+            /* If polling is enabled then a unique, in-range index of an API buffer needs
+               to be specified. */
+            if(configMB.minPIDToAccess > 0  && configMB.useAsRxMailbox)
+            {
+                /* The mailbox is intended for Rx use and requires an API buffer. */
+                ++ noUserEnabledRxMBs;
+
+                /* The specified index of the API buffer is in range. */
+                ASSERT(configMB.idxAPIBuffer < CDR_NO_RX_USER_CODE_POLLING_MAILBOXES);
+
+                /* The API buffer index has not be specified yet for an ealier visited
+                   mailbox. */
+                assert(sizeOfAry(isAPIBufferInUse) == CDR_NO_RX_USER_CODE_POLLING_MAILBOXES);
+                ASSERT(isAPIBufferInUse[configMB.idxAPIBuffer] == 0);
+                isAPIBufferInUse[configMB.idxAPIBuffer] = 1;
+            }
+            else
+            {
+                /* The mailbox is intended for user code Tx access or not at all for user
+                   access. It doesn't have an associated API buffer. */
+                ASSERT(configMB.idxAPIBuffer == 0);
+            }
+        }
     } /* End for(All enabled CAN devices) */
 
+    /* All requested API buffers for user-code enabled mailboxes should really be in use to
+       avoid a waste of memory. */
+    ASSERT(noUserEnabledRxMBs == CDR_NO_RX_USER_CODE_POLLING_MAILBOXES);
+    
     return true;
 
+    #undef NO_HW_MAILBOXES_PER_CAN_DEVICE
 } /* End of cdr_checkDriverConfiguration */
 
 

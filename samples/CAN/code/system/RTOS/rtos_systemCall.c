@@ -54,6 +54,7 @@
 #include "lbd_ledAndButtonDriver_defSysCalls.h"
 #include "sio_serialIO_defSysCalls.h"
 #include "stm_systemTimer_defSysCalls.h"
+#include "cdr_canDriver_defSysCalls.h"
 
 
 /*

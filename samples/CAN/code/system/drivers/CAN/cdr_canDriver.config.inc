@@ -1,4 +1,3 @@
-#ifdef CDR_IS_INCLUDED_FROM_DRIVER_IMPLEMENTATION
 /**
  *   @file cdr_canDriver.config.h
  * Application dependent configuration of CAN I/O driver.
@@ -76,6 +75,32 @@ Interrupts: On any core but in groups. Polling for simplicity core-wise in same 
 limitation for any realistic use-case.
 */
 
+/** The Rx polling API for user code requires some attention drawn to memory allocation.
+    The API implementation wants to allocate memory for all Rx mailboxes, which are enabled
+    for polling. (It's an assumption that most applications will process most messages on
+    event base and that the number of polled messages is rather little.)\n
+      The usual paradigm for a data fetching function is taking the address of some caller
+    provided memory as argument and to place the result data via this pointer. If our user
+    task API would follow this concept then it had to validate the pointer before use in
+    order to avoid a memory protection issue from within operating system code.
+    Unfortunately, pointer validation is an expensive operation and should be avoided for
+    frequently called functions (see rtos_checkUserCodeWritePtr()).\n
+      The pointer validation can be avoided by holding memory buffers for the API in the
+    operating system data segment. It is readable by the requesting user process and
+    in-corruptible. Static allocation is desired for performance reasons and to avoid
+    generally undesired dynamic memory allocation.\n
+      The static allocation discards reentrance of the related API function - which is not
+    an issue as the function is by principle anyway not reentrant for one and the same
+    message/mailbox.\n
+      The only remaining complexity is the data declaration. Although the required size is
+    a compile-time constant, it can't be figured out by a constant expression. Therefore,
+    you need to (redundantly) specify the number of polling-enabled mailboxes in this
+    define. Redundantly, as the same number is implicit to the privileges configuration of
+    the mailboxes. The way out is a run-time check in the startup code of the driver, which
+    proves the value specified here with respect to the configuration of the mailboxes.\n
+      Note, the number specified here is the total number for all of the enabled CAN
+    devices. */
+#define CDR_NO_RX_USER_CODE_POLLING_MAILBOXES   10
 
 
 /*
@@ -103,6 +128,7 @@ void mza_osCbOnCanBusOff(bool enteringBusOff, uint32_t ESR1);
  * Local data definitions
  */
 
+#ifdef CDR_IS_INCLUDED_FROM_DRIVER_IMPLEMENTATION
 /** This is the configuration data set of the CAN driver.\n
       The principal structure of the object is an array of objects of class \a
     cdr_canDeviceConfig_t, which hold the configuration for a single CAN device (the
@@ -273,11 +299,36 @@ const cdr_canDriverConfig_t cdr_canDriverConfig =
             .osCallbackOnTx = NULL,
         },
         
-        /** Privileges for mailboxes: By default code in user processes can't access the
-            mailboxes. */
+        /** Permission to make mailbox reservations is given only one particular user
+            process, or it can be generally prohibitted for user code and left to the
+            operating system.\n
+              Configure the PID of the process, which may do or configure 0 if only the
+            operating system may. */
+        .pidMakeMailboxReservation = 1,
+        
+        /** Privileges for mailboxes: By default, code in user processes can't access the
+            mailboxes (i.e. minPIDToAccess=0). You need to specify just those mailboxes,
+            which need to be accessed by polling from user tasks.\n
+              Note, the index used here is the HW mailbox index not the user visible
+            mailbox handle.\n
+              Note, the total number of enabled Rx mailboxes in all enabled devices needs
+            to match #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES.
+              Note, the sort order of API buffers doesn't matter. Particularly, no run-time
+            penalty is involved with having a zig-zag-pattern. */
         .userAccessMailboxAry = 
         {
-            [24 ... 95] = {.minPIDToAccess = 2},
+            [24] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
+            [25] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 1},
+            [26] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 2},
+            [27] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 3},
+            [28] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 0},
+            [29] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 5},
+            [30] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 6},
+            [31] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 7},
+            [32] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 8},
+            [33] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 9},
+            [69] = {.minPIDToAccess = 1, .useAsRxMailbox = true, .idxAPIBuffer = 4}, /* hMB = 69+48 = 117 */
+            [75] = {.minPIDToAccess = 1, .useAsRxMailbox = false}, /* hMB = 75+48 = 123 */
         },
     },
 #endif

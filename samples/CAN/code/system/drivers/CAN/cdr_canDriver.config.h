@@ -56,6 +56,7 @@
                                     +(CDR_ENABLE_USE_OF_CAN_7 == 1)    \
                                    )
 
+
 /*
  * Global type definitions
  */
@@ -284,6 +285,49 @@ typedef struct cdr_irqConfig_t
 
 
 
+/** The user process API provides access to Tx mailboxes and Rx mailboxes by polling.
+    (Primarily, IRQ based Rx and Tx notifications go only into OS code. The OS needs to
+    decide whether/how to propagte these events to the user processes. safe-RTOS offers
+    several services to do so but this is no longer in the responsibility of the CAN
+    driver.)\n
+      Here we have the privileges configuration for normal mailboxes.\n
+      The Rx FIFO can be operated by IRQ only and hence it doesn't matter with
+    respect to user process privilege management.
+      @remark The designated initializers are defined such that non-mentioned array
+    elements are implicitly configure the according mailboxes as not accessible by any
+    user process. You just need to configure the mailboxes, which are enabled for user
+    code access. */
+typedef struct cdr_mailboxAccessConfig_t
+{
+    /** Access to the mailbox is allowed to code running in a user process with process
+        ID greater or equal as this value. (Either Rx or Tx is allowed, depending on the
+        initialization of the mailbox using cdr_osMakeMailboxReservation().) A value of
+        0 or greater than #RTOS_NO_PROCESSES make the mailbox unavailable to all user
+        code. */
+    uint8_t minPIDToAccess;
+
+    /** Use of the mailboxes is allowed either for Rx or for Tx. */
+    bool useAsRxMailbox;
+    
+    /** The index of the API buffer to be used for Rx messages. All
+        user-polling-enabled Rx mailboxes need to specify a unique API buffer and the
+        indexes in use must not skip possible values. Note, the index space is shared
+        between all enabled CAN devices.\n
+          In other words, the ordered set of all indexes specified for all
+        user-polling-enabled mailboxes of all enbaled CAN devices needs to form a
+        contiguous series of integers, starting with zero. Moreover, the highest
+        specified index needs to be #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES - 1.\n
+          User code access enabled Tx mailboxes doesn't require an API buffer. Instead
+        of a valid index, the special value #CDR_API_BUF_IDX_INVALID needs to be
+        configured.\n
+          These strict consistency constraints are double-checked at driver startup
+        time by cdr_checkDriverConfiguration(), so that configuration errors can't do
+        any harm. */
+    uint16_t idxAPIBuffer;
+    
+} cdr_mailboxAccessConfig_t;
+
+
 
 /** An instance of this type collects all constant cnfiguration data for one CAN device. */
 typedef struct cdr_canDeviceConfig_t
@@ -357,6 +401,12 @@ typedef struct cdr_canDeviceConfig_t
     cdr_irqConfig_t irqGroupMB32_63;/** IRQ configuration, IRQs of mailboxes 32..63 */
     cdr_irqConfig_t irqGroupMB64_95;/** IRQ configuration, IRQs of mailboxes 64..95 */
 
+    /** Permission to make mailbox reservations is given only one particular user process,
+        or it can be generally prohibitted for user code and left to the operating system.\n
+          Configure the PID of the process, which may do or configure 0 if only the
+        operating system may. */
+    uint8_t pidMakeMailboxReservation;
+    
     /** The user process API provides access to Tx mailboxes and Rx mailboxes by polling.
         (Primarily, IRQ based Rx and Tx notifications go only into OS code. The OS needs to
         decide whether/how to propagte these events to the user processes. safe-RTOS offers
@@ -365,22 +415,12 @@ typedef struct cdr_canDeviceConfig_t
           Here we have the privileges configuration for normal mailboxes.\n
           The Rx FIFO can be operated by IRQ only and hence it doesn't matter with
         respect to user process privilege management.
-          @remark The designated initializers defined to set non-mentioned array elements
-        implicitly to "all zero" and the according mailboxes are not accessible by any user
-        process. You just need to configure the mailboxes, which are allowed to be
-        accessed. */
-/// @todo Make typedef and doc
-    struct cdr_mailboxAccessConfig_t
-    {
-        /** Access to the mailbox is allowed to code running in a user process with process
-            ID greater or equal as this value. (Either Rx or Tx is allowed, depending on the
-            initialization of the mailbox using cdr_osMakeMailboxReservation().) A value of
-            0 or greater than #RTOS_NO_PROCESSES make the mailbox unavailable to all user
-            code. */
-        uint8_t minPIDToAccess;
-    }
-    userAccessMailboxAry[96];
-    
+          @remark The designated initializers are defined such that non-mentioned array
+        elements are implicitly configure the according mailboxes as not accessible by any
+        user process. You just need to configure the mailboxes, which are enabled for user
+        code access. */
+    cdr_mailboxAccessConfig_t userAccessMailboxAry[96];
+
 } cdr_canDeviceConfig_t;
 
 

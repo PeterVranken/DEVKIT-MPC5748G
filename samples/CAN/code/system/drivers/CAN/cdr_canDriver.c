@@ -19,17 +19,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   cdr_getNoFIFOFilterEntries (global inline)
  *   cdr_getIdxOfFirstNormalMailbox (global inline)
  *   cdr_getMailboxByIdx (global inline)
  *   configSIULForUseWithDEVKIT_MPC5748G
  *   cdr_osInitCanDriver
  *   cdr_osMakeMailboxReservation
+ *   cdr_osSendMessage_idMB
  *   cdr_osSendMessage
  *   cdr_osSendMessageEx
+ *   cdr_osReadMessage_idMB
  *   cdr_osReadMessage
  *   cdr_testSend_task10ms
  * Local functions
- *   getNoFIFOFilterEntries
  *   getFIFOFilterEntry
  *   getBaudRateSettings
  *   osPrepareSendMessage
@@ -88,7 +90,7 @@
 #include "cdr_canDriver.config.inc"
 
 /** This is a lookup table, which maps a zero based CAN device index (enumeration
-    cdr_canDevice_t) to a CAN peripheral (according to MPC5748G.h) */
+    cdr_enumCanDevice_t) to a CAN peripheral (according to MPC5748G.h) */
 CAN_Type * const cdr_mapIdxToCanDevice[cdr_canDev_noCANDevicesEnabled] =
 {
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
@@ -155,30 +157,6 @@ cdr_canDriverData_t DATA_OS(cdr_canDriverData) =
 /*
  * Function implementation
  */
-
-
-/**
- * Get the number of FIFO CAN ID filter entries in the filter table.
- *   @return
- * Get the number in the range 0..128. 0 is returned if the FIFO is not enabled.
- *   @param pDeviceConfig
- * The result depends on the CAN device configuration. It is passed in by reference.
- */
-static inline unsigned int getNoFIFOFilterEntries
-                                        (const cdr_canDeviceConfig_t *pDeviceConfig)
-{
-    /* Initialize the FIFO filter table. See RM 43.4.43, p. 1785ff, for the binary
-       structure.
-         See RM 43.4.14, table on p. 1740, for the number of table entries depending on
-       CTRL2[RFFN]. */
-    return pDeviceConfig->isFIFOEnabled
-           ? 8u*(pDeviceConfig->CTRL2_RFFN+1u)
-           : 0;
-
-} /* End of getNoFIFOFilterEntries */
-
-
-
 
 
 /**
@@ -374,7 +352,7 @@ static void getBaudRateSettings( unsigned int * const pPRESDIV
  * The CAN device to initialize by index. The available index range depends on the
  * configuration of the set of enabled CAN devices, see e.g. #CDR_ENABLE_USE_OF_CAN_0. The
  * most convenient way to provide the appropriate index is using enumeration
- * cdr_canDevice_t.
+ * cdr_enumCanDevice_t.
  *   @remark
  * Needs to be called from supervisor code only.
  */
@@ -622,7 +600,7 @@ static void initCanDevice(unsigned int idxCanDevice)
        structure.
          See RM 43.4.14, table on p. 1740, for the number of table entries depending on
        CTRL2[RFFN]. */
-    const unsigned int noFilterTableEntries = getNoFIFOFilterEntries(pCanDevConfig);
+    const unsigned int noFilterTableEntries = cdr_getNoFIFOFilterEntries(pCanDevConfig);
     for(u=0; u<noFilterTableEntries; ++u)
     {
         /* The FIFO filters don't have a state "disabled" like normal mailboxes have. If we
@@ -744,7 +722,7 @@ void cdr_osInitCanDriver(void)
  *   @param idxCanDevice
  * The administration of messages and mailboxes is made independently for all enabled CAN
  * devices. This parameter chooses the affected CAN device.\n
- *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
  * possible devices.\n
  *   @param hMB
  * The driver has a fixed structure of mailboxes. (A structure, which is modifiable by
@@ -780,7 +758,7 @@ void cdr_osInitCanDriver(void)
  * The number of bytes of a Tx message in the range 0..8.\n
  *   The value doesn't care for Rx messages and it doesn't even care for Tx messages if
  * the send API cdr_osSendMessageEx() is exclusively used. The simple send API
- * cdr_osSendMessage(), however, will send the messages with this TxDLC.
+ * cdr_osSendMessage(), however, will send the messages with this TxDLC. The range is 0..8.
  *   @param doNotify
  * The Boolean choice whether or not the completion of the mailbox activity will trigger an
  * interrupt. If set to \a true then an Rx mailbox will raise an interrupt if the reception
@@ -821,15 +799,15 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                            , bool doNotify
                                            )
 {
-    if(TxDLC > 8)
-        return cdr_errApi_dlcOutOfRange;
-
     if(idxCanDevice >= sizeOfAry(cdr_canDriverConfig))
-        return cdr_errApi_deviceHandleOutOfRange;
+        return cdr_errApi_handleOutOfRange;
 
     CAN_Type * const pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
-
+    
+    if(TxDLC > 8)
+        return cdr_errApi_dlcOutOfRange;
+        
     if(isExtId && (canId & 0xe0000000u) != 0  ||  !isExtId && (canId & 0xfffff800u) != 0)
         return cdr_errApi_badCanId;
 
@@ -837,7 +815,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
        configuration differs.
          The message handle space for the client code appends the normal mailboxes to the
        FIFO filter entries. */
-    const unsigned int noFIFOMsgs = getNoFIFOFilterEntries(pDeviceConfig)
+    const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
                      , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
     if(hMB < noFIFOMsgs)
     {
@@ -903,7 +881,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                      != NULL                                                \
                                    : pDeviceConfig->irqGroupMB##from##_##to.osCallbackOnTx  \
                                      != NULL                                                \
-                        )                                                                \
+                        )                                                                   \
                     )                                                                       \
                 )
         if(doNotify
@@ -973,7 +951,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                      | (isExtId? CAN_MBID_ID_EXT(canId): CAN_MBID_ID_STD(canId));
     }
     else
-        return cdr_errApi_idxMailboxOutOfRange;
+        return cdr_errApi_handleOutOfRange;
 
     return cdr_errApi_noError;
 
@@ -990,10 +968,9 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
  * happen, if the buffer in the hardware is still occupied by the preceeding message, which
  * has not yet serialized on the CAN bus.\n
  *   If the function returns \a NULL then the caller must not proceed with sending.
- *   @param idxCanDevice
- * The affected CAN device (see enumeration \a cdr_canDevice_t).
- *   @param hMB
- * The mailbox to serialize onto the CAN bus is identified by the handle.
+ *   @param pIdMB
+ * Object * \a pIdMB contains the information about the mailbox to operate on (i.e.
+ * device, HW index of mailbox).
  *   @remark
  * It is permitted to call this function from the context of the notification IRQ for the
  * same message. This function can be used to implement a send queue: If it returns \a
@@ -1005,25 +982,10 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
  * function would then no longer offer DLC: Either most simple for typical mailbox patterns
  * or full flexibility with maximum overhead.
  */
-static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
-                                                   , unsigned int hMB
-                                                   )
+static volatile cdr_mailbox_t *osPrepareSendMessage(const cdr_idMailbox_t * const pIdMB)
 {
-    /* A pointer to the device in operation and its configuration is basis of the next
-       steps. */
-    assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
-    CAN_Type * const pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
-    const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
-
-    /* Tx is only possible with normal mailboxes. */
-    const unsigned int noFIFOMsgs ATTRIB_DBG_ONLY = getNoFIFOFilterEntries(pDeviceConfig)
-                     , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
-    assert(hMB >= noFIFOMsgs);
-
-    /* hMB needs a simple transformation to become the index of the mailboxes in the
-       device. */
-    const unsigned int idxMB = hMB - additionalCapaFIFO;
-    assert(idxMB < pDeviceConfig->noMailboxes);
+    CAN_Type * const pDevice = pIdMB->pDevice;
+    const unsigned int idxMB = pIdMB->idxMailbox;
 
     /* Get the pointer to the mailbox in use. */
     volatile cdr_mailbox_t * const pTxMB = cdr_getMailboxByIdx(pDevice, idxMB);
@@ -1073,7 +1035,7 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
     }
     else
     {
-        /* Mailbox is still busy. Nothing can be done. */
+        /* Mailbox is still busy or not even a Tx mailbox. Nothing can be done. */
         return NULL;
     }
 } /* End of osPrepareSendMessage */
@@ -1082,52 +1044,27 @@ static volatile cdr_mailbox_t *osPrepareSendMessage( unsigned int idxCanDevice
 
 
 /**
- * Send a Tx message. This API (as opposed to cdr_osSendMessageEx()) for the simple but
- * common use case where each CAN ID is connected to one particular mailbox (or message
- * handle).\n
- *   "Sending" means placing it into the mailbox, i.e. the reserved buffer
- * in the CAN device hardware. The hardware decides autonomously, when the buffer is
- * serialized on the CAN bus. Usually, this will happen much later then the return from
- * this function. (An interrupt can be configured to get a notification when it is
- * completed. See cdr_osMakeMailboxReservation() for details.)
+ * Send a Tx message. This API is an alias for cdr_osSendMessage() with slightly different
+ * signature. This API is intended for internal use only. Behavior is otherwise identical
+ * to cdr_osSendMessage(); please look there for details.
  *   @return
- * \a true, if function succeeded, else \a false. The latter can happen, if the buffer in
- * the hardware is still occupied by the preceeding message, which has not yet serialized
- * on the CAN bus.\n
- *   If the function returns \a false then it had no effect.
- *   @param idxCanDevice
- * The administration of messages and mailboxes is made independently for all enabled CAN
- * devices. This parameter chooses the affected CAN device.\n
- *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
- * possible devices. An out of range situation is caught by assertion.
- *   @param hMB
- * The message to send is identified by the handle of the mailbox it is associated with. A
- * message can be send only if it had been associated with a mailbox in the hardware, i.e.
- * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
- * function. The handle to use here is the same as used when having done the related call
- * of cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
+ * Get an error code, which reports success or different recognized error situations.
+ *   @param pIdMB
+ * Object * \a pIdMB contains the information about the mailbox to operate on (i.e.
+ * device, HW index of mailbox).
  *   @param payload
  * The message content bytes to sent. The number of bytes to send is taken from the current
  * mailbox configuration. Normally, it'll be the never changed value aggreed on during the
  * reservation of the mailbox (see cdr_osMakeMailboxReservation()). However, if the
  * extended send API cdr_osSendMessageEx() is used alternatingly with this simple API then
  * the DLC will be applied, which had been set with the last recent call of the extended API.
- *   @remark
- * It is permitted to call this function from the context of the notification IRQ for the
- * same message.
- *   @remark
- * This API and cdr_osSendMessageEx() are alternatives. They access the same hardware and
- * have heavy race conditions. They must never be used at a time for one and the same
- * mailbox. Most use cases will lead to a general either or in the client code but the
- * non-overlapping over time, alternating use is permitted, too.
  */
-bool cdr_osSendMessage( unsigned int idxCanDevice
-                      , unsigned int hMB
-                      , const uint8_t payload[]
-                      )
+cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
+                                     , const uint8_t payload[]
+                                     )
 {
     /* Check and prepare the mailbox to be used and get the pointer to it. */
-    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(idxCanDevice, hMB);
+    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(pIdMB);
 
     /* Complete send operation if preparation reports success. */
     if(pTxMB != NULL)
@@ -1146,13 +1083,73 @@ bool cdr_osSendMessage( unsigned int idxCanDevice
         pTxMB->csWord = csWord | CAN_MBCS_CODE(12); /* CODE doesn't need masking: 8->12 */
 
         /* Sending is successfully initiated. */
-        return true;
+        return cdr_errApi_noError;
     }
     else
     {
         /* Mailbox is still busy. Nothing to be done. */
-        return false;
+        return cdr_errApi_txMailboxBusy;
     }
+} /* End of cdr_osSendMessage_idMB */
+
+
+
+/**
+ * Send a Tx message. This API (as opposed to cdr_osSendMessageEx()) for the simple but
+ * common use case where each CAN ID is connected to one particular mailbox (or message
+ * handle).\n
+ *   "Sending" means placing it into the mailbox, i.e. the reserved buffer
+ * in the CAN device hardware. The hardware decides autonomously, when the buffer is
+ * serialized on the CAN bus. Usually, this will happen much later then the return from
+ * this function. (An interrupt can be configured to get a notification when it is
+ * completed. See cdr_osMakeMailboxReservation() for details.)
+ *   @return
+ * \a cdr_errApi_noError, if function succeeded, \a cdr_errApi_txMailboxBusy, if the buffer
+ * in the hardware is still occupied by the preceeding message, which iss not serialized on
+ * the CAN bus yet or \a cdr_errApi_handleOutOfRange if the device index or mailbox
+ * handle was invalid.\n
+ *   If the function doesn't return \a cdr_errApi_noError then it had no effect.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * devices. This parameter chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices.
+ *   @param hMB
+ * The message to send is identified by the handle of the mailbox it is associated with. A
+ * message can be send only if it had been associated with a mailbox in the hardware, i.e.
+ * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
+ * function. The handle to use here is the same as used when having done the related call
+ * of cdr_osMakeMailboxReservation().
+ *   @param payload
+ * The message content bytes to send. The number of bytes to send is taken from the current
+ * mailbox configuration. Normally, it'll be the never changed value aggreed on during the
+ * reservation of the mailbox (see cdr_osMakeMailboxReservation()). However, if the
+ * extended send API cdr_osSendMessageEx() is used alternatingly with this simple API then
+ * the DLC will be applied, which had been set with the last recent call of the extended API.
+ *   @remark
+ * It is permitted to call this function from the context of the notification IRQ for the
+ * same message.
+ *   @remark
+ * This API and cdr_osSendMessageEx() are alternatives. They access the same hardware and
+ * have heavy race conditions. They must never be used at a time for one and the same
+ * mailbox. Most use cases will lead to a general either or in the client code but the
+ * non-overlapping over time, alternating use is permitted, too.
+ *   @remark
+ * This function is reentrant with respect to different addressed mailboxes. It can be
+ * called from different cores. The behavior is undefined if called coincidentally from
+ * different contexts but for the same mailbox. 
+ */
+cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
+                                , unsigned int hMB
+                                , const uint8_t payload[]
+                                )
+{
+    cdr_idMailbox_t idMB;
+    if(cdr_mapMailboxHandleToId(&idMB, idxCanDevice, hMB))
+        return cdr_osSendMessage_idMB(&idMB, payload);
+    else
+        return cdr_errApi_handleOutOfRange;
+        
 } /* End of cdr_osSendMessage */
 
 
@@ -1167,14 +1164,15 @@ bool cdr_osSendMessage( unsigned int idxCanDevice
  * this function. (An interrupt can be configured to get a notification when it is
  * completed. See cdr_osMakeMailboxReservation() for details.)
  *   @return
- * \a true, if function succeeded, else \a false. The latter can happen, if the buffer in
- * the hardware is still occupied by the preceeding message, which has not yet serialized
- * on the CAN bus.\n
- *   If the function returns \a false then it had no effect.
+ * \a cdr_errApi_noError, if function succeeded, \a cdr_errApi_txMailboxBusy, if the buffer
+ * in the hardware is still occupied by the preceeding message, which iss not serialized on
+ * the CAN bus yet or \a cdr_errApi_handleOutOfRange if the device index or mailbox
+ * handle was invalid.\n
+ *   If the function doesn't return \a cdr_errApi_noError then it had no effect.
  *   @param idxCanDevice
  * The administration of messages and mailboxes is made independently for all enabled CAN
  * devices. This parameter chooses the affected CAN device.\n
- *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
  * possible devices. An out of range situation is caught by assertion.
  *   @param hMB
  * The message to send is identified by the handle of the mailbox it is associated with. A
@@ -1202,17 +1200,25 @@ bool cdr_osSendMessage( unsigned int idxCanDevice
  * have heavy race conditions. They must never be used at a time for one and the same
  * mailbox. Most use cases will lead to a general either or in the client code but the
  * non-overlapping over time, alternating use is permitted, too.
+ *   @remark
+ * This function is reentrant with respect to different addressed mailboxes. It can be
+ * called from different cores. The behavior is undefined if called coincidentally from
+ * different contexts but for the same mailbox. 
  */
-bool cdr_osSendMessageEx( unsigned int idxCanDevice
-                        , unsigned int hMB
-                        , bool isExtId
-                        , unsigned int canId
-                        , unsigned int DLC
-                        , const uint8_t payload[]
-                        )
+cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
+                                  , unsigned int hMB
+                                  , bool isExtId
+                                  , unsigned int canId
+                                  , unsigned int DLC
+                                  , const uint8_t payload[]
+                                  )
 {
+    cdr_idMailbox_t idMB;
+    if(!cdr_mapMailboxHandleToId(&idMB, idxCanDevice, hMB))
+        return cdr_errApi_handleOutOfRange;
+        
     /* Check and prepare the mailbox to be used and get the pointer to it. */
-    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(idxCanDevice, hMB);
+    volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(&idMB);
 
     /* Complete send operation if preparation reports success. */
     if(pTxMB != NULL)
@@ -1240,24 +1246,22 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
                 ;
 
         /* Sending is successfully initiated. */
-        return true;
+        return cdr_errApi_noError;
     }
     else
     {
         /* Mailbox is still busy. Nothing to be done. */
-        return false;
+        return cdr_errApi_txMailboxBusy;
     }
 } /* End of cdr_osSendMessageEx */
 
 
 
 /**
- * Read an Rx message from the mailbox. This is the polling based receive API of the CAN
- * driver. The contents of the mailbox are returned if a message had been received since
- * the preceding invocation of this function for the same mailbox.\n
- *   Regularly polling a mailbox is an alternative to notification of reception by
- * interrupt and callback. For a given mailbox, either technologies can't be combined. This
- * is double-checked by assertion in DEBUG compilation.
+ * Read an Rx message from the mailbox. This variant of the function takes the resolved
+ * mailbox identification as argument. The normal API function is \a cdr_osReadMessage().
+ * (It resolves the mailbox identification and branches here.) Please find more detailled
+ * information there.
  *   @return
  * If the function returns either \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow
  * then a new message had been arrived and the mailbox contents are returned to the
@@ -1265,20 +1269,16 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
  * indicates that the call of the function came too late to read all incoming messages; at
  * least one preceeding message had been lost and overwritten by it successor.\n
- *   If no new message had been received since the previous call of this function for the
- * same mailbox then the function returns \a cdr_errApi_rxMailboxEmpty. None of the other
- * (pointer based) function results is set in this case.
- *   @param idxCanDevice
- * The administration of messages and mailboxes is made independently for all enabled CAN
- * devices. This parameter chooses the affected CAN device.\n
- *   See enumeration \a cdr_canDevice_t (actually a zero based index) for the set of
- * possible devices. An out of range situation is caught by assertion.
- *   @param hMB
- * The message to send is identified by the handle of the mailbox it is associated with. A
- * message can be received only if it had been associated with a mailbox in the hardware, i.e.
- * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
- * function. The handle to use here is the same as used when having done the related call
- * of cdr_osMakeMailboxReservation(). An out of range situation is caught by assertion.
+ *   If no new data is available (no message had been received since the previous call of
+ * this function for the same mailbox or the mailbox is instantly blocked by a
+ * coincidental reception event) then the function returns \a cdr_errApi_rxMailboxEmpty.\n
+ *   \a cdr_errApi_rxMailboxEmpty is returned, too, if one tries to read from a mailbox,
+ * which had been configured for Tx.\n
+ *   None of the other (pointer based) function results is set if the return code is other
+ * than \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow.
+ *   @param pIdMB
+ * Object * \a pIdMB contains the information about the mailbox to operate on (i.e.
+ * device, HW index of mailbox).
  *   @param pDLC
  * At entry into this function, * \a pDLC is the size in Byte of the output buffer \a
  * payload. No more than this number of payload bytes will be returned.\n
@@ -1292,69 +1292,44 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  * the unit of the timer would be 2µs. The timer wraps around at 2^16-1.\n
  *   \a pTimeStamp can be NULL if the called doesn't want to make use of the time stamp.
  */
-/// @todo Remove temporary test code
-unsigned int BSS_OS(cdr_test_cntMoveInClash) = 0;
-
-cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
-                                , unsigned int hMB
-                                , unsigned int * const pDLC
-                                , uint8_t payload[]
-                                , unsigned int * const pTimeStamp
-                                )
+cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
+                                     , uint8_t * const pDLC
+                                     , uint8_t payload[]
+                                     , uint16_t * const pTimeStamp
+                                     )
 {
-    /* A pointer to the device in operation and its configuration is basis of the next
-       steps. */
-    assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
-    CAN_Type * const pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
-    const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
-
-    /* Rx polling is only possible with normal mailboxes. */
-    const unsigned int noFIFOMsgs ATTRIB_DBG_ONLY = getNoFIFOFilterEntries(pDeviceConfig)
-                     , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);
-    assert(hMB >= noFIFOMsgs);
-
-    /* hMB needs a simple transformation to become the index of the mailboxes in the
-       device. */
-    const unsigned int idxMB = hMB - additionalCapaFIFO;
-    assert(idxMB < pDeviceConfig->noMailboxes);
+    CAN_Type * const pDevice = pIdMB->pDevice;
+    const unsigned int idxMB = pIdMB->idxMailbox;
 
     /* Identify the interrupt bit that belongs to the given mailbox (RM 43.4.12/13/21, p.
        1735ff). */
     uint32_t irqMask;
     volatile uint32_t *pIFLAG;
-#ifdef DEBUG
     volatile uint32_t IMASK;
-#endif
     if(idxMB < 32)
     {
         irqMask = 1u << idxMB;
         pIFLAG = &pDevice->IFLAG1;
-#ifdef DEBUG
         IMASK = pDevice->IMASK1;
-#endif
     }
     else if(idxMB < 64)
     {
         irqMask = 1u << (idxMB-32u);
         pIFLAG = &pDevice->IFLAG2;
-#ifdef DEBUG
         IMASK = pDevice->IMASK2;
-#endif
     }
     else
     {
         assert(idxMB < 96);
         irqMask = 1u << (idxMB-64u);
         pIFLAG = &pDevice->IFLAG3;
-#ifdef DEBUG
         IMASK = pDevice->IMASK3;
-#endif
     }
 
     /* To avoid race conditions, we don't allow using this API for mailboxes, which are
-       configured to send an IRQ based notification. This is double-checked in DEBUG
-       compilation. */
-    assert((IMASK & irqMask) == 0);
+       configured to send an IRQ based notification. */
+    if((IMASK & irqMask) != 0)
+        return cdr_errApi_pollingOfMailboxWithIRQ;
 
     /* Poll for newly received input; a new message is reported by interrupt flag. */
     if((*pIFLAG & irqMask) != 0)
@@ -1367,34 +1342,26 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
         const uint32_t csWord = pRxMB->csWord
                      , CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
                      
-        /* There is a little chance to access the mailbox during the move-in; data has not
-           fully arrived yet, which is the same logical situation as an entirely empty
-           mailbox. The situation is recognized by a set LSB.
-             Note that this happens occasionally although we have first checked the
-           interrupt flag but not yet released the mailbox. The move-in seems to take place
-           after the interrupt has raised - this can have a significant impact on IRQ based
-           reception: We are in the ISR but can't access the data yet? */
-/// @todo Should become if(4 || 6) then read else empty: This way the API is safe in be
-// applied to an Tx MB - which is required to make user API safe against mis-use
-        if((CODE & 1) != 0)
-/// @todo Remove temporary test code
-{
-++ cdr_test_cntMoveInClash;
-            return cdr_errApi_rxMailboxEmpty;
-}
-        else
+        /* There is a little chance to access the mailbox during the move-in (likely of the
+           successor message of the one, which had asserted the interrupt flag); the
+           situation is recognized by a set LSB.
+             From the perspective of the user interface, we handle this identical to the
+           empty mailbox: Currently, the user can't get data. If it really is due to an
+           overrun then he will necessarily see this in the next call of the polling
+           method. */
+        if(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */)
         {
-            assert(CODE == 2 /* FULL */  ||  CODE == 6 /* OVERRUN */);
+            const uint8_t DLC = (uint8_t)((pRxMB->csWord & CAN_MBCS_DLC_MASK)
+                                          >> CAN_MBCS_DLC_SHIFT
+                                         );
 
-            const uint32_t DLC = (pRxMB->csWord & CAN_MBCS_DLC_MASK) >> CAN_MBCS_DLC_SHIFT;
-
-            /* Copy received bytes into caller provided result buffer. The loop considers both
-               the provided buffer's size and the number of received bytes. The received DLC is
-               limited to 8 by HW. */
+            /* Copy received bytes into caller provided result buffer. The loop considers
+               both the provided buffer's size and the number of received bytes. The
+               received DLC is limited to 8 by HW. */
             assert(DLC <= 8);
-            unsigned int u = *pDLC;
-            if(u > DLC)
-                u = DLC;
+            unsigned int u = (unsigned)*pDLC;
+            if((unsigned)DLC < u)
+                u = (unsigned)DLC;
             while(u-- > 0)
                 payload[u] = pRxMB->payload[u];
             *pDLC = DLC;
@@ -1409,21 +1376,99 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
 
             /* The time stamp of reception is returned on demand. */
             if(pTimeStamp != NULL)
-                *pTimeStamp = (csWord & CAN_MBCS_TIME_STAMP_MASK) >> CAN_MBCS_TIME_STAMP_SHIFT;
+            {
+                *pTimeStamp = (uint16_t)((csWord & CAN_MBCS_TIME_STAMP_MASK)
+                                         >> CAN_MBCS_TIME_STAMP_SHIFT
+                                        );
+            }
 
             /* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently
-               received message but the bits are sticky. If the status is read by the CPU then
-               they are reset otherwise they are held. So the CPU should read the word on each
-               Rx event and relate the bits to the received message.
-                 Careful: The bits are obviously meant to be read by interrupt (which is caused
-               by them). Both at a time is impossible due to the reset-on-read and we tend to
-               offer the interrupt. */
+               received message but the bits are sticky. If the status is read by the CPU
+               then they are reset otherwise they are held. So the CPU should read the word
+               on each Rx event and relate the bits to the received message.
+                 Careful: The bits are obviously meant to be read by interrupt (which is
+               caused by them). Both at a time is impossible due to the reset-on-read and
+               we tend to offer the interrupt. */
 
             return CODE == 2 /* FULL */? cdr_errApi_noError: cdr_errApi_warningRxOverflow;
         }
+        else
+            return cdr_errApi_rxMailboxEmpty;
     }
     else
         return cdr_errApi_rxMailboxEmpty;
+
+} /* End of cdr_osReadMessage_idMB */
+
+
+
+
+/**
+ * Read an Rx message from the mailbox. This is the polling based receive API of the CAN
+ * driver. The contents of the mailbox are returned if a message had been received since
+ * the preceding invocation of this function for the same mailbox.\n
+ *   Regularly polling a mailbox is an alternative to notification of reception by
+ * interrupt and callback. For a given mailbox, either technologies can't be combined. This
+ * is double-checked and the function returns \a cdr_errApi_pollingOfMailboxWithIRQ in case.
+ *   @return
+ * If the function returns either \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow
+ * then a new message had been arrived and the mailbox contents are returned to the
+ * caller.\n
+ *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
+ * indicates that the call of the function came too late to read all incoming messages; at
+ * least one preceeding message had been lost and overwritten by it successor.\n
+ *   If no new data is available (no message had been received since the previous call of
+ * this function for the same mailbox or the mailbox is instantly blocked by a
+ * coincidental reception event) then the function returns \a cdr_errApi_rxMailboxEmpty.
+ *   \a cdr_errApi_rxMailboxEmpty is returned, too, if one tries to read from a mailbox,
+ * which had been configured for Tx.\n
+ *   None of the other (pointer based) function results is set if the return code is other
+ * than \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * devices. This parameter chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is reported by return value \a
+ * cdr_errApi_handleOutOfRange.\n
+ *   \a cdr_errApi_pollingOfMailboxWithIRQ is returned if the read method is applied to a
+ * mailbox, which had been configured for Tx.\n
+ *   None of the other (pointer based) function results is set in case of an error.
+ *   @param hMB
+ * The message to send is identified by the handle of the mailbox it is associated with. A
+ * message can be received only if it had been associated with a mailbox in the hardware, i.e.
+ * a successful call of cdr_osMakeMailboxReservation() is prerequisite of using this
+ * function. The handle to use here is the same as used when having done the related call
+ * of cdr_osMakeMailboxReservation().\n
+ *   Only normal mailboxe can be used for polling. The handle of a mailbox in the FIFO is
+ * invalid. (I.e. handle value less than cdr_getNoFIFOFilterEntries().)\n
+ *   An out of range situation is is reported by return value \a
+ * cdr_errApi_handleOutOfRange. None of the other (pointer based) function results is
+ * set in this case.
+ *   @param pDLC
+ * At entry into this function, * \a pDLC is the size in Byte of the output buffer \a
+ * payload. No more than this number of payload bytes will be returned.\n
+ *   After return, the caller will find the received number of bytes in * \a pDLC.
+ *   @param payload
+ * The received \a DLC message content bytes are placed into this buffer.
+ *   @param pTimeStamp
+ * The time of reception of the message is recorded by hardware and the value is returned
+ * as * \a pTimeStamp. The absolute value has not meaning, time-base is a free running 16
+ * Bit counter. The frequency of the timer is the CAN bit rate; having a bus with 500 kBd
+ * the unit of the timer would be 2µs. The timer wraps around at 2^16-1.\n
+ *   \a pTimeStamp can be NULL if the called doesn't want to make use of the time stamp.
+ */
+cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
+                                , unsigned int hMB
+                                , uint8_t * const pDLC
+                                , uint8_t payload[]
+                                , uint16_t * const pTimeStamp
+                                )
+{
+    cdr_idMailbox_t idMB;
+    if(cdr_mapMailboxHandleToId(&idMB, idxCanDevice, hMB))
+        return cdr_osReadMessage_idMB(&idMB, pDLC, payload, pTimeStamp);
+    else
+        return cdr_errApi_handleOutOfRange;
 
 } /* End of cdr_osReadMessage */
 

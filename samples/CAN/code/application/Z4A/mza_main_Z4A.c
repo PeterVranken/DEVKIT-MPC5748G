@@ -3,8 +3,12 @@
  * C entry function for the Z4 A core. The core completes the HW initialization (clocks run
  * at full speed, peripheral bridge is widely opened, SMPU is configured) and initializes a
  * few I/O drivers, e.g. LED drivers and serial I/O with the host. Then it starts the
- * safe-RTOS kernel on the core Z4A. The other cores are not started in this initial
- * sample.\n
+ * safe-RTOS kernel on the core Z4A. The other cores are not started in this sample.\n
+ *   Some CAN messages are sent and received. Polling and interrupt driven patterns are
+ * shown. The contents of the sent messages contain previously received input, which
+ * enables some checks of the flow. The CAN bus configured to run at 500 kBd. You need to
+ * connect a CAN device to connector P5, pins 1 and 2, to see the CAN communication and to
+ * provide the input.\n
  *   Two regular tasks are spinning and driving an LED each. A third LED is commanded by
  * the idle task. Only if three LEDs are blinking everything is alright.\n
  *   Progress information is permanently written into the serial output channel. A terminal
@@ -70,6 +74,10 @@
     switch is set to 1. */
 #define TASKS_PRODUCE_GROUND_LOAD   1
 
+/** We can run the initialization of the CAN interface (in particular: Which messages to
+    receive or send) from either user or OS code. */
+#define RUN_CAN_INIT_FROM_USER_CODE 1
+
 
 /*
  * Local type definitions
@@ -129,13 +137,13 @@ enum
  */
 
 /** Counter of cycles of infinite main loop. */
-volatile unsigned long SBSS_OS(mai_cntTaskIdle) = 0;
+unsigned long SBSS_OS(mai_cntTaskIdle) = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long long SBSS_P1(mai_cntTask1ms) = 0;  
+unsigned long SBSS_P1(mai_cntTask1ms) = 0;  
 
 /** Counter of cyclic 1ms OS task. */
-volatile unsigned long long SBSS_OS(mai_cntTaskOs1ms) = 0;
+unsigned long long SBSS_OS(mai_cntTaskOs1ms) = 0;
 
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */
 unsigned int DATA_OS(mai_cpuLoad) = 1000;
@@ -351,210 +359,268 @@ void mza_osCbOnCANRx( unsigned int hMB
 
     noChars = pWr - msg;
     assert((unsigned)noChars < sizeOfAry(msg));
-    sio_osWriteSerial(msg, (unsigned)noChars);
+    
+    /* We abuse this callback, normally run in the OS process, for reporting of message
+       reception in a user task. Therefore, we need to dynamically decide whether to call
+       the OS function for serial output or the user code equivalent. (It's just a test.
+       This style is not what you should adopt for production code...) */
+    if((rtos_getCoreStatusRegister() & 0x00004000) == 0)
+        sio_osWriteSerial(msg, (unsigned)noChars);
+    else    
+        sio_writeSerial(msg, (unsigned)noChars);
 
 } /* End of mza_cbOnCANRx */
 
 
 /**
- * First test: Initialize some mialboxes for Rx and Tx.
+ * First test: Initialize some mailboxes for Rx and Tx.
  *   @param canDevice
  * This is the CAN device to use by index. See \a cdr_canDevice_t, which enumerates all
  * enabled devices. Actually, this needs to be cdr_canDev_CAN_0, since this is the only CAN
  * device, which is externally connected on the DEVKIT-MPC5748G.
  */
-static void osTestRxTx_init(cdr_canDevice_t canDevice)
+static void testRxTx_init(cdr_enumCanDevice_t canDevice)
 {
+    /* We can test either the user-code API or the OS API by setting the next macro.
+         Caution, it's not a free choice but depends on the context, which we call this
+       function from. */
+    #if RUN_CAN_INIT_FROM_USER_CODE == 1
+    # define makeMailboxReservation cdr_makeMailboxReservation   /* for call from user task */
+    #else
+    # define makeMailboxReservation cdr_osMakeMailboxReservation /* for call from OS task */
+    #endif
+
     cdr_errorAPI_t err ATTRIB_DBG_ONLY;
 
     /* Register outbound message 0x7f in the first normal mailbox. */
 #define H_MBTX_CAN_ID_0X7F   72
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ H_MBTX_CAN_ID_0X7F
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x7f
-                                      , /* isReceived */ false
-                                      , /* TxDLC */ 8
-                                      , /* doNotify */ false
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ H_MBTX_CAN_ID_0X7F
+                                , /* isExtId */ false
+                                , /* canId */ 0x7f
+                                , /* isReceived */ false
+                                , /* TxDLC */ 8
+                                , /* doNotify */ false
+                                );
     assert(err == cdr_errApi_noError);
 
     /* Register Rx test message 0x80 in the second normal mailbox for polling. */
 #define H_MBRX_CAN_ID_0X80   73
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ H_MBRX_CAN_ID_0X80
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x80
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ false
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ H_MBRX_CAN_ID_0X80
+                                , /* isExtId */ false
+                                , /* canId */ 0x80
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ false
+                                );
+    assert(err == cdr_errApi_noError);
+
+    /* Register two Rx messages in normal mailboxes for polling by a user task. Note, this
+       requires explicit granting of access privileges for the given mailbox in the driver
+       configuration (file cdr_canDriver.config.inc).
+         One of them grants access to a PID <= 2, while our user task is PID=1. We want to
+       see an exception on the attempt to access it. */
+#define H_MBRX_POLL_CAN_ID_0X7654321_ILLEGAL    81   /* i.e. HW index 81-48=33 */
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ H_MBRX_POLL_CAN_ID_0X7654321_ILLEGAL
+                                , /* isExtId */ true
+                                , /* canId */ 0x7654321
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ false /* 0 is essential for polling */
+                                );
+    assert(err == cdr_errApi_noError);
+
+#define H_MBRX_POLL_CAN_ID_0X1234567    117     /* i.e. HW index 117-48=69 */
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ H_MBRX_POLL_CAN_ID_0X1234567
+                                , /* isExtId */ true
+                                , /* canId */ 0x1234567
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ false /* 0 is essential for polling */
+                                );
+    assert(err == cdr_errApi_noError);
+
+    /* Register a Tx message in a normal mailbox for access from a user task. Note, this
+       requires explicit granting of access privileges for the given mailbox in the driver
+       configuration (file cdr_canDriver.config.inc). */
+#define H_MBTX_USER_CAN_ID_0X765        123     /* i.e. HW index 123-48=75 */
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ H_MBTX_USER_CAN_ID_0X765
+                                , /* isExtId */ false
+                                , /* canId */ 0x765
+                                , /* isReceived */ false
+                                , /* TxDLC */ 8
+                                , /* doNotify */ false /* 0 is essential for user access */
+                                );
     assert(err == cdr_errApi_noError);
 
     /* Register some Rx messages with IRQ notification. We want to see some in the same
        mailbox group and at least one in each group.
          Note, the MB handle here is (due to the chosen FIFO size) 48 greater than the HW
        index of the MB. */
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 74        /* MB 26, group 16..31 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x100
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 74        /* MB 26, group 16..31 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x100
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 76       /* MB 28, group 16..31 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x101
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 76       /* MB 28, group 16..31 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x101
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 79       /* MB 31, group 16..31 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x102
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 79       /* MB 31, group 16..31 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x102
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 80       /* MB 32, group 32..63 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x103
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 80       /* MB 32, group 32..63 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x103
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 111       /* MB 63, group 32..63 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x104
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 111       /* MB 63, group 32..63 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x104
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 112       /* MB 64, group 64..95 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x105
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 112       /* MB 64, group 64..95 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x105
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 127       /* MB 79, group 64..95 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x106
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 127       /* MB 79, group 64..95 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x106
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 143       /* MB 95, group 64..95 */
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x107
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 143       /* MB 95, group 64..95 */
+                                , /* isExtId */ false
+                                , /* canId */ 0x107
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
     
     /* Register some FIFO Rx messages. */
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 0
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x81
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 0
+                                , /* isExtId */ false
+                                , /* canId */ 0x81
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 1
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x82
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 1
+                                , /* isExtId */ false
+                                , /* canId */ 0x82
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 2
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x83
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 2
+                                , /* isExtId */ false
+                                , /* canId */ 0x83
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 71
-                                      , /* isExtId */ false
-                                      , /* canId */ 0x7ff
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 71
+                                , /* isExtId */ false
+                                , /* canId */ 0x7ff
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 4
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x81
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 4
+                                , /* isExtId */ true
+                                , /* canId */ 0x81
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 23
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x82
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 23
+                                , /* isExtId */ true
+                                , /* canId */ 0x82
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 25
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x83
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 25
+                                , /* isExtId */ true
+                                , /* canId */ 0x83
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
-    err = cdr_osMakeMailboxReservation( canDevice
-                                      , /* hMB */ 70
-                                      , /* isExtId */ true
-                                      , /* canId */ 0x7ff
-                                      , /* isReceived */ true
-                                      , /* TxDLC */ 0 /* value doesn't care for Rx */
-                                      , /* doNotify */ true
-                                      );
+    err = makeMailboxReservation( canDevice
+                                , /* hMB */ 70
+                                , /* isExtId */ true
+                                , /* canId */ 0x7ff
+                                , /* isReceived */ true
+                                , /* TxDLC */ 0 /* value doesn't care for Rx */
+                                , /* doNotify */ true
+                                );
     assert(err == cdr_errApi_noError);
+    #undef makeMailboxReservation
 
-} /* osTestRxTx_init */
+} /* testRxTx_init */
 
 
 
 /**
  * First test: Get/send some Rx/Tx messages.
  *   @param canDevice
- * This is the CAN device to use by index. See \a cdr_canDevice_t, which enumerates all
+ * This is the CAN device to use by index. See \a cdr_enumCanDevice_t, which enumerates all
  * enabled devices. Actually, this needs to be cdr_canDev_CAN_0, since this is the only CAN
  * device, which is externally connected on the DEVKIT-MPC5748G.
  */
-/// @todo Try MB IRQs
-static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
+static void osTestRxTx_task10ms(cdr_enumCanDevice_t canDevice)
 {
     /* Make an integer from the zero based device enumeration. */
     const unsigned idxCanDevice ATTRIB_DBG_ONLY = (unsigned)canDevice;
@@ -585,10 +651,11 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
     if((cnt_ & 0x70) != 0)
     {
         /* Most of the time we use the simple API. */
-        if(!cdr_osSendMessage( /* idxCanDevice */ cdr_canDev_CAN_0
-                             , /* hMB */ H_MBTX_CAN_ID_0X7F
-                             , &payload_.payload[0]
-                             )
+        if(cdr_osSendMessage( /* idxCanDevice */ cdr_canDev_CAN_0
+                            , /* hMB */ H_MBTX_CAN_ID_0X7F
+                            , &payload_.payload[0]
+                            )
+           != cdr_errApi_noError
           )
         {
             ++ noTxErr_;
@@ -602,13 +669,14 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
         unsigned int DLC = ((cnt_ & 0xfu)+1u) / 2u
                    , canId = 127u - 8u + DLC;
         bool isExtId = canId <= 125;
-        if(!cdr_osSendMessageEx( /* idxCanDevice */ cdr_canDev_CAN_0
-                               , /* hMB */ H_MBTX_CAN_ID_0X7F
-                               , isExtId
-                               , canId
-                               , DLC
-                               , &payload_.payload[0]
-                               )
+        if(cdr_osSendMessageEx( /* idxCanDevice */ cdr_canDev_CAN_0
+                              , /* hMB */ H_MBTX_CAN_ID_0X7F
+                              , isExtId
+                              , canId
+                              , DLC
+                              , &payload_.payload[0]
+                              )
+           != cdr_errApi_noError
           )
         {
             ++ noTxErr_;
@@ -618,9 +686,9 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
     
     
     /* Poll for newly received input. */
-    unsigned int DLC = 8;
+    uint8_t DLC = 8;
     uint8_t payloadRx[DLC];
-    unsigned int timeStampRx;
+    uint16_t timeStampRx;
     const cdr_errorAPI_t resultRx = cdr_osReadMessage( /* idxCanDevice */ cdr_canDev_CAN_0
                                                      , /* hMB */ H_MBRX_CAN_ID_0X80
                                                      , &DLC
@@ -642,32 +710,31 @@ static void osTestRxTx_task10ms(cdr_canDevice_t canDevice)
 
 
 /**
- * Initialization task of process \a PID.
+ * Initialization task of process 1.
  *   @return
  * The function returns the Boolean descision, whether the initialization was alright and
  * the system can start up. "Not alright" is expressed by a negative number, which hinders
- * the RTOS to startup.
+ * the RTOS from starting up.
  *   @param PID
- * The ID of the process, the task function is executed in.
- *   @remark
- * In this sample, we demonstrate that different processes' tasks can share the same task
- * function implementation. This is meant a demonstration of the technical feasibility but
- * not of good practice; the implementation needs to use shared memory, which may break a
- * safety constraint, and it needs to consider the different privileges of the processes.
+ * The ID of the process, the task function is executed in. This function is associated
+ * with prcess 1, so we expect to see only this value.
  */
-static int32_t taskInitProcess(uint32_t PID)
+static int32_t taskInitProcess1(uint32_t PID ATTRIB_DBG_ONLY)
 {
-    static unsigned int SHARED(cnt_) = 0;
+    static unsigned int SHARED(cnt_) ATTRIB_DBG_ONLY = 0;
     ++ cnt_;
+    assert(PID == 1  &&  cnt_ == 1);
 
-//    /* Only process 1 has access to the C lib (more precise: to those functions of the C
-//       lib, which write to lib owned data objects) and can write a status message. */
-//    if(PID == 1)
-//        iprintf("taskInitPID%lu(): %u\r\n", PID, cnt_);
+    /* Configure the mailboxes in the CAN driver appropriately for our test. */
+    #if RUN_CAN_INIT_FROM_USER_CODE == 1
+    testRxTx_init(cdr_canDev_CAN_0);
+    #endif
+    
+    iprintf("taskInitProcess1: CAN communication successfuly set up\r\n");
 
-    return cnt_ == PID? 0: -1;
+    return 0;
 
-} /* End of taskInitProcess */
+} /* End of taskInitProcess1 */
 
 
 
@@ -721,24 +788,97 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     if(++cntIsOn_ >= 500)
     {
         cntIsOn_ = -500;
-        printf("This is call %llu of task1ms\r\n", mai_cntTask1ms);
+        printf("task1ms: This is call %lu of task1ms\r\n", mai_cntTask1ms);
     }
     lbd_setLED(lbd_led_0_DS11, /* isOn */ cntIsOn_ >= 0);
 
+    /* Poll mailbox for new CAN input. Only the first time, we need to request the
+       reference to the API buffer in use. */
+    static unsigned int DATA_P1(noMsgNotReported_) = 0;
+    static const cdr_apiBufferRxPolling_t * SDATA_P1(pAPIBuffer_) = NULL;
+    if(pAPIBuffer_ == NULL)
+    {
+        pAPIBuffer_ = cdr_getRxPollingAPIBuffer( cdr_canDev_CAN_0
+                                               , H_MBRX_POLL_CAN_ID_0X1234567
+                                               );
+        assert(pAPIBuffer_ != NULL);
+    }
+   cdr_errorAPI_t errCode = cdr_readMessage( cdr_canDev_CAN_0
+                                           , H_MBRX_POLL_CAN_ID_0X1234567
+                                           );
+    if(errCode == cdr_errApi_noError  ||  errCode == cdr_errApi_warningRxOverflow)
+    {
+        static unsigned int DATA_P1(tiLastReport_) = 0;
+
+        if(mai_cntTask1ms - tiLastReport_ >= 100 /* ms */)
+        {
+            tiLastReport_ = mai_cntTask1ms;
+            if(noMsgNotReported_ > 0)
+            {
+                printf( "task1ms: %u messages have been received meanwhile without"
+                        " reporting\r\n"
+                      , noMsgNotReported_
+                      );
+                noMsgNotReported_ = 0;
+            }
+                
+            /* Reporting: We can re-use our callback for IRQ enabled messages. */
+            printf("task1ms: ");
+            mza_osCbOnCANRx( H_MBRX_POLL_CAN_ID_0X1234567
+                           , /* isExtId */ true
+                           , /* canId */ 0x1234567
+                           , /* DLC */ (unsigned)pAPIBuffer_->DLC
+                           , &pAPIBuffer_->payload_u8[0]
+                           , pAPIBuffer_->timeStamp
+                           );
+        }
+        else
+            ++ noMsgNotReported_;
+    }
+    
+    /* In every task tick, send a message. This proves the use of the (constrained) user
+       code Tx API to the CAN stack: The only thing, we are allowed to do is sending other
+       payload (but same CAN ID, same DLC) and only for particular mailboxes. */
+    static uint8_t DATA_P1(payload_)[8] = {[0 ... 5] = 0xff, [6 ... 7] = 0, };
+    _Static_assert(sizeof(mai_cntTask1ms) <= sizeof(payload_), "Internal error");
+    memcpy(payload_, &mai_cntTask1ms, sizeof(mai_cntTask1ms));
+    errCode = cdr_sendMessage( cdr_canDev_CAN_0
+                             , H_MBTX_USER_CAN_ID_0X765
+                             , payload_
+                             );
+    payload_[4] = errCode;
+    if(errCode != cdr_errApi_noError) /* Make sporadic errors sticky in a most simple way. */
+    {
+        ++ payload_[6];
+        payload_[7] = errCode; 
+    }
+    
     /* Inject some errors. */
     if((mai_cntTask1ms & 0x3ff) == 0)
     {
-        static volatile unsigned int DATA_P2(foreignData) ATTRIB_UNUSED;
-        foreignData = (unsigned int)mai_cntTask1ms;
+//        static volatile unsigned int DATA_P2(foreignData) ATTRIB_UNUSED;
+//        foreignData = (unsigned int)mai_cntTask1ms;
     }
     if((mai_cntTask1ms & 0x7ff) == 1)
     {
-        struct rtos_kernelInstanceData_t;
-        static volatile const struct rtos_kernelInstanceData_t *pInstance ATTRIB_UNUSED;
-        extern const struct rtos_kernelInstanceData_t *rtos_getInstancePtr(void);
-        pInstance = rtos_getInstancePtr();
-        static volatile uint8_t DATA_P1(coreId) ATTRIB_UNUSED;
-        coreId = rtos_osGetIdxCore();
+        /* Try to access a mailbox by polling, which is not accessible for this user
+           process. The first function would still succeed, but we must not use the read
+           method. */
+        const cdr_apiBufferRxPolling_t * const pAPIBuffer ATTRIB_UNUSED =
+                            cdr_getRxPollingAPIBuffer( cdr_canDev_CAN_0
+                                                     , H_MBRX_POLL_CAN_ID_0X7654321_ILLEGAL
+                                                     );
+
+        const cdr_errorAPI_t errCode = cdr_readMessage( cdr_canDev_CAN_0
+                                                      , H_MBRX_POLL_CAN_ID_0X7654321_ILLEGAL
+                                                      );
+
+        /* We must never get here. */
+        printf( "task1ms: Error: Got access to prohibitted mailbox (%u)"
+                " H_MBRX_POLL_CAN_ID_0X7654321_ILLEGAL\r\n"
+              , errCode
+              );
+        assert(false);
     }
 
     return 0;
@@ -938,8 +1078,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     cdr_osInitCanDriver();
 
     /* Configure the mailboxes in the CAN driver appropriately for our test. */
-    osTestRxTx_init(cdr_canDev_CAN_0);
-    
+    #if RUN_CAN_INIT_FROM_USER_CODE != 1
+    testRxTx_init(cdr_canDev_CAN_0);
+    #endif
+
     /* Route the CLOCKOUTs 0 and 1 from the clock generation module to the external pins
        PG7 and PG6, respectively. They are available at connector J3-16 and J3-14. The
        devided core clocks should be visible as a 10 and a 2 MHz signal. */
@@ -988,7 +1130,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     
     /* Register the process initialization tasks. */
     bool initOk = true;
-    if(rtos_osRegisterInitTask(taskInitProcess, /* PID */ 1, /* tiTaskMaxInUS */ 1000)
+    if(rtos_osRegisterInitTask(taskInitProcess1, /* PID */ 1, /* tiTaskMaxInUS */ 5000)
        != rtos_err_noError
       )
     {

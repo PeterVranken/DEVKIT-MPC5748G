@@ -60,6 +60,15 @@
  * Defines
  */
 
+/** Index of system call for making an association between a mailbox and a CAN ID. */
+#define CDR_SYSCALL_MAKE_MB_RESERVATION 40
+
+/** Index of system call for sending a CAN mesage. */
+#define CDR_SYSCALL_SEND_MSG            41
+
+/** Index of system call for reading a CAN mesage from a mailbox. */
+#define CDR_SYSCALL_READ_MSG            42
+
 
 /*
  * Global type definitions
@@ -71,7 +80,7 @@
     configuration file cdr_canDriver.config.inc.\n
       The enumeration values are intended for use as first argument, \a idxCanDevice, in
     the public API of the CAN driver. */
-typedef enum cdr_canDevice_t
+typedef enum cdr_enumCanDevice_t
 {
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
     cdr_canDev_CAN_0,
@@ -99,24 +108,54 @@ typedef enum cdr_canDevice_t
 #endif
     cdr_canDev_noCANDevicesEnabled,
     
-} cdr_canDevice_t;
+} cdr_enumCanDevice_t;
 
 
-/** An enumeration of error code, which can be returned by the API functions. */
+/** An enumeration of error codes, which can be returned by the API functions. */
 typedef enum cdr_errorAPI_t
-{ cdr_errApi_noError,
-  cdr_errApi_warningRxOverflow,
-  cdr_errApi_rxMailboxEmpty,
-  cdr_errApi_deviceHandleOutOfRange,
+{ cdr_errApi_noError,                   /** Operation succeeded. */
+  cdr_errApi_warningRxOverflow,         /** Rx polling has skipped at least one message. */
+  cdr_errApi_rxMailboxEmpty,            /** Rx polling fails, no new data available. */
+  cdr_errApi_txMailboxBusy,             /** Can't send, Tx mailbox not flushed yet or is Rx. */
+  cdr_errApi_handleOutOfRange,          /** API called with either bad CAN device
+                                            enumeration value or invalid mailbox handle. */
   cdr_errApi_fifoMailboxUsedForTx,
   cdr_errApi_fifoMailboxRequiresNotification,
-  cdr_errApi_mailboxReconfigured,
-  cdr_errApi_badCanId,
-  cdr_errApi_notificationWithoutIRQ,
-  cdr_errApi_idxMailboxOutOfRange,
+  cdr_errApi_mailboxReconfigured,       /** A MB reservation can't be changed once done. */
+  cdr_errApi_badCanId,                  /** A CAN ID exceeds the 11 or 29 Bit. */
+  cdr_errApi_notificationWithoutIRQ,    /** Notification demanded for MB but IRW is not
+                                            enabled for the realted MB group. */
+  cdr_errApi_pollingOfMailboxWithIRQ,
+  cdr_errApi_apiBufferIdxInvalid,       /** Configuration error: An API buffer has been
+                                            specified for a Tx mailbox. Or a bad index has
+                                            been specified for an Rx mailbox. */
   cdr_errApi_dlcOutOfRange,
   
 } cdr_errorAPI_t;
+
+
+/** An API buffer for Rx mailbox polling. The user accessible API to poll particular Rx
+    messages for newly received data places its result in such a buffer. See
+    cdr_readMessage(). */
+typedef struct cdr_apiBufferRxPolling_t
+{
+    /* The number of received bytes. */
+    uint8_t DLC;
+    
+    /* The time stamp of HW reception event. Unit is the CAN Bit time, i.e. the reciprocal
+       of the Baud rate. The time counts cyclically and the abosute value has no meaning. */
+    uint16_t timeStamp;
+    
+    /* The received bytes, accessible in different word sizes. The alignment is such that
+       efficient 32 or 64 Bit copy operations can be applied. */
+    union
+    {
+        uint8_t  payload_u8[8];
+        uint16_t payload_u16[4];
+        uint32_t payload_u32[2];
+        uint64_t payload_u64;
+    };
+} cdr_apiBufferRxPolling_t;
 
 
 
@@ -143,29 +182,33 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                            , bool doNotify
                                            );
 
+/* Send a single Tx message from a reserved mailbox with pre-configured ID and DLC. */
+cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
+                                , unsigned int hMB
+                                , const uint8_t payload[]
+                                );
+
+/* Send a single Tx message from a reserved mailbox with variable ID and DLC. */
+cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
+                                  , unsigned int hMB
+                                  , bool isExtId
+                                  , unsigned int canId
+                                  , unsigned int DLC
+                                  , const uint8_t payload[]
+                                  );
+
 /* Rx polling API. Check if a message has been received and get it. */
 cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
                                 , unsigned int hMB
-                                , unsigned int * const pDLC
+                                , uint8_t * const pDLC
                                 , uint8_t payload[]
-                                , unsigned int * const pTimeStamp
+                                , uint16_t * const pTimeStamp
                                 );
                                 
-/* Send a single Tx message from a reserved mailbox with pre-configured ID and DLC. */
-bool cdr_osSendMessage( unsigned int idxCanDevice
-                      , unsigned int hMB
-                      , const uint8_t payload[]
-                      );
-
-/* Send a single Tx message from a reserved mailbox with variable ID and DLC. */
-bool cdr_osSendMessageEx( unsigned int idxCanDevice
-                        , unsigned int hMB
-                        , bool isExtId
-                        , unsigned int canId
-                        , unsigned int DLC
-                        , const uint8_t payload[]
-                        );
-
+/* Get the API buffer for a particular Rx mailbox, which is used by polling. */
+const cdr_apiBufferRxPolling_t *cdr_getRxPollingAPIBuffer( unsigned int idxCanDevice
+                                                         , unsigned int hMB
+                                                         );
 
 /*
  * Global inline functions
@@ -185,7 +228,7 @@ bool cdr_osSendMessageEx( unsigned int idxCanDevice
  *   @param pCanDevConfig
  * The result depends on the device configuration. It is passed in by reference.
  */
-static inline unsigned int cdr_maxNoCanIds(cdr_canDevice_t idxCanDevice)
+static inline unsigned int cdr_maxNoCanIds(cdr_enumCanDevice_t idxCanDevice)
 {
     assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
@@ -196,6 +239,132 @@ static inline unsigned int cdr_maxNoCanIds(cdr_canDevice_t idxCanDevice)
 
 
 
+
+/** After driver initialization, associate all CAN messages for Rx or Tx with mailboxes. */
+static inline cdr_errorAPI_t cdr_makeMailboxReservation( unsigned int idxCanDevice
+                                                       , unsigned int hMB
+                                                       , bool isExtId
+                                                       , unsigned int canId
+                                                       , bool isReceived
+                                                       , unsigned int TxDLC
+                                                       , bool doNotify
+                                                       )
+{
+    return (cdr_errorAPI_t)rtos_systemCall( CDR_SYSCALL_MAKE_MB_RESERVATION
+                                          , idxCanDevice
+                                          , hMB
+                                          , isExtId
+                                          , canId
+                                          , isReceived
+                                          , TxDLC
+                                          , doNotify
+                                          );
+} /* End of cdr_makeMailboxReservation */
+
+
+/** 
+ * User code send API for Tx messages. User tasks can send messages but not reconfigure
+ * them; it can't alter the DLC or the CAN ID to send. The only thing it is allowed to do
+ * is resending a message from a pre-configured mailbox with different payloads and at
+ * arbitrary points in time. The function call will succeed only, if:\n
+ *   - The mailbox is configured for Tx with particular CAN ID and particular DLC
+ *     (typically done by operating system startup code)\n
+ *   - The user process, the caller belongs to, needs to have the privileges to access the
+ *     mailbox (CAN driver compile-time configuration)\n
+ *   @return
+ * \a cdr_errApi_noError, if function succeeded, or \a cdr_errApi_txMailboxBusy, if the
+ * buffer in the hardware is still occupied by the preceeding message, which is not
+ * serialized on the CAN bus yet.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * devices. This parameter chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation raises an exception.
+ *   @param hMB
+ * The message to send is identified by the handle of the mailbox it is associated with. A
+ * message can be sent only if it had been associated with a mailbox in the hardware,
+ * i.e. a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
+ * is prerequisite of using this function. The handle to use here is the same as used when
+ * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
+ * situation raises an exception.
+ *   @param payload
+ * The up to eight payload bytes. The first DLC bytes are sent, where DLC is the data
+ * length code, which had been defined at mailbox reservation time (see
+ * cdr_osMakeMailboxReservation()). User code is not enabled to ever change the
+ * configuration of a mailbox, it can't alter the DLC or the CAN ID to send.
+ *   @remark
+ * This function must be called from the user task context only. Any attempt to use it from 
+ * OS code will lead to undefined behavior.
+ *   @remark
+ * This function is reentrant with respect to different addressed mailboxes. It can be
+ * called from different cores. The behavior is undefined if called coincidentally from
+ * different contexts but for the same mailbox. 
+ */
+static inline cdr_errorAPI_t cdr_sendMessage( unsigned int idxCanDevice
+                                            , unsigned int hMB
+                                            , uint8_t payload[8]
+                                            )
+{
+    return (cdr_errorAPI_t)rtos_systemCall(CDR_SYSCALL_SEND_MSG, idxCanDevice, hMB, payload);
+
+} /* End of cdr_sendMessage */
+
+
+
+/** 
+ * Use code polling API for Rx messages. User tasks can check mailboxes for newly received
+ * input. The function call will succeed only, if:\n
+ *   - The mailbox is configured for Rx (typically done by operating system startup code)\n
+ *   - The mailbox is configured for polling (typically done by operating system startup
+ *     code)\n
+ *   - The user process, the caller belongs to, needs to have the privileges to access the
+ *     mailbox (CAN driver compile-time configuration)\n
+ *   Note, the function doesn't directly return the received data. In order to ensure
+ * memory integrity under all circumstances, the caller needs the fetch the data from the
+ * API buffer, which is dedicated to the mailbox. See cdr_getRxPollingAPIBuffer() for
+ * details.
+ *   @return
+ * If the function returns either \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow
+ * then a new message had been arrived and the mailbox contents are returned to the
+ * caller.\n
+ *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
+ * indicates that the call of the function came too late to read all incoming messages; at
+ * least one preceeding message had been lost and overwritten by it successor.\n
+ *   If no new message had been received since the previous call of this function for the
+ * same mailbox then the function returns \a cdr_errApi_rxMailboxEmpty.\n
+ *   \a cdr_errApi_rxMailboxEmpty is returned, too, if one tries to read from a mailbox,
+ * which had been configured for Tx.\n
+ *   The API buffer associated with the addressed mailbox is not altered if the return code
+ * is other than \a cdr_errApi_noError or \a cdr_errApi_warningRxOverflow.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * devices. This parameter chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation raises an exception.
+ *   @param hMB
+ * The message to check is identified by the handle of the mailbox it is associated with. A
+ * message can be received only if it had been associated with a mailbox in the hardware,
+ * i.e. a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
+ * is prerequisite of using this function. The handle to use here is the same as used when
+ * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
+ * situation raises an exception.
+ *   @remark
+ * This function must be called from the user task context only. Any attempt to use it from 
+ * OS code will lead to undefined behavior.
+ *   @remark
+ * This function is reentrant with respect to different addressed mailboxes. It can be
+ * called from different cores. The behavior is undefined if called coincidentally from
+ * different contexts but for the same mailbox.\n
+ *   These considerations include fetching the data from the API buffer asiciated with the
+ * addressed mailbox. The API buffer is static memory, which is updated by this function.
+ * Competing contexts using this function for the same mailbox will surely mess up the API
+ * buffer contents.\n 
+ */
+static inline cdr_errorAPI_t cdr_readMessage(unsigned int idxCanDevice, unsigned int hMB)
+{
+    return (cdr_errorAPI_t)rtos_systemCall(CDR_SYSCALL_READ_MSG, idxCanDevice, hMB);
+
+} /* End of cdr_readMessage */
 
 
 #endif  /* CDR_CANDRIVER_API_INCLUDED */
