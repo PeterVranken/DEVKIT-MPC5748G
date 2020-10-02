@@ -1,4 +1,3 @@
-/// @todo Check all global data objects if they are located in the right, protected section
 /**
  * @file cdr_canDriver.c
  * CAN communication driver for DEVKIT-MPC5748G and safe-RTOS.
@@ -91,7 +90,7 @@
 
 /** This is a lookup table, which maps a zero based CAN device index (enumeration
     cdr_enumCanDevice_t) to a CAN peripheral (according to MPC5748G.h) */
-CAN_Type * const cdr_mapIdxToCanDevice[cdr_canDev_noCANDevicesEnabled] =
+CAN_Type * const RODATA(cdr_mapIdxToCanDevice)[cdr_canDev_noCANDevicesEnabled] =
 {
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
     CAN_0,

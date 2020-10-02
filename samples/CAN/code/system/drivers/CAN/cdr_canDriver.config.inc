@@ -135,7 +135,7 @@ void mza_osCbOnCanBusOff(bool enteringBusOff, uint32_t ESR1);
     devices are operated widely independent from one another). You will edit the initializer
     expressions for those CAN devices, which are enabled by macros
     #CDR_ENABLE_USE_OF_CAN_0, #CDR_ENABLE_USE_OF_CAN_1, etc. The rest doesn't care. */
-const cdr_canDriverConfig_t cdr_canDriverConfig =
+const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
 {
 #if 0 /* Don't enable this code block: This is our template for the configuration of one
          actual CAN device. Copy it to the code blocks related to the CAN device you're

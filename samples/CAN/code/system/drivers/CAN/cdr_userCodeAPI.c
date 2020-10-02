@@ -66,7 +66,8 @@
 /** The API buffers for Rx mailbox polling. The system call implementation of the polling
     function, cdr_scSmplHdlr_readMessage, can safely access this memory and the user code
     can still read the results from here. */
-static cdr_apiBufferRxPolling_t _apiBufferRxPolling[CDR_NO_RX_USER_CODE_POLLING_MAILBOXES] = 
+static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
+                                                [CDR_NO_RX_USER_CODE_POLLING_MAILBOXES] = 
     { 
         [1 ... CDR_NO_RX_USER_CODE_POLLING_MAILBOXES-1] =
         {

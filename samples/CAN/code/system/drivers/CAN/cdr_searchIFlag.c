@@ -29,12 +29,11 @@
  * Include files
  */
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
+#include "typ_types.h"
 #include "cdr_searchIFlag.h"
 
 
@@ -75,7 +74,7 @@
 #if SEARCH_LSB == 1
 /** This array implements the binary tree of iteratively narrowed test masks for the
     greatest supported word size and to find the least significant asserted bit. */
-static const uint32_t _maskAry[MAX_WORD_SIZE-1] =
+static const uint32_t RODATA(_maskAry)[MAX_WORD_SIZE-1] =
 {
     [0] = 0x0000ffff,
     [1] = 0x00ff0000,
@@ -112,7 +111,7 @@ static const uint32_t _maskAry[MAX_WORD_SIZE-1] =
 #else
 /** This array implements the binary tree of iteratively narrowed test masks for the
     greatest supported word size and to find the most significant asserted bit. */
-static const uint32_t _maskAry[MAX_WORD_SIZE-1] =
+static const uint32_t RODATA(_maskAry)[MAX_WORD_SIZE-1] =
 {
     [0] = 0xffff0000,
     [1] = 0xff000000,
@@ -149,7 +148,7 @@ static const uint32_t _maskAry[MAX_WORD_SIZE-1] =
 #endif
 
 /** Tree \a _maskAry contains all required sub-trees. Here, we hold the needed start points. */
-static const uint32_t _maskAryStartAry[MAX_WORD_SIZE_POW_2+1] =
+static const uint32_t RODATA(_maskAryStartAry)[MAX_WORD_SIZE_POW_2+1] =
 {
     [0] = 0, /** Not needed, word size 1=2^0 is forbidden input. */
     [1] = 30,

@@ -175,7 +175,7 @@ typedef cdr_canDeviceData_t cdr_canDriverData_t[CDR_NO_CAN_DEVICES_ENABLED];
 
 /** This is a lookup table, which maps a zero based CAN device index (enumeration
     cdr_enumCanDevice_t) to a CAN peripheral (according to MPC5748G.h) */
-extern CAN_Type * const cdr_mapIdxToCanDevice[CDR_NO_CAN_DEVICES_ENABLED];
+extern CAN_Type * const RODATA(cdr_mapIdxToCanDevice)[CDR_NO_CAN_DEVICES_ENABLED];
 
 /** The run-time data of the CAN driver. */
 extern cdr_canDriverData_t cdr_canDriverData;

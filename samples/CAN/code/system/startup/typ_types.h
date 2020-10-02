@@ -59,6 +59,21 @@
 /** Place a piece of code or data objects into a sepcific linker section. */
 # define SECTION(sectionName)  __attribute__((section (#sectionName)))
 
+/** Helper for definition of simple constant data objects.\n
+      CAUTION: This section defining macro needs to be applied to all data objects, which
+    are declared "static const" (no matter whether compilation unit or function scope).
+    The default behavior of the compiler is to place such objects (except they are too
+    large) in the SDA2 section in RAM. In RAM, the default placing is the area of process
+    P1. Without explicit placing, this would mean that they go into some RAM, which process
+    P1 has write access to. Any constant object, owned by a process other than P1, which
+    would be default-located by the compiler in P1 RAM is vulnerable and will potentially
+    break the safety concept.
+      @remark safe-RTOS doesn't have an access control concept for constant data objects;
+    they are generally readable by all processes. Therefore we don't offer specific macros
+    for OS or user processes.
+      @remark See #BSS_OS for further details. */
+# define RODATA(var) SECTION(.rodata.var) var
+
 /** This abbreviating macro can be used to make the definition of simple, uninitialized
     data objects, which need to be located in the operating system memory, put e.g. "int
     BSS_OS(x);" instead of the more explicit "int x SECTION(.bss.OS.x);" into your source
