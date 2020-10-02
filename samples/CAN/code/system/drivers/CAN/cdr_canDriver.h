@@ -29,7 +29,7 @@
 #include <limits.h>
 
 #include "MPC5748G.h"
-#include "cdr_canDriver.config.h"
+#include "cdr_canDriver.config.inc"
 
 
 /*

@@ -21,7 +21,6 @@
  *   cdr_getNoFIFOFilterEntries (global inline)
  *   cdr_getIdxOfFirstNormalMailbox (global inline)
  *   cdr_getMailboxByIdx (global inline)
- *   configSIULForUseWithDEVKIT_MPC5748G
  *   cdr_osInitCanDriver
  *   cdr_osMakeMailboxReservation
  *   cdr_osSendMessage_idMB
@@ -32,6 +31,7 @@
  *   cdr_testSend_task10ms
  * Local functions
  *   getFIFOFilterEntry
+ *   configSIULForUseWithDEVKIT_MPC5748G
  *   getBaudRateSettings
  *   osPrepareSendMessage
  */
@@ -193,6 +193,7 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
 
 
 
+#if CDR_ENABLE_USE_OF_CAN_0 == 1
 /**
  * Do the configuration of the MCU pins such that CAN device CAN_0 can communicated through
  * the CAN transceiver, which is mounted on the board.\n
@@ -239,12 +240,13 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
     SIUL2->IMCR[idxIMCR_PB1] = SIUL2_IMCR_SSS(2);
 
 } /* End of configSIULForUseWithDEVKIT_MPC5748G */
+#endif /* CDR_ENABLE_USE_OF_CAN_0 == 1 */
 
 
 
 
 /**
- * Helper function: Figure out, how to set the prescaler and counter regsiters of the
+ * Helper function: Figure out, how to set the prescaler and counter registers of the
  * device to achieve a given Baud rate.\n
  *  The function doesn't return an error. All possible fault conditions have been checked
  * before.
@@ -690,10 +692,11 @@ void cdr_osInitCanDriver(void)
     for(idxCanDev=0; idxCanDev<(unsigned)cdr_canDev_noCANDevicesEnabled; ++idxCanDev)
         initCanDevice(idxCanDev);
 
+#if CDR_ENABLE_USE_OF_CAN_0 == 1
     /* Configure the MCU pins so that the external circuitry is connected to the MCU
        internal CAN device we've just configured. */
     configSIULForUseWithDEVKIT_MPC5748G();
-
+#endif
 } /* End of cdr_osInitCanDriver */
 
 
@@ -975,11 +978,6 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
  * same message. This function can be used to implement a send queue: If it returns \a
  * false then the message is appended to the queue. The notification callback checks the
  * queue and sends the heading element - if any - using this function.
- *   @todo
- * The use case "queued sending" would be better supported by a second variant of this
- * function, which offered to specify the CAN ID (and std/ext) in each call. The basic
- * function would then no longer offer DLC: Either most simple for typical mailbox patterns
- * or full flexibility with maximum overhead.
  */
 static volatile cdr_mailbox_t *osPrepareSendMessage(const cdr_idMailbox_t * const pIdMB)
 {

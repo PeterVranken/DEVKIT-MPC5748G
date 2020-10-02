@@ -510,19 +510,6 @@ static void isrMailbox( CAN_Type * const pDevice
     const bool isRx = (CODE & 0x8) == 0;
 
     /* Inside the ISR, the busy bit in CODE should never be asserted. */
-    /// @todo The polling function occasionally saw the interrupt flag set but CODE
-    // still signaling "busy with move-in". So this may happen here, too. In which
-    // case we would return from interrupt without acknowledging the interrupt - such
-    // that it is raised immediately again (or a while loop, busy waiting for
-    // CODE[0]=0?) Effectively, not acknowledging the IRQ is the same as a busy-wait
-    // loop but with much longer cycle time. So the local busy wait surely is the
-    // better way. Maybe, we will never see this effect due to the latency time of the
-    // interrupt - should we then still implement the loop? What about delayed IRQ
-    // processing, so that we hit the move-in of the successor message?
-    //   But: This way (above checking IRQ flag, here, later, again reading CODE in
-    // busy-wait loop) can by principle not achieve coherence - e.g. the new move-in can
-    // happen as easy shortly after the busy-wait as before. Better not to have it - it
-    // would pretend doing something it can't actually do
     assert((CODE & 0x1) == 0);
 
     /* For Rx messages, we save the payload data prior to acknowledging the reception at
@@ -665,8 +652,6 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
 
 /* We need the ISRs for each device separately. This is done easiest by making the set of
    ISRs for a single device a define, which is then repeatedly applied. */
-/// @todo Error interrupts (bus off, Rx and Tx Warning) have been promised in the
-/// configuration but not been implemented yet
 #define SET_OF_DEVICE_ISRS(idxCanDev)                                                       \
 ISR_GROUP_RX_FIFO(CAN_##idxCanDev)                                                          \
 ISR_GROUP_ERROR(CAN_##idxCanDev)                                                            \

@@ -31,20 +31,6 @@
  * Defines
  */
 
-/** The MCU has 8 CAN devices. Each of them can be enabled/disabled at compile-time. Here,
-    enabling dosn't mean any execution of initialization code, it just relates to enabling
-    the compilation of the code and data structures needed to support the given device.\n
-      Here for CAN device 0: Compile the code to support CAN device CAN_0? */
-#define CDR_ENABLE_USE_OF_CAN_0     1
-#define CDR_ENABLE_USE_OF_CAN_1     0 /** Compile the code to support CAN device CAN_1? */
-#define CDR_ENABLE_USE_OF_CAN_2     0 /** Compile the code to support CAN device CAN_2? */
-#define CDR_ENABLE_USE_OF_CAN_3     0 /** Compile the code to support CAN device CAN_3? */
-#define CDR_ENABLE_USE_OF_CAN_4     0 /** Compile the code to support CAN device CAN_4? */
-#define CDR_ENABLE_USE_OF_CAN_5     0 /** Compile the code to support CAN device CAN_5? */
-#define CDR_ENABLE_USE_OF_CAN_6     0 /** Compile the code to support CAN device CAN_6? */
-#define CDR_ENABLE_USE_OF_CAN_7     0 /** Compile the code to support CAN device CAN_7? */
-
-
 /** The number of enabled CAN devices. Many data objects will have just this size. */
 #define CDR_NO_CAN_DEVICES_ENABLED ((CDR_ENABLE_USE_OF_CAN_0 == 1)     \
                                     +(CDR_ENABLE_USE_OF_CAN_1 == 1)    \
@@ -419,6 +405,7 @@ typedef struct cdr_canDeviceConfig_t
         elements are implicitly configure the according mailboxes as not accessible by any
         user process. You just need to configure the mailboxes, which are enabled for user
         code access. */
+/// @todo Find a solution to avoid the literal number here
     cdr_mailboxAccessConfig_t userAccessMailboxAry[96];
 
 } cdr_canDeviceConfig_t;

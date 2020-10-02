@@ -635,13 +635,13 @@ static void osTestRxTx_task10ms(cdr_enumCanDevice_t canDevice)
     /* Initial test: Send a message every 10ms. */
     
     /* Fill data in the mailbox. */
-    static union
+    union
     {
         uint8_t payload[8];
         uint16_t payload_u16[4];
         uint32_t payload_u32[2];
 
-    } payload_ = { .payload_u32 = {[0] = 0, [1] = 0} };
+    } static DATA_OS(payload_) = { .payload_u32 = {[0] = 0, [1] = 0} };
     payload_.payload_u16[1] = (uint16_t)(noRxEvent_ & 0x0000ffffu);
     payload_.payload_u16[2] = (uint16_t)(noTxErr_ & 0x0000ffffu);
     payload_.payload_u16[3] = cnt_;
@@ -721,7 +721,7 @@ static void osTestRxTx_task10ms(cdr_enumCanDevice_t canDevice)
  */
 static int32_t taskInitProcess1(uint32_t PID ATTRIB_DBG_ONLY)
 {
-    static unsigned int SHARED(cnt_) ATTRIB_DBG_ONLY = 0;
+    static unsigned int DATA_P1(cnt_) ATTRIB_DBG_ONLY = 0;
     ++ cnt_;
     assert(PID == 1  &&  cnt_ == 1);
 
@@ -913,7 +913,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     /* Test button input: The current status is echoed as LED status. */
     lbd_osSetLED(lbd_led_7_DS4,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
               
-    static int SBSS_P1(cntIsOn_) = 0;
+    static int SBSS_OS(cntIsOn_) = 0;
     if(++cntIsOn_ >= 500)
     {
         cntIsOn_ = -500;

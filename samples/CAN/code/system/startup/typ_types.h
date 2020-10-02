@@ -189,7 +189,7 @@
 # define UNCACHED_P4(var) SECTION(.uncached.P4.var) var
 
 /** Helper for definition of simple, shared, initialized and uninitialized data objects.
-    "Shared" related to the user processes; all of them may write to objects defined with
+      "Shared" relates to the user processes; all of them may write to objects defined with
     this macro. See #BSS_OS for details. */
 # define SHARED(var) SECTION(.shared.var) var
 
