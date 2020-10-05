@@ -1,9 +1,12 @@
 /**
  * @file cdr_checkConfig.c
- * This module offers a function to runsome plausibility checks on the driver cofiguration
- * data set. It doesn't contain functional code. Since the configuration data set is
- * constant, the recommendation is to call the check function only from the DEBUG
- * compilation.
+ * This module offers a function to run some plausibility checks on the driver cofiguration
+ * data set. It doesn't contain functional code. In case a bad configuration item is found,
+ * the function returns an error code in PRODUCTION compilation and it halts the SW
+ * execution by assertion in DEBUG compilation.\n
+ *   Since the configuration data set is constant and the function solely checks facts that
+ * are decided at compile-time, the recommendation is to call the check function only from
+ * the DEBUG compilation.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *

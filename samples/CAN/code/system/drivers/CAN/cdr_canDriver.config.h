@@ -2,7 +2,10 @@
 #define CDR_CANDRIVER_CONFIG_INCLUDED
 /**
  * @file cdr_canDriver.config.h
- * Type definition for application dependent configuration data objects of CAN I/O driver.
+ * Type definitions of application dependent configuration data objects of CAN I/O
+ * driver.\n
+ *   Don't edit this file but take it as source of documentation when doing the
+ * configuration of the driver for your intended application.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -31,7 +34,10 @@
  * Defines
  */
 
-/** The number of enabled CAN devices. Many data objects will have just this size. */
+/** The number of enabled CAN devices. Many data objects will have just this size.
+      @remark This definition is just used inside the data type definition and declaration
+    of the constant configuration data object. Application code will rather make use of the
+   enumeration value \a cdr_canDev_noCANDevicesEnabled. */
 #define CDR_NO_CAN_DEVICES_ENABLED ((CDR_ENABLE_USE_OF_CAN_0 == 1)     \
                                     +(CDR_ENABLE_USE_OF_CAN_1 == 1)    \
                                     +(CDR_ENABLE_USE_OF_CAN_2 == 1)    \

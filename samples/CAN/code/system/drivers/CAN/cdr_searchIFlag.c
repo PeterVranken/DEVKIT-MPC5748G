@@ -1,9 +1,9 @@
 /**
  * @file cdr_searchIFlag.c
- * This file implements a specialized binary search, which is required to find the least
- * significant asserted bit in a binary number. The interrupt flags share a register and
- * only one is served at a time. The least significant of the set bits is the one to
- * identify. We can do this in a fixed number of tests, where we check the input vector
+ * This file implements a specialized binary search, which is required to find the most or
+ * least significant asserted bit in a binary number. The interrupt flags share a register
+ * and only one is served at a time. The least significant of the asserted bits is the one
+ * to identify. We can do this in a fixed number of tests, where we check the input vector
  * with iteratively smallered masks.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -109,6 +109,7 @@ static const uint32_t RODATA(_maskAry)[MAX_WORD_SIZE-1] =
     [30] = 0x00000001,
 };
 #else
+/// @todo To find the most significant set bit we have a machine instruction, cntlzw. We can substitute the entire implementation with a few lines of inline assembly code
 /** This array implements the binary tree of iteratively narrowed test masks for the
     greatest supported word size and to find the most significant asserted bit. */
 static const uint32_t RODATA(_maskAry)[MAX_WORD_SIZE-1] =

@@ -1,6 +1,8 @@
 /**
  * @file cdr_canDriver.c
- * CAN communication driver for DEVKIT-MPC5748G and safe-RTOS.
+ * CAN communication driver for DEVKIT-MPC5748G and safe-RTOS. Main file of implementation.
+ * It instantiates the constant configuration data object, initializes the driver according
+ * to the configuration settings and offer the global API functions.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *

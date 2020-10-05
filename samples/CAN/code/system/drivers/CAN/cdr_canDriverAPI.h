@@ -1,31 +1,49 @@
 #ifndef CDR_CANDRIVER_API_INCLUDED
 #define CDR_CANDRIVER_API_INCLUDED
 /**
- * @file cdr_canDriver.h
+ * @file cdr_canDriverAPI.h
  * Definition of global interface of the CAN driver. Client code of the driver should
  * normally not need definitions from other header files - with the big exception of the
  * definitions for the compile-time configuration of the driver.\n
  *   This header contains the data types and function prototypes to directly use. Client
  * code of the driver will solely include this header. Nonetheless, this doesn't mean that
- * this header file self-contained. It's not the encapsulation of an obscured driver
+ * this header file is self-contained. It's not the encapsulation of an obscured driver
  * implementation but includes other nested headers, which still need to be available for
  * compilation of the client code.\n
  *   The other relevant header file is cdr_canDriver.config.h. Client code won't directly
- * include it but you need to open it for configuration of the driver appropriately for
- * your specific application. The principal element is the list of #defines to enable one
- * or more of the physically available CAN devices; see e.g. #CDR_ENABLE_USE_OF_CAN_0.
- * (Most applications won't use all of them.) By means of preprocessor switches, the driver
- * configuration is produced only for the enabled set of devices (and alike for some
- * runtime data objects). Disabled CAN devices are not touched at all by the driver and
- * remain in reset state.\n
- *   cdr_canDriver.config.h is not only needed to enable the CAN devices but it's also a
- * source of information for doing the compile-time configuration of the driver. The
- * configuration items are explained.\n
- *   The actual configuration is made in file cdr_canDriver.config.inc. This is a C
- * implementation file, that contains the definition of the configuration data object.
- * Here, you specify your particular configuration in the initializer expression of the
- * data object. This is strongly facilitated by using C99's designated initializer
- * expressions.
+ * include it but you may need to open it for understanding the configuration of the driver
+ * appropriately for your specific application. The driver configuration is a large, nested
+ * constant data set and this file documents all required fields.\n
+ *   The actual configuration is made in file cdr_canDriver.config.inc. This is a hybrid
+ * from header and implementation file, that contains both, declaration and definition of
+ * the configuration data object. The driver implementation offers a template for this
+ * file, named cdr_canDriver.config.inc.template.\n
+ *   The work flow is to make a copy of the template in the code repository of the aimed
+ * application, using the original name cdr_canDriver.config.inc. Then open the file and do
+ * all configuration according to the guiding documentation and based on the sample
+ * configuration in the template. (And based on the documentation in file
+ * cdr_canDriver.config.h.)\n
+ *   Actually, you specify the CAN driver configuration as a large initializer expression
+ * of the one and only huge constant configuration data object. This task is strongly
+ * facilitated by source code comments on the different fields and by using C99's
+ * designated initializer expressions.\n
+ *   The principal element in configuration file cdr_canDriver.config.inc is the list of
+ * #defines to enable one or more of the physically available CAN devices; see e.g.
+ * #CDR_ENABLE_USE_OF_CAN_0. (Most applications won't use all of them.) By means of
+ * preprocessor switches, the driver configuration is produced only for the enabled set of
+ * devices (and alike for some runtime data objects). Disabled CAN devices are not touched
+ * at all by the driver and remain in reset state and nor do they consume ROM space for
+ * configuration data.\n
+ *   Your application won't directly use the configuration file cdr_canDriver.config.inc.
+ * Don't include it, don't compile it. Indirectly, your application will read its header
+ * file contents (#define's) through this header, cdr_canDriverAPI.h. Those parts of
+ * cdr_canDriver.config.inc, which are actually C source code -- concretely, the definition
+ * of the constant configuration data object --, will be complied from the CAN driver's
+ * main implementation file, namely cdr_canDriver.c, by way of including it.
+ *   @remark
+ * The CAN driver is compilable with the renamed but not altered template configuration
+ * file. However, no CAN device will then be enabled and the compiler will issue several
+ * warning because of zero-sized arrays and data structures.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *

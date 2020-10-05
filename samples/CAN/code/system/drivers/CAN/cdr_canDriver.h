@@ -2,7 +2,10 @@
 #define CDR_CANDRIVER_INCLUDED
 /**
  * @file cdr_canDriver.h
- * Definition of global interface of module cdr_canDriver.c
+ * Definition of interface of module cdr_canDriver.c, which is globally accessible from all
+ * compilation units of the CAN driver, but which are not exposed to a client of the
+ * driver. The functions and data objects declared in this file must not be accessed by
+ * driver client code.
  *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -274,10 +277,10 @@ static inline unsigned int cdr_getIdxOfFirstNormalMailbox
 
 
 /**
- * At the API of the driver, the client code addresses to a particular mailbox by
- * enumerated device and mailbox handle. Internally, we identify a mailbox in terms of
- * device and HW index of mailbox. This helper function maps the former on the latter and
- * implements a validation of the input at the same time.\n
+ * At the API of the driver, the client code addresses to a particular mailbox in the
+ * device by enumerated device and mailbox handle. Internally, we identify a mailbox in
+ * terms of device and HW index of mailbox. This helper function maps the former onto the
+ * latter and implements a validation of the input at the same time.\n
  *   Note, the operation is not defined for FIFO mailbox handles. FIFO entries don't have
  * a one-by-one related HW mailbox.
  *   @return

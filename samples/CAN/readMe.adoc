@@ -13,10 +13,144 @@
 
 == About this DEVKIT-MPC5748G sample
 
-This DEVKIT-MPC5748G sample implements an application with CAN
-communication. 
+This DEVKIT-MPC5748G sample implements a reusable CAN communication I/O
+driver for MPC5748G and MPC57753B/E and demonstrates its use. Some
+features of the driver:
 
-CAUTION: The code in this folder is still under development.
+* Compatible with sfae-RTOS' driver model
+* Support of one to eight available CAN devices (four on the MPC5775B/E)
+* Pin configuration only for CAN device 0 and DEVKIT-MPC5748G: On the PCB
+  of this evaluation borad, this CAN device is equipped with a transceiver
+  chip and connected to connector P5. Just connect your Vector, Kvaser or
+  PEAK CAN device and run first tests
+* The driver supports standard CAN
+* Ease of use: One-by-one relation between mailboxes in the hardware and
+  CAN ID. We have plenty of mailboxes so that sharing of mailboxes between
+  different CAN IDs won't ever be required
+* Rx FIFO can be enabled to further increase the number of mailboxes. We
+  have a maximum of 96 to 186 mailboxes available per device, depending on
+  how many are processed by the FIFO
+ ** This number can even be increased to 276 if no extended CAN IDs are in
+    use
+ ** MPC5775B/E: 64 to 154 mailboxes or up to 244 if no extended CAN IDs
+    are in use
+* Mailboxes can be operated by polling or by interrupt
+ ** Mailboxes are organized in groups of 4, 8, 16 or 32. Each group can
+    have its own interrupt - processed by the same or individual handlers,
+    having same or different interrupt priority, processed on the same or
+    on different cores
+* Mailboxes have their individual privileges configuration. A mailbox can
+  e.g. be dedicated to the safety process only. If so, a task from the QM
+  process would neither be able to see the interrupt notification (if any)
+  nor to use the polling or transmission APIs
+* Configuration with compile-time expressions. Applying C99's designated
+  initializer expressions, the readability and maintainability of the
+  configuration file is pretty good
+
+== How to use the driver
+
+Explanantion on how to use the driver can be found in it's https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/readMe.txt[readme^] file and
+in
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/cdr_canDriverAPI.h[cdr_canDriverAPI.h^],
+which is the pricpal haeder file for client code of the driver.
+
+== Concept
+
+=== Configuration
+
+The driver' source code is compiled together with a configuration file,
+which consists of C source code, too. It declares and defines all the
+needed static settings as initialized _const struct_. The use of
+designated initializer expressions keep this piece of source code
+comprehensible and well-maintainable.
+
+Part of the driver implementation is a
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/cdr_canDriver.config.inc.template[template
+configuration file^]. Any client application of the driver will copy this
+file to a local folder, where it is renamed to _cdr_canDriver.config.inc_
+and then modified to match the needs of the particular application.
+
+Rational of holding the driver configuration in a separate, dedicated
+file, which can be kept apart from the driver implementation is the
+possible re-use of the same source code in different scenarios. Mainly,
+this addresses having several test applications, which can all be build in
+the same environment and which may all use different driver
+configurations.
+
+The configuration starts with a set of principal macros, which enable or
+disable each of the physical available CAN devices. These macros control
+the compilation of code and data elements of the driver. Code elements
+like ISRs, configuration and data objects will only be compiled (and
+consume resources) if the related CAN device is enabled.
+
+The configuration is a comile-time constant. There are several constarints
+and crosswise dependencies between different configuration items. Some of
+these can be checked already at compile-time by means of preprocessor
+conditions and static assertions. However, many other checks can be done
+only at run-time. A check function is offered, which will normally execute
+only in DEBUG compilation. Due to its static, constant character, a
+configuration which has been proven once (in DEBUG compilation) can never
+fail - and PRODUCTION compilation doesn't need to waste time with a
+repeated check. (Of course, it can if someone wants it to do.)
+
+=== User model
+
+The driver does by far not offer all options of the hardware to the client
+code. It has a simple model of CAN transmission and this is offered to the
+client code in form of the driver API. This is how the perception model of
+the CAN driver looks like:
+
+The CAN communication is done through mailboxes. The number of mailboxes
+is fixed by hardware limits and by configuration decisions. This limits
+the number of different CAN IDs, which can be received and sent.
+
+Each mailbox is either for reception (Rx) or transmission (Tx) but not
+both at a time. Only normal CAN frames are supported, there's no support
+for Remote frames and nor for CAN FD. Each mailbox can be used with
+exactely one CAN ID; there's no sharing of mailboxes between different CAN
+IDs.
+
+Each mailbox needs to be configured prior to its use. This is a run-time
+configuration by API call from the driver's client code. The configuration
+associates a mailbox with a CAN ID and it makes it either Rx or Tx. The
+configuration can fail for several raesons and the client code needs to
+check the reported result.
+
+An Rx mailbox can either be used by polling or by interrupt with
+notification. A Tx mailbox can be used without or with interrupt on
+transmission-complete and notification.
+
+A number of Rx mailboxes can be implemented by a hardware FIFO in the CAN
+device. If this mode is chosen then the number of Rx mailboxes raises
+significantly but these can only be used with notification; polling is not
+possible with these.
+
+CAN transmission is supported by two APIs, which take the mailbox handle
+and the payload as argument. The simple one will send the message with
+initially agreed CAN ID and DLC, the more complex allows to use the
+mailbox with varying CAN ID and DLC -- it's possible to do all
+transmission with a single Tx mailbox.
+
+=== Safety
+
+The driver is implemented in compliance with the I/O driver model of
+safe-RTOS. CAN communication can be integrated into an application without
+endangering the safety-concept. 
+
+TODOC:
+
+* Safety concept of notifications out of scope of driver. No direct
+  callback into user code. Use of safe-RTOS mechanisms to make that happen
+  in client code (still OS code) 
+* Rx mailboxes with individual decision notification vs. polling.
+  Polling with privileges, e.g. mailbox accessible only by safety process
+* Tx mailbox have individual provileges. Can be access oly by configured
+  process. E.g. only safety can send a particular CAN ID
+* Sending from user process only in the simple form. No arbitrary CAN IDs
+  possible for Tx from user process
+* Mailbox configuration permitted to user process but OS can make the
+  first choice and e.g. make all settings for the safety process, which
+  can't be overridden by the user process any more
 
 == Tools
 
