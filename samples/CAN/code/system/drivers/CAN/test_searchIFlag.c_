@@ -1,0 +1,217 @@
+/**
+ *   @file test_searchIFlag.c
+ * Small test application for interactive testing of function cdr_findAssertedBitInWord in
+ * source file cdr_searchIFlag.c.\n
+ *   Note, this file has been renamed to *.c_ in order to let not become part of the
+ * compilation of the embedding project.
+ *
+ * Compile and run this code using:
+ *
+ * gcc -DDEBUG  -g3 -gdwarf-2 -Og -o test_searchIFlag.exe cdr_searchIFlag.c -x c test_searchIFlag.c_
+ * gdb --args .\test_searchIFlag.exe 40030000 5
+ *
+ * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include "cdr_searchIFlag.h"
+
+/** The search can be compiled to find either the most or the least significant bit.\n
+      Caution: Needs to be set same as non-public definition in module under test. */
+#define SEARCH_LSB              0
+
+/** The algorithm operates on a pre-defined tree of masks. The tree is a compile-time
+    constant with a fixed size. This limits the number of bits, which can be distiguished.
+    Effectively, this is the width of the input word, which we look for the bit in.\n
+      Note, necer change this definition. Change #MAX_WORD_SIZE_POW_2 is case.\n
+      Caution: Needs to be set same as non-public definition in module under test. */
+#define MAX_WORD_SIZE           (1u<<(MAX_WORD_SIZE_POW_2))
+
+/** The word size #MAX_WORD_SIZE is a power of two. The actual value is controled
+    indirectly through this definition.\n
+      Note, never change this value without redefining the constant tree of masks
+    accordinly.\n
+      Caution: Needs to be set same as non-public definition in module under test. */
+#define MAX_WORD_SIZE_POW_2     5
+
+
+/** The number of elements of a one dimensional array. */
+#define sizeOfAry(a)    (sizeof(a)/sizeof(a[0]))
+
+static void buildTheTree( uint32_t maskAry[MAX_WORD_SIZE-1]
+                        , unsigned int noBitsMask
+                        , unsigned int shift
+                        , uint32_t *pIdxWr
+                        )
+{
+    /* The parent node takes the first element, followed by right and left child.
+         For each element, parent or children, their (sub)-mask is same: bits in upper half
+       set/cleared, bits in lower half cleared/set (depending on search either most/least
+       significant bit).
+         The last things, the recursion has to take care of, is the position in the word,
+       where an element has to position its sub-mask, i.e. how to get the mask from the
+       sub-mask. This is a matter of shifting. */
+    
+    /* Parent first. */
+    const uint32_t mySubMask = (1u<<noBitsMask)-1u
+                 , myMask = mySubMask << shift;
+    assert(*pIdxWr < MAX_WORD_SIZE-1);
+    maskAry[*pIdxWr] = myMask;
+    printf("    [%u] = 0x%08x,\n", *pIdxWr, myMask);
+    ++ (*pIdxWr);
+
+    /* No further recursion, if we are on the deepest level. It can be recognized by
+       sub-mask having width of 1 bit only. */
+    if(noBitsMask <= 1)
+        return;
+
+#if SEARCH_LSB == 1
+    /* Left child next. */
+    buildTheTree( maskAry
+                , /* noBitsMask */ noBitsMask/2
+                , /* shift */ shift+noBitsMask
+                , pIdxWr
+                );
+    
+    /* Right child last. */
+    buildTheTree( maskAry
+                , /* noBitsMask */ noBitsMask/2
+                , /* shift */ shift
+                , pIdxWr
+                );
+#else
+    /* Left child next. */
+    buildTheTree( maskAry
+                , /* noBitsMask */ noBitsMask/2
+                , /* shift */ shift+noBitsMask/2
+                , pIdxWr
+                );
+    
+    /* Right child last. */
+    buildTheTree( maskAry
+                , /* noBitsMask */ noBitsMask/2
+                , /* shift */ shift-noBitsMask/2
+                , pIdxWr
+                );
+#endif
+} /* End of buildTheTree */
+
+
+
+static void printTheTreeOfMasks(unsigned int widthAsPow2)
+{
+    /* Array is not really required - we print the result immediately to the console. */
+    uint32_t maskAry[MAX_WORD_SIZE-1]
+           , idxWr = 0;
+    
+    printf( "/** This array implements the binary tree of iteratively narrowed"
+            " test masks for the\n"
+            "    greatest supported word size and to find the %s significant"
+            " asserted bit. */\n"
+            "static const uint32_t _maskAry[MAX_WORD_SIZE-1] =\n"
+            "{\n"
+          , SEARCH_LSB==1? "least": "most"
+          );
+    if(widthAsPow2 > 0)
+    {
+        buildTheTree( maskAry
+                    , /* noBitsMask */ 1u<<(widthAsPow2-1u)
+                    , /* shift */ SEARCH_LSB==1? 0: 1u<<(widthAsPow2-1u)
+                    , /* pIdxWr */ &idxWr
+                    );
+    }
+    printf("};\n");
+                
+} /* End of printTheTreeOfMasks. */
+
+
+int main(int noArgs, const char *argAry[])
+{
+    if(noArgs != 2  &&  noArgs != 3)
+    {
+    usage:
+        printf( "usage: test_searchIFlag <wordAsHex> <widthAsPow2>\n\n"
+                "or use the program to compute the tree of masks needed for the"
+                " implementation:\n\n"
+                "usage: test_searchIFlag <widthAsPow2>\n"
+              );
+        return -1;
+    }
+    
+    /* Parse the input. */
+    uint32_t word = 0;
+    unsigned int widthAsPow2 = 0;
+    if(noArgs == 2)
+        sscanf(argAry[1], "%d", &widthAsPow2);
+    else if(noArgs == 3)
+    {
+        sscanf(argAry[1], "%x", &word);
+        sscanf(argAry[2], "%d", &widthAsPow2);
+    }
+    
+    /* Validate the input. */
+    if(widthAsPow2 < 1  ||  widthAsPow2 > MAX_WORD_SIZE_POW_2)
+    {
+        printf( "<widthAsAsPow2> should be in the range 1..%u, got width=2^%u.\n"
+              , MAX_WORD_SIZE_POW_2
+              , widthAsPow2
+              );
+        goto usage;
+    }
+    
+    /* Choose operation of this program. */
+    if(noArgs == 2)
+        printTheTreeOfMasks(widthAsPow2);
+    else
+    {
+        const unsigned int widthInBit = 1u<<widthAsPow2;
+        const uint32_t maskOfMatteringBits = (1llu<<widthInBit)-1llu;
+        if((word & maskOfMatteringBits) == 0)
+        {
+            printf( "Caution. The result is undefined if no single bit is set in the"
+                    " input word. Got (%08x & (2^%d-1)) = 0\n"
+                  , word
+                  , widthInBit
+                  );
+        }
+
+        /* Run our function. */
+        const unsigned int idxBit = cdr_findAssertedBitInWord(word, widthAsPow2)
+                         , mask = 1u<<idxBit;
+
+        /* Print the result. */
+        printf( "The %s significant asserted bit in %08x = (%08x & %08x) is bit %u."
+                " The mask to filter this bit is %08x\n"
+              , SEARCH_LSB==1? "least": "most"
+              , word & maskOfMatteringBits
+              , word
+              , maskOfMatteringBits
+              , idxBit
+              , mask
+              );
+
+        /* Check an invariant on the result. */
+        assert((word & maskOfMatteringBits) == 0  ||  (word & mask) != 0);
+    }           
+    
+    return 0;
+
+} /* End of main */
+
