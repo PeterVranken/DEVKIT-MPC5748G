@@ -14,13 +14,13 @@
 == About this DEVKIT-MPC5748G sample
 
 This DEVKIT-MPC5748G sample implements a reusable CAN communication I/O
-driver for MPC5748G and MPC57753B/E and demonstrates its use. Some
+driver for MPC5748G and MPC5775B/E and demonstrates its use. Some
 features of the driver:
 
-* Compatible with sfae-RTOS' driver model
+* Compatible with safe-RTOS' driver model
 * Support of one to eight available CAN devices (four on the MPC5775B/E)
 * Pin configuration only for CAN device 0 and DEVKIT-MPC5748G: On the PCB
-  of this evaluation borad, this CAN device is equipped with a transceiver
+  of this evaluation board, this CAN device is equipped with a transceiver
   chip and connected to connector P5. Just connect your Vector, Kvaser or
   PEAK CAN device and run first tests
 * The driver supports standard CAN
@@ -49,19 +49,19 @@ features of the driver:
 
 == How to use the driver
 
-Explanantion on how to use the driver can be found in it's https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/readMe.txt[readme^] file and
+Explanation on how to use the driver can be found in it's https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/readMe.adoc[readme^] file and
 in
 https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/cdr_canDriverAPI.h[cdr_canDriverAPI.h^],
-which is the pricpal haeder file for client code of the driver.
+which is the principal header file for client code of the driver.
 
 == Concept
 
 === Configuration
 
-The driver' source code is compiled together with a configuration file,
-which consists of C source code, too. It declares and defines all the
-needed static settings as initialized _const struct_. The use of
-designated initializer expressions keep this piece of source code
+The CAN driver's source code is compiled together with a configuration
+file, which consists of C source code, too. It declares and defines all
+the needed static settings as an initialized _const struct_. The use of
+designated initializer expressions keeps this piece of source code
 comprehensible and well-maintainable.
 
 Part of the driver implementation is a
@@ -80,10 +80,11 @@ configurations.
 The configuration starts with a set of principal macros, which enable or
 disable each of the physical available CAN devices. These macros control
 the compilation of code and data elements of the driver. Code elements
-like ISRs, configuration and data objects will only be compiled (and
-consume resources) if the related CAN device is enabled.
+like interrupt service routines (ISR), configuration and data objects will
+only be compiled (and consume resources) if the related CAN device is
+enabled.
 
-The configuration is a comile-time constant. There are several constarints
+The configuration is a compile-time constant. There are several constraints
 and crosswise dependencies between different configuration items. Some of
 these can be checked already at compile-time by means of preprocessor
 conditions and static assertions. However, many other checks can be done
@@ -95,10 +96,10 @@ repeated check. (Of course, it can if someone wants it to do.)
 
 === User model
 
-The driver does by far not offer all options of the hardware to the client
-code. It has a simple model of CAN transmission and this is offered to the
-client code in form of the driver API. This is how the perception model of
-the CAN driver looks like:
+The driver does by far not offer all options of the underlying hardware to
+the client code. It has a simple model of CAN transmission and this is
+offered to the client code in form of the driver API. This is how the
+perception model of the CAN driver looks like:
 
 The CAN communication is done through mailboxes. The number of mailboxes
 is fixed by hardware limits and by configuration decisions. This limits
@@ -106,24 +107,28 @@ the number of different CAN IDs, which can be received and sent.
 
 Each mailbox is either for reception (Rx) or transmission (Tx) but not
 both at a time. Only normal CAN frames are supported, there's no support
-for Remote frames and nor for CAN FD. Each mailbox can be used with
-exactely one CAN ID; there's no sharing of mailboxes between different CAN
+for Remote Frames and nor for CAN FD. Each mailbox can be used with
+exactly one CAN ID, there's no sharing of mailboxes between different CAN
 IDs.
 
 Each mailbox needs to be configured prior to its use. This is a run-time
 configuration by API call from the driver's client code. The configuration
 associates a mailbox with a CAN ID and it makes it either Rx or Tx. The
-configuration can fail for several raesons and the client code needs to
+configuration can fail for several reasons and the client code needs to
 check the reported result.
 
-An Rx mailbox can either be used by polling or by interrupt with
+An Rx mailbox can be used either by polling or by interrupt with
 notification. A Tx mailbox can be used without or with interrupt on
 transmission-complete and notification.
 
-A number of Rx mailboxes can be implemented by a hardware FIFO in the CAN
-device. If this mode is chosen then the number of Rx mailboxes raises
-significantly but these can only be used with notification; polling is not
-possible with these.
+A number of Rx mailboxes can be realized by a hardware FIFO in the CAN
+device. If this mode is chosen then the total number of Rx mailboxes
+raises significantly but the additional ones can only be used with
+notification; polling is not possible with these.
+
+TODOC: Handles of mailboxes, ranges of handles are known so that the
+differing properties of the mailboxes can be addressed even through the
+use of handles (dedicated sub-section?)
 
 CAN transmission is supported by two APIs, which take the mailbox handle
 and the payload as argument. The simple one will send the message with
@@ -139,18 +144,20 @@ endangering the safety-concept.
 
 TODOC:
 
-* Safety concept of notifications out of scope of driver. No direct
-  callback into user code. Use of safe-RTOS mechanisms to make that happen
-  in client code (still OS code) 
+* Safety concept of notifications into user code out of scope of driver.
+  No direct callback into user code. Use of safe-RTOS mechanisms to make
+  that happen in client code (which will still belong to OS code)
 * Rx mailboxes with individual decision notification vs. polling.
   Polling with privileges, e.g. mailbox accessible only by safety process
-* Tx mailbox have individual provileges. Can be access oly by configured
+* Tx mailbox have individual privileges. Can be access only by configured
   process. E.g. only safety can send a particular CAN ID
 * Sending from user process only in the simple form. No arbitrary CAN IDs
   possible for Tx from user process
 * Mailbox configuration permitted to user process but OS can make the
   first choice and e.g. make all settings for the safety process, which
   can't be overridden by the user process any more
+* API buffer handling to ensure data access without memory protection
+  exceptions
 
 == Tools
 
@@ -183,7 +190,7 @@ script for their native shell.
 
 Flashing and debugging is always done using the NXP S32 Design Studio for
 Power Architecture, an Eclipse IDE, which is available for free download
-und unrestricted use in commercial and non commercial projects.
+and nearly unrestricted use in commercial and non commercial projects.
 
 If you are going to run the application build from the Eclipse IDE then
 the same environmental settings as described above for a shell based build
@@ -205,37 +212,46 @@ Once everything is prepared, the S32 Design Studio will never be started
 other than by clicking the script `S32DS-IDE.ps1` or its equivalent on
 non-Windows hosts.
 
-See https://github.com/PeterVranken/TRK-USB-MPC5643L[project overview^] and
-https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[GitHub
-Wiki^] for more details about downloading and installing the required
-tools.
+TODOC: Where to get the tools, how to install them
+//See https://github.com/PeterVranken/TRK-USB-MPC5643L[project overview^] and
+//https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[GitHub
+//Wiki^] for more details about downloading and installing the required
+//tools.
 
 === Compiler and makefile
 
 Compilation and linkage are makefile controlled. The compiler is GCC
-(MinGW-powerpc-eabivle-4.9.4). The compiler is part of the S32 Design
-Studio installation and can be used independently from the Studio. The
-makefile is made generic and can be reused for true, large projects that
-want to make use of safe-RTOS. It supports a number of options (targets);
-get an overview by typing:
+(MinGW-powerpc-eabivle-4.9.4). It is part of the S32 Design Studio
+installation and can be used independently from the Studio. The makefile
+is made generic and can be reused for production projects that want to
+make use of safe-RTOS. It supports a number of options (targets); get an
+overview by typing:
  
-    cd <projectRoot>/samples/safe-RTOS
+    cd <projectRoot>/samples/CAN
     mingw32-make help
 
 The main makefile `GNUmakefile` has been configured for the build of
-sample "safe-RTOS" but the kernel can't be linked into a runnable
-binary without an application. You need to specify the source code path of
-a safe-RTOS application on the command line of make. Set variable APP to
-do so. Possible applications can be found as the children of folder
-`<projectRoot>/samples/safe-RTOS/code/application`. Type
-("code/application/default/" is just an example):
+sample "CAN". Type:
 
-    mingw32-make -sO build APP=code/application/default/
-    mingw32-make -sO build APP=code/application/default/ CONFIG=PRODUCTION
+    mingw32-make -sO build
+    mingw32-make -sO build CONFIG=PRODUCTION
 
 to produce the flashable files
-`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-safe-RTOS.elf`, and
-`bin\ppc\default\PRODUCTION\DEVKIT-MPC5748G-safe-RTOS.elf`.
+`bin\ppc\default\DEBUG\DEVKIT-MPC5748G-CAN.elf`, and
+`bin\ppc\default\PRODUCTION\DEVKIT-MPC5748G-CAN.elf`.
+
+File `GNUmakefile` has a variable `defineList`, which is a list of options
+for the build. A major option is `LINK_IN_RAM`. If you place this option
+into the list then the same build commands link the software for execution
+in RAM. (See next section for details). With option `LINK_IN_RAM`, the same
+commands:
+
+    mingw32-make -sO build
+    mingw32-make -sO build CONFIG=PRODUCTION
+
+produce the flashable files
+`bin\ppc\default\DEBUG-RAM\DEVKIT-MPC5748G-CAN.elf`, and
+`bin\ppc\default\PRODUCTION-RAM\DEVKIT-MPC5748G-CAN.elf`.
 
 To get more information, type:
 
@@ -244,7 +260,7 @@ To get more information, type:
 
 WARNING: The makefile requires the MinGW port of the make processor. The
 Cygwin port will fail with obscure, misleading error messages. For your
-convenience, we have uplodaded an appropriate recent version of the MinGW
+convenience, we have uploaded an appropriate recent version of the MinGW
 make processor into this GitHub project. The PowerShell startup script
 aliases this (Windows) executable to the command `make`. Moreover,
 explicitly typing `mingw32-make` will generally avoid any problem.
@@ -252,26 +268,17 @@ explicitly typing `mingw32-make` will generally avoid any problem.
 The makefile is designed to run on different host systems but has been
 tested with Windows 7 and Windows 10 only.
 
-Note, the Eclipse project configuration in the root folder of this
-DEVKIT-MPC5748G sample (`.settings`, `.cproject`, `.project`) only
-supports the build of a sub-set of the possible configurations. safe-RTOS
-can be compiled with a few sample applications only, each of them in DEBUG
-and PRODUCTION compilation. To build more samples with Eclipse you would
-have to duplicate the existing build configurations and adapt the make
-command lines in the build settings according to the explanations and
-examples above.
-
 [[secRunInRAM]]
 === Running your application in RAM
 
 The makefile and the linker scripts support the location of the code
 entirely in RAM. The MPC5748G has plenty of RAM so that even large pieces
 of code can be loaded and executed in RAM. This is extremely helpful for
-code development. Loading the code into the device's RAM is significantly faster
-than into ROM and many flash erase and program cycles can be saved. Even
-if your complete project may not fit into RAM then you may still consider
-it useful to build some sub-modules together with their testing code in
-this way.
+code development. Loading the code into the device's RAM is significantly
+faster than into ROM and many flash erase and program cycles can be saved.
+Even if your complete project may not fit into RAM then you may still
+consider it useful to build some sub-modules together with their testing
+code in this way.
 
 Nothing particular has to be done to load a compiled software into RAM.
 The GNU debugger in the Design Studio just looks at the addresses of code
@@ -298,7 +305,7 @@ side expression is a blank-separated list of symbols, which are passed to
 the compiler and linker as preprocessor #define. Add `LINK_IN_RAM` if
 you want to run your code in RAM.
 
-CAUTION: Running the software in RAM is useful but, by principle, a
+WARNING: Running the software in RAM is useful but, by principle, a
 preliminary, temporary way of working only. Running the software can be done
 only under control of the debugger, which is needed to load the binary
 data into the MCU's RAM. A start of the software out of reset or after a
@@ -312,7 +319,7 @@ debugger (GDB) and to let it "load" the *.elf file. If the code is linked
 in flash ROM address space then this loading means writing to the flash.
 Consequently, a flash configuration in the Eclipse IDE is nearly identical
 to any ordinary debug configuration, just the option "Load executable" to
-load a file is checked. Normal debug configurations, i.e. for debugging,
+load a file is checked. Ordinary debug configurations, i.e. for debugging,
 don't have this check mark set:
 
 [[figDebugConfigFlash]]
@@ -325,9 +332,9 @@ find the debug configuration shown in <<figDebugConfigFlash>> in menu
 "Run/Debug Configurations..." A dialog listing all available debug
 configurations opens. Type "flash" in the text box, which initially has
 the focus, to filter all of them, which are intended for flashing and
-select the one you need. Press the Enter key or click on button
-"Debug" and the flash process begins. The progress is printed in one of
-the console windows in the lower right corner.
+select the one you need. Press the Enter key or click on button "Debug"
+and the flash process begins. Progress and status messages are printed in
+one of the console windows in the lower right corner.
 
 It's a bit counter-intuitive that flashing with GDB is just a kind of side
 effect of starting the debugger. Rather than with a "Congratulations,
@@ -344,8 +351,7 @@ configurations generally use only a single debug configuration, because
 our project links all the code in one *.elf file, regardless of the number
 of cores, which are in use. Therefore, if you'd really go ahead with the
 flash debug session then you could only control and observe boot core Z4A.
-Better to close it again and start a more appropriate Launch Group, like
-"triCore (all cores, DEBUG)".
+Better to close it again and start a more appropriate Launch Group.
 
 [[figLaunchGroup]]
 .Debug configuration to chose when debugging a multi-core software
