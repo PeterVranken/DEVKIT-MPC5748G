@@ -1,5 +1,5 @@
 /**
- *   @file cdr_canDriver.config.h
+ *   @file cdr_canDriver.config.inc
  * Application dependent configuration of CAN I/O driver.
  *   @remark
  * This file actually is a hybrid from C header and source file. Therefore, it's is neither
