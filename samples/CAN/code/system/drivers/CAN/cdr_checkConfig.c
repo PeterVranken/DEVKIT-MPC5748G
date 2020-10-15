@@ -92,8 +92,18 @@ _Static_assert( sizeof(cdr_mailbox_t) == 16  &&  offsetof(cdr_mailbox_t, payload
                 &&  offsetof(cdr_mailbox_t, payload_u32) == 8
               , "Bad model of CAN mailbox"
               );
-
-
+#if defined (MCU_MPC5775B)  ||  defined (MCU_MPC5775E)
+_Static_assert( CDR_ENABLE_USE_OF_CAN_4 == 0  &&  CDR_ENABLE_USE_OF_CAN_5 == 0
+                &&  CDR_ENABLE_USE_OF_CAN_6 == 0  &&  CDR_ENABLE_USE_OF_CAN_7 == 0
+              , "MPC5775B/E: Only four CAN devices are available but more have been configured"
+              );
+#endif
+_Static_assert( CAN_RXIMR_COUNT == CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE
+              , "Inconsistent macro setting for available number of mailboxes"
+              );
+_Static_assert( !CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD ||  CDR_ENABLE_USE_OF_CAN_0 == 1
+              , "MCU pin enabling and routing is only possible for CAN device 0"
+              );
  
 /*
  * Function implementation
@@ -116,10 +126,6 @@ bool cdr_checkDriverConfiguration(void)
        PRODUCTION, we just return false and the SW must not start up. */
     #define ASSERT(cond)    if(!(cond)){assert(false); return false;}
     
-    /* The number of HW mailboxes in one CAN device. Unfortunately, we don't have found a
-       related macro in the NXP derivative header. */
-    #define NO_HW_MAILBOXES_PER_CAN_DEVICE  96
-    
     /* A buffer for checking consistent specification of API buffer indexes. */
     unsigned int noUserEnabledRxMBs = 0;
     uint8_t isAPIBufferInUse[CDR_NO_RX_USER_CODE_POLLING_MAILBOXES];
@@ -141,7 +147,7 @@ bool cdr_checkDriverConfiguration(void)
               );
 
         /* The number of mailboxes is hardware limited. */
-        ASSERT(pDevCfg->noMailboxes <= 96);
+        ASSERT(pDevCfg->noMailboxes <= CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE);
         
         /* The FIFO requires at least 6 Mailboxes and more, dependent on the size of the
            filter table. */
@@ -159,42 +165,124 @@ bool cdr_checkDriverConfiguration(void)
               );
         
         /* FIFO is enabled but mailboxes interrupts are configured for mailboxes, which are
-           not available with FIFO enabled. */
+           not available with FIFO enabled. idxFirstNormalMailbox can have the values 0, 8,
+           10, 12, .., 38. */
         const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstNormalMailbox(pDevCfg);
-        ASSERT(idxFirstNormalMailbox <= 3  ||  pDevCfg->irqGroupMB0_3.irqPrio == 0);
-        ASSERT(idxFirstNormalMailbox <= 7  ||  pDevCfg->irqGroupMB4_7.irqPrio == 0);
-        ASSERT(idxFirstNormalMailbox <= 11  ||  pDevCfg->irqGroupMB8_11.irqPrio == 0);
-        ASSERT(idxFirstNormalMailbox <= 15  ||  pDevCfg->irqGroupMB12_15.irqPrio == 0);
-        ASSERT(idxFirstNormalMailbox <= 31  ||  pDevCfg->irqGroupMB16_31.irqPrio == 0);
+        ASSERT(idxFirstNormalMailbox <= 0
+#if defined(MCU_MPC5748G)
+               ||  pDevCfg->irqGroupMB0_3.irqPrio == 0
+                   &&  pDevCfg->irqGroupMB4_7.irqPrio == 0
+#else /* MPC5775B/E */
+               ||  pDevCfg->irqMB0.irqPrio == 0
+                   &&  pDevCfg->irqMB1.irqPrio == 0
+                   &&  pDevCfg->irqMB2.irqPrio == 0
+                   &&  pDevCfg->irqMB3.irqPrio == 0
+                   &&  pDevCfg->irqMB4.irqPrio == 0
+                   &&  pDevCfg->irqMB5.irqPrio == 0
+                   &&  pDevCfg->irqMB6.irqPrio == 0
+                   &&  pDevCfg->irqMB7.irqPrio == 0
+#endif
+              );
+#if defined(MCU_MPC5775B) ||  defined(MCU_MPC5775E)
+        ASSERT(idxFirstNormalMailbox <= 8
+               ||  pDevCfg->irqMB8.irqPrio == 0
+                   &&  pDevCfg->irqMB9.irqPrio == 0
+              );
+#endif
+        ASSERT(idxFirstNormalMailbox <= 10
+#if defined(MCU_MPC5748G)
+               ||  pDevCfg->irqGroupMB8_11.irqPrio == 0
+#else /* MPC5775B/E */
+               ||  pDevCfg->irqMB10.irqPrio == 0
+                   &&  pDevCfg->irqMB11.irqPrio == 0
+#endif
+              );
+#if defined(MCU_MPC5775B) ||  defined(MCU_MPC5775E)
+        ASSERT(idxFirstNormalMailbox <= 12
+               ||  pDevCfg->irqMB12.irqPrio == 0
+                   &&  pDevCfg->irqMB13.irqPrio == 0
+              );
+#endif
+        ASSERT(idxFirstNormalMailbox <= 14
+#if defined(MCU_MPC5748G)
+               ||  pDevCfg->irqGroupMB12_15.irqPrio == 0
+#else /* MPC5775B/E */
+               ||  pDevCfg->irqMB14.irqPrio == 0
+                   &&  pDevCfg->irqMB15.irqPrio == 0
+#endif
+              );
+        ASSERT(idxFirstNormalMailbox <= 30  ||  pDevCfg->irqGroupMB16_31.irqPrio == 0);
         ASSERT(idxFirstNormalMailbox <= 38);
-        
+
         /* The target core for any IRQ needs to be in range. */
         ASSERT( pDevCfg->irqGroupFIFO.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupError.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupBusOff.idxTargetCore < RTOS_NO_CORES
+#if defined(MCU_MPC5748G)
                 &&  pDevCfg->irqGroupMB0_3.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB4_7.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB8_11.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB12_15.idxTargetCore < RTOS_NO_CORES
+#else /* MPC5775B/E */
+                &&  pDevCfg->irqMB0.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB1.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB2.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB3.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB4.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB5.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB6.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB7.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB8.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB9.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB10.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB11.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB12.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB13.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB14.idxTargetCore < RTOS_NO_CORES
+                &&  pDevCfg->irqMB15.idxTargetCore < RTOS_NO_CORES
+#endif
                 &&  pDevCfg->irqGroupMB16_31.idxTargetCore < RTOS_NO_CORES
                 &&  pDevCfg->irqGroupMB32_63.idxTargetCore < RTOS_NO_CORES
+#if defined(MCU_MPC5748G)
                 &&  pDevCfg->irqGroupMB64_95.idxTargetCore < RTOS_NO_CORES
+#endif
               );
 
         /* The INTC priority of any IRQ needs to be in range. */
         ASSERT( pDevCfg->irqGroupFIFO.irqPrio <= 15
                 &&  pDevCfg->irqGroupError.irqPrio <= 15
                 &&  pDevCfg->irqGroupBusOff.irqPrio <= 15
+#if defined(MCU_MPC5748G)
                 &&  pDevCfg->irqGroupMB0_3.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB4_7.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB8_11.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB12_15.irqPrio <= 15
+#else /* MPC5775B/E */
+                &&  pDevCfg->irqMB0.irqPrio <= 15
+                &&  pDevCfg->irqMB1.irqPrio <= 15
+                &&  pDevCfg->irqMB2.irqPrio <= 15
+                &&  pDevCfg->irqMB3.irqPrio <= 15
+                &&  pDevCfg->irqMB4.irqPrio <= 15
+                &&  pDevCfg->irqMB5.irqPrio <= 15
+                &&  pDevCfg->irqMB6.irqPrio <= 15
+                &&  pDevCfg->irqMB7.irqPrio <= 15
+                &&  pDevCfg->irqMB8.irqPrio <= 15
+                &&  pDevCfg->irqMB9.irqPrio <= 15
+                &&  pDevCfg->irqMB10.irqPrio <= 15
+                &&  pDevCfg->irqMB11.irqPrio <= 15
+                &&  pDevCfg->irqMB12.irqPrio <= 15
+                &&  pDevCfg->irqMB13.irqPrio <= 15
+                &&  pDevCfg->irqMB14.irqPrio <= 15
+                &&  pDevCfg->irqMB15.irqPrio <= 15
+#endif
                 &&  pDevCfg->irqGroupMB16_31.irqPrio <= 15
                 &&  pDevCfg->irqGroupMB32_63.irqPrio <= 15
+#if defined(MCU_MPC5748G)
                 &&  pDevCfg->irqGroupMB64_95.irqPrio <= 15
+#endif
               );
 
-        /* Error interrupts: We have some simple internal handling and the notification in
+        /* Error interrupts: We have some simple internal handling and the notification is
            just an option. However, there's no Tx notification and the optional
            notification must not be configured if the interrupt is configured off. */
         ASSERT(!(pDevCfg->irqGroupError.irqPrio == 0
@@ -224,28 +312,49 @@ bool cdr_checkDriverConfiguration(void)
         
         /* If we have a mailbox IRQ enabled then we need to have a callback, too. */
         #define ASSERT_IRQ_HAS_CB(group)                                                    \
-            ASSERT(pDevCfg->irqGroup##group.irqPrio > 0                                     \
-                   &&  (pDevCfg->irqGroup##group.osCallbackOnRx != NULL                     \
-                        ||  pDevCfg->irqGroup##group.osCallbackOnTx != NULL                 \
+            ASSERT(pDevCfg->irq##group.irqPrio > 0                                          \
+                   &&  (pDevCfg->irq##group.osCallbackOnRx != NULL                          \
+                        ||  pDevCfg->irq##group.osCallbackOnTx != NULL                      \
                        )                                                                    \
-                   ||  pDevCfg->irqGroup##group.irqPrio == 0                                \
-                       &&  (pDevCfg->irqGroup##group.osCallbackOnRx == NULL                 \
-                            &&  pDevCfg->irqGroup##group.osCallbackOnTx == NULL             \
+                   ||  pDevCfg->irq##group.irqPrio == 0                                     \
+                       &&  (pDevCfg->irq##group.osCallbackOnRx == NULL                      \
+                            &&  pDevCfg->irq##group.osCallbackOnTx == NULL                  \
                            )                                                                \
                   );
-        ASSERT_IRQ_HAS_CB(FIFO)
-        ASSERT_IRQ_HAS_CB(MB0_3)
-        ASSERT_IRQ_HAS_CB(MB4_7)
-        ASSERT_IRQ_HAS_CB(MB8_11)
-        ASSERT_IRQ_HAS_CB(MB12_15)
-        ASSERT_IRQ_HAS_CB(MB16_31)
-        ASSERT_IRQ_HAS_CB(MB32_63)
-        ASSERT_IRQ_HAS_CB(MB64_95)
+        ASSERT_IRQ_HAS_CB(GroupFIFO)
+#if defined(MCU_MPC5748G)
+        ASSERT_IRQ_HAS_CB(GroupMB0_3)
+        ASSERT_IRQ_HAS_CB(GroupMB4_7)
+        ASSERT_IRQ_HAS_CB(GroupMB8_11)
+        ASSERT_IRQ_HAS_CB(GroupMB12_15)
+#else /* MPC5775B/E */
+        ASSERT_IRQ_HAS_CB(MB0)
+        ASSERT_IRQ_HAS_CB(MB1)
+        ASSERT_IRQ_HAS_CB(MB2)
+        ASSERT_IRQ_HAS_CB(MB3)
+        ASSERT_IRQ_HAS_CB(MB4)
+        ASSERT_IRQ_HAS_CB(MB5)
+        ASSERT_IRQ_HAS_CB(MB6)
+        ASSERT_IRQ_HAS_CB(MB7)
+        ASSERT_IRQ_HAS_CB(MB8)
+        ASSERT_IRQ_HAS_CB(MB9)
+        ASSERT_IRQ_HAS_CB(MB10)
+        ASSERT_IRQ_HAS_CB(MB11)
+        ASSERT_IRQ_HAS_CB(MB12)
+        ASSERT_IRQ_HAS_CB(MB13)
+        ASSERT_IRQ_HAS_CB(MB14)
+        ASSERT_IRQ_HAS_CB(MB15)
+#endif
+        ASSERT_IRQ_HAS_CB(GroupMB16_31)
+        ASSERT_IRQ_HAS_CB(GroupMB32_63)
+#if defined(MCU_MPC5748G)
+        ASSERT_IRQ_HAS_CB(GroupMB64_95)
+#endif
         #undef ASSERT_IRQ_HAS_CB
         
         /* Check the configuration of privileges for the user code API. */
         unsigned int idxMB;
-        for(idxMB=0; idxMB<NO_HW_MAILBOXES_PER_CAN_DEVICE; ++idxMB)
+        for(idxMB=0; idxMB<CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE; ++idxMB)
         {
             const struct cdr_mailboxAccessConfig_t configMB =
                                                 pDevCfg->userAccessMailboxAry[idxMB];

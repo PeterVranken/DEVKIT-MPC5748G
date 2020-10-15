@@ -87,7 +87,7 @@ projectExe := $(target).s19
 .PHONY: h help targets usage
 .DEFAULT_GOAL := help
 h help targets usage:
-	$(info Usage: make [-sO] [-k] [APP=<sourceCodeFolder>] [CONFIG=<configuration>] [SAVE_TMP=1] {<target>})
+	$(info Usage: make [-sO] [-k] [CONFIG=<configuration>] [SAVE_TMP=1] {<target>})
 	$(info APP: safe-RTOS-VLE is a library rather than a self-contained application. It $(EOL)\
            can be linked with some sample client code. <sourceCodeFolder> is a folder, $(EOL)\
            which contains the source files of the selected sample. Default is $(EOL)\
@@ -103,7 +103,7 @@ h help targets usage:
 	$(info - cleanDep: Delete all dependency files, e.g. after changes of #include $(EOL)\
              statements or file renaming)
 	$(info - rebuild: Same as clean and build together)
-	$(info - bin/ppc/<appName>/<configuration>/obj/<cFileName>.o: Compile a single C(++) or $(EOL)\
+	$(info - bin/ppc/<configuration>[-RAM]/obj/<cFileName>.o: Compile a single C(++) or $(EOL)\
              assembler module, e.g. $(targetDir)obj/mai_main.o)
 	$(info - <cFileName>.i: Preprocess a single C(++) or assembler module. Build product \
              is sibling of source file)

@@ -31,7 +31,7 @@
 #include <stdbool.h>
 #include <limits.h>
 
-#include "MPC5748G.h"
+#include "cde_canDriver.config.MCUDerivative.h"
 #include "cdr_canDriver.config.inc"
 
 
@@ -105,16 +105,21 @@ typedef struct cdr_mailbox_t
     core will see the correct data only by chance, depending on the status and use of its
     local cache. It's alright to let a core collect its data in this struct but the
     same struct must not be considered a valid mechanism to report the information to
-    another core. Moving the struct to uncached memory Mayould be one of the options to
+    another core. Moving the struct to uncached memory would be one of the options to
     overcome this. */
 typedef struct cdr_canDeviceData_t
 {
+#ifdef MCU_MPC5748G
     /** Bus off/on status.
           @remark The status flag is maintained by the core, which serves the group of
         error interrupts from the given CAN device (see configuration item
         cdr_canDriverConfig[idxCanDev].irqGroupErrorTargetCore) and can be read by other
-        contexts on the same core. It can't be accessed at all from other cores. */
+        contexts on the same core. It can't be accessed at all from other cores.
+          @remark This flag is not supported on the MPC5775B/E, which doesn't offer an IRQ
+        on bus off state done. We don't get a notice when bus off is cleared and can't
+        therefore maintain such a flag. */
     bool isBusOff;
+#endif
 
     /** Global counter for bus-off events. Each count means once entering the bus-off
         state. The counter is saturated at its implementation maximum. 
@@ -349,7 +354,7 @@ static inline volatile cdr_mailbox_t *cdr_getMailboxByIdx( const CAN_Type * cons
                                                          , unsigned int idxMB
                                                          )
 {
-    assert(idxMB < 96);
+    assert(idxMB < CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE);
     return ((volatile cdr_mailbox_t*)&pCanDevice->RAMn[0]) + idxMB;
 
 } /* End of cdr_getMailboxByIdx */

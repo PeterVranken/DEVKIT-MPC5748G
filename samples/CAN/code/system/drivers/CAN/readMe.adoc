@@ -25,7 +25,7 @@
 This folder contains a CAN communication I/O driver for MPC5748G and
 safe-RTOS. Features:
 
-* Support of one to eight available CAN devices
+* Support of one to eight available CAN devices (four on the MPC5775B/E)
 * Pin configuration only for CAN device 0: On the PCB of the
   DEVKIT-MPC5748G, this one is equipped with a transceiver chip and connected
   to connector P5. Just connect your Vector, Kvaser or PEAK CAN device and
@@ -39,6 +39,7 @@ safe-RTOS. Features:
   how many are processed by the FIFO
  ** This number can even be increased to 276 if no extended CAN IDs are in
     use
+ ** The maximum values are lesser by 32 for the MPC5775B/E
 * Mailboxes can be operated by polling or by interrupt
  ** Mailboxes are organized in groups of 4, 8, 16 or 32. Each group can
     have its own interrupt - processed by the same or individual handlers,
@@ -93,46 +94,64 @@ It's not the encapsulation of an obscured driver implementation but
 includes other nested headers, which still need to be available for
 compilation of the client code.
 
+The other relevant header file is cdr_canDriver.config.h. Client code
+won't directly include it but you may need to open it for understanding
+the configuration of the driver appropriately for your specific
+application. The driver configuration is a large, nested constant data set
+and this file documents all required fields.
 
-The other relevant header file is cdr_canDriver.config.h. Client code won't directly
-include it but you may need to open it for understanding the configuration of the driver
-appropriately for your specific application. The driver configuration is a large, nested
-constant data set and this file documents all required fields.
+The actual configuration is made in file cdr_canDriver.config.inc. This is
+a hybrid from header and implementation file, that contains both,
+declaration and definition of the configuration data object. The driver
+implementation offers a template for this file, named
+cdr_canDriver.config.inc.template.
 
-The actual configuration is made in file cdr_canDriver.config.inc. This is a hybrid
-from header and implementation file, that contains both, declaration and definition of
-the configuration data object. The driver implementation offers a template for this
-file, named cdr_canDriver.config.inc.template.
+The work flow is to make a copy of the template in the code repository of
+the aimed application, using the original name cdr_canDriver.config.inc.
+Then open the file and do all configuration according to the guiding
+documentation and based on the sample configuration in the template. (And
+based on the documentation in file cdr_canDriver.config.h.)
 
-The work flow is to make a copy of the template in the code repository of the aimed
-application, using the original name cdr_canDriver.config.inc. Then open the file and do
-all configuration according to the guiding documentation and based on the sample
-configuration in the template. (And based on the documentation in file
-cdr_canDriver.config.h.)
+Actually, you specify the CAN driver configuration as a large initializer
+expression of the one and only huge constant configuration data object.
+This task is strongly facilitated by source code comments on the different
+fields and by using C99's designated initializer expressions.
 
-Actually, you specify the CAN driver configuration as a large initializer expression of the
-one and only huge constant configuration data object. This task is strongly facilitated
-by source code comments on the different fields and by using C99's designated
-initializer expressions.
-
-The principal element in configuration file cdr_canDriver.config.inc is the list of
-#defines to enable one or more of the physically available CAN devices; see e.g.
-#CDR_ENABLE_USE_OF_CAN_0. (Most applications won't use all of them.) By means of
-preprocessor switches, the driver configuration is produced only for the enabled set of
-devices (and alike for some runtime data objects). Disabled CAN devices are not touched
-at all by the driver and remain in reset state and nor do they consume ROM space for
+The principal element in configuration file cdr_canDriver.config.inc is
+the list of #defines to enable one or more of the physically available CAN
+devices; see e.g. #CDR_ENABLE_USE_OF_CAN_0. (Most applications won't use
+all of them.) By means of preprocessor switches, the driver configuration
+is produced only for the enabled set of devices (and alike for some
+runtime data objects). Disabled CAN devices are not touched at all by the
+driver and remain in reset state and nor do they consume ROM space for
 configuration data.
 
-Your application won't directly use the configuration file cdr_canDriver.config.inc.
-Don't include it, don't compile it. Indirectly, your application will read its header
-file contents (#define's) through this header, cdr_canDriverAPI.h. Those parts of
-cdr_canDriver.config.inc, which are actually C source code -- concretely, the definition
-of the constant configuration data object --, will be complied from the CAN driver's
-main implementation file, namely cdr_canDriver.c, by way of including it.
+Your application won't directly use the configuration file
+cdr_canDriver.config.inc. Don't include it, don't compile it. Indirectly,
+your application will read its header file contents (#define's) through
+this header, cdr_canDriverAPI.h. Those parts of cdr_canDriver.config.inc,
+which are actually C source code -- concretely, the definition of the
+constant configuration data object --, will be complied from the CAN
+driver's main implementation file, namely cdr_canDriver.c, by way of
+including it.
 
-The CAN driver is compilable with the renamed but not altered template configuration
-file. However, no CAN device will then be enabled and the compiler will issue several
-warning because of zero-sized arrays and data structures.
+The CAN driver is compilable with the renamed but not altered template
+configuration file. However, no CAN device will then be enabled and the
+compiler will issue several warning because of zero-sized arrays and data
+structures.
+
+== Maturity
+
+Please note, the maturity of the driver implementation is not very high.
+Concept and source code are on production level quality but the
+implementation has not been tested accordingly. Even if not supporting all
+features of the underlying hardware, the driver still offers a variety of
+configuration possibilities. In the context of this project, it is
+unfortunately not possible to develop tests for all imaginable reasonable
+configurations.
+
+If you decide to use this code you need to carefully test the driver
+implementation in your configuration.
 
 :Local Variables:
 :coding:    utf-8

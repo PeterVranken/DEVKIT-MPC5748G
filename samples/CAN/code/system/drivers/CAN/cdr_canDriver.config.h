@@ -28,6 +28,7 @@
  */
 
 #include "typ_types.h"
+#include "cde_canDriver.config.MCUDerivative.h"
 
 
 /*
@@ -47,6 +48,18 @@
                                     +(CDR_ENABLE_USE_OF_CAN_6 == 1)    \
                                     +(CDR_ENABLE_USE_OF_CAN_7 == 1)    \
                                    )
+
+#if defined(MCU_MPC5748G)
+/** The number of HW mailboxes in one CAN device. Unfortunately, we don't have found a
+    related macro in the NXP derivative header. Here for MPC5748G. */
+# define CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE  96
+#elif defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+/** The number of HW mailboxes in one CAN device. Unfortunately, we don't have found a
+    related macro in the NXP derivative header. Here for MPC5775B/E. */
+# define CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE  64
+#else
+# error No driver implementation available for selected MCU derivative
+#endif
 
 
 /*
@@ -335,10 +348,10 @@ typedef struct cdr_canDeviceConfig_t
     bool isFIFOEnabled;
 
     /** The number of mailboxes in use including those, whose space is occupied by FIFO and
-        its filters. Range is 0..96 if \a isFIFOEnabled is \a false and 6 .. 96
-        otherwise.\n
-           This setting must be changed with care - there are other dependent settings,
-        like \a CTRL2_TASD. */
+        its filters. Range is 0 .. #CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE if \a isFIFOEnabled is
+        \a false and 6 .. #CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE otherwise.\n
+          This setting must be changed with care - there are other dependent settings, like
+        \a CTRL2_TASD. */
     uint8_t noMailboxes;
 
     /** This setting controls the partitioning of the mailbox RAM space of the CAN device
@@ -385,13 +398,36 @@ typedef struct cdr_canDeviceConfig_t
     cdr_irqConfig_t irqGroupError;
     cdr_irqConfig_t irqGroupBusOff; /** IRQ config for bus off and related warning IRQs */
     cdr_irqConfig_t irqGroupFIFO;   /** IRQ configuration for Rx FIFO IRQs */
+#if defined (MCU_MPC5748G)
     cdr_irqConfig_t irqGroupMB0_3;  /** IRQ configuration, IRQs of mailboxes 0..3 */
     cdr_irqConfig_t irqGroupMB4_7;  /** IRQ configuration, IRQs of mailboxes 4..7 */
     cdr_irqConfig_t irqGroupMB8_11; /** IRQ configuration, IRQs of mailboxes 8..11 */
     cdr_irqConfig_t irqGroupMB12_15;/** IRQ configuration, IRQs of mailboxes 12_15 */
+#elif defined (MCU_MPC5775B)  ||  defined (MCU_MPC5775E)
+    cdr_irqConfig_t irqMB0;         /** IRQ configuration, IRQ of mailbox 0 */
+    cdr_irqConfig_t irqMB1;         /** IRQ configuration, IRQ of mailbox 1 */
+    cdr_irqConfig_t irqMB2;         /** IRQ configuration, IRQ of mailbox 2 */
+    cdr_irqConfig_t irqMB3;         /** IRQ configuration, IRQ of mailbox 3 */
+    cdr_irqConfig_t irqMB4;         /** IRQ configuration, IRQ of mailbox 4 */
+    cdr_irqConfig_t irqMB5;         /** IRQ configuration, IRQ of mailbox 5 */
+    cdr_irqConfig_t irqMB6;         /** IRQ configuration, IRQ of mailbox 6 */
+    cdr_irqConfig_t irqMB7;         /** IRQ configuration, IRQ of mailbox 7 */
+    cdr_irqConfig_t irqMB8;         /** IRQ configuration, IRQ of mailbox 8 */
+    cdr_irqConfig_t irqMB9;         /** IRQ configuration, IRQ of mailbox 9 */
+    cdr_irqConfig_t irqMB10;         /** IRQ configuration, IRQ of mailbox 10 */
+    cdr_irqConfig_t irqMB11;         /** IRQ configuration, IRQ of mailbox 11 */
+    cdr_irqConfig_t irqMB12;         /** IRQ configuration, IRQ of mailbox 12 */
+    cdr_irqConfig_t irqMB13;         /** IRQ configuration, IRQ of mailbox 13 */
+    cdr_irqConfig_t irqMB14;         /** IRQ configuration, IRQ of mailbox 14 */
+    cdr_irqConfig_t irqMB15;         /** IRQ configuration, IRQ of mailbox 15 */
+#else
+# error Code migration needed for selected MCU derivative
+#endif
     cdr_irqConfig_t irqGroupMB16_31;/** IRQ configuration, IRQs of mailboxes 16..31 */
     cdr_irqConfig_t irqGroupMB32_63;/** IRQ configuration, IRQs of mailboxes 32..63 */
+#if defined (MCU_MPC5748G)
     cdr_irqConfig_t irqGroupMB64_95;/** IRQ configuration, IRQs of mailboxes 64..95 */
+#endif
 
     /** Permission to make mailbox reservations is given only one particular user process,
         or it can be generally prohibitted for user code and left to the operating system.\n
@@ -411,8 +447,7 @@ typedef struct cdr_canDeviceConfig_t
         elements are implicitly configure the according mailboxes as not accessible by any
         user process. You just need to configure the mailboxes, which are enabled for user
         code access. */
-/// @todo Find a solution to avoid the literal number here
-    cdr_mailboxAccessConfig_t userAccessMailboxAry[96];
+    cdr_mailboxAccessConfig_t userAccessMailboxAry[CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE];
 
 } cdr_canDeviceConfig_t;
 

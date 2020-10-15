@@ -34,6 +34,7 @@
  * Local functions
  *   getFIFOFilterEntry
  *   configSIULForUseWithDEVKIT_MPC5748G
+ *   configSIULForUseWithMPC5775BE_416DS
  *   getBaudRateSettings
  *   osPrepareSendMessage
  */
@@ -47,9 +48,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#include "MPC5748G.h"
-#include "cdr_MPC5748G_CAN.h"
-
+#include "cde_canDriver.config.MCUDerivative.h"
 #include "typ_types.h"
 #include "sio_serialIO.h"
 #include "ccl_configureClocks.h"
@@ -63,8 +62,9 @@
  * Defines
  */
 
+#if defined(MCU_MPC5748G)
 /** Initializer expression for an entry of the array \a cdr_canDriverData. */
-#define INIT_CAN_DEVICE_DATA(canDev)    \
+# define INIT_CAN_DEVICE_DATA(canDev)   \
     [cdr_canDev_##canDev] =             \
     {                                   \
         .isBusOff = false,              \
@@ -72,6 +72,17 @@
         .noRxFIFOWarningEvents = 0,     \
         .noRxMsgsFIFO = 0,              \
     },
+#elif defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+/** Initializer expression for an entry of the array \a cdr_canDriverData. */
+# define INIT_CAN_DEVICE_DATA(canDev)   \
+    [cdr_canDev_##canDev] =             \
+    {                                   \
+        .noRxFIFOOverflowEvents = 0,    \
+        .noRxFIFOWarningEvents = 0,     \
+        .noRxMsgsFIFO = 0,              \
+    },
+#endif
+
 
 /*
  * Local type definitions
@@ -195,10 +206,11 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
 
 
 
-#if CDR_ENABLE_USE_OF_CAN_0 == 1
+#if CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD == 1  &&  CDR_ENABLE_USE_OF_CAN_0 == 1
+# if defined(MCU_MPC5748G)
 /**
  * Do the configuration of the MCU pins such that CAN device CAN_0 can communicated through
- * the CAN transceiver, which is mounted on the board.\n
+ * the CAN transceiver, which is mounted on the evaluation board DEVKIT_MPC5748G.\n
  *   The code in this function is not generally usable.
  */
 static void configSIULForUseWithDEVKIT_MPC5748G(void)
@@ -242,6 +254,86 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
     SIUL2->IMCR[idxIMCR_PB1] = SIUL2_IMCR_SSS(2);
 
 } /* End of configSIULForUseWithDEVKIT_MPC5748G */
+
+# else
+
+/**
+ * Do the configuration of the MCU pins such that CAN device CAN_0 can communicated through
+ * the CAN transceiver, which is mounted on the evaluation board MPC5775BE_416DS.\n
+ *   The code in this function is not generally usable.
+ */
+static void configSIULForUseWithMPC5775BE_416DS(void)
+{
+    /* Enable the the MCU pins, which are connected to the CAN transceiver mounted on the
+       evaluation board (see schematics of MPC5775BE-416DS, SPF-32229.pdf, p. 5).
+         The configuration of in- and output pins is documented in the Excel workbook
+       MPC5775B_MPC5775E_System_IO_Definition.xlsx; which is embedded into the MCU
+       reference manual PDF file. In Acrobat Reader, click View/Show/Hide/Navigation
+       Panes/Attachments to find the Excel workbook.
+         In the Excel workbook, on worksheet "IO Signal Table", each line refers to one of
+       the possible functions of a port. The port is found in column A and most relevant
+       are the settings "SIU_A PCR#" in column B, and "PCR PA" in column C. They designate
+       the index of the PCR register to use and the source selection, which is a major
+       field of this register.
+         The port has a fixed, hardwired, however chip-housing dependent one-by-one
+       relation with a pin. This relation is found in columns I and J and on tab "416
+       PBGA".
+         The source selection relates to the connection from an I/O device to the output
+       buffer of the port.
+         To connect an input of an I/O device with a port, a selection of one out of
+       different offered input sources needs to be made besides the port configuration
+       itself. Selecting the wanted input means configuring an input multiplexer register.
+       There are nine such registers and they contain a varying number of multiplexers
+       each. You need to know, which multiplexer register to use and which multiplxer
+       inside the register and which value to configure for this multiplexer. All of this
+       is found either in the description of the registers (RM, sections 8.2.66ff) or by
+       name of the signal in the Excel workbook
+       MPC5775B_MPC5775E_System_IO_Definition.xlsx, worksheet "Input Muxing". In the Excel
+       worksheet look for the wanted device (column B, "Instance") and/or for the wanted
+       signal (column H, "Source Signal"). Columns D, E and F provide the needed three
+       pieces of information for the multiplxer configuration. */
+       
+    /* CAN Tx: See file MPC5775B_MPC5775E_System_IO_Definition.xlsx, tab "IO Signal Table",
+       row 663, for port CNTXA. Column B gives us the index of the PCR. Column C gives us
+       as "Source Signal Select" for function CAN Tx of device 0 (aka A).
+         SIU->PCR: See RM, 8.2.13 Pad Configuration Register (SIU_PCRn), p. 241ff. */
+    SIU->PCR[83 /* CNTXA */] =
+                    SIU_PCR_PA(1)    /* Source 1: FlexCAN A Transmit */
+                    | SIU_PCR_OBE(1) /* Enable output buffer */
+                    | SIU_PCR_IBE(0) /* Disable input buffer */
+                    | SIU_PCR_DSC(3) /* 0..3: Drive strength from min to max */
+                    | SIU_PCR_ODE(0) /* Disable open drain, drive both edges */
+                    | SIU_PCR_HYS(0) /* Hysteresis as after reset */
+                    | SIU_PCR_SRC(3) /* Slew rate: Full drive without SR control */
+                    | SIU_PCR_WPE(0) /* Pull up/down is disabled */
+                    | SIU_PCR_WPS(0) /* Pull up/down doesn't care, is disabled */
+                    ;
+                    
+    SIU->PCR[84 /* CNRXA */] =
+                    SIU_PCR_PA(1)    /* Source 1: FlexCAN A Receive */
+                    | SIU_PCR_OBE(0) /* Enable output buffer */
+                    | SIU_PCR_IBE(1) /* Enable input buffer */
+                    | SIU_PCR_DSC(0) /* 0..3: Drive strength from min to max */
+                    | SIU_PCR_ODE(0) /* Disable open drain: Irrelevant for input */
+                    | SIU_PCR_HYS(1) /* Hysteresis on */
+                    | SIU_PCR_SRC(0) /* Slew rate: Irrelevant for input */
+                    | SIU_PCR_WPE(0) /* Pull up/down is disabled */
+                    | SIU_PCR_WPS(0) /* Pull up/down doesn't care, is disabled */
+                    ;
+                    
+    /* CAN Rx: See file MPC5775B_MPC5775E_System_IO_Definition.xlsx, tab "Input Muxing",
+       row 33, for port CNRXA. We find multiplexer register no 1, MUXSEL=0, MUXSEL
+       Value=1.
+         See 8.2.67 Input Multiplexing Register1 (SIU_IMUX1), p. 375f, for setting of the
+       multiplexer. The register description confirms the right understanding of the Excel
+       table. */
+    SIU->IMUX1 = SIU->IMUX1
+                 & ~SIU_IMUX1_MUXSEL0_MASK
+                 | SIU_IMUX1_MUXSEL0(1)
+                 ;
+} /* End of configSIULForUseWithMPC5775BE_416DS */
+
+# endif /* Which MCU derivative */
 #endif /* CDR_ENABLE_USE_OF_CAN_0 == 1 */
 
 
@@ -252,20 +344,20 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
  * device to achieve a given Baud rate.\n
  *  The function doesn't return an error. All possible fault conditions have been checked
  * before.
- *   @param pPRESDIV 
+ *   @param pPRESDIV
  * The required value PRESDIV is returned by reference.
- *   @param pPROPSEG  
+ *   @param pPROPSEG
  * The required value PROPSEG is returned by reference.
- *   @param pPSEG1    
+ *   @param pPSEG1
  * The required value PSEG1 is returned by reference.
- *   @param pPSEG2    
+ *   @param pPSEG2
  * The required value PSEG2 is returned by reference.
  *   @param baudRate
  * The desired Baud rate in the unit 10 kBd.
  */
 static void getBaudRateSettings( unsigned int * const pPRESDIV
                                , unsigned int * const pPROPSEG
-                               , unsigned int * const pPSEG1  
+                               , unsigned int * const pPSEG1
                                , unsigned int * const pPSEG2
                                , unsigned int baudRate
                                )
@@ -410,9 +502,14 @@ static void initCanDevice(unsigned int idxCanDevice)
                          | CAN_IFLAG1_BUF4TO1I_MASK
                          | CAN_IFLAG1_BUF0I_MASK
                          ;
+#if defined(MCU_MPC5748G)
     pCanDevice->IFLAG2 = CAN_IFLAG2_BUF63TO32I_MASK;
     pCanDevice->IFLAG3 = CAN_IFLAG3_BUF95TO64_MASK;
-
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
+    pCanDevice->IFLAG2 = CAN_IFLAG2_BUFHI_MASK;
+#else
+# error Migration needed for this MCU derivative
+#endif
     /* For now, we don't support CAN FD. A generic configuration is difficult due to the
        different message sizes and augmented bit rates. They depend on the concrete network
        and shaping an all supporting, generic API is difficult and would likely suffer from
@@ -423,25 +520,37 @@ static void initCanDevice(unsigned int idxCanDevice)
                       | CAN_MCR_RFEN(pCanDevConfig->isFIFOEnabled)/* Enable FIFO? Note, FIFO
                                                                      not compatible with FD */
                       | CAN_MCR_HALT(1)     /* 1: Stay in halted mode for now */
+#if defined(MCU_MPC5748G)
                       | CAN_MCR_WAKMSK(0)   /* No wakeup IRQ needed */
+#endif
                       | CAN_MCR_SOFTRST(0)  /* No reset needed */
                       | CAN_MCR_SUPV(1)     /* No access by user mode code permitted */
+#if defined(MCU_MPC5748G)
                       | CAN_MCR_SLFWAK(0)   /* Self wake up: We have no implementation of low
                                                power/active mode switches */
+#endif
                       | CAN_MCR_WRNEN(0)    /// @todo TBC: Do we need a warn IRQ?
+#if defined(MCU_MPC5748G)
                       | CAN_MCR_WAKSRC(0)   /* Wake-up source doesn't matter; we don't use
                                                wake-up for now. */
+#else
+                      | CAN_MCR_DOZE(0)     /* Doze mode enable: We use reset value 0, no. */
+#endif
                       | CAN_MCR_SRXDIS(0)   /* Disable reception of Tx messages in other Rx
                                                mailbox? 0: No, Rx of own Tx is allowed */
                       | CAN_MCR_IRMQ(1)     /* Matching MB vs. FIFO: 1: Most natural
                                                descisions. See RM, Table 43-22, p. 1798. */
+#if defined(MCU_MPC5748G)
                       | CAN_MCR_DMA(0)      /* DMA not compatible with FD */
                       | CAN_MCR_PNET_EN(0)  /* Pretended network functionality doesn't
                                                matter, we don't implement a halt state. */
+#endif
                       | CAN_MCR_LPRIOEN(0)  /* 0: We use priority handling by CAN ID only */
                       | CAN_MCR_AEN(1)      /* 1: Overwriting a Tx MB is possible as long as
                                                serialization has not yet started. (43.5.7.1) */
+#if defined(MCU_MPC5748G)
                       | CAN_MCR_FDEN(0)     /* 0: Standard CAN Protocol, 1: CAN FD */
+#endif
                       | CAN_MCR_IDAM(0)     /* ID acceptance mode: 0: Mask of full length */
                       | CAN_MCR_MAXMB(pCanDevConfig->noMailboxes) /* MBs in use including
                                                                      those, whose space is
@@ -454,12 +563,12 @@ static void initCanDevice(unsigned int idxCanDevice)
     _Static_assert( CCL_XTAL_CLK == 40000000u
                   , "Configuration of CAN driver doesn't suit for the given board"
                   );
-    
+
     /* Get the bit timing controlling device parameters. The function call implements a
        table lookup for the supported Baud rates. */
     unsigned int PRESDIV
                , PROPSEG
-               , PSEG1  
+               , PSEG1
                , PSEG2;
     getBaudRateSettings(&PRESDIV, &PROPSEG, &PSEG1, &PSEG2, pCanDevConfig->baudRate);
 
@@ -468,7 +577,7 @@ static void initCanDevice(unsigned int idxCanDevice)
        If the priority is above zero, then they are enabled. */
     const bool enableERRIrq = pCanDevConfig->irqGroupError.irqPrio > 0
              , enableBOffIrq = pCanDevConfig->irqGroupBusOff.irqPrio > 0;
-    
+
     /* RM 43.5.4, p. 1795ff, and in particular Table 43-22, p. 1798f, provide the best
        explanation of the arbitration bits CTRL1[IRMQ] and CTRL2[MRP]. They control, which
        messages go into individual mailboxes and which go into the shared FIFO. Our
@@ -508,8 +617,14 @@ static void initCanDevice(unsigned int idxCanDevice)
     #undef PSEG2
 
     /* RM 43.4.14, Control 2 register, p. 1739. */
-    pCanDevice->CTRL2 = CAN_CTRL2_ERRMSK_FAST(0)    /* IRQ enable ERRINT */
+    pCanDevice->CTRL2 =
+#if defined(MCU_MPC5748G)
+                        CAN_CTRL2_ERRMSK_FAST(0)    /* IRQ enable ERRINT */
                         | CAN_CTRL2_BOFFDONEMSK(enableBOffIrq? 1: 0) /* IRQ enable BOFFDONE */
+#else
+                        CAN_CTRL2_ECRWRE(0) /* ECC register write enable: Reset value 0 */
+                        | CAN_CTRL2_WRMFRZ(1) /* Device RAM writable in freeze mode? */
+#endif
                         | CAN_CTRL2_RFFN(pCanDevConfig->CTRL2_RFFN)/* Balance between FIFO
                                                                       and MBs, 43.4.14 */
                         | CAN_CTRL2_TASD(pCanDevConfig->CTRL2_TASD)/* 43.5.9.9, start time
@@ -517,11 +632,13 @@ static void initCanDevice(unsigned int idxCanDevice)
                         | CAN_CTRL2_MRP(1)  /* 1: Consider MB before FIFO. 0: vice versa. */
                         | CAN_CTRL2_RRS(0)  /* Remote frame  handling as out of reset. */
                         | CAN_CTRL2_EACEN(0)/* Ignore RTR when matching MBs */
+#if defined(MCU_MPC5748G)
                         | CAN_CTRL2_TIMER_SRC(0)/* 0: Don't occupy a PID for time stamps. */
                         | CAN_CTRL2_PREXCEN(0)  /* 0: No protocol exception */
                         | CAN_CTRL2_ISOCANFDEN(1)   /* RM 43.5.9.1, p. 1813: Using ISO CAN
                                                        FD is strongly recommended. */
                         | CAN_CTRL2_EDFLTDIS(0) /* 0: Edge filter enabled, as out of reset */
+#endif
                         ;
 
     /* Reset CAN free running timer, which is used for time stamps on received messages. */
@@ -532,22 +649,28 @@ static void initCanDevice(unsigned int idxCanDevice)
        43.4.22, p. 1749f, CAN_RXIMRn. */
 
     /* RM 43.4.8 Error Counter, p. 1725f, reset all error counters. */
-    pCanDevice->ECR = CAN_ECR_RXERRCNT_FAST(0)
-                      | CAN_ECR_TXERRCNT_FAST(0)
-                      | CAN_ECR_RXERRCNT(0)
+    pCanDevice->ECR = CAN_ECR_RXERRCNT(0)
                       | CAN_ECR_TXERRCNT(0)
+#if defined(MCU_MPC5748G)
+                      | CAN_ECR_RXERRCNT_FAST(0)
+                      | CAN_ECR_TXERRCNT_FAST(0)
+#endif
                       ;
-
     /* The error/status word CAN_ESR1 contains some interrupt flag bits, which we reset by
        w1c. */
-    pCanDevice->ESR1 = CAN_ESR1_ERROVR_MASK
+    pCanDevice->ESR1 = 0
+#if defined(MCU_MPC5748G)
+                       | CAN_ESR1_ERROVR_MASK
                        | CAN_ESR1_ERRINT_FAST_MASK
                        | CAN_ESR1_BOFFDONEINT_MASK
+#endif
                        | CAN_ESR1_TWRNINT_MASK
                        | CAN_ESR1_RWRNINT_MASK
                        | CAN_ESR1_BOFFINT_MASK
                        | CAN_ESR1_ERRINT_MASK
+#if defined(MCU_MPC5748G)
                        | CAN_ESR1_WAKINT_MASK
+#endif
                        ;
     //pCanDevice->ESR2 is a read-only status register. (RM 43.4.15, p. 1742f.)
 
@@ -575,9 +698,12 @@ static void initCanDevice(unsigned int idxCanDevice)
        are registered for Tx or Rx. See RM 43.4.11/10/20.
          We enable all FIFO interrupts. */
     pCanDevice->IMASK1 = 0x000000e0; /* Why don't we have specific mask macros here? */
+#if defined(MCU_MPC5748G)
     pCanDevice->IMASK2 = CAN_IMASK2_BUF63TO32M(0);
     pCanDevice->IMASK3 = CAN_IMASK3_BUF95TO64M(0);
-
+#else
+    pCanDevice->IMASK2 = CAN_IMASK2_BUFHM(0);
+#endif
     /* The remaining registers are not touched for now. They relate to
        - pretended networking
        - CAN wake-up
@@ -627,12 +753,11 @@ static void initCanDevice(unsigned int idxCanDevice)
     /* Reset all normal mailboxes. Caution, this code depends on the FIFO enable and the
        chosen size of the FIFO filter table, see RM 43.4.14, table on p. 1740. */
     const unsigned int idxFirstMB = cdr_getIdxOfFirstNormalMailbox(pCanDevConfig);
-    _Static_assert(CAN_RXIMR_COUNT == 96, "Missing macro for available number of mailboxes");
     volatile cdr_mailbox_t *pMB = cdr_getMailboxByIdx(pCanDevice, idxFirstMB);
     assert(!pCanDevConfig->isFIFOEnabled
            ||  (void*)getFIFOFilterEntry(pCanDevice, noFilterTableEntries) == (void*)pMB
           );
-    for(u=idxFirstMB; u<CAN_RXIMR_COUNT; ++u, ++pMB)
+    for(u=idxFirstMB; u<CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE; ++u, ++pMB)
     {
         /* See RM 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
            1772ff, for the Rx mailbox status and command CODEs. */
@@ -685,19 +810,29 @@ void cdr_osInitCanDriver(void)
     assert(cdr_checkDriverConfiguration());
 
     /* Check helper function by sample tests. */
+#if defined(MCU_MPC5748G)
     assert((uintptr_t)getFIFOFilterEntry(CAN_0, 0) == 0xffec00e0u
            &&  (uintptr_t)getFIFOFilterEntry(CAN_0, 71) == 0xffec00e0u + 71*4
            &&  (uintptr_t)getFIFOFilterEntry(CAN_7, 71) == 0xfbecc0e0u + 71*4
           );
-
+#else
+    assert((uintptr_t)getFIFOFilterEntry(CAN_0, 0) == 0xfu
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_0, 71) == 0xf + 71*4
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_3, 71) == 0xfbu + 71*4
+          );
+#endif
     unsigned int idxCanDev;
     for(idxCanDev=0; idxCanDev<(unsigned)cdr_canDev_noCANDevicesEnabled; ++idxCanDev)
         initCanDevice(idxCanDev);
 
-#if CDR_ENABLE_USE_OF_CAN_0 == 1
+#if CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD == 1  &&  CDR_ENABLE_USE_OF_CAN_0 == 1
     /* Configure the MCU pins so that the external circuitry is connected to the MCU
        internal CAN device we've just configured. */
+# if defined(MCU_MPC5748G)
     configSIULForUseWithDEVKIT_MPC5748G();
+# else
+    configSIULForUseWithMPC5775BE_416DS();
+# endif
 #endif
 } /* End of cdr_osInitCanDriver */
 
@@ -808,10 +943,10 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
 
     CAN_Type * const pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
-    
+
     if(TxDLC > 8)
         return cdr_errApi_dlcOutOfRange;
-        
+
     if(isExtId && (canId & 0xe0000000u) != 0  ||  !isExtId && (canId & 0xfffff800u) != 0)
         return cdr_errApi_badCanId;
 
@@ -888,20 +1023,52 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                         )                                                                   \
                     )                                                                       \
                 )
+#if defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+        #define CHECK_IRQ(checkAt)                                                          \
+                (idxMB != (checkAt)                                                         \
+                 || (pDeviceConfig->irqMB##checkAt.irqPrio > 0                              \
+                     && (isReceived? pDeviceConfig->irqMB##checkAt.osCallbackOnRx           \
+                                     != NULL                                                \
+                                   : pDeviceConfig->irqMB##checkAt.osCallbackOnTx           \
+                                     != NULL                                                \
+                        )                                                                   \
+                    )                                                                       \
+                )
+#endif
         if(doNotify
-           && (!CHECK_GROUP_IRQ(0, 3)
+           && (!CHECK_GROUP_IRQ(16, 31)
+               || !CHECK_GROUP_IRQ(32, 63)
+#if defined(MCU_MPC5748G)
+               || !CHECK_GROUP_IRQ(0, 3)
                || !CHECK_GROUP_IRQ(4, 7)
                || !CHECK_GROUP_IRQ(8, 11)
                || !CHECK_GROUP_IRQ(12, 15)
-               || !CHECK_GROUP_IRQ(16, 31)
-               || !CHECK_GROUP_IRQ(32, 63)
                || !CHECK_GROUP_IRQ(64, 95)
+#else /* MPC5775B/E */
+               || !CHECK_IRQ(0)
+               || !CHECK_IRQ(1)
+               || !CHECK_IRQ(2)
+               || !CHECK_IRQ(3)
+               || !CHECK_IRQ(4)
+               || !CHECK_IRQ(5)
+               || !CHECK_IRQ(6)
+               || !CHECK_IRQ(7)
+               || !CHECK_IRQ(8)
+               || !CHECK_IRQ(9)
+               || !CHECK_IRQ(10)
+               || !CHECK_IRQ(11)
+               || !CHECK_IRQ(12)
+               || !CHECK_IRQ(13)
+               || !CHECK_IRQ(14)
+               || !CHECK_IRQ(15)
+#endif
               )
           )
         {
             return cdr_errApi_notificationWithoutIRQ;
         }
         #undef CHECK_GROUP_IRQ
+        #undef CHECK_IRQ
 
         /* Clear a possibly pending interrupt bit (RM 43.4.12/13/21, p. 1735ff) and enable
            the interrupt for the given mailbox (RM 43.4.11/10/20). */
@@ -914,8 +1081,12 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
             else
                 assert((pDevice->IMASK1 & mask) == 0);
         }
-        else if(idxMB < 64)
+        else
+#if defined(MCU_MPC5748G)
+             if(idxMB < 64)
+#endif
         {
+            assert(idxMB < 64);
             const uint32_t mask = 1u << (idxMB-32u);
             pDevice->IFLAG2 =  mask; /* Clear IRQ bit by "w1c". */
             if(doNotify)
@@ -923,6 +1094,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
             else
                 assert((pDevice->IMASK2 & mask) == 0);
         }
+#if defined(MCU_MPC5748G)
         else
         {
             assert(idxMB < 96);
@@ -933,6 +1105,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
             else
                 assert((pDevice->IMASK3 & mask) == 0);
         }
+#endif
 
         const unsigned int CODE = isReceived
                                   ? 4   /* 0, EMPTY, makes it an empty, enabled Rx mailbox */
@@ -1017,17 +1190,23 @@ static volatile cdr_mailbox_t *osPrepareSendMessage(const cdr_idMailbox_t * cons
             const uint32_t mask = 1u << idxMB;
             pDevice->IFLAG1 =  mask; /* Clear IRQ bit by "w1c". */
         }
-        else if(idxMB < 64)
+        else
+#if defined(MCU_MPC5748G)
+             if(idxMB < 64)
+#endif
         {
+            assert(idxMB < 64);
             const uint32_t mask = 1u << (idxMB-32u);
             pDevice->IFLAG2 =  mask; /* Clear IRQ bit by "w1c". */
         }
+#if defined(MCU_MPC5748G)
         else
         {
             assert(idxMB < 96);
             const uint32_t mask = 1u << (idxMB-64u);
             pDevice->IFLAG3 =  mask; /* Clear IRQ bit by "w1c". */
         }
+#endif
 
         /* Sending is possible, return mailbox for completion of operation. */
         return pTxMB;
@@ -1136,7 +1315,7 @@ cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
  *   @remark
  * This function is reentrant with respect to different addressed mailboxes. It can be
  * called from different cores. The behavior is undefined if called coincidentally from
- * different contexts but for the same mailbox. 
+ * different contexts but for the same mailbox.
  */
 cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
                                 , unsigned int hMB
@@ -1148,7 +1327,7 @@ cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
         return cdr_osSendMessage_idMB(&idMB, payload);
     else
         return cdr_errApi_handleOutOfRange;
-        
+
 } /* End of cdr_osSendMessage */
 
 
@@ -1202,7 +1381,7 @@ cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
  *   @remark
  * This function is reentrant with respect to different addressed mailboxes. It can be
  * called from different cores. The behavior is undefined if called coincidentally from
- * different contexts but for the same mailbox. 
+ * different contexts but for the same mailbox.
  */
 cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
                                   , unsigned int hMB
@@ -1215,7 +1394,7 @@ cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
     cdr_idMailbox_t idMB;
     if(!cdr_mapMailboxHandleToId(&idMB, idxCanDevice, hMB))
         return cdr_errApi_handleOutOfRange;
-        
+
     /* Check and prepare the mailbox to be used and get the pointer to it. */
     volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(&idMB);
 
@@ -1311,12 +1490,17 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
         pIFLAG = &pDevice->IFLAG1;
         IMASK = pDevice->IMASK1;
     }
-    else if(idxMB < 64)
+    else
+#if defined(MCU_MPC5748G)
+         if(idxMB < 64)
+#endif
     {
+        assert(idxMB < 64);
         irqMask = 1u << (idxMB-32u);
         pIFLAG = &pDevice->IFLAG2;
         IMASK = pDevice->IMASK2;
     }
+#if defined(MCU_MPC5748G)
     else
     {
         assert(idxMB < 96);
@@ -1324,6 +1508,7 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
         pIFLAG = &pDevice->IFLAG3;
         IMASK = pDevice->IMASK3;
     }
+#endif
 
     /* To avoid race conditions, we don't allow using this API for mailboxes, which are
        configured to send an IRQ based notification. */
@@ -1340,7 +1525,7 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
            overflow. */
         const uint32_t csWord = pRxMB->csWord
                      , CODE = (csWord & CAN_MBCS_CODE_MASK) >> CAN_MBCS_CODE_SHIFT;
-                     
+
         /* There is a little chance to access the mailbox during the move-in (likely of the
            successor message of the one, which had asserted the interrupt flag); the
            situation is recognized by a set LSB.

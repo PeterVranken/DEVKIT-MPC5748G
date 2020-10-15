@@ -856,8 +856,8 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     /* Inject some errors. */
     if((mai_cntTask1ms & 0x3ff) == 0)
     {
-//        static volatile unsigned int DATA_P2(foreignData) ATTRIB_UNUSED;
-//        foreignData = (unsigned int)mai_cntTask1ms;
+        static volatile unsigned int DATA_P2(foreignData) ATTRIB_UNUSED;
+        foreignData = (unsigned int)mai_cntTask1ms;
     }
     if((mai_cntTask1ms & 0x7ff) == 1)
     {
@@ -881,6 +881,61 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
         assert(false);
     }
 
+    /* Demonstrate the use of the diagnostic API. Print status information every few
+       seconds. */
+    if((mai_cntTask1ms & 0xfff) == 2)
+    {
+        /* Info from interrupt group bus off. */
+        const unsigned int noBusOffEv = cdr_getNoBusOffEvents(cdr_canDev_CAN_0);
+        if(noBusOffEv > 0)
+            printf("task1ms: Total number of bus off events so far: %u\r\n", noBusOffEv);
+                  
+        /* Info from interrupt group FIFO. */
+        const unsigned int warnFifoNearlyFull = cdr_getNoRxFifoEvents
+                                                    ( cdr_canDev_CAN_0
+                                                    , cdr_rxEv_warningNearlyFull
+                                                    )
+                         , errFifoOverflow = cdr_getNoRxFifoEvents
+                                                    ( cdr_canDev_CAN_0
+                                                    , cdr_rxEv_errorOverflow
+                                                    )
+                         , noRxFifo = cdr_getNoRxFifoEvents
+                                                    ( cdr_canDev_CAN_0
+                                                    , cdr_rxEv_reception
+                                                    );
+        printf( "task1ms: Total number of\r\n"
+                "  Rx FIFO messages:  %u\r\n"
+                "  FIFO nearly full:  %u\r\n"
+                "  FIFO message lost: %u\r\n"
+              , noRxFifo
+              , warnFifoNearlyFull
+              , errFifoOverflow
+              );
+
+        /* Info from interrupt group Error. */
+        const unsigned int noErrorEv = cdr_getNoErrorEvents(cdr_canDev_CAN_0);
+        const uint16_t lastErr = cdr_getLastTransmissionError(cdr_canDev_CAN_0);
+        if(noErrorEv > 0)
+        {
+            printf("task1ms: Total number of transmission errors: %u\r\n", noErrorEv);
+            printf( "task1ms: Last error: %u\r\n"
+                    "BIT1ERR: %u\r\n"
+                    "BIT0ERR: %u\r\n"
+                    "ACKERR: %u\r\n"
+                    "CRCERR: %u\r\n"
+                    "FRMERR: %u\r\n"
+                    "STFERR: %u\r\n"
+                  , lastErr
+                  , (lastErr & CAN_ESR1_BIT1ERR_MASK) != 0
+                  , (lastErr & CAN_ESR1_BIT0ERR_MASK) != 0
+                  , (lastErr & CAN_ESR1_ACKERR_MASK) != 0
+                  , (lastErr & CAN_ESR1_CRCERR_MASK) != 0
+                  , (lastErr & CAN_ESR1_FRMERR_MASK) != 0
+                  , (lastErr & CAN_ESR1_STFERR_MASK) != 0
+                  );
+        }
+    }
+    
     return 0;
 
 } /* End of task1ms */

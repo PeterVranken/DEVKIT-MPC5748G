@@ -69,7 +69,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "MPC5748G.h"
+#include "cde_canDriver.config.MCUDerivative.h"
 #include "cdr_canDriver.config.inc"
 #include "cdr_canDriver.h"
 
@@ -176,6 +176,24 @@ typedef struct cdr_apiBufferRxPolling_t
 } cdr_apiBufferRxPolling_t;
 
 
+/** Used as argument for function cdr_getNoRxFifoEvents(): The total counts of occurances
+    of different events can be queried. All events are related to the Rx FIFO reception
+    process. */
+typedef enum cdr_kindOfRxFifoEvent_t
+{
+    /** FIFO event: Warning because of a nearly full queue. There's a risk of loosing a
+        message. */
+    cdr_rxEv_warningNearlyFull,
+    
+    /** FIFO event: Lost message due to overfull queue. */
+    cdr_rxEv_errorOverflow,
+    
+    /** FIFO event: Messages received via the Rx FIFO (as opposed to reception in normal
+        mailbox). */
+    cdr_rxEv_reception,
+    
+} cdr_kindOfRxFifoEvent_t;
+
 
 /*
  * Global data declarations
@@ -200,13 +218,13 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                            , bool doNotify
                                            );
 
-/* Send a single Tx message from a reserved mailbox with pre-configured ID and DLC. */
+/** Send a single Tx message from a reserved mailbox with pre-configured ID and DLC. */
 cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
                                 , unsigned int hMB
                                 , const uint8_t payload[]
                                 );
 
-/* Send a single Tx message from a reserved mailbox with variable ID and DLC. */
+/** Send a single Tx message from a reserved mailbox with variable ID and DLC. */
 cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
                                   , unsigned int hMB
                                   , bool isExtId
@@ -215,7 +233,7 @@ cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
                                   , const uint8_t payload[]
                                   );
 
-/* Rx polling API. Check if a message has been received and get it. */
+/** Rx polling API. Check if a message has been received and get it. */
 cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
                                 , unsigned int hMB
                                 , uint8_t * const pDLC
@@ -223,10 +241,30 @@ cdr_errorAPI_t cdr_osReadMessage( unsigned int idxCanDevice
                                 , uint16_t * const pTimeStamp
                                 );
                                 
-/* Get the API buffer for a particular Rx mailbox, which is used by polling. */
+/** Get the API buffer for a particular Rx mailbox, which is used by polling. */
 const cdr_apiBufferRxPolling_t *cdr_getRxPollingAPIBuffer( unsigned int idxCanDevice
                                                          , unsigned int hMB
                                                          );
+
+#ifdef MCU_MPC5748G
+/** Get the current bus off state for the given CAN device. */
+bool cdr_getIsBusOff(unsigned int idxCanDevice);
+#endif
+
+/** Get the number of recorded bus off events for the given CAN device. */
+unsigned int cdr_getNoBusOffEvents(unsigned int idxCanDevice);
+
+/** Get the number of Rx FIFO events recorded for the given CAN device. */
+unsigned int cdr_getNoRxFifoEvents( unsigned int idxCanDevice
+                                  , cdr_kindOfRxFifoEvent_t kindOfEvent
+                                  );
+
+/** Get the number of recorded transmission errors for the given CAN device. */
+unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice);
+
+/** Get the last recently reported CAN transmission error. */
+uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice);
+
 
 /*
  * Global inline functions

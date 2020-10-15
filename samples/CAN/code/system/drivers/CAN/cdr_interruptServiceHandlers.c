@@ -39,6 +39,7 @@
  *   isrRxFIFOFramesAvailable
  *   ISR_GROUP_RX_FIFO (macro to produce FIFO group ISR)
  *   isrMailbox
+ *   ISR_MAILBOX (macro to produce mailbox ISR)
  *   ISR_GROUP_MAILBOX (macro to produce mailbox group ISRs)
  */
 
@@ -52,12 +53,11 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "MPC5748G.h"
-#include "cdr_MPC5748G_CAN.h"
-
+#include "cde_canDriver.config.MCUDerivative.h"
 #include "rtos.h"
 #include "cdr_searchIFlag.h"
 #include "cdr_canDriverAPI.h"
+#include "cdr_interruptServiceHandlers_mcuMacros.h"
 #include "cdr_interruptServiceHandlers.h"
 
 
@@ -132,7 +132,11 @@ static void isrError( CAN_Type * const pDevice
        status and error bits. Acknowledge the IRQ by w1c.
          Note, this doesn't affect the status and error bits. These had already been
        negated by the read of the ESR1. */
-    pDevice->ESR1 = CAN_ESR1_ERRINT_MASK | CAN_ESR1_ERROVR_MASK; /* Clear bits by "w1c" */
+    pDevice->ESR1 = CAN_ESR1_ERRINT_MASK    /* Clear bit by "w1c" */
+#if defined(MCU_MPC5748G)
+                    | CAN_ESR1_ERROVR_MASK  /* Clear bit by "w1c" */
+#endif
+                    ;
 
     /* Do a notification of the client code if configured. */
     if(osCallbackOnErr != NULL)
@@ -165,8 +169,9 @@ static void isrGroupError_##canDev(void)                                        
                 , ESR1                                                                     \
                 );                                                                         \
     }                                                                                      \
-    else if((ESR1 & CAN_ESR1_ERRINT_FAST_MASK) != 0)                                       \
-        assert(false); /* FD not supported, ISR not implemented. */                        \
+    /* MPC5748G: FD not supported, ISR not implemented. MPC5775B/E: FD not available */    \
+    /* else if((ESR1 & CAN_ESR1_ERRINT_FAST_MASK) != 0) */                                 \
+    /*     assert(false);                               */                                 \
     else                                                                                   \
         assert(false);                                                                     \
                                                                                            \
@@ -202,13 +207,19 @@ static void isrBusOff( CAN_Type * const pDevice
                      , uint32_t ESR1
                      )
 {
+#ifndef MCU_MPC5748G
+
+    assert((ESR1 & CAN_ESR1_BOFFINT_MASK) != 0);
+
+#else /* MPC5748G offers bus off done IRQ */
+
     assert((ESR1 & (CAN_ESR1_BOFFINT_MASK | CAN_ESR1_BOFFDONEINT_MASK)) != 0);
 
     if((ESR1 & CAN_ESR1_BOFFINT_MASK) != 0)
     {
         /* This IRQ notifies entering the bus off state. */
         pDeviceData->isBusOff = true;
-
+#endif
         /* We record the situation in a global counter. */
         const unsigned int noErr = pDeviceData->noBusOffEvents+1;
         if(noErr != 0)
@@ -221,6 +232,7 @@ static void isrBusOff( CAN_Type * const pDevice
              Note, this doesn't affect the status and error bits. These had already been
            negated by the read of the ESR1. */
         pDevice->ESR1 = CAN_ESR1_BOFFINT_MASK; /* Clear bits by "w1c" */
+#ifdef MCU_MPC5748G
     }
     else
     {
@@ -237,14 +249,30 @@ static void isrBusOff( CAN_Type * const pDevice
         pDevice->ESR1 = CAN_ESR1_BOFFDONEINT_MASK; /* Clear bits by "w1c" */
 
     } /* End if(Enter or leave bus-off state?) */
+#endif
 
     /* Do a notification of the client code if configured. */
     if(osCallbackOnBusOff != NULL)
+    {
+#ifdef MCU_MPC5748G
         osCallbackOnBusOff(/* enteringBusOff */ pDeviceData->isBusOff, ESR1);
-
+#else
+        osCallbackOnBusOff(/* enteringBusOff */ true, ESR1);
+#endif
+    }
 } /* End of isrBusOff */
 
 
+
+/* Sub-expression for generic implementation of ISR for interrut group bus off, which is
+   required to support different MCU derivatives. */
+#if defined(MCU_MPC5748G)
+# define BOFFINT_MASK   (CAN_ESR1_BOFFINT_MASK | CAN_ESR1_BOFFDONEINT_MASK)
+#elif defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+# define BOFFINT_MASK   (CAN_ESR1_BOFFINT_MASK)
+#else
+# error Implementation does not support selected MCU derivative
+#endif
 
 
 #define ISR_GROUP_BUS_OFF(canDev)                                                            \
@@ -261,7 +289,7 @@ static void isrGroupBusOff_##canDev(void)                                       
     /* the interrupt flags and the over overflow bit) are reset by this read. */             \
     const uint32_t ESR1 = pDevice->ESR1;                                                     \
                                                                                              \
-    if((ESR1 & (CAN_ESR1_BOFFINT_MASK | CAN_ESR1_BOFFDONEINT_MASK)) != 0)                    \
+    if((ESR1 & BOFFINT_MASK) != 0)                                                           \
     {                                                                                        \
         isrBusOff( pDevice                                                                   \
                  , &cdr_canDriverData[cdr_canDev_##canDev]                                   \
@@ -420,7 +448,8 @@ static void isrRxFIFOFramesAvailable( CAN_Type * const pDevice
 
 
 
-#define ISR_GROUP_RX_FIFO(canDev)                                                           \
+#if defined(MCU_MPC5748G)
+# define ISR_GROUP_RX_FIFO(canDev)                                                          \
 /**                                                                                         \
  * Common ISR for all of the Rx FIFO interrupts. It looks for the causing IRQ and branches  \
  * in the dedicated handler. Interrupt acknowledge needs to be done in the dedicated        \
@@ -445,6 +474,49 @@ static void isrGroupRxFIFO_##canDev(void)                                       
         assert(false);                                                                      \
                                                                                             \
 } /* End of isrGroupRxFIFO_##canDev */
+
+#else /* MPC5775B/E */
+
+# define ISR_GROUP_RX_FIFO(canDev)                                                          \
+/**                                                                                         \
+ * ISR for the Rx FIFO on-reception interrupt. It loads some context information and        \
+ * branches into the shared implementation of the dedicated handler. Interrupt acknowledge  \
+ * needs to be done in the dedicated handler.                                               \
+ */                                                                                         \
+static void isrRxFIFORx_##canDev(void)                                                      \
+{                                                                                           \
+    isrRxFIFOFramesAvailable                                                                \
+                ( (canDev)                                                                  \
+                , &cdr_canDriverData[cdr_canDev_##canDev]                                   \
+                , cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupFIFO.osCallbackOnRx      \
+                );                                                                          \
+} /* End of isrRxFIFORx_##canDev */                                                         \
+                                                                                            \
+                                                                                            \
+/**                                                                                         \
+ * ISR for the Rx FIFO warning interrupt. It loads some context information and branches    \
+ * into the shared implementation of the dedicated handler. Interrupt acknowledge needs to  \
+ * be done in the dedicated handler.                                                        \
+ */                                                                                         \
+static void isrRxFIFOWarning_##canDev(void)                                                 \
+{                                                                                           \
+    isrRxFIFOWarning((canDev), &cdr_canDriverData[cdr_canDev_##canDev]);                    \
+                                                                                            \
+} /* End of isrRxFIFOWarning_##canDev */                                                    \
+                                                                                            \
+                                                                                            \
+/**                                                                                         \
+ * ISR for the Rx FIFO overflow interrupt. It loads some context information and branches   \
+ * into the shared implementation of the dedicated handler. Interrupt acknowledge needs to  \
+ * be done in the dedicated handler.                                                        \
+ */                                                                                         \
+static void isrRxFIFOOverflow_##canDev(void)                                                \
+{                                                                                           \
+    isrRxFIFOOverflow((canDev), &cdr_canDriverData[cdr_canDev_##canDev]);                   \
+                                                                                            \
+} /* End of isrRxFIFOOverflow_##canDev */
+
+#endif /* Which MCU derivative */
 
 
 
@@ -590,11 +662,50 @@ static void isrMailbox( CAN_Type * const pDevice
 
 
 
+#if defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+# define ISR_MAILBOX(canDev, idxMB)                                                         \
+/**                                                                                         \
+ * Common ISR for the mailbox interrupts of mailbox idxMB. It branches in the common        \
+ * mailbox interrupt handler implementation with the information about which CAN device and \
+ * which mailbox caused the request. Interrupt acknowledge needs to be done in the common   \
+ * mailbox handler. Splitting this ISR from the common implementation of mailbox processing \
+ * avoids code duplication for all mailbox interrupts.                                      \
+ */                                                                                         \
+static void isrMB##idxMB##_##canDev(void)                                                   \
+{                                                                                           \
+    _Static_assert( (idxMB) >= 0  &&  (idxMB) <= 15                                         \
+                    &&  cdr_canDev_##canDev < sizeOfAry(cdr_canDriverConfig)                \
+                  , "Bad arguments passed to macro ISR_MAILBOX to generate mailbox ISR"     \
+                  );                                                                        \
+                                                                                            \
+    const cdr_canDeviceConfig_t * const pDeviceConfig =                                     \
+                                        &cdr_canDriverConfig[cdr_canDev_##canDev];          \
+                                                                                            \
+    /* The index of the mailbox in the device and the mailbox handle are related by a */    \
+    /* non-zero offset if the FIFO is enabled. Needed for client notification. */           \
+    const unsigned int MBHdlMinusIdx = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig);   \
+                                                                                            \
+    /* Here, we know very well, which device and interrupt we are. We know, which           \
+       interrupt flag register to use with which mask. */                                   \
+    volatile uint32_t * const pIFLAG = &canDev->IFLAG1;                                     \
+    isrMailbox( canDev                                                                      \
+              , pIFLAG                                                                      \
+              , /* irqMask */ 1u<<idxMB                                                     \
+              , idxMB                                                                       \
+              , MBHdlMinusIdx                                                               \
+              , &pDeviceConfig->irqMB##idxMB                                                \
+              );                                                                            \
+} /* End of isrMB##idxMB##_##canDev */
+
+#endif /* MPC5775B/E only */
+
+
+
 #define ISR_GROUP_MAILBOX(canDev, idxIFLAG, idxFrom, idxTo, sizeGrpAsPow2)                  \
 /**                                                                                         \
  * Common ISR for the mailbox interrupts of mailboxes idxFrom till and including idxTo. It  \
  * branches in the common mailbox interrupt handler implementation with the information     \
- * about which CAN device and which mailbox group caused the reset. Interrupt acknowledge   \
+ * about which CAN device and which mailbox group caused the request. Interrupt acknowledge \
  * needs to be done in the common mailbox handler. Splitting this ISR from the common       \
  * implementation of mailbox processing avoids code duplication for all mailbox interrupts. \
  */                                                                                         \
@@ -632,15 +743,15 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
                     , * const pIMASK = pIFLAG-2;                                            \
     const unsigned int shiftGrpInIFLAG = (idxFrom)-32u*((idxIFLAG)-1u);                     \
     const uint32_t maskedIFLAGRightAligned = (*pIFLAG & *pIMASK) >> shiftGrpInIFLAG;        \
-    const unsigned int idxIFlag = cdr_findAssertedBitInWord( maskedIFLAGRightAligned        \
-                                                           , sizeGrpAsPow2                  \
-                                                           )                                \
-                                  + shiftGrpInIFLAG;                                        \
-    assert(idxIFlag - shiftGrpInIFLAG <= (idxTo)-(idxFrom)+1);                              \
+    const unsigned int idxIrqInIFLAG = cdr_findAssertedBitInWord( maskedIFLAGRightAligned   \
+                                                                , sizeGrpAsPow2             \
+                                                                )                           \
+                                       + shiftGrpInIFLAG;                                   \
+    assert(idxIrqInIFLAG - shiftGrpInIFLAG <= (idxTo)-(idxFrom)+1);                         \
     isrMailbox( canDev                                                                      \
               , pIFLAG                                                                      \
-              , /* irqMask */ 1u<<idxIFlag                                                  \
-              , /* idxMB */ idxIFlag + 32u*((idxIFLAG)-1u)                                  \
+              , /* irqMask */ 1u<<idxIrqInIFLAG                                             \
+              , /* idxMB */ idxIrqInIFLAG + 32u*((idxIFLAG)-1u)                             \
               , MBHdlMinusIdx                                                               \
               , &pDeviceConfig->irqGroupMB##idxFrom##_##idxTo                               \
               );                                                                            \
@@ -650,46 +761,33 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
 
 /* We need the ISRs for each device separately. This is done easiest by making the set of
    ISRs for a single device a define, which is then repeatedly applied. */
-#define SET_OF_DEVICE_ISRS(idxCanDev)                                                       \
-ISR_GROUP_RX_FIFO(CAN_##idxCanDev)                                                          \
-ISR_GROUP_ERROR(CAN_##idxCanDev)                                                            \
-ISR_GROUP_BUS_OFF(CAN_##idxCanDev)                                                          \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 0, /* idxTo */ 3, 2)     \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 4, /* idxTo */ 7, 2)     \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 8, /* idxTo */ 11, 2)    \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 12, /* idxTo */ 15, 2)   \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 1, /* idxFrom */ 16, /* idxTo */ 31, 4)   \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 2, /* idxFrom */ 32, /* idxTo */ 63, 5)   \
-ISR_GROUP_MAILBOX(CAN_##idxCanDev, /* idxIFLAG */ 3, /* idxFrom */ 64, /* idxTo */ 95, 5)
-
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 0)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 0)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_1 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 1)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 1)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_2 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 2)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 2)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_3 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 3)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 3)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_4 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 4)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 4)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_5 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 5)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 5)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_6 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 6)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 6)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_7 == 1
-SET_OF_DEVICE_ISRS(/* idxCanDev */ 7)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 7)
 #endif
 
 #undef ISR_GROUP_RX_FIFO
 #undef ISR_GROUP_MAILBOX
-#undef SET_OF_DEVICE_ISRS
 
 
 
@@ -707,81 +805,41 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
     assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
 
-    /** Helper macro to maintian readability of initializer expression of next data object,
-        a constant table of interrupt handlers. */
-    #define SET_OF_CAN_ISRS(canDev)                 \
-    { .isrGroupFIFO = isrGroupRxFIFO_##canDev,      \
-      .isrGroupError = isrGroupError_##canDev,      \
-      .isrGroupBusOff = isrGroupBusOff_##canDev,    \
-      .isrGroupMB0_3 = isrGroupMB0_3_##canDev,      \
-      .isrGroupMB4_7 = isrGroupMB4_7_##canDev,      \
-      .isrGroupMB8_11 = isrGroupMB8_11_##canDev,    \
-      .isrGroupMB12_15 = isrGroupMB12_15_##canDev,  \
-      .isrGroupMB16_31 = isrGroupMB16_31_##canDev,  \
-      .isrGroupMB32_63 = isrGroupMB32_63_##canDev,  \
-      .isrGroupMB64_95 = isrGroupMB64_95_##canDev,  \
-    },
-
     /** This is a table, which holds pointers to all required ISRs. It is just needed to have a
         function that registers these interrupts. The alternative would be a long list of
         dedicated calls of the register-function. Either solutions won't make a significant
         difference in terms of ROM consumption. */
-    static const struct setOfCanISRs_t
+    static const cdr_setOfCanDeviceISRs_t mapDevIdxToISRGroup_[cdr_canDev_noCANDevicesEnabled]=
     {
-        void (*isrGroupFIFO)(void);   /** Hdlr for all Rx FIFO related interrupts. */
-        void (*isrGroupError)(void);  /** Hdlr for all interrupts ERRINT and ERRINT_FAST. */
-        void (*isrGroupBusOff)(void); /** Hdlr for all Bus off and warning interrupts. */
-        void (*isrGroupMB0_3)(void);  /** Hdlr for all Rc/Tx interrupts of mailboxes 0..3. */
-        void (*isrGroupMB4_7)(void);  /** Hdlr for all Rc/Tx interrupts of mailboxes 4..7. */
-        void (*isrGroupMB8_11)(void); /** Hdlr for all Rc/Tx interrupts of mailboxes 8..11. */
-        void (*isrGroupMB12_15)(void);/** Hdlr for all Rc/Tx interrupts of mailboxes 12..15. */
-        void (*isrGroupMB16_31)(void);/** Hdlr for all Rc/Tx interrupts of mailboxes 16..31. */
-        void (*isrGroupMB32_63)(void);/** Hdlr for all Rc/Tx interrupts of mailboxes 32..63. */
-        void (*isrGroupMB64_95)(void);/** Hdlr for all Rc/Tx interrupts of mailboxes 64..95. */
-
-    } mapDevIdxToISRGroup_[cdr_canDev_noCANDevicesEnabled] =
-        {
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
-            SET_OF_CAN_ISRS(CAN_0)
+        SET_OF_DEVICE_ISRS(CAN_0)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_1 == 1
-            SET_OF_CAN_ISRS(CAN_1)
+        SET_OF_DEVICE_ISRS(CAN_1)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_2 == 1
-            SET_OF_CAN_ISRS(CAN_2)
+        SET_OF_DEVICE_ISRS(CAN_2)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_3 == 1
-            SET_OF_CAN_ISRS(CAN_3)
+        SET_OF_DEVICE_ISRS(CAN_3)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_4 == 1
-            SET_OF_CAN_ISRS(CAN_4)
+        SET_OF_DEVICE_ISRS(CAN_4)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_5 == 1
-            SET_OF_CAN_ISRS(CAN_5)
+        SET_OF_DEVICE_ISRS(CAN_5)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_6 == 1
-            SET_OF_CAN_ISRS(CAN_6)
+        SET_OF_DEVICE_ISRS(CAN_6)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_7 == 1
-            SET_OF_CAN_ISRS(CAN_7)
+        SET_OF_DEVICE_ISRS(CAN_7)
 #endif
     };
-    #undef SET_OF_CAN_ISRS
 
-    /* Interrupt offsets are taken from MCU reference manual, see 23.1.2 INTC interrupt
-       sources, p. 523ff, Table 23-1.
-         The interrupts are regularly defined, therefore we can compute the wanted
-       number. The only exception is the very first IRQ, related to pretended network,
-       which is available only in device CAN_0. */
-    #define IDX_IRQ_CAN_FIFO(idxDev)                    (IDX_IRQ_CAN_MB(idxDev, /* idxMB */ 5))
-    #define IDX_IRQ_CAN_ERROR(idxDev)                   (CAN0_Error_IRQn + 12*(idxDev))
-    #define IDX_IRQ_CAN_BOFF_OR_TX_WARN(idxDev)         (CAN0_ORed_IRQn + 12*(idxDev))
-    #define IDX_IRQ_CAN_MB(idxDev, idxMB)                                                     \
-                            (CAN0_ORed_00_03_MB_IRQn + 12u*(idxDev)                           \
-                             + ((idxMB)<16u? (idxMB)/4u: ((idxMB)<32u? 4u: (idxMB-32)/32u+5u))\
-                            )
 
-    /* A few sample tests. */
+    /* A few sample tests of macros for computation of IRQ numbers. */
+#if defined(MCU_MPC5748G)
     _Static_assert( IDX_IRQ_CAN_ERROR(0) == CAN0_Error_IRQn
                     &&  IDX_IRQ_CAN_ERROR(7) == CAN7_Error_IRQn
                     &&  IDX_IRQ_CAN_BOFF_OR_TX_WARN(1) == CAN1_ORed_IRQn
@@ -811,6 +869,16 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
                     &&  IDX_IRQ_CAN_FIFO(7) == IDX_IRQ_CAN_MB(7, 7)
                   , "Test of computation of IRQ vector numbers failed"
                   );
+#else /* MPC5775B/E */
+    _Static_assert( IDX_IRQ_CAN_ERROR(0) == CAN0_ESR2_IRQn
+                    &&  IDX_IRQ_CAN_ERROR(3) == CAN3_ESR2_IRQn
+                    &&  IDX_IRQ_CAN_BOFF_OR_TX_WARN(0) == CAN0_ESR1_IRQn
+                    &&  IDX_IRQ_CAN_FIFO_RX(1) == CAN1_BUF5_IRQn
+                    &&  IDX_IRQ_CAN_FIFO_WARN(2) == CAN2_BUF6_IRQn
+                    &&  IDX_IRQ_CAN_FIFO_FULL(3) == CAN3_BUF7_IRQn
+                  , "Test of computation of IRQ vector numbers failed"
+                  );
+#endif
 
     /* Register our IRQ handlers. */
     assert(idxCanDevice < sizeOfAry(mapDevIdxToISRGroup_));
@@ -839,6 +907,8 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
     if(pDeviceConfig->isFIFOEnabled)
     {
         /* Register the FIFO interrupts. */
+#if defined(MCU_MPC5748G)
+        /* The MPC5748G has one interrupt for all Rx FIFO events. */
         rtos_osRegisterInterruptHandler
                 ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupFIFO
                 , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
@@ -846,13 +916,41 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
                 , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
                 , /* isPreemptable */ true
                 );
+#else /* MPC5775B/E */
+        /* The MPC5775B/E have three distinct interrupts for the Rx FIFO events.
+           Regardless, there's only one related configuration item: All the three events
+           are handled by the same core on same priority level. */
+        rtos_osRegisterInterruptHandler
+                ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrFIFORx
+                , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO_RX(idxCanDevice)
+                , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
+                , /* isPreemptable */ true
+                );
+        rtos_osRegisterInterruptHandler
+                ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrFIFOWarning
+                , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO_WARN(idxCanDevice)
+                , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
+                , /* isPreemptable */ true
+                );
+        rtos_osRegisterInterruptHandler
+                ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrFIFOOverflow
+                , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO_FULL(idxCanDevice)
+                , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
+                , /* isPreemptable */ true
+                );
+#endif
     }
 
     /* With enabled FIFO, the first mailboxes are not in normal operation and we must
        not register their interrupts. */
     const unsigned int idxFirstNormalMailbox = cdr_getIdxOfFirstNormalMailbox(pDeviceConfig);
-    #define REGISTER_ISR(idxFrom, idxTo)                                                    \
-    if(idxFirstNormalMailbox <= (idxTo))                                                    \
+    #define REGISTER_ISR_MB_GROUP(idxFrom, idxTo)                                           \
+    if(idxFirstNormalMailbox <= (idxTo)                                                     \
+       &&  pDeviceConfig->irqGroupMB##idxFrom##_##idxTo.irqPrio > 0                         \
+      )                                                                                     \
     {                                                                                       \
         rtos_osRegisterInterruptHandler                                                     \
             ( /* ISR */ mapDevIdxToISRGroup_[idxCanDevice].isrGroupMB##idxFrom##_##idxTo    \
@@ -862,19 +960,50 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
             , /* isPreemptable */ true                                                      \
             );                                                                              \
     }
-    REGISTER_ISR(/* idxFrom */ 0, /* idxTo */ 3)
-    REGISTER_ISR(/* idxFrom */ 4, /* idxTo */ 7)
-    REGISTER_ISR(/* idxFrom */ 8, /* idxTo */ 11)
-    REGISTER_ISR(/* idxFrom */ 12, /* idxTo */ 15)
-    REGISTER_ISR(/* idxFrom */ 16, /* idxTo */ 31)
-    REGISTER_ISR(/* idxFrom */ 32, /* idxTo */ 63)
-    REGISTER_ISR(/* idxFrom */ 64, /* idxTo */ 95)
-    #undef REGISTER_ISR
+#if defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+    #define REGISTER_ISR_MB(idxMB)                                                          \
+    if(idxFirstNormalMailbox <= (idxMB)  &&  pDeviceConfig->irqMB##idxMB.irqPrio > 0)       \
+    {                                                                                       \
+        rtos_osRegisterInterruptHandler                                                     \
+            ( /* ISR */ mapDevIdxToISRGroup_[idxCanDevice].isrMB##idxMB                     \
+            , /* processorID */ pDeviceConfig->irqMB##idxMB.idxTargetCore                   \
+            , /* vectorNum */ IDX_IRQ_CAN_MB(idxCanDevice, (idxMB))                         \
+            , /* psrPriority */ pDeviceConfig->irqMB##idxMB.irqPrio                         \
+            , /* isPreemptable */ true                                                      \
+            );                                                                              \
+    }
+#endif
 
-    #undef IDX_IRQ_CAN_FIFO
-    #undef IDX_IRQ_CAN_ERROR
-    #undef IDX_IRQ_CAN_BOFF_OR_TX_WARN
-    #undef IDX_IRQ_CAN_MB
+#if defined(MCU_MPC5748G)
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 0, /* idxTo */ 3)
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 4, /* idxTo */ 7)
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 8, /* idxTo */ 11)
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 12, /* idxTo */ 15)
+#else /* MPC5775B/E */
+    REGISTER_ISR_MB(/* idxMB */ 0)
+    REGISTER_ISR_MB(/* idxMB */ 1)
+    REGISTER_ISR_MB(/* idxMB */ 2)
+    REGISTER_ISR_MB(/* idxMB */ 3)
+    REGISTER_ISR_MB(/* idxMB */ 4)
+    REGISTER_ISR_MB(/* idxMB */ 5)
+    REGISTER_ISR_MB(/* idxMB */ 6)
+    REGISTER_ISR_MB(/* idxMB */ 7)
+    REGISTER_ISR_MB(/* idxMB */ 8)
+    REGISTER_ISR_MB(/* idxMB */ 9)
+    REGISTER_ISR_MB(/* idxMB */ 10)
+    REGISTER_ISR_MB(/* idxMB */ 11)
+    REGISTER_ISR_MB(/* idxMB */ 12)
+    REGISTER_ISR_MB(/* idxMB */ 13)
+    REGISTER_ISR_MB(/* idxMB */ 14)
+    REGISTER_ISR_MB(/* idxMB */ 15)
+    #undef REGISTER_ISR_MB
+#endif
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 16, /* idxTo */ 31)
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 32, /* idxTo */ 63)
+#if defined(MCU_MPC5748G)
+    REGISTER_ISR_MB_GROUP(/* idxFrom */ 64, /* idxTo */ 95)
+#endif
+    #undef REGISTER_ISR_MB_GROUP
 } /* End of cdr_osRegisterInterrupts */
 
 

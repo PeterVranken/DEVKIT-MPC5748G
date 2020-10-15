@@ -39,18 +39,19 @@
  * Defines
  */
 
-/** The MCU has 8 CAN devices. Each of them can be enabled/disabled at compile-time. Here,
-    enabling dosn't mean any execution of initialization code, it just relates to enabling
-    the compilation of the code and data structures needed to support the given device.\n
+/** The MCU MPC5748G has eight CAN devices, MPC5775B/E has four. Each of them can be
+    enabled/disabled at compile-time. Here, enabling doesn't mean any execution of
+    initialization code, it just relates to enabling the compilation of the code and data
+    structures needed to support the given device.\n
       Here for CAN device 0: Compile the code to support CAN device CAN_0? */
 #define CDR_ENABLE_USE_OF_CAN_0     0
 #define CDR_ENABLE_USE_OF_CAN_1     0 /** Compile the code to support CAN device CAN_1? */
 #define CDR_ENABLE_USE_OF_CAN_2     0 /** Compile the code to support CAN device CAN_2? */
 #define CDR_ENABLE_USE_OF_CAN_3     0 /** Compile the code to support CAN device CAN_3? */
-#define CDR_ENABLE_USE_OF_CAN_4     0 /** Compile the code to support CAN device CAN_4? */
-#define CDR_ENABLE_USE_OF_CAN_5     0 /** Compile the code to support CAN device CAN_5? */
-#define CDR_ENABLE_USE_OF_CAN_6     0 /** Compile the code to support CAN device CAN_6? */
-#define CDR_ENABLE_USE_OF_CAN_7     0 /** Compile the code to support CAN device CAN_7? */
+#define CDR_ENABLE_USE_OF_CAN_4     0 /** MPC5748G only: Compile code for CAN device CAN_4? */
+#define CDR_ENABLE_USE_OF_CAN_5     0 /** MPC5748G only: Compile code for CAN device CAN_5? */
+#define CDR_ENABLE_USE_OF_CAN_6     0 /** MPC5748G only: Compile code for CAN device CAN_6? */
+#define CDR_ENABLE_USE_OF_CAN_7     0 /** MPC5748G only: Compile code for CAN device CAN_7? */
 
 
 /** The Rx polling API for user code requires some attention drawn to memory allocation.
@@ -81,6 +82,14 @@
 #define CDR_NO_RX_USER_CODE_POLLING_MAILBOXES   10
 
 
+/** For the evaluation boards DEVKIT-MPC5748G and MPC5775BE-416DS, the driver can configure
+    the MCU pins, which are routed to the CAN connector mounted on these boards. This is an
+    option only and it must not be used if the CAN I/O driver is run on another board.\n
+      On either board, the CAN connector can only be used with CAN device 0. This device
+    needs to be enabled. */
+#define CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD      1
+
+
 /*
  * Global type definitions
  */
@@ -89,8 +98,6 @@
    space, several elements are defined conditionally depending on the previously made
    selection of enabled CAN devices. */
 #include "cdr_canDriver.config.h"
-
-
 
 
 /*
@@ -124,9 +131,10 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             different processable CAN IDs with the need for a SW queue concept. */
         .isFIFOEnabled = true,
 
-        /** The number of active mailboxes. Range is 0..96 if \a isFIFOEnabled is \a false
-            and 6 .. 96 otherwise. */
-        .noMailboxes = 96,
+        /** The number of active mailboxes. Range is 0 ..
+            #CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE if \a isFIFOEnabled is \a false and 6 ..
+            #CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE otherwise. */
+        .noMailboxes = CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE,
 
         /** This setting controls the partitioning of the mailbox RAM space of the CAN
             device between FIFO (plus CAN ID filter table) and normal mailboxes.\n
@@ -174,8 +182,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupError =
         {
             .idxTargetCore     = RTOS_CORE_Z4A,
-            .irqPrio           = 6,
-            .osCallbackOnError = mza_osCbOnCanError,
+            .irqPrio           = 0,
+            .osCallbackOnError = NULL,
             .osCallbackOnTx    = NULL,   /* Not applicable, needs to be NULL. */
         },   
         
@@ -183,8 +191,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupBusOff =
         {
             .idxTargetCore      = RTOS_CORE_Z4A,
-            .irqPrio            = 7,
-            .osCallbackOnBusOff = mza_osCbOnCanBusOff,
+            .irqPrio            = 0,
+            .osCallbackOnBusOff = NULL,
             .osCallbackOnTx     = NULL,   /* Not applicable, needs to be NULL. */
         },   
         
@@ -192,11 +200,12 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupFIFO =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 5,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
         },
         
+#if defined(MCU_MPC5748G)
         /** IRQ configuration, IRQs of mailboxes 0..3. This interrupt group is not
             available for our configuration: FIFO on, with 72 entries in the filter table
             (CTRL2_RFFN = 8). */
@@ -240,13 +249,159 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         }, 
+#elif defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+        
+        /** IRQ configuration, IRQ of mailbox 0. */
+        .irqMB0 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 1. */
+        .irqMB1 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 2. */
+        .irqMB2 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 3. */
+        .irqMB3 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 4. */
+        .irqMB4 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 5. */
+        .irqMB5 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 6. */
+        .irqMB6 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 7. */
+        .irqMB7 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 8. */
+        .irqMB8 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 9. */
+        .irqMB9 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 10. */
+        .irqMB10 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 11. */
+        .irqMB11 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 12. */
+        .irqMB12 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 13. */
+        .irqMB13 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 14. */
+        .irqMB14 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+        
+        /** IRQ configuration, IRQ of mailbox 15. */
+        .irqMB15 =
+        {
+            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
+            .osCallbackOnTx = NULL,
+        }, 
+#endif
         
         /** IRQ configuration, IRQs of mailboxes 16..31. */
         .irqGroupMB16_31 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 1,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         }, 
         
@@ -254,19 +409,21 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupMB32_63 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 2,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         },
         
+#if defined(MCU_MPC5748G)
         /** IRQ configuration, IRQs of mailboxes 64..95. */
         .irqGroupMB64_95 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 3,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         },
+#endif        
         
         /** Permission to make mailbox reservations is given only one particular user
             process, or it can be generally prohibitted for user code and left to the
@@ -288,16 +445,6 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         {
             [24] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
             [25] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 1},
-            [26] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 2},
-            [27] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 3},
-            [28] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 0},
-            [29] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 5},
-            [30] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 6},
-            [31] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 7},
-            [32] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 8},
-            [33] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 9},
-            [69] = {.minPIDToAccess = 1, .useAsRxMailbox = true, .idxAPIBuffer = 4}, /* hMB = 69+48 = 117 */
-            [75] = {.minPIDToAccess = 1, .useAsRxMailbox = false}, /* hMB = 75+48 = 123 */
         },
     },
 #endif

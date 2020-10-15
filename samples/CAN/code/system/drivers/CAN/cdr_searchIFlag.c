@@ -183,7 +183,7 @@ static const uint32_t RODATA(_maskAryStartAry)[MAX_WORD_SIZE_POW_2+1] =
  */
 unsigned int cdr_findAssertedBitInWord(const uint32_t word, const unsigned int widthAsPow2)
 {
-    assert(widthAsPow2 <= MAX_WORD_SIZE_POW_2);
+    assert(widthAsPow2 >= 1 &&  widthAsPow2 <= MAX_WORD_SIZE_POW_2);
 
 #if SEARCH_LSB == 1
     #define CMP_OP ==

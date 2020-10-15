@@ -23,6 +23,11 @@
 /* Module interface
  *   cdr_getRxPollingAPIBuffer
  *   cdr_scSmplHdlr_readMessage
+ *   cdr_getIsBusOff
+ *   cdr_getNoBusOffEvents
+ *   cdr_getNoRxFifoEvents
+ *   cdr_getNoErrorEvents
+ *   cdr_getLastTransmissionError
  * Local functions
  */
 
@@ -435,4 +440,198 @@ uint32_t cdr_scSmplHdlr_readMessage( uint32_t PID
         
         
 
+
+#ifdef MCU_MPC5748G
+/**
+ * Get the current bus off state for the given CAN device.
+ *   @return
+ * \a true if the CAN device is currently in bus off, \a false otherwise.
+ *   @param idxCanDevice
+ * Bus off events are recorded independently for all enabled CAN devices. This parameter
+ * chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion in DEBUG compilation.
+ *   @remark
+ * Interrupt group BusOff needs to be configured for servicing. Otherwise the result is
+ * undefined. See configuration item cdr_canDeviceConfig_t.irqGroupError.
+ *   @remark
+ * The function must be called solely from the core, which is configured to serve the
+ * interrupt group BusOff for the given CAN device. If this is not the calling core, too,
+ * then the result is undefined (due to cache coherence issues).\n
+ *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e. OS and user
+ * tasks or ISRs.
+ */
+bool cdr_getIsBusOff(unsigned int idxCanDevice)
+{
+    assert(idxCanDevice < sizeOfAry(cdr_canDriverData));
+    assert(rtos_getIdxCore()== cdr_canDriverConfig[idxCanDevice].irqGroupBusOff.idxTargetCore);
+    
+    return cdr_canDriverData[idxCanDevice].isBusOff;
+    
+} /* End of cdr_getIsBusOff */
+#endif
+
+
+
+/**
+ * Get the number of recorded bus off events for the given CAN device since driver
+ * initialization.
+ *   @return
+ * The returned number is the saturated number of BOFFINT interrupts seen since driver
+ * initialization. The result is zero if servicing the interrupt group BusOff is not
+ * configured for the given CAN device.
+ *   @param idxCanDevice
+ * Bus off events are counted independently for all enabled CAN devices. This parameter
+ * chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion in DEBUG compilation.
+ *   @remark
+ * Interrupt group BusOff needs to be configured for servicing. Otherwise the result is
+ * undefined. See configuration item cdr_canDeviceConfig_t.irqGroupError.
+ *   @remark
+ * The function must be called solely from the core, which is configured to serve the
+ * interrupt group BusOff for the given CAN device. If this is not the calling core, too,
+ * then the result is undefined (due to cache coherence issues).\n
+ *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e. OS and user
+ * tasks or ISRs.
+ */
+unsigned int cdr_getNoBusOffEvents(unsigned int idxCanDevice)
+{
+    assert(idxCanDevice < sizeOfAry(cdr_canDriverData));
+    assert(rtos_getIdxCore()== cdr_canDriverConfig[idxCanDevice].irqGroupBusOff.idxTargetCore);
+    
+    return cdr_canDriverData[idxCanDevice].noBusOffEvents;
+    
+} /* End of cdr_getNoBusOffEvents */
+
+
+
+
+/**
+ * Get the number of recorded Rx FIFO events for the given CAN device. The FIFO Rx process
+ * counts different kinds of events, among which the most important is the number of lost
+ * Rx messages due to an overfull queue. The total number of counts of these events since
+ * driver initialization can be queried.
+ *   @return
+ * The returned number is either the saturated number of queue nearly full, the saturated
+ * number of queue overfull (message lost) or the cyclic count of messages ever received
+ * via the Rx FIFO.
+ *   @param idxCanDevice
+ * Rx FIFO events are counted independently for all enabled CAN devices. This parameter
+ * chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion in DEBUG compilation.
+ *   @remark
+ * The Rx FIFO needs to be enabled. Otherwise the result is undefined. See configuration
+ * item cdr_canDeviceConfig_t.isFIFOEnabled.
+ *   @remark
+ * The function must be called solely from the core, which is configured to serve the
+ * interrupt group FIFO for the given CAN device. If this is not the calling core, too,
+ * then the result is undefined (due to cache coherence issues).\n
+ *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e. OS and user
+ * tasks or ISRs.
+ */
+unsigned int cdr_getNoRxFifoEvents( unsigned int idxCanDevice
+                                  , cdr_kindOfRxFifoEvent_t kindOfEvent
+                                  )
+{
+    assert(idxCanDevice < sizeOfAry(cdr_canDriverData));
+    assert(rtos_getIdxCore() == cdr_canDriverConfig[idxCanDevice].irqGroupFIFO.idxTargetCore);
+    switch(kindOfEvent)
+    {
+    default:
+        assert(false);
+    case cdr_rxEv_warningNearlyFull:
+        return cdr_canDriverData[idxCanDevice].noRxFIFOWarningEvents;
         
+    case cdr_rxEv_errorOverflow:
+        return cdr_canDriverData[idxCanDevice].noRxFIFOOverflowEvents;
+        
+    case cdr_rxEv_reception:
+        return cdr_canDriverData[idxCanDevice].noRxMsgsFIFO;
+    }
+    
+} /* End of cdr_getNoRxFifoEvents */
+
+
+
+
+/**
+ * Get the number of recorded error events for the given CAN device. The Rx process counts
+ * different kinds of events on the CAN transmission layer. See description of register ESR1
+ * in the device reference manual, section 43.4.9, p. 1727ff.
+ *   @return
+ * The function returns the saturated number of errors, which had been reported by the CAN
+ * device since driver initialization.
+ *   @param idxCanDevice
+ * Error events are recorded independently for all enabled CAN devices. This parameter
+ * chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion in DEBUG compilation.
+ *   @remark
+ * Interrupt group Error needs to be configured for servicing. Otherwise the result is
+ * undefined. See configuration item cdr_canDeviceConfig_t.irqGroupError.
+ *   @remark
+ * The function must be called solely from the core, which is configured to serve the
+ * interrupt group Error for the given CAN device. If this is not the calling core, too,
+ * then the result is undefined (due to cache coherence issues).\n
+ *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e. OS and user
+ * tasks or ISRs.
+ */
+unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice)
+{
+    assert(idxCanDevice < sizeOfAry(cdr_canDriverData));
+    assert(rtos_getIdxCore() == cdr_canDriverConfig[idxCanDevice].irqGroupError.idxTargetCore);
+
+    return cdr_canDriverData[idxCanDevice].noErrEvents;
+    
+} /* End of cdr_getNoErrorEvents */
+
+
+
+
+/**
+ * The CAN transmission hardware recognizes different kinds of errors. They are encoded as
+ * different bits in the error register ESR1; see description of register ESR1 in the
+ * device reference manual, section 43.4.9, p. 1727ff, for details. The last recently
+ * recorded errors for the given CAN device are stored and can be queried by this function.
+ *   @return
+ * The function returns the reading of the lower 16 Bit of register ESR1 immediately after
+ * the last recent error had been reported by the CAN device. 
+ *   @param idxCanDevice
+ * Errors are recorded independently for all enabled CAN devices. This parameter chooses
+ * the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion in DEBUG compilation.
+ *   @remark
+ * Interrupt group Error needs to be configured for servicing. Otherwise the result is
+ * undefined. See configuration item cdr_canDeviceConfig_t.irqGroupError.
+ *   @remark
+ * The function must be called solely from the core, which is configured to serve the
+ * interrupt group Error for the given CAN device. If this is not the calling core, too,
+ * then the result is undefined (due to cache coherence issues).\n
+ *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e. OS and user
+ * tasks or ISRs.
+ */
+uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice)
+{
+    assert(idxCanDevice < sizeOfAry(cdr_canDriverData));
+    assert(rtos_getIdxCore() == cdr_canDriverConfig[idxCanDevice].irqGroupError.idxTargetCore);
+    
+    return cdr_canDriverData[idxCanDevice].lastErrEvent;
+    
+} /* End of cdr_getLastTransmissionError */
+
+
+
+
