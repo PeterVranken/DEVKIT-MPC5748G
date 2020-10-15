@@ -129,16 +129,16 @@ configuration data.
 Your application won't directly use the configuration file
 cdr_canDriver.config.inc. Don't include it, don't compile it. Indirectly,
 your application will read its header file contents (#define's) through
-this header, cdr_canDriverAPI.h. Those parts of cdr_canDriver.config.inc,
-which are actually C source code -- concretely, the definition of the
-constant configuration data object --, will be complied from the CAN
-driver's main implementation file, namely cdr_canDriver.c, by way of
-including it.
+the principal header, cdr_canDriverAPI.h. Those parts of
+cdr_canDriver.config.inc, which are actually C source code -- concretely,
+the definition of the constant configuration data object, -- will be
+compiled from the CAN driver's main implementation file, namely
+cdr_canDriver.c, by way of including it.
 
 The CAN driver is compilable with the renamed but not altered template
 configuration file. However, no CAN device will then be enabled and the
-compiler will issue several warning because of zero-sized arrays and data
-structures.
+compiler will issue several warnings because of zero-sized arrays and data
+structures and useless conditional code.
 
 == Maturity
 
