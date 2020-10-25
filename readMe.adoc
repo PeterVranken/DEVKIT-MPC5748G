@@ -152,8 +152,8 @@ consider:
 * The compiler (GCC 4.9.4) is element of the S32 Design Studio and doesn't
   need to be downloaded or installed. Nonetheless, the described
   customization of the startup batch file (_setEnv.ps1_) is still
-  required. (The settings may differ a bit.) The proposed setting of
-  environment variables enables the makefiles to compile and link the
+  required. (The actual settings may differ a bit.) The proposed setting
+  of environment variables enables the makefiles to compile and link the
   software without using the S32DS. Moreover, even the S32DS depends on
   these settings: The sample projects run the "External builder" of the
   Eclipse system, which means they run the same makefiles as an external
@@ -187,7 +187,7 @@ consider:
   https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[Tools
   and Installation^] of the related MPC5643L GitHub project tells more
   about download and installation of the tools and how to run the samples.
-  (Major differences are outlined above)
+  (Major differences with this project are outlined above)
 * Each sample has a "readMe", which outlines the functionality and its
   particular added value
 * The code and scripts are documented by source code comments
