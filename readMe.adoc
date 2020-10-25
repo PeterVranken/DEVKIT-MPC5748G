@@ -180,14 +180,18 @@ consider:
 
 == Documentation
 
-* The https://github.com/PeterVranken/DEVKIT-MPC5748G/wiki[Wiki pages] of
-  the related MPC5643L GitHub project tell more about download and
-  installation of the tools and how to run the samples. (Major differences
-  are outlined above)
+//* The https://github.com/PeterVranken/DEVKIT-MPC5748G/wiki[Wiki pages^] of
+//  this project tell more about download and installation of the tools and
+//  how to run the samples
+* The Wiki page
+  https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[Tools
+  and Installation^] of the related MPC5643L GitHub project tells more
+  about download and installation of the tools and how to run the samples.
+  (Major differences are outlined above)
 * Each sample has a "readMe", which outlines the functionality and its
   particular added value
 * The code and scripts are documented by source code comments
 * Most relevant documentation about the evaluation board and the
   microcontroller has been collected in folder
-  https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/doc[doc]
+  https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/doc[doc]
   and much, much more can be found in the Internet
