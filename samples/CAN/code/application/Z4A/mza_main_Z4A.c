@@ -137,16 +137,16 @@ enum
  */
 
 /** Counter of cycles of infinite main loop. */
-unsigned long SBSS_OS(mai_cntTaskIdle) = 0;
+unsigned long SBSS_OS(mza_cntTaskIdle) = 0;
 
 /** Counter of cyclic 1ms user task. */
-unsigned long SBSS_P1(mai_cntTask1ms) = 0;  
+unsigned long SBSS_P1(mza_cntTask1ms) = 0;  
 
 /** Counter of cyclic 1ms OS task. */
-unsigned long long SBSS_OS(mai_cntTaskOs1ms) = 0;
+unsigned long long SBSS_OS(mza_cntTaskOs1ms) = 0;
 
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */
-unsigned int DATA_OS(mai_cpuLoad) = 1000;
+unsigned int DATA_OS(mza_cpuLoad) = 1000;
 
 /** Interface with assembly code: Here's a variable in the assembly startup code, which
     takes the addresses of the C main function to be invoked on core Z4B. It needs to be
@@ -777,7 +777,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ mai_cntTask1ms;
+    ++ mza_cntTask1ms;
 
 #if TASKS_PRODUCE_GROUND_LOAD == 1
     /* Produce a bit of CPU load. This call simulates some true application software. */
@@ -788,7 +788,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     if(++cntIsOn_ >= 500)
     {
         cntIsOn_ = -500;
-        printf("task1ms: This is call %lu of task1ms\r\n", mai_cntTask1ms);
+        printf("task1ms: This is call %lu of task1ms\r\n", mza_cntTask1ms);
     }
     lbd_setLED(lbd_led_0_DS11, /* isOn */ cntIsOn_ >= 0);
 
@@ -810,9 +810,9 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     {
         static unsigned int DATA_P1(tiLastReport_) = 0;
 
-        if(mai_cntTask1ms - tiLastReport_ >= 100 /* ms */)
+        if(mza_cntTask1ms - tiLastReport_ >= 100 /* ms */)
         {
-            tiLastReport_ = mai_cntTask1ms;
+            tiLastReport_ = mza_cntTask1ms;
             if(noMsgNotReported_ > 0)
             {
                 printf( "task1ms: %u messages have been received meanwhile without"
@@ -840,8 +840,8 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
        code Tx API to the CAN stack: The only thing, we are allowed to do is sending other
        payload (but same CAN ID, same DLC) and only for particular mailboxes. */
     static uint8_t DATA_P1(payload_)[8] = {[0 ... 5] = 0xff, [6 ... 7] = 0, };
-    _Static_assert(sizeof(mai_cntTask1ms) <= sizeof(payload_), "Internal error");
-    memcpy(payload_, &mai_cntTask1ms, sizeof(mai_cntTask1ms));
+    _Static_assert(sizeof(mza_cntTask1ms) <= sizeof(payload_), "Internal error");
+    memcpy(payload_, &mza_cntTask1ms, sizeof(mza_cntTask1ms));
     errCode = cdr_sendMessage( cdr_canDev_CAN_0
                              , H_MBTX_USER_CAN_ID_0X765
                              , payload_
@@ -854,12 +854,12 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
     }
     
     /* Inject some errors. */
-    if((mai_cntTask1ms & 0x3ff) == 0)
+    if((mza_cntTask1ms & 0x3ff) == 0)
     {
         static volatile unsigned int DATA_P2(foreignData) ATTRIB_UNUSED;
-        foreignData = (unsigned int)mai_cntTask1ms;
+        foreignData = (unsigned int)mza_cntTask1ms;
     }
-    if((mai_cntTask1ms & 0x7ff) == 1)
+    if((mza_cntTask1ms & 0x7ff) == 1)
     {
         /* Try to access a mailbox by polling, which is not accessible for this user
            process. The first function would still succeed, but we must not use the read
@@ -883,7 +883,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
 
     /* Demonstrate the use of the diagnostic API. Print status information every few
        seconds. */
-    if((mai_cntTask1ms & 0xfff) == 2)
+    if((mza_cntTask1ms & 0xfff) == 2)
     {
         /* Info from interrupt group bus off. */
         const unsigned int noBusOffEv = cdr_getNoBusOffEvents(cdr_canDev_CAN_0);
@@ -955,7 +955,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ mai_cntTaskOs1ms;
+    ++ mza_cntTaskOs1ms;
 
     /** Regularly called step function of the I/O driver. */
     lbd_osTask1ms();
@@ -973,12 +973,11 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     {
         cntIsOn_ = -500;
 
-        printf("This is call %llu of taskOs1ms\r\n", mai_cntTaskOs1ms);
+        printf("This is call %llu of taskOs1ms\r\n", mza_cntTaskOs1ms);
     }
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
     
-    /// @todo Temoprily used only: Send a CAN message.
-    if((mai_cntTaskOs1ms % 10) == 1)
+    if((mza_cntTaskOs1ms % 10) == 1)
         osTestRxTx_task10ms(cdr_canDev_CAN_0);
 
 } /* End of taskOs1ms */
@@ -1245,12 +1244,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
-        mai_cpuLoad = gsl_osGetSystemLoad();
+        mza_cpuLoad = gsl_osGetSystemLoad();
 
         char msg[128];
         const int noChar = sniprintf( msg, sizeof(msg)
                                     , "CPU load: %u%%\r\n"
-                                    , (mai_cpuLoad+5)/10
+                                    , (mza_cpuLoad+5)/10
                                     );
         assert((unsigned)noChar < sizeOfAry(msg));
         //sio_osWriteSerial(msg, (unsigned)noChar);
@@ -1260,7 +1259,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         lbd_osSetLED(lbd_led_2_DS9, isOn_ = !isOn_);
 
         /* Make spinning of the idle task observable in the debugger. */
-        ++ mai_cntTaskIdle;
+        ++ mza_cntTaskIdle;
 
         /* Supervisor code like an OS or the idle task must not use the C lib's I/O
            functions like printf because they go into a system call handler of class full,

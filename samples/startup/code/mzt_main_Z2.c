@@ -284,7 +284,7 @@ void _Noreturn mzt_main_Z2(signed int noArgs TYP_DBG_ONLY, const char *argAry[] 
          variant
        - since the linker needs to select the Z2 variant of the clib all Z4 code will be
          degraded with respect to floating point performance - it'll use the Z2 emulation
-         libraries, too, for all computations, which cannot be implement by raw floating
+         libraries, too, for all computations, which cannot be implemented by raw floating
          point instructions directly by the compiler. This holds e.g. for all calls from
          the math lib, like sinf, etc.
        All in all, the best decision for a project is not at all to use floating point on
