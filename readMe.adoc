@@ -14,11 +14,6 @@
 :tip-caption:       :bulb:
 :warning-caption:   :warning:
 
-CAUTION: This readme file basically is a copy from the ancestor project,
-which had been published for the MPC5643L. The text has not been fully
-revised for the new context yet. It may still contain some incorrect links
-or unwanted references to the single core solution for the MPC5643L.
-
 == Introduction
 
 This project aims at supporting the software development for the NXP PowerPC
@@ -46,22 +41,24 @@ responsibility and out of scope of this project.
 
 An important exception is the choice of the host machine. We don't expect
 problems with Linux. GCC is anyway a native UNIX tool, Cygwin is obsolete
-by nature, the NXP S32 Design Studio for Power Architecture is available
-for Linux, too, and the makefiles used in this project have been designed
-to run under Linux. Please note, that this has not been tested yet.
+by nature, the NXP S32 Design Studio for Power Architecture (S32DS) is
+available for Linux, too, and the makefiles used in this project have been
+designed to run under Linux. Please note, that this has not been tested
+yet.
 
 The configuration for this project is:
 
 [frame="none",options="noheader",width="100%",cols="1,2"]
 |=======
-|Microcontroller|https://www.nxp.com/products/microcontrollers-and-processors/power-architecture-processors/mpc5xxx-55xx-32-bit-mcus/ultra-reliable-mpc56xx-32-bit-automotive-and-industrial-microcontrollers-mcus/ultra-reliable-dual-core-32-bit-mcu-for-automotive-and-industrial-applications:MPC564xL[NXP PowerPC MPC5748G]
+|Microcontroller|https://www.nxp.com/products/processors-and-microcontrollers/power-architecture/mpc55xx-5xxx-mcus/ultra-reliable-mpc57xx-mcus/ultra-reliable-mcus-for-automotive-and-industrial-control-and-gateway:MPC574xB-C-G[NXP PowerPC MPC5748G]
 |Evaluation board|https://www.nxp.com/design/development-boards/automotive-development-platforms/mpc57xx-mcu-platforms/mpc5748g-development-board-for-secure-gateway:DEVKIT-MPC5748G[NXP DEVKIT-MPC5748G]
 |Host|Windows 10
 |C compiler footnote:[
   The same compiler is element of the NXP S32 Design Studio installation. You don't need to download the compiler separately.]|https://drive.google.com/open?id=0B_3zBh2c7LroNEFIOVlJcUVKRWc[MinGW-powerpc-eabivle-4.9.4]
-|Unix tools|http://www.cygwin.com/[Cygwin]
-|Flash tool|https://www.nxp.com/pages/codewarrior-for-mcus-eclipse-ide-coldfire.-56800-e-dsc-kinetis.-nxp-56xx-rs08-s08-s12z-v10.7:CW-MCU10?tab=Design_Tools_Tab[NXP S32 Design Studio for Power Architecture v2.1]
+|IDE|https://www.nxp.com/design/software/development-software/s32-design-studio-ide/s32-design-studio-for-power-architecture:S32DS-PA[NXP S32 Design Studio for Power Architecture v2.1]
+|Flash tool|(GNU debugger contained in S32 Design Studio)
 |Debugger|(same as flash tool)
+|Unix tools|(contained in S32 Design Studio)
 |=======
 
 The project presents a few code samples for this hardware and toolchain
@@ -80,9 +77,9 @@ in this project. While it is not of any use as such it does contain a lot
 of reusable stuff for real development: As there is the toolchain setup
 (compiler, linker, flash tool, debugger), a powerful, generic, fully
 reusable makefile and a clean piece of startup code, which will suffice
-for most applications. Remove the LED blink code and start writing your
-application but don't loose time with setting up your development
-environment.
+for most applications. Remove the demo code from the three core's main
+functions and start writing your application but don't loose time with
+setting up your development environment.
 
 Sample "startup" already integrates some reusable I/O drivers:
 
@@ -93,8 +90,9 @@ board specific, but the others aren't.
 Most useful is the DMA based serial I/O driver, which connects the C
 library's printf function family with the virtual COM port, that is
 element of the board's USB connection. The S32 Design Studio comes along
-with a suitable terminal software; just open the according Eclipse view to
-display the printed output on the host machine.
+with a suitable terminal software; just run a terminal application and
+open the COM port of the evaluation board to display the printed output on
+the host machine.
 
 The System Timer Module driver (STM) can be used to measure time spans and
 to add timing control to your software.
@@ -102,6 +100,10 @@ to add timing control to your software.
 A driver for the Decorated Memory Storage Controller provides safe
 core-to-core data exchange and an encapsulating and abstracting mutex
 class further supports this.
+
+The use of these I/O drivers is demonstrated by the code. All three cores
+communicate with one another, considering and handling both, cache
+coherency aspects and race conditions.
 
 === image:samples/safe-RTOS/doc/manual/theme/iconSafeRTOS-asColoredIcon.jpg[width="3%", pdfwidth="5%"] safe-RTOS
 
@@ -111,6 +113,9 @@ management concept that implements the _freedom-from-interference_
 paradigm. It can be run on one or more cores. If a core decides not to run
 the RTOS then it can still make use of some low-level communication
 services to safely exchange data across core-boundaries.
+
+In this sample, the I/O drivers found in sample "startup" are further
+elaborated in order to meet the demands of the kernel (safety aspects).
 
 === CAN
 
@@ -122,29 +127,63 @@ equipment to connector P5 of the DEVKIT-MPC5748G and try the CAN
 communication.
 
 All samples are self-contained. There are some common elements, which are
-same in both samples, like startup code and makefile. It would be natural
-to put them in a shared directory and reuse them across the samples. We
-decided not to do so in order to make the reuse of the samples as simple
-as possible. Once you have installed the tools you will be able to copy
-any sample to an arbitrary local directory and either run the makefile
-from the command line or use the S32 Design Studio IDE with our Eclipse
-project file to build the sample. The S32 Design Studio IDE is in either
-case required to flash and debug the built software.
+(nearly) same in all samples, like startup code and makefile. It would be
+natural to put them in a shared directory and reuse them across the
+samples. We decided not to do so in order to make the reuse of the samples
+as simple as possible. Once you have installed the tools you will be able
+to copy any sample to an arbitrary local directory and either run the
+makefile from the command line or use the S32 Design Studio IDE with our
+Eclipse project file to build the sample. The S32 Design Studio IDE is in
+either case required to flash and debug the built software.
 
 == Installation
 
-Please, find more details on installing the required development tools
-in Wiki page
+The installation of the development tools required for a related and a
+quite similar GitHub project is described in detail in Wiki page
 https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[Tools
-and Installation footnote:[
-  This Wiki page still needs migration to the DEVKIT-MPC5748G project.
-However there are many similarities, which makes it still useful.]].
+and Installation].
+Much of what is said there still holds for this GitHub project. As long as
+we've not migrated the Wiki page to this project yet, we
+recommend consulting the MPC5643L page. These are the major difference to
+consider:
+
+* The download links to the tools need to be taken from the table above
+  and not from the Wiki page
+* The compiler (GCC 4.9.4) is element of the S32 Design Studio and doesn't
+  need to be downloaded or installed. Nonetheless, the described
+  customization of the startup batch file (_setEnv.ps1_) is still
+  required. (The settings may differ a bit.) The proposed setting of
+  environment variables enables the makefiles to compile and link the
+  software without using the S32DS. Moreover, even the S32DS depends on
+  these settings: The sample projects run the "External builder" of the
+  Eclipse system, which means they run the same makefiles as an external
+  process
+* The IDE is S32 Design Studio rather than Code Warrior. However, both
+  IDEs are Eclipse derivatives and much of the installation and
+  how-to-run-and-open-a-project is simply the same. The described
+  customization of the startup batch script, _CW-IDE.ps1_, needs to be
+  done here, too. Here, the script is called _S32DS-IDE.ps1_ and the
+  variables to set may differ a bit
+* Debugging and flashing differs. Code Warrior uses TCL scripting and
+  "Target Tasks" with a
+  proprietary debugger. S32DS uses GNU debugger. There are no scripts for
+  flashing. Instead, normal Eclipse launch configurations are applied for
+  both. There are launch configurations for flashing and others for
+  debugging. Just run a dedicated flash launch configuration and the ROM
+  is erased and reprogrammed. Run a debug launch configuration to debug a
+  software previously flashed
+* The MCU used in this GitHub project supports linkage of the software in
+  RAM (under control of a switch in the makefile). Dedicated Eclipse
+  launch configurations load the compiled code into the volatile memories
+  and start the application. The ROM contents are not touched at all. This
+  concept is not found in the Code Warrior project
 
 == Documentation
 
-//* The https://github.com/PeterVranken/DEVKIT-MPC5748G/wiki[Wiki pages] of
-//  this project tell more about download and installation of the tools and
-//  how to run the samples
+* The https://github.com/PeterVranken/DEVKIT-MPC5748G/wiki[Wiki pages] of
+  the related MPC5643L GitHub project tell more about download and
+  installation of the tools and how to run the samples. (Major differences
+  are outlined above)
 * Each sample has a "readMe", which outlines the functionality and its
   particular added value
 * The code and scripts are documented by source code comments
