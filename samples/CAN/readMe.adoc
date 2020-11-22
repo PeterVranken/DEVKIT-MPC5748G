@@ -19,10 +19,11 @@ features of the driver:
 
 * Compatible with safe-RTOS' driver model
 * Support of one to eight available CAN devices (four on the MPC5775B/E)
-* Pin configuration only for CAN device 0 and DEVKIT-MPC5748G: On the PCB
-  of this evaluation board, this CAN device is equipped with a transceiver
-  chip and connected to connector P5. Just connect your Vector, Kvaser or
-  PEAK CAN device and run first tests
+* Pin configuration only for CAN device 0 and DEVKIT-MPC5748G (or
+  MPC5775BE-416DS): On the PCB of this evaluation board, this CAN device
+  is equipped with a transceiver chip and connected to connector P5
+  (MPC5775BE-416DS has a DIP-9 CAN connector). Just connect your Vector,
+  Kvaser or PEAK CAN device and run first tests
 * The driver supports standard CAN
 * Ease of use: One-by-one relation between mailboxes in the hardware and
   CAN ID. We have plenty of mailboxes so that sharing of mailboxes between

@@ -1135,7 +1135,7 @@ signed int sio_osGetChar(void)
  * #SERIAL_INPUT_FILTERED_CHAR. This, too, is a matter of compile time configuration.\n
  *   The function is not inter-core safe and must be called solely from execution contexts
  * running on core #INTC_IRQ_TARGET_CORE. It must not be called untill function
- * sio_initSerialInterface() has completed.
+ * sio_osInitSerialInterface() has completed.
  *   @return
  * This function returns \a str on success, and NULL on error or if not enough characters
  * have been received meanwhile to form a complete line of text.\n

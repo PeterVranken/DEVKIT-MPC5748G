@@ -575,11 +575,12 @@ void rtos_osSuspendProcess(uint32_t PID);
 bool rtos_isProcessSuspended(uint32_t PID);
 
 /**
- *   @rtos_getIdxCore
+ *   @func rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning
- * Z4A, Z4B, Z2, respectively.
+ * Z4A, Z4B, Z2, respectively. (The convenience macros #RTOS_CORE_Z4A,  #RTOS_CORE_Z4B
+ * and #RTOS_CORE_Z2 can be used.)
  *   @remark
  * This function may be called from all contexts. However, OS contexts shouldn't because of
  * the performance penalty. They should only use the intrinsic rtos_osGetIdxCore() instead.
@@ -781,6 +782,9 @@ static ALWAYS_INLINE void rtos_osSuspendAllInterrupts(void)
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE void rtos_osResumeAllInterrupts(void)
 {
@@ -808,6 +812,9 @@ static ALWAYS_INLINE void rtos_osResumeAllInterrupts(void)
  *   @remark
  * This function must be used from OS tasks and ISRs only. Calling it from a user task will
  * cause a privileged instruction exception and an error is counted for the process.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE bool rtos_osGetAllInterruptsSuspended(void)
 {
@@ -838,6 +845,9 @@ static ALWAYS_INLINE bool rtos_osGetAllInterruptsSuspended(void)
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE uint32_t rtos_osEnterCriticalSection(void)
 {
@@ -870,6 +880,9 @@ static ALWAYS_INLINE uint32_t rtos_osEnterCriticalSection(void)
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE void rtos_osLeaveCriticalSection(uint32_t msr)
 {
