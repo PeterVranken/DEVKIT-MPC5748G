@@ -223,6 +223,9 @@
 
 /* Some more basic types are defined using the naming scheme of stdint.h. */
 
+/** Boolean for canInterface. */
+typedef bool boolean_t;
+
 /** 4 Byte, single precision floating point number type. */
 typedef float float32_t;
 
