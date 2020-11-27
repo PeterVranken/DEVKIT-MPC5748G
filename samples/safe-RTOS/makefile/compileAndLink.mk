@@ -196,8 +196,7 @@ targetArchitecture = $(if $(call isTargetArchitectureZ4,$(1)),Z4,Z2)
 # directories and nor must the directories listed in srcDirList be included
 #   sharedMakefilePath: The path to the common makefile fragments like this one
 
-# Include directories common to all sub-projects are merged with the already set project
-# specific ones.
+# Unification of writing of include directories: Trailing slash, right path separator.
 incDirList := $(call w2u,$(call trailingSlash,$(incDirList)))
 #$(info incDirList := $(incDirList))
 

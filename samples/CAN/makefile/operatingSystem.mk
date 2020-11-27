@@ -38,3 +38,8 @@ ifeq ($(OS),Windows_NT)
     SHELL := cmd
     .SHELLFLAGS := /c
 endif
+
+# If .ONESHELL is mentioned as a target, then when a target is built all lines of the
+# recipe will be given to a single invocation of the shell rather than each line being
+# invoked separately.
+.ONESHELL:

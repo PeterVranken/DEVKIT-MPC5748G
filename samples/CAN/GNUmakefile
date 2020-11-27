@@ -67,7 +67,9 @@ project := DEVKIT-MPC5748G-CAN
 
 # Specify a blank separated list of directories holding source files. The directories are
 # searched recursively for C/C++ and assembler source files.
-srcDirList := code/
+#   Caution, absolute paths are not supported. Use paths only, which relate to the path of
+# this makefile.
+srcDirList := code/ comFramework/canInterface/components/canInterface/
 
 # Exclusion list: Edit the list of excluded files. A blank separated list of source files
 # (with extension but without path) is expected, which are excluded from the compilation of

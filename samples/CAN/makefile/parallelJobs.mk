@@ -43,6 +43,9 @@
 export project srcDirList cFileListExcl incDirList defineList sharedMakefilePath \
        targetRunArgs APP
 
+# Consider this pseudo target as an alternative
+#.EXPORT_ALL_VARIABLES:
+
 # Load the makefile, the targets of which are run in a safe parallel way.
 include $(sharedMakefilePath)compileAndLink.mk
 
@@ -66,7 +69,8 @@ build: makeDir
 # Rebuild all.
 #   clean and makeDir do not interfere and maybe listed without explicit serialization.
 .PHONY: rebuild
-rebuild: makeDir clean
+rebuild: clean
+	$(MAKE) $(mFlags) makeDir
 	$(MAKE) $(mFlags) $(targetDir)$(projectExe)
             
 # Compile all C source files and assemble the *.S.
