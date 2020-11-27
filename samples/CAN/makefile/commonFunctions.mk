@@ -1,12 +1,28 @@
-# 
-# Makefile for GNU Make 3.81
 #
-# Collection of definitions of general purpose helper functions.
+# Generic Makefile for GNU Make 3.82 (MinGW port only)
+#
+# Some common purpose makefile functions, which are accessible from all makefiles.
 #
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-
+# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+ifndef COMMON_FUNCTIONS_INCLUDED
+COMMON_FUNCTIONS_INCLUDED := 1
 
 # Return a end of line character. No parameters, can be called without $(call).
 define EOL
@@ -15,6 +31,7 @@ define EOL
 endef
 # Example:
 # $(info first line$(EOL)second line)
+
 
 # Function isInDefineList
 #   The main makefile offers a variable "defineList", with user configurable settings for
@@ -32,20 +49,6 @@ isInDefineList = $(if $(filter $(1),$(defineList)),true,false)
 #else
 #$(info DEFINE_OF_INTEREST isn't element of $(defineList))
 #endif
-
-
-# Function binFolder
-#   Determine the name of the root folder of all build products. The name should
-# distinguish between all supported target systems. Furthermore, under Windows it should if
-# possible distinguish between 32 or 64 Bit systems.
-ifeq ($(call isInDefineList,LINK_IN_RAM),true)
-binFolder = bin/ppc/$(CONFIG)-RAM/
-else
-binFolder = bin/ppc/$(CONFIG)/
-endif
-# Example:
-#$(info Target folder for produced binaries is $(call binFolder))
-
 
 
 # Function pathSearch
@@ -123,3 +126,5 @@ eq = $(if $(1)$(2),$(and $(findstring $(1),$(2)),$(findstring $(2),$(1)),true),t
 #   $(2): The list of file names to test. Only provide raw file names with extension.
 isFileInList = $(if $(filter $(2), $(notdir $(1))),1,)
 #$(info "$(call isFileInList, a/x/test.c path/c, a b xtest.c)")
+
+endif # COMMON_FUNCTIONS_INCLUDED

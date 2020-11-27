@@ -1,17 +1,29 @@
 #
-# Makefile for GNU Make 3.81
+# Generic Makefile for GNU Make 3.82 (MinGW port only)
 #
-# Locate all the external tools used by the other makefile fragments.
-#
-# This makefile fragment depends on functions.mk.
+# Inspect environment variables and system search path to find out, where the executables,
+# compiler, linker, etc., are located.
 #
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-
-# Only uncomment the next line when running this fragment independently for maintenance
-# purpose.
-#include commonFunctions.mk
+# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+ifndef LOCATE_TOOLS_INCLUDED
+LOCATE_TOOLS_INCLUDED := 1
 
 # Find the tools preferably in the folder specified by environment variable GCC_POWERPC_HOME
 # but look secondary in the system search path also. The system search path is expected as
@@ -89,3 +101,7 @@ ifeq ($(and $(make),$(gcc),$(cp),$(echo)),)
 else
     #$(info make: $(make), gcc: $(gcc), cp: $(cp), echo: $(echo))
 endif
+
+else
+$(error This makefile shouldn't be called twice. There's a problem in your makefile structure)
+endif # LOCATE_TOOLS_INCLUDED
