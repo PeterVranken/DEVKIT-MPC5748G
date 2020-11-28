@@ -73,4 +73,19 @@ endif
 # possible distinguish between 32 or 64 Bit systems.
 targetDir := bin/ppc/$(CONFIG)$(if $(filter LINK_IN_RAM,$(defineList)),-RAM,)/
 
+# We can place the object files into a folder tree under $(targetDir), which has the same
+# structure as the source file tree or we can place all object files as siblings flat into
+# $(targetDir).
+#   The former is commonly used but can cause problems if the compiled source
+# files are in folders, which are irrelated to the working directory of make (i.e. if
+# absolute source paths are specified) or if they aren't children of the working directory
+# of make (i.e. if ../.. constructs are required to navigate to the sources). In both
+# cases, the target paths composed by the makefile will be undesired or even illegal and
+# the flat structure may perform better.
+#   On the other hand, the latter, the flat structure, leads to problems, if any two
+# sources have the same file so that they would result in the same object file.
+#   Set this macro to a non-empty value in order to use the flat structure for the object
+# files.
+useFlatObjectFileStructure := # Emtpy means: Use source folder tree
+
 endif # GLOBAL_VARIABLES_INCLUDED

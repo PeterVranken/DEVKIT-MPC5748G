@@ -243,14 +243,17 @@ $(targetDir)obj/%.o: %.cpp
 #                    ../shared/makefile/parallelJobs.mk
 
 
-# Note, it looks as if we finally wouldn't need this any longer with Windows 10!
-#
-## More than 30 Years of DOS & Windows but the system still fails to handle long command
-## lines. We write the names of all object files line by line into a simple text file and
-## will only pass the name of this file to the linker.
-#$(targetDir)obj/listOfObjFiles.txt: $(objFileList)
-#	$(info Create linker input file $@)
-#	$(file >$@,$(sort $^))
+# Note, it looks as if we finally wouldn't need this any longer with Windows 10! Set
+# variable to empty value if patch should not be applied.
+patchWindowsBug := #true
+ifneq ($(patchWindowsBug),)
+# More than 30 Years of DOS & Windows but the system still fails to handle long command
+# lines. We write the names of all object files line by line into a simple text file and
+# will only pass the name of this file to the linker.
+$(targetDir)obj/listOfObjFiles.txt: $(objFileList)
+	$(info Create linker input file $@)
+	$(file >$@,$(sort $^))
+endif
 
 # Let the linker create the flashable binary file.
 #   CAUTION: An unsolved problem with GCC 4.9.4 is the switch -fshort-double, which is
@@ -285,13 +288,11 @@ lFlags = -Wl,-Tmakefile/linkerControlFile.ld -Wl,--gc-sections $(targetFlags)   
          -Wl,--defsym=ld_linkInRAM=$(if $(filter LINK_IN_RAM,$(defineList)),1,0)            \
          $(cClibSpec)
 
-#$(targetDir)$(target).elf: $(targetDir)obj/listOfObjFiles.txt makefile/linkerControlFile.ld
-#	$(info Linking project. Mapfile is $(targetDir)$(target).map)
-#	$(gcc) $(lFlags) -o $@ @$< -lm
-$(targetDir)$(target).elf: makefile/linkerControlFile.ld $(objFileList)
+$(targetDir)$(target).elf: $(if $(patchWindowsBug),$(targetDir)obj/listOfObjFiles.txt,$(objFileList)) \
+                           makefile/linkerControlFile.ld
 	$(info Linking project. Mapfile is $(targetDir)$(target).map)
-	$(gcc) $(lFlags) -o $@ $(objFileList) -lm
-
+	$(gcc) $(lFlags) -o $@ $(if $(patchWindowsBug),@$<,$(objFileList)) -lm
+    
 # Create hex file from linker output.
 $(targetDir)$(target).s19: $(targetDir)$(target).elf
 	$(objcopy) -O ihex $< $(patsubst %.elf,%.hex,$<)

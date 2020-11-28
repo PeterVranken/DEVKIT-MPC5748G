@@ -56,7 +56,14 @@ srcDirInUseList := $(sort $(dir $(cFileList)))
 
 # Determine the list of object files. We need to replace the file name extensions and
 # change the path anchor.
-objFileList := $(cFileList:.cpp=.o)
+ifneq ($(useFlatObjectFileStructure),)
+    # Strip source file path designation.
+    objFileList := $(notdir $(cFileList))
+else
+    # Use source file path designation for objcte files, too.
+    objFileList := $(cFileList)
+endif
+objFileList := $(objFileList:.cpp=.o)
 objFileList := $(objFileList:.c=.o)
 objFileList := $(objFileList:.S=.o)
 objFileList := $(addprefix $(targetDir)obj/,$(objFileList))
@@ -67,8 +74,17 @@ objFileList := $(addprefix $(targetDir)obj/,$(objFileList))
 # remove the frequent duplicates.
 objDirList = $(sort $(dir $(objFileList)))
 
+ifneq ($(useFlatObjectFileStructure),)
+# Blank separated search path for source files and their prerequisites are required if
+# don't copy the source folder tree for the object files. In this case, we can't directly
+# relate object file paths to the source files paths in the pattern rules and we need to
+# rely on searching the files.
+VPATH := $(srcDirInUseList)
+$(info VPATH: $(VPATH))
+endif
+
 # Export computed or modified variables.
-export srcDirInUseList cFileList incDirList objFileList objDirList
+export srcDirInUseList cFileList incDirList objFileList objDirList VPATH
 
 else
 $(error This makefile shouldn't be called twice. There's a problem in your makefile structure)
