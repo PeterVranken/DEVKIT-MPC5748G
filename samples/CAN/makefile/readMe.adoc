@@ -1,0 +1,167 @@
+= Makefile
+:Author:            Peter Vranken
+:Email:             mailto:Peter_Vranken@Yahoo.de[P. Vranken]
+:Revision:          1
+:title-page:
+:toc:               left
+//:toc:
+:toclevels:         3
+//:numbered:
+:xrefstyle:         short
+:sectanchors:       // Have URLs for chapters (http://.../#section-name
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+// https://asciidoctor.org/docs/user-manual/
+
+This folder contains a makefile, which implements a customizable and
+widely reusable build process for a typical C toolchain. It can be used
+with Windows compilers for Windows and for cross compilers for embedded
+systems.
+
+The makefile is compatible with GNU make, revision 3.82 or newer, in the
+MinGW port. (The Cygwin/msys port has another interface with the
+underlying shell and fails to interpret this makefile.)
+
+The makefile is composed from a user visible main makefile, GNUmakefile in
+the root of the compilation project, and several sub-makefiles, which are
+collected in this folder.
+
+The main makefile contains most of the configuration, which needs to be
+done for the compilation of a specific product in a given environment. The
+configuration of the makefile for a given environment is rather done in
+the sub-makefiles found here. This is the idea behind this distinction:
+
+Configuration for a given environment means the setup of tools and their
+command lines for a specific combination of target platform and chosen
+toolchain. Different toolchain vendors require different command line
+settings for their compilers. Another aspect could be the host machine with its
+specific installation paths. These kind of things have to be configured
+once in the sub-makefiles.
+
+Once the platform and environment related configuration has been done, any
+new compilation project can be setup for the same system by only
+adjusting the rather simple and straightforward settings in the main
+makefile. These settings are application related, it is about source file
+location, include directories or defines to be set.
+
+== Platform configuration
+
+The platform configuration is reasonably done step by step. The steps to
+take are outlined in this section.
+
+TIP: You will find commented expressions beginning with: _#$(info ..._ at
+many locations. These lines provide feedback about intermediate processing
+results. During configuration it'll often be beneficial to selectively and
+temporarily uncomment these lines.
+
+=== Location of tools
+
+The makefile requires the call of externals tools. This is not only
+compiler and linker but commonly used things like "rm", "echo" or "mkdir",
+too. They need to be found by the shell, which is invoked by make.
+
+Take a look into sub-makefile _locateTools.mk_. It offers different
+combined ways to find the needed tools. Specific environment variables can
+be checked, the system search path can be used or fixed paths to the
+executables can be hard-coded.
+
+The sub-makefile does some sample spot-checks, whether the needed tools
+are found. As long as your configuration of tool locations is obviously
+not properly done the makefile will immediately abort with some supporting
+error information.
+
+Insofar is the best way to prove successful completion of this step running
+the makefile with target "help". If:
+
+    make help
+
+lists the options of the makefile and doesn't print an error message, then
+you probably completed this step successfully.
+
+=== Global settings of build process
+
+The makefile makes use of a few global variables to configure some offered
+features. A most important example is the root path for compiled binaries.
+Most typical is putting them into a folder like _bin/obj_, however, this
+is not mandatory but a matter of setting an according variable.
+
+Please take a look at sub-makefile _globalVariables.mk_. The
+customization variables are listed and documented in this file.
+
+=== The compiler and linker settings
+
+Each compiler toolchain requires its specific command line options for
+compilation and linkage. Their configuration is handled in sub-makefile
+_compileAndLink.mk_. The file uses variables "cFlags", "asmFlags" and
+"lFlags" for the call of C compiler, assembler and linker and in some
+cases it may be sufficient to just edit the values assigned to these
+variables.
+
+In general, this won't be enough. The file has a lot of makefile code,
+which implements platform specific aspects.
+
+As an example, in this project
+we have a target with an inhomogeneous multi-core processor. It has
+differing computation cores, which require different compiler command
+lines. Accordingly, the makefile has some very platform specific conditional
+code to handle this.
+
+Also typical would be collecting sub-sets of the object files in a library
+prior to linkage. Or even not linking at all if the build product is a
+library.
+
+In general, customizing the calls of compiler, assembler, linker, archiver
+(and maybe post-processing tools) will require completely revising and
+maybe extending file _compileAndLink.mk_. There will be much re-usable
+stuff, stuff to modify and missing stuff.
+
+== Application level customization
+
+At this point, take a look at GNUmakefile in the root folder of the
+compilation project. Here, you will specify, which source files to build
+and what the name of the build product is. The customization is done with
+some top-level global variables, which are documented in the file.
+
+The basic behavior of the makefile is to search a list of folders for
+source files. Due to the recursive folder search it often suffices to
+specify a single source code folder. The source files are identified by
+file name extension. We support _*.cpp_, _*.c_ and _*.S_ for C++, C and
+assembly files.
+
+Folders, which at least one source file was found in, are considered
+include directories for the compiler, too. If you have separate folder,
+containing only header files, then you would need to specify these folders
+in another variable, too.
+
+An additional list allows to set #defines, which are propagated to
+compiler and assembler and which allow to control the compilation of
+conditional source code constructs.
+
+== Running the makefile
+
+After customization, you can try running the makefile. The most basic calls
+would be:footnote:[Note, the useful but not essential command line option
+-O is not available in make 3.82. It requires revision 4.]
+
+
+      make help
+      make -s -O build
+      make clean
+      
+Note, "make help" will print some additional useful command line options.
+
+=== Working directory
+
+The makefile makes use of relative paths to keep implementation and
+customization independent from particular folder structures on the
+machine. This requires a well-defined working directory: It generally
+holds, that the working directory for make needs to be the very folder,
+where _GNUmakefile_ resides in.
+
+:Local Variables:
+:coding:    utf-8
+:End:
