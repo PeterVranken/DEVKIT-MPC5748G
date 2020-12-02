@@ -31,7 +31,8 @@
  */
 
 #include "typ_types.h"
-#include "mza_main_Z4A.h"
+#include "rtos.config.h"
+#include "bsw_basicSoftware.h"
 
 
 #ifndef CDR_CANDRIVER_CONFIG_INC_INCLUDED
@@ -80,7 +81,7 @@
     proves the value specified here with respect to the configuration of the mailboxes.\n
       Note, the number specified here is the total number for all of the enabled CAN
     devices. */
-#define CDR_NO_RX_USER_CODE_POLLING_MAILBOXES   10
+#define CDR_NO_RX_USER_CODE_POLLING_MAILBOXES   6
 
 
 /** For the evaluation boards DEVKIT-MPC5748G and MPC5775BE-416DS, the driver can configure
@@ -90,7 +91,19 @@
     needs to be enabled. */
 #define CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD      1    
 
+/** In this application of the CAN driver, we serve all mailboxes with same interrupt
+    priority. This is essential since the API of our CAN interface, which takes newly
+    received CAN messages as input is not reentrant. There must be no race conditions in
+    reporting new messages.
+      The chosen priority should stay below the kernel tick in order to have this for time
+    budget supervision. Timing supervision is essential for the safety concept since the
+    CAN driver needs to make callbacks into untrusted user processes. */
+#define CDR_IRQ_PRIO_CAN_RX                     1
 
+_Static_assert( CDR_IRQ_PRIO_CAN_RX < RTOS_KERNEL_IRQ_PRIORITY_CORE_0
+              , "Bad IRQ priority assignment can break the safety concept"
+              );
+              
 /*
  * Global type definitions
  */
@@ -183,8 +196,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupError =
         {
             .idxTargetCore     = RTOS_CORE_Z4A,
-            .irqPrio           = 6,
-            .osCallbackOnError = mza_osCbOnCanError,
+            .irqPrio           = 0,
+            .osCallbackOnError = NULL,
             .osCallbackOnTx    = NULL,   /* Not applicable, needs to be NULL. */
         },   
         
@@ -192,8 +205,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupBusOff =
         {
             .idxTargetCore      = RTOS_CORE_Z4A,
-            .irqPrio            = 7,
-            .osCallbackOnBusOff = mza_osCbOnCanBusOff,
+            .irqPrio            = 0,
+            .osCallbackOnBusOff = NULL,
             .osCallbackOnTx     = NULL,   /* Not applicable, needs to be NULL. */
         },   
         
@@ -201,8 +214,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupFIFO =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 5,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = CDR_IRQ_PRIO_CAN_RX,
+            .osCallbackOnRx = &bsw_osCbOnCANRx,
             .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
         },
         
@@ -401,8 +414,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupMB16_31 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 1,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         }, 
         
@@ -410,8 +423,8 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupMB32_63 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 2,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         },
         
@@ -420,11 +433,11 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .irqGroupMB64_95 =
         {
             .idxTargetCore  = RTOS_CORE_Z4A,
-            .irqPrio        = 3,
-            .osCallbackOnRx = &mza_osCbOnCANRx,
+            .irqPrio        = 0,
+            .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
         },
-#endif        
+#endif
         
         /** Permission to make mailbox reservations is given only one particular user
             process, or it can be generally prohibitted for user code and left to the
@@ -444,19 +457,79 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             penalty is involved with having a zig-zag-pattern. */
         .userAccessMailboxAry = 
         {
-            [24] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
-            [25] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 1},
-            [26] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 2},
-            [27] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 3},
-            [28] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 0},
-            [29] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 5},
-            [30] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 6},
-            [31] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 7},
-            [32] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 8},
-            [33] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 9},
+            [/*hMB=72*/ 24] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 0},
+            [/*hMB=73*/ 25] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 1},
+            [/*hMB=74*/ 26] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 2},
+            [/*hMB=75*/ 27] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 3},
+            [/*hMB=76*/ 28] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 4},
+            [/*hMB=77*/ 29] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 5},
+            [/*hMB=78*/ 30] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
+            [/*hMB=79*/ 31] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
+            [/*hMB=80*/ 32] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
+            [/*hMB=81*/ 33] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
+            [/*hMB=82*/ 34] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=83*/ 35] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=84*/ 36] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=85*/ 37] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=86*/ 38] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=87*/ 39] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=88*/ 40] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=89*/ 41] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=90*/ 42] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=91*/ 43] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=92*/ 44] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=93*/ 45] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=94*/ 46] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=95*/ 47] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=96*/ 48] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=97*/ 49] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=98*/ 50] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=99*/ 51] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=100*/ 52] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=101*/ 53] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=102*/ 54] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=103*/ 55] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=104*/ 56] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=105*/ 57] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=106*/ 58] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=107*/ 59] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=108*/ 60] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=109*/ 61] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=110*/ 62] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=111*/ 63] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=112*/ 64] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=113*/ 65] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=114*/ 66] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=115*/ 67] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=116*/ 68] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=117*/ 69] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=118*/ 70] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=119*/ 71] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=120*/ 72] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=121*/ 73] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=122*/ 74] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=123*/ 75] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=124*/ 76] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=125*/ 77] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=126*/ 78] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=127*/ 79] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=128*/ 80] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=129*/ 81] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=130*/ 82] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=131*/ 83] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=132*/ 84] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=133*/ 85] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=134*/ 86] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=135*/ 87] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=136*/ 88] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=137*/ 89] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=138*/ 90] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=139*/ 91] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=140*/ 92] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=141*/ 93] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=142*/ 94] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            [/*hMB=143*/ 95] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
 #if defined(MCU_MPC5748G)
-            [69] = {.minPIDToAccess = 1, .useAsRxMailbox = true, .idxAPIBuffer = 4}, /* hMB = 69+48 = 117 */
-            [75] = {.minPIDToAccess = 1, .useAsRxMailbox = false}, /* hMB = 75+48 = 123 */
 #endif
         },
     },

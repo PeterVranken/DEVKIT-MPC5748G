@@ -69,6 +69,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "rtos.h"
 #include "cde_canDriver.config.MCUDerivative.h"
 #include "cdr_canDriver.config.inc"
 #include "cdr_canDriver.h"
@@ -142,7 +143,7 @@ typedef enum cdr_errorAPI_t
   cdr_errApi_mailboxReconfigured,       /** A MB reservation can't be changed once done. */
   cdr_errApi_badCanId,                  /** A CAN ID exceeds the 11 or 29 Bit. */
   cdr_errApi_notificationWithoutIRQ,    /** Notification demanded for MB but IRW is not
-                                            enabled for the realted MB group. */
+                                            enabled for the related MB group. */
   cdr_errApi_pollingOfMailboxWithIRQ,
   cdr_errApi_apiBufferIdxInvalid,       /** Configuration error: An API buffer has been
                                             specified for a Tx mailbox. Or a bad index has
@@ -276,7 +277,7 @@ uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice);
  * mailboxes in the CAN device. However, the result is also dependent on the chosen
  * (constant) driver configuration: The use of the FIFO can significantly enlarge the
  * number.\n
- *   The result of this function denotes the upper boundary for mailbox handles inthe
+ *   The result of this function denotes the upper boundary for mailbox handles in the
  * public interface of the CAN driver, e.g. cdr_osMakeMailboxReservation().
  *   @return
  * Get the number in the range 0..186. The count is the total number, including Rx and Tx

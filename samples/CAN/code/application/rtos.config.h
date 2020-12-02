@@ -56,7 +56,7 @@
     of same or higher priority may exist but they cannot have a secured callback into user
     code (no deadline monitoring). This makes them somewhat critical in use with respect to
     the safety concept. */
-#define RTOS_KERNEL_IRQ_PRIORITY_CORE_0         1
+#define RTOS_KERNEL_IRQ_PRIORITY_CORE_0         2 /* Above CAN because of time supervision */
 #define RTOS_KERNEL_IRQ_PRIORITY_CORE_1         1
 #define RTOS_KERNEL_IRQ_PRIORITY_CORE_2         1
 

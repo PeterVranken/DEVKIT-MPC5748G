@@ -183,7 +183,7 @@
 # define SDATA_P4(var)   SECTION(.sdata.P4.var) var
 
 /** Helper for definition of shared, initialized and uninitialized data objects. "Shared"
-    related to the contexts on different cores; the data is placed in uncached memory. All
+    relates to the contexts on different cores; the data is placed in uncached memory. All
     contexts on all cores have read access and the OS contexts on all cores and the user
     tasks of process P4 on all cores have read and write permission. */
 # define UNCACHED_P4(var) SECTION(.uncached.P4.var) var

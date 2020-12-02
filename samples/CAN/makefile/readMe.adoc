@@ -77,6 +77,7 @@ error information.
 Insofar is the best way to prove successful completion of this step running
 the makefile with target "help". If:
 
+    cd <locationOfGNUMakefile>
     make help
 
 lists the options of the makefile and doesn't print an error message, then
@@ -147,10 +148,10 @@ After customization, you can try running the makefile. The most basic calls
 would be:footnote:[Note, the useful but not essential command line option
 -O is not available in make 3.82. It requires revision 4.]
 
-
-      make help
-      make -s -O build
-      make clean
+    cd <locationOfGNUMakefile>
+    make help
+    make -s -O build
+    make clean
       
 Note, "make help" will print some additional useful command line options.
 

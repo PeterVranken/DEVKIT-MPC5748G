@@ -67,7 +67,7 @@ cFileListExcl :=
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).
-incDirList := code/application/
+incDirList := code/application/ code/application/Z4A/
 
 # A blank separated list of C defines for compilation, with or without value.
 #   There are some macros with predefined meaning for the build process. They impact the
@@ -89,7 +89,11 @@ incDirList := code/application/
 #   LINK_IN_RAM: If given, the linker will place all code and all data in RAM. The program
 # under development can be loaded by the debugger without erasing and re-programming the
 # flash, which reduces the turnaround time and which saves flash programming cycles.
-defineList := USE_NEWLIB LINK_IN_RAM
+defineList := USE_NEWLIB \
+              OSE_CAN_BUS_PT=0 \
+		      CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
+              CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
+              LINK_IN_RAM \
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

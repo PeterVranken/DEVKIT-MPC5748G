@@ -33,15 +33,27 @@ h help targets usage: help_generateCANCode
 # practice, we mainly modify the templates so this is the major dependency.
 .PHONY: generateCANCode
 genDir := code/application/canStack/
-templateList := $(wildcard $(genDir)templates/*.stg)
+templateList := $(call rwildcard,$(genDir)templates/,*.stg)
 databaseList := $(wildcard $(genDir)dbcFiles/*.dbc)
 #$(info List of StringTemplate V4 templates: $(templateList), DBC files: $(databaseList))
 generateCANCode: $(genDir)makeTag_generateCode
 
-$(genDir)makeTag_generateCode: $(templateList) $(databaseList)
-	cd $(call u2w,$(genDir)) & generateCode.cmd
-	@echo Make tag for rule generateCANCode. Do not delete this file > $@
+# Caution, the recipe of this rule highly depends on the makefile configuration setting
+# .ONESHELL (see globalVariables.mk). It needs to be given. This allows to first change
+# directory then define subsequent steps relative to that directory.
+#   Unfortunately, the Windows shell cmd concatenates the lines cd and next one so that
+# both lines result in one invalid command. It's unclear if this is a problem in make or in
+# the shell itself. The explicit $(EOL) is a workaround to separate the lines.
+$(genDir)makeTag_generateCode: $(templateList) $(databaseList) $(genDir)generateCode.cmd
+	cd $(call u2w,$(dir $@)) $(EOL)
+#	pwd
+	call generateCode.cmd -v WARN
+	echo Make tag for rule generateCANCode. Do not delete this file > $(notdir $@)
     
+souceFileList := $(call rwildcard,$(genDir),*.c *.h)
+#$(info List of generated CAN source files: $(souceFileList))
+$(souceFileList): $(genDir)makeTag_generateCode
+
 # clean: We can't delete all produced file as they are output of the external shell script
 # and not known to this makefile. However, deleting the tag file forces at least the
 # re-generation of the files, which is mostly the intention of a clean.
