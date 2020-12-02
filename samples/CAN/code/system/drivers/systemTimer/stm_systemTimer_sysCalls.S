@@ -76,7 +76,7 @@
  * The function must be called from user code only. Supervisor code (OS tasks and ISRs)
  * will instead call the equivalent function stm_osGetSystemTime().
  */
-    .section    .text.stm_getSystemTime
+    .section    .text.ivor.stm_getSystemTime
     .global     stm_getSystemTime, stm_scBscHdlr_getSystemTime
     .extern     rtos_osSystemCallBadArgument
     .p2align    1
