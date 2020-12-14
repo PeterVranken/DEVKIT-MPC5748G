@@ -219,7 +219,6 @@ cap_canBus_PT_t cap_canBus_PT =
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_packApi_PT_StateEcu01(uint8_t m[])
 {
     cap_pack_PT_StateEcu01
@@ -242,7 +241,6 @@ void cap_packApi_PT_StateEcu01(uint8_t m[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_pack_PT_StateEcu01
                     ( uint8_t m[]
                     , const cap_PT_StateEcu01_1024_t *pFrameStruct
@@ -303,7 +301,6 @@ void cap_pack_PT_StateEcu01
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpackApi_PT_StateEcu01(const uint8_t m[])
 {
     cap_unpack_PT_StateEcu01
@@ -323,7 +320,6 @@ void cap_unpackApi_PT_StateEcu01(const uint8_t m[])
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpack_PT_StateEcu01
                     ( cap_PT_StateEcu01_1024_t *pFrameStruct
                     , const uint8_t m[]
@@ -351,7 +347,6 @@ void cap_unpack_PT_StateEcu01
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_packApi_PT_StateEcu02(uint8_t m[])
 {
     cap_pack_PT_StateEcu02
@@ -374,7 +369,6 @@ void cap_packApi_PT_StateEcu02(uint8_t m[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_pack_PT_StateEcu02
                     ( uint8_t m[]
                     , const cap_PT_StateEcu02_1040_t *pFrameStruct
@@ -434,7 +428,6 @@ void cap_pack_PT_StateEcu02
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpackApi_PT_StateEcu02(const uint8_t m[])
 {
     cap_unpack_PT_StateEcu02
@@ -454,7 +447,6 @@ void cap_unpackApi_PT_StateEcu02(const uint8_t m[])
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpack_PT_StateEcu02
                     ( cap_PT_StateEcu02_1040_t *pFrameStruct
                     , const uint8_t m[]
@@ -482,7 +474,6 @@ void cap_unpack_PT_StateEcu02
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_packApi_PT_UserLimits(uint8_t m[])
 {
     cap_pack_PT_UserLimits
@@ -505,7 +496,6 @@ void cap_packApi_PT_UserLimits(uint8_t m[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_pack_PT_UserLimits
                     ( uint8_t m[]
                     , const cap_PT_UserLimits_2032_t *pFrameStruct
@@ -606,7 +596,6 @@ void cap_pack_PT_UserLimits
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpackApi_PT_UserLimits(const uint8_t m[])
 {
     cap_unpack_PT_UserLimits
@@ -626,7 +615,6 @@ void cap_unpackApi_PT_UserLimits(const uint8_t m[])
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpack_PT_UserLimits
                     ( cap_PT_UserLimits_2032_t *pFrameStruct
                     , const uint8_t m[]
@@ -658,7 +646,6 @@ void cap_unpack_PT_UserLimits
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_packApi_PT_InfoPowerDisplay(uint8_t m[])
 {
     cap_pack_PT_InfoPowerDisplay
@@ -681,7 +668,6 @@ void cap_packApi_PT_InfoPowerDisplay(uint8_t m[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_pack_PT_InfoPowerDisplay
                     ( uint8_t m[]
                     , const cap_PT_InfoPowerDisplay_1536_t *pFrameStruct
@@ -754,7 +740,6 @@ void cap_pack_PT_InfoPowerDisplay
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpackApi_PT_InfoPowerDisplay(const uint8_t m[])
 {
     cap_unpack_PT_InfoPowerDisplay
@@ -774,7 +759,6 @@ void cap_unpackApi_PT_InfoPowerDisplay(const uint8_t m[])
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpack_PT_InfoPowerDisplay
                     ( cap_PT_InfoPowerDisplay_1536_t *pFrameStruct
                     , const uint8_t m[]
@@ -804,7 +788,6 @@ void cap_unpack_PT_InfoPowerDisplay
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_packApi_PT_StatusPowerDisplay(uint8_t m[])
 {
     cap_pack_PT_StatusPowerDisplay
@@ -827,7 +810,6 @@ void cap_packApi_PT_StatusPowerDisplay(uint8_t m[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_pack_PT_StatusPowerDisplay
                     ( uint8_t m[]
                     , const cap_PT_StatusPowerDisplay_1537_t *pFrameStruct
@@ -915,7 +897,6 @@ void cap_pack_PT_StatusPowerDisplay
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpackApi_PT_StatusPowerDisplay(const uint8_t m[])
 {
     cap_unpack_PT_StatusPowerDisplay
@@ -935,7 +916,6 @@ void cap_unpackApi_PT_StatusPowerDisplay(const uint8_t m[])
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpack_PT_StatusPowerDisplay
                     ( cap_PT_StatusPowerDisplay_1537_t *pFrameStruct
                     , const uint8_t m[]
@@ -967,7 +947,6 @@ void cap_unpack_PT_StatusPowerDisplay
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_packApi_PT_LimitsPowerDisplay(uint8_t m[])
 {
     cap_pack_PT_LimitsPowerDisplay
@@ -990,7 +969,6 @@ void cap_packApi_PT_LimitsPowerDisplay(uint8_t m[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void cap_pack_PT_LimitsPowerDisplay
                     ( uint8_t m[]
                     , const cap_PT_LimitsPowerDisplay_1538_t *pFrameStruct
@@ -1067,7 +1045,6 @@ void cap_pack_PT_LimitsPowerDisplay
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpackApi_PT_LimitsPowerDisplay(const uint8_t m[])
 {
     cap_unpack_PT_LimitsPowerDisplay
@@ -1087,7 +1064,6 @@ void cap_unpackApi_PT_LimitsPowerDisplay(const uint8_t m[])
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
-
 void cap_unpack_PT_LimitsPowerDisplay
                     ( cap_PT_LimitsPowerDisplay_1538_t *pFrameStruct
                     , const uint8_t m[]
@@ -1109,4 +1085,473 @@ void cap_unpack_PT_LimitsPowerDisplay
 #endif
 
 
+
+
+/**
+ * Get the value of signal checksum of inbound PDU StateEcu01
+ * (1024, 0x400) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1024_checksum(void)
+    { return (float)cap_getSignal_PT_StateEcu01_1024(checksum); }
+
+/**
+ * Set the value of signal checksum of inbound PDU StateEcu01
+ * (1024, 0x400) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1024_checksum(float newValue)
+    { cap_getSignal_PT_StateEcu01_1024(checksum) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal speedOfRotation of inbound PDU StateEcu01
+ * (1024, 0x400) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1024_speedOfRotation(void)
+    { return CAP_PT_1024_SPEEDOFROTATION_BIN_TO_DBL(cap_getSignal_PT_StateEcu01_1024(speedOfRotation)); }
+
+/**
+ * Set the value of signal speedOfRotation of inbound PDU StateEcu01
+ * (1024, 0x400) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1024_speedOfRotation(float newValue)
+    { cap_getSignal_PT_StateEcu01_1024(speedOfRotation) = CAP_PT_1024_SPEEDOFROTATION_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal sequenceCounter of inbound PDU StateEcu01
+ * (1024, 0x400) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1024_sequenceCounter(void)
+    { return (float)cap_getSignal_PT_StateEcu01_1024(sequenceCounter); }
+
+/**
+ * Set the value of signal sequenceCounter of inbound PDU StateEcu01
+ * (1024, 0x400) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1024_sequenceCounter(float newValue)
+    { cap_getSignal_PT_StateEcu01_1024(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal checksum of inbound PDU StateEcu02
+ * (1040, 0x410) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1040_checksum(void)
+    { return (float)cap_getSignal_PT_StateEcu02_1040(checksum); }
+
+/**
+ * Set the value of signal checksum of inbound PDU StateEcu02
+ * (1040, 0x410) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1040_checksum(float newValue)
+    { cap_getSignal_PT_StateEcu02_1040(checksum) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal sequenceCounter of inbound PDU StateEcu02
+ * (1040, 0x410) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1040_sequenceCounter(void)
+    { return (float)cap_getSignal_PT_StateEcu02_1040(sequenceCounter); }
+
+/**
+ * Set the value of signal sequenceCounter of inbound PDU StateEcu02
+ * (1040, 0x410) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1040_sequenceCounter(float newValue)
+    { cap_getSignal_PT_StateEcu02_1040(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal torque of inbound PDU StateEcu02
+ * (1040, 0x410) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1040_torque(void)
+    { return CAP_PT_1040_TORQUE_BIN_TO_DBL(cap_getSignal_PT_StateEcu02_1040(torque)); }
+
+/**
+ * Set the value of signal torque of inbound PDU StateEcu02
+ * (1040, 0x410) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1040_torque(float newValue)
+    { cap_getSignal_PT_StateEcu02_1040(torque) = CAP_PT_1040_TORQUE_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal sequenceCounter of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_2032_sequenceCounter(void)
+    { return (float)cap_getSignal_PT_UserLimits_2032(sequenceCounter); }
+
+/**
+ * Set the value of signal sequenceCounter of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_2032_sequenceCounter(float newValue)
+    { cap_getSignal_PT_UserLimits_2032(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal minSpeedOfRotation of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_2032_minSpeedOfRotation(void)
+    { return CAP_PT_2032_MINSPEEDOFROTATION_BIN_TO_DBL(cap_getSignal_PT_UserLimits_2032(minSpeedOfRotation)); }
+
+/**
+ * Set the value of signal minSpeedOfRotation of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_2032_minSpeedOfRotation(float newValue)
+    { cap_getSignal_PT_UserLimits_2032(minSpeedOfRotation) = CAP_PT_2032_MINSPEEDOFROTATION_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal maxSpeedOfRotation of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_2032_maxSpeedOfRotation(void)
+    { return CAP_PT_2032_MAXSPEEDOFROTATION_BIN_TO_DBL(cap_getSignal_PT_UserLimits_2032(maxSpeedOfRotation)); }
+
+/**
+ * Set the value of signal maxSpeedOfRotation of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_2032_maxSpeedOfRotation(float newValue)
+    { cap_getSignal_PT_UserLimits_2032(maxSpeedOfRotation) = CAP_PT_2032_MAXSPEEDOFROTATION_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal checksum of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_2032_checksum(void)
+    { return (float)cap_getSignal_PT_UserLimits_2032(checksum); }
+
+/**
+ * Set the value of signal checksum of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_2032_checksum(float newValue)
+    { cap_getSignal_PT_UserLimits_2032(checksum) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal minPower of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_2032_minPower(void)
+    { return CAP_PT_2032_MINPOWER_BIN_TO_DBL(cap_getSignal_PT_UserLimits_2032(minPower)); }
+
+/**
+ * Set the value of signal minPower of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_2032_minPower(float newValue)
+    { cap_getSignal_PT_UserLimits_2032(minPower) = CAP_PT_2032_MINPOWER_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal maxPower of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_2032_maxPower(void)
+    { return CAP_PT_2032_MAXPOWER_BIN_TO_DBL(cap_getSignal_PT_UserLimits_2032(maxPower)); }
+
+/**
+ * Set the value of signal maxPower of inbound PDU UserLimits
+ * (2032, 0x7f0) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_2032_maxPower(float newValue)
+    { cap_getSignal_PT_UserLimits_2032(maxPower) = CAP_PT_2032_MAXPOWER_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal checksum of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1536_checksum(void)
+    { return (float)cap_getSignal_PT_InfoPowerDisplay_1536(checksum); }
+
+/**
+ * Set the value of signal checksum of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1536_checksum(float newValue)
+    { cap_getSignal_PT_InfoPowerDisplay_1536(checksum) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal sequenceCounter of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1536_sequenceCounter(void)
+    { return (float)cap_getSignal_PT_InfoPowerDisplay_1536(sequenceCounter); }
+
+/**
+ * Set the value of signal sequenceCounter of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1536_sequenceCounter(float newValue)
+    { cap_getSignal_PT_InfoPowerDisplay_1536(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal power of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1536_power(void)
+    { return CAP_PT_1536_POWER_BIN_TO_DBL(cap_getSignal_PT_InfoPowerDisplay_1536(power)); }
+
+/**
+ * Set the value of signal power of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1536_power(float newValue)
+    { cap_getSignal_PT_InfoPowerDisplay_1536(power) = CAP_PT_1536_POWER_DBL_TO_BIN(newValue); }
+
+/**
+ * Get the value of signal state of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1536_state(void)
+    { return (float)cap_getSignal_PT_InfoPowerDisplay_1536(state); }
+
+/**
+ * Set the value of signal state of outbound PDU InfoPowerDisplay
+ * (1536, 0x600) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1536_state(float newValue)
+    { cap_getSignal_PT_InfoPowerDisplay_1536(state) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal noDlcErrors of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1537_noDlcErrors(void)
+    { return (float)cap_getSignal_PT_StatusPowerDisplay_1537(noDlcErrors); }
+
+/**
+ * Set the value of signal noDlcErrors of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1537_noDlcErrors(float newValue)
+    { cap_getSignal_PT_StatusPowerDisplay_1537(noDlcErrors) = (uint16_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal noCheckSumErrors of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1537_noCheckSumErrors(void)
+    { return (float)cap_getSignal_PT_StatusPowerDisplay_1537(noCheckSumErrors); }
+
+/**
+ * Set the value of signal noCheckSumErrors of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1537_noCheckSumErrors(float newValue)
+    { cap_getSignal_PT_StatusPowerDisplay_1537(noCheckSumErrors) = (uint16_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal noSqcErrors of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1537_noSqcErrors(void)
+    { return (float)cap_getSignal_PT_StatusPowerDisplay_1537(noSqcErrors); }
+
+/**
+ * Set the value of signal noSqcErrors of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1537_noSqcErrors(float newValue)
+    { cap_getSignal_PT_StatusPowerDisplay_1537(noSqcErrors) = (uint16_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal sequenceCounter of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1537_sequenceCounter(void)
+    { return (float)cap_getSignal_PT_StatusPowerDisplay_1537(sequenceCounter); }
+
+/**
+ * Set the value of signal sequenceCounter of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1537_sequenceCounter(float newValue)
+    { cap_getSignal_PT_StatusPowerDisplay_1537(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal checksum of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1537_checksum(void)
+    { return (float)cap_getSignal_PT_StatusPowerDisplay_1537(checksum); }
+
+/**
+ * Set the value of signal checksum of outbound PDU StatusPowerDisplay
+ * (1537, 0x601) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1537_checksum(float newValue)
+    { cap_getSignal_PT_StatusPowerDisplay_1537(checksum) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal sequenceCounter of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1538_sequenceCounter(void)
+    { return (float)cap_getSignal_PT_LimitsPowerDisplay_1538(sequenceCounter); }
+
+/**
+ * Set the value of signal sequenceCounter of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1538_sequenceCounter(float newValue)
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal belowMinSpeedOfRotation of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1538_belowMinSpeedOfRotation(void)
+    { return (float)cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinSpeedOfRotation); }
+
+/**
+ * Set the value of signal belowMinSpeedOfRotation of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1538_belowMinSpeedOfRotation(float newValue)
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinSpeedOfRotation) = (boolean_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal aboveMaxSpeedOfRotation of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1538_aboveMaxSpeedOfRotation(void)
+    { return (float)cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxSpeedOfRotation); }
+
+/**
+ * Set the value of signal aboveMaxSpeedOfRotation of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1538_aboveMaxSpeedOfRotation(float newValue)
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxSpeedOfRotation) = (boolean_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal belowMinPower of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1538_belowMinPower(void)
+    { return (float)cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinPower); }
+
+/**
+ * Set the value of signal belowMinPower of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1538_belowMinPower(float newValue)
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinPower) = (boolean_t)(newValue + 0.5f); }
+
+/**
+ * Get the value of signal aboveMaxPower of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT.
+ *   @return
+ * Get the current value form the global API.
+ */
+float get_PT_1538_aboveMaxPower(void)
+    { return (float)cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxPower); }
+
+/**
+ * Set the value of signal aboveMaxPower of outbound PDU LimitsPowerDisplay
+ * (1538, 0x602) on bus PT in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void set_PT_1538_aboveMaxPower(float newValue)
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxPower) = (boolean_t)(newValue + 0.5f); }
 

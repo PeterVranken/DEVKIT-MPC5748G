@@ -156,6 +156,31 @@ typedef struct cde_canFrame_t
 } cde_canFrame_t;
 
 
+/** The description of a CAN signal as required for the specific functionality of this
+    applicatin: The user can select signals rather than frames for reception and sending. */
+typedef struct cde_canSignal_t
+{
+    /** Name of signal. */
+    const char *name;
+
+    /** Reference to containg CAN frame: Index into table of all frames. */
+    unsigned int idxCdeFrame;
+
+    /** Reference to containg CAN frame: Table of Rx or Tx frames? */
+    boolean_t isReceived;
+
+    /** Getter for signal: Has a signal independent, generic prototype and allows to read
+        the signal value from the global API as uniform type \a float. */
+    float (*getter)(void);
+
+    /** Setter for signal: Has a signal independent, generic prototype and allows to set
+        the signal value in the global API. */
+    void (*setter)(float newValue);
+
+} cde_canSignal_t;
+
+
+
 /*
  * Data declarations
  */

@@ -1176,6 +1176,190 @@ void cap_unpack_PT_LimitsPowerDisplay
 #endif
 
 
+/** Get the current value of frame StateEcu01 (1024), signal checksum
+    as float. */
+float get_PT_1024_checksum(void);
+
+/** Set the value of frame StateEcu01 (1024), signal checksum. */
+void set_PT_1024_checksum(float newValue);
+
+/** Get the current value of frame StateEcu01 (1024), signal speedOfRotation
+    as float. */
+float get_PT_1024_speedOfRotation(void);
+
+/** Set the value of frame StateEcu01 (1024), signal speedOfRotation. */
+void set_PT_1024_speedOfRotation(float newValue);
+
+/** Get the current value of frame StateEcu01 (1024), signal sequenceCounter
+    as float. */
+float get_PT_1024_sequenceCounter(void);
+
+/** Set the value of frame StateEcu01 (1024), signal sequenceCounter. */
+void set_PT_1024_sequenceCounter(float newValue);
+
+/** Get the current value of frame StateEcu02 (1040), signal checksum
+    as float. */
+float get_PT_1040_checksum(void);
+
+/** Set the value of frame StateEcu02 (1040), signal checksum. */
+void set_PT_1040_checksum(float newValue);
+
+/** Get the current value of frame StateEcu02 (1040), signal sequenceCounter
+    as float. */
+float get_PT_1040_sequenceCounter(void);
+
+/** Set the value of frame StateEcu02 (1040), signal sequenceCounter. */
+void set_PT_1040_sequenceCounter(float newValue);
+
+/** Get the current value of frame StateEcu02 (1040), signal torque
+    as float. */
+float get_PT_1040_torque(void);
+
+/** Set the value of frame StateEcu02 (1040), signal torque. */
+void set_PT_1040_torque(float newValue);
+
+/** Get the current value of frame UserLimits (2032), signal sequenceCounter
+    as float. */
+float get_PT_2032_sequenceCounter(void);
+
+/** Set the value of frame UserLimits (2032), signal sequenceCounter. */
+void set_PT_2032_sequenceCounter(float newValue);
+
+/** Get the current value of frame UserLimits (2032), signal minSpeedOfRotation
+    as float. */
+float get_PT_2032_minSpeedOfRotation(void);
+
+/** Set the value of frame UserLimits (2032), signal minSpeedOfRotation. */
+void set_PT_2032_minSpeedOfRotation(float newValue);
+
+/** Get the current value of frame UserLimits (2032), signal maxSpeedOfRotation
+    as float. */
+float get_PT_2032_maxSpeedOfRotation(void);
+
+/** Set the value of frame UserLimits (2032), signal maxSpeedOfRotation. */
+void set_PT_2032_maxSpeedOfRotation(float newValue);
+
+/** Get the current value of frame UserLimits (2032), signal checksum
+    as float. */
+float get_PT_2032_checksum(void);
+
+/** Set the value of frame UserLimits (2032), signal checksum. */
+void set_PT_2032_checksum(float newValue);
+
+/** Get the current value of frame UserLimits (2032), signal minPower
+    as float. */
+float get_PT_2032_minPower(void);
+
+/** Set the value of frame UserLimits (2032), signal minPower. */
+void set_PT_2032_minPower(float newValue);
+
+/** Get the current value of frame UserLimits (2032), signal maxPower
+    as float. */
+float get_PT_2032_maxPower(void);
+
+/** Set the value of frame UserLimits (2032), signal maxPower. */
+void set_PT_2032_maxPower(float newValue);
+
+/** Get the current value of frame InfoPowerDisplay (1536), signal checksum
+    as float. */
+float get_PT_1536_checksum(void);
+
+/** Set the value of frame InfoPowerDisplay (1536), signal checksum. */
+void set_PT_1536_checksum(float newValue);
+
+/** Get the current value of frame InfoPowerDisplay (1536), signal sequenceCounter
+    as float. */
+float get_PT_1536_sequenceCounter(void);
+
+/** Set the value of frame InfoPowerDisplay (1536), signal sequenceCounter. */
+void set_PT_1536_sequenceCounter(float newValue);
+
+/** Get the current value of frame InfoPowerDisplay (1536), signal power
+    as float. */
+float get_PT_1536_power(void);
+
+/** Set the value of frame InfoPowerDisplay (1536), signal power. */
+void set_PT_1536_power(float newValue);
+
+/** Get the current value of frame InfoPowerDisplay (1536), signal state
+    as float. */
+float get_PT_1536_state(void);
+
+/** Set the value of frame InfoPowerDisplay (1536), signal state. */
+void set_PT_1536_state(float newValue);
+
+/** Get the current value of frame StatusPowerDisplay (1537), signal noDlcErrors
+    as float. */
+float get_PT_1537_noDlcErrors(void);
+
+/** Set the value of frame StatusPowerDisplay (1537), signal noDlcErrors. */
+void set_PT_1537_noDlcErrors(float newValue);
+
+/** Get the current value of frame StatusPowerDisplay (1537), signal noCheckSumErrors
+    as float. */
+float get_PT_1537_noCheckSumErrors(void);
+
+/** Set the value of frame StatusPowerDisplay (1537), signal noCheckSumErrors. */
+void set_PT_1537_noCheckSumErrors(float newValue);
+
+/** Get the current value of frame StatusPowerDisplay (1537), signal noSqcErrors
+    as float. */
+float get_PT_1537_noSqcErrors(void);
+
+/** Set the value of frame StatusPowerDisplay (1537), signal noSqcErrors. */
+void set_PT_1537_noSqcErrors(float newValue);
+
+/** Get the current value of frame StatusPowerDisplay (1537), signal sequenceCounter
+    as float. */
+float get_PT_1537_sequenceCounter(void);
+
+/** Set the value of frame StatusPowerDisplay (1537), signal sequenceCounter. */
+void set_PT_1537_sequenceCounter(float newValue);
+
+/** Get the current value of frame StatusPowerDisplay (1537), signal checksum
+    as float. */
+float get_PT_1537_checksum(void);
+
+/** Set the value of frame StatusPowerDisplay (1537), signal checksum. */
+void set_PT_1537_checksum(float newValue);
+
+/** Get the current value of frame LimitsPowerDisplay (1538), signal sequenceCounter
+    as float. */
+float get_PT_1538_sequenceCounter(void);
+
+/** Set the value of frame LimitsPowerDisplay (1538), signal sequenceCounter. */
+void set_PT_1538_sequenceCounter(float newValue);
+
+/** Get the current value of frame LimitsPowerDisplay (1538), signal belowMinSpeedOfRotation
+    as float. */
+float get_PT_1538_belowMinSpeedOfRotation(void);
+
+/** Set the value of frame LimitsPowerDisplay (1538), signal belowMinSpeedOfRotation. */
+void set_PT_1538_belowMinSpeedOfRotation(float newValue);
+
+/** Get the current value of frame LimitsPowerDisplay (1538), signal aboveMaxSpeedOfRotation
+    as float. */
+float get_PT_1538_aboveMaxSpeedOfRotation(void);
+
+/** Set the value of frame LimitsPowerDisplay (1538), signal aboveMaxSpeedOfRotation. */
+void set_PT_1538_aboveMaxSpeedOfRotation(float newValue);
+
+/** Get the current value of frame LimitsPowerDisplay (1538), signal belowMinPower
+    as float. */
+float get_PT_1538_belowMinPower(void);
+
+/** Set the value of frame LimitsPowerDisplay (1538), signal belowMinPower. */
+void set_PT_1538_belowMinPower(float newValue);
+
+/** Get the current value of frame LimitsPowerDisplay (1538), signal aboveMaxPower
+    as float. */
+float get_PT_1538_aboveMaxPower(void);
+
+/** Set the value of frame LimitsPowerDisplay (1538), signal aboveMaxPower. */
+void set_PT_1538_aboveMaxPower(float newValue);
+
+
+
 
 /*
  * Inline function definitions

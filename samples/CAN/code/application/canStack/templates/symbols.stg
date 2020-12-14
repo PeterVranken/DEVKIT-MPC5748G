@@ -63,6 +63,8 @@ fct ::= [ "packFrame": {<file.mnmApi>_pack_<bus.name>_<pdu.name>}
 // typical objects, which are required for name disambiguation are addressed by scoping
 // under the usual names.
 symbol ::= [ "signal": {<signal><if(signal.isMuxedSignal)>_m<signal.muxValue><endif>}
+           , "signalSetter": {set_<bus>_<frame.id>_<symbol.signal>}
+           , "signalGetter": {get_<bus>_<frame.id>_<symbol.signal>}
            , "sigObjBus": {canBus_<bus>}
            , "busObjBus": {<file.mnmApi>_<symbol.sigObjBus>_t}
            , "structBus": {<file.mnmApi>_<symbol.sigObjBus>}

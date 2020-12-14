@@ -65,6 +65,7 @@ canApiDef(cluster, info) ::= <<
 <modC(["\n", moduleDescription()])>
 <! The list of functions is put after the file frame shaped by modC !>
 <iteratePdusOfCluster(cluster,"both","packUnpackFct")>
+<iterateSignalsOfCluster(cluster,"all","all","setterGetterSignal")>
 >>
 
 // This is the other root template; the complete C header file is rendered.
@@ -162,6 +163,8 @@ typedef enum <symbol.enumSendMode_t>
 // prototypes of the pack and unpack functions.
 @modH.prototypes() ::= <<
 <iteratePdusOfCluster(cluster,"both","packFctDecl")>
+<iterateSignalsOfCluster(cluster,"all","all","setterGetterSignalDecl")>
+
 >>
 
 
@@ -324,7 +327,6 @@ packUnpackFct(pdu) ::= <<
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[])
 {
     <fct.packFrame>
@@ -347,7 +349,6 @@ void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void <fct.packFrame>
                     ( <bt("uint8_t")> <msgAry()>[]
                     , const <symbol.structFrame_t> *pFrameStruct
@@ -383,7 +384,6 @@ void <fct.packFrame>
  *   @param <msgAry()>
  * The byte array. The signal values are extracted from this array.
  */
-
 void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[])
 {
     <fct.unpackFrame>
@@ -403,7 +403,6 @@ void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[])
  *   @param <msgAry()>
  * The byte array. The signal values are extracted from this array.
  */
-
 void <fct.unpackFrame>
                     ( <symbol.structFrame_t> *pFrameStruct
                     , const <bt("uint8_t")> <msgAry()>[]
@@ -476,4 +475,72 @@ cMuxSelectorName() ::= <<
 
 // A string telling the direction of transmission of a frame or a PDU.
 direction(pdu) ::= "<if(pdu.isSent)>outbound<elseif(pdu.isReceived)>inbound<else>unused<endif>"
+
+// C code: A setter and getter with unified prototype for a signal.
+setterGetterSignalDecl(signal,kind) ::= <<
+/** Get the current value of frame <frame> (<frame.id>), signal <symbol.signal>
+    as float. */
+float <symbol.signalGetter>(void);
+
+/** Set the value of frame <frame> (<frame.id>), signal <symbol.signal>. */
+void <symbol.signalSetter>(float newValue);<\n>
+
+>>
+setterGetterSignal(signal,kind) ::= <<
+/**
+ * Get the value of signal <symbol.signal> of <direction(pdu)> PDU <pdu.name>
+ * (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name>.
+ *   @return
+ * Get the current value form the global API.
+ */
+float <symbol.signalGetter>(void)
+    { <if(!signal.isVoidScaling)><\\>
+return <define.signalBinToDbl>(<define.referenceSignalOfStructFrame>(<symbol.signal>));<\\>
+<else><\\>
+return (float)<define.referenceSignalOfStructFrame>(<symbol.signal>);<endif> }
+
+/**
+ * Set the value of signal <symbol.signal> of <direction(pdu)> PDU <pdu.name>
+ * (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name> in the global API.
+ *   @param newValue
+ * This value is written into the global API.
+ */
+void <symbol.signalSetter>(float newValue)
+    { <define.referenceSignalOfStructFrame>(<symbol.signal>) = <if(!signal.isVoidScaling)><\\>
+<define.signalDblToBin>(newValue);<\\>
+<else>(<bt(signal.type)>)(newValue + 0.5f);<endif> }<\n>
+
+>>
+
+//<if(!signal.isVoidScaling)>
+///** Convert the binary value of signal <signal> of frame
+//    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the world value. */
+//#define <define.signalBinToDbl>(bin) \
+//            ((double)(bin)<if(!signal.isVoidFactor)>*<define.signalFactor><endif><if(!signal.isVoidOffset)>+<define.signalOffset><endif>)
+//
+///** Convert the world value of signal <signal> of frame
+//    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the binary value as
+//    transmitted via the CAN interface. */
+//#define <define.signalDblToBin>(dbl) \
+//            ((<bt(signal.type)>)(<if(!(signal.isVoidOffset||signal.isVoidFactor))>(<endif>(dbl)<if(!signal.isVoidOffset)>-<define.signalOffset><endif><if(!(signal.isVoidOffset||signal.isVoidFactor))>)<endif><if(!signal.isVoidFactor)>/<define.signalFactor><endif>))
+//
+///** The gain factor of the scaling of signal <signal> of frame
+//    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+//#define <define.signalFactor><\t>(<signal.factor>)
+//
+///** The offset of the scaling of signal <signal> of frame
+//    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+//#define <define.signalOffset><\t>(<signal.offset>)
+//
+//<endif>
+///** The minimum of the world value of signal <signal> of frame
+//    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+//#define <define.signalMin><\t>(<if(!signal.isVoidScaling)><signal.min><else><signal.min; format="%.0f"><endif>)
+//
+///** The maximum of the world value of signal <signal> of frame
+//    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+//#define <define.signalMax><\t>(<if(!signal.isVoidScaling)><signal.max><else><signal.max; format="%.0f"><endif>)<\n>
+//
+
+
 

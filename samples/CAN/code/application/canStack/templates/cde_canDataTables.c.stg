@@ -192,6 +192,31 @@ typedef struct cde_canFrame_t
 
 } cde_canFrame_t;
 
+
+/** The description of a CAN signal as required for the specific functionality of this
+    applicatin: The user can select signals rather than frames for reception and sending. */
+typedef struct cde_canSignal_t
+{
+    /** Name of signal. */
+    const char *name;
+
+    /** Reference to containg CAN frame: Index into table of all frames. */
+    unsigned int idxCdeFrame;
+    
+    /** Reference to containg CAN frame: Table of Rx or Tx frames? */
+    <bt("bool_t")> isReceived;
+    
+    /** Getter for signal: Has a signal independent, generic prototype and allows to read
+        the signal value from the global API as uniform type \a float. */
+    float (*getter)(void);
+
+    /** Setter for signal: Has a signal independent, generic prototype and allows to set
+        the signal value in the global API. */
+    void (*setter)(float newValue);
+
+} cde_canSignal_t;
+
+
 >>
 
 @modC.typedefs() ::= <<
@@ -228,6 +253,17 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
 }; /* cde_canTxFrameAry */
 
 <verifyIdxRangeHandlerContextData()>
+
+/** A global table with the description of all CAN signals as required for the specific
+    functionality of this application: The user can select signals rather than frames for
+    reception and sending. */
+const cde_canSignal_t cde_canSignalAry[] =
+{<info.calc.idxCdtCanFrameAryEntry_set_1n><info.calc.idxCdtCanFrameAryEntry_sadd_1>
+    <iteratePdusOfCluster(cluster,"received","canSignalAryFrameEntry")><\\>
+<info.calc.idxCdtCanFrameAryEntry_set_1n><info.calc.idxCdtCanFrameAryEntry_sadd_1>
+    <iteratePdusOfCluster(cluster,"sent","canSignalAryFrameEntry")><\\>
+}; /* cde_canSignalAry */
+
 >>
 
 @modH.prototypes() ::= <<
@@ -296,3 +332,21 @@ canFrameAryEntry(pdu) ::= <<
     , .tiMinDistance = <attribVal.eventMinDistance>
     },<\n>
 >>
+
+
+canSignalAryFrameEntry(pdu) ::= <<
+<iterateSignalsOfPdu(pdu,"all","all","canSignalAryEntry")><\\>
+<info.calc.idxCdtCanFrameAryEntry_add_1>
+>>
+    
+canSignalAryEntry(signal, kind) ::= <<
+[<info.calc.idxCdtCanSignalAryEntry>] =
+    { .name = "<symbol.signal>"
+    , .idxCdeFrame = <info.calc.idxCdtCanFrameAryEntry_get>
+    , .isReceived = <frame.isReceived>
+    , .getter = <symbol.signalGetter>
+    , .setter = <symbol.signalSetter>
+    },<\n>
+>>
+
+
