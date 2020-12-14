@@ -60,13 +60,13 @@
 #include <assert.h>
 
 #include "cap_canApi.h"
+#include "lbd_ledAndButtonDriver.h"
 #include "bsw_basicSoftware.h"
 #include "cdr_canDriverAPI.h"
 #include "mem_malloc.h"
 #include "cde_canDispatcherEngine.h"
 #include "cde_canStatistics.h"
 #include "cde_canDataTables.h"
-#include "asw_APSW.h"
 #include "apt_applicationTask.h"
 
 
@@ -262,7 +262,6 @@ static void onFrameReception(const cde_callbackContext_t *pContext)
            CAN API has not been updated with new signal values and no reception event must
            be notified. */
         ++ pFrDescCde->pInfoTransmission->noTransmittedFrames;
-        pFrDescCde->pInfoTransmission->isEvent;
     }
     else
     {
@@ -698,16 +697,13 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
  *   In our operating system emulation this callback is invoked in the context of a
  * different thread, which makes no particular difference to the interrupt context on a
  * typical embedded platform.
- *   @param idxFrameOs
- * A typical callback will pass some handle of the received CAN frame. This handle has
- * mostly been agreed on between APSW and BSW during the system initialization. In our
- * emulated operation system the received frames are specified by the APSW in form of an
- * initialized, constant data table. The index into this configuration table naturally is
- * the handle, which the operating system responds with when it comes to a reception event.
- *   @param pMsgContent
- * The received bytes are typically passed in as a pointer to a byte array.
- *   @param DLC
- * Any real existing platform will report the number of actually received bytes.
+ *   @param PID
+ * The mechanism to run task in a user process, which is applied for the implementation of
+ * this callback has the target PID as first argument. So this will always be bsw_pidUser.
+ *   @param pRxCanMsg
+ * A typical callback will pass some information about the received CAN frame. Here, in
+ * this sample, it is a struct containg message handle from the OS, CAN ID and, payload.
+ * The information is passed in by reference.
  */
 int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
                    , const bsw_rxCanMessage_t *pRxCanMsg
@@ -745,7 +741,7 @@ int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
     /* Count all received frames. This counter is not saturated. */
     ++ apt_noRxFrames;
 
-    /* This function can produce errors (queue full). This is however not taht server taht
+    /* This function can produce errors (queue full). This is however not that server that
        we would report it as a (safety relevant) process error. */
     return 0;
 
@@ -767,7 +763,6 @@ int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
  *   @param PID
  * The process ID of the initialized process, always bsw_pidUser in our case.
  */
-unsigned idx = 999;
 int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
 {
     assert(PID == bsw_pidUser);
@@ -776,7 +771,7 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
 
     /* Initialize the modules. */
     /// @todo We need an extended concept in order to have CAN interface objects in
-    // different memeory areas, e.g. a malloc per process
+    // different memory areas, e.g. a malloc per process
     static char heapMemoryForCanInterface[APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     mem_initModule( /* pAppMemory */ heapMemoryForCanInterface
                   , /* sizeOfAppMemory */ sizeof(heapMemoryForCanInterface)
@@ -814,7 +809,7 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
                                       );
     }
 
-    /* Register all frames at the dispatcher engine. The CAN for the MPC5748G uses
+    /* Register all frames at the dispatcher engine. The CAN driver for the MPC5748G uses
        different ranges in the index space of its mailboxes for Rx and Tx. Therefore it
        offers two linear index spaces for Rx and Tx with a fixed offset in between. The
        mapping between the index spaces of CAN driver and CAN interface engine is most easy
@@ -860,10 +855,6 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
                    &&  idxCde == CDE_MAP_HANDLE_RX_FRAME_OS_TO_CAN_IF(hOsFrame)
                   );
         }
-else
-{
-    idx = idxFrCde;
-}
     } /* for(All inbound frames) */
 
     assert(idxFrCde == CDE_NO_CAN_FRAMES_RECEIVED);
@@ -900,10 +891,6 @@ else
                    &&  CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_OS(idxCde) == hOsFrame
                   );
         }
-else
-{
-    idx = idxFrCde;
-}
     } /* for(All outbound frames) */
 
     return success? 0: -1;
@@ -961,7 +948,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
     cde_dispatcherMain(APT_IDX_DISPATCHER_10MS);
 
     /* Call the step function of the APSW, which computes new CAN output values. */
-    asw_taskApsw_10ms();
+    //asw_taskApsw_10ms();
 
     return 0;
 
@@ -1012,6 +999,8 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
 
     /* Call the 1s step function of the APSW. */
     //asw_taskApsw_1000ms();
+    static bool SDATA_P1(isOn_) = false;
+    lbd_setLED(lbd_led_1_DS10, isOn_=!isOn_);
 
     return 0;
 

@@ -72,27 +72,120 @@
 #undef CAP_TMP_DEF_STRCMP_cap_
 
 
-
 /* For each bus, there should be at least one affected message, received or sent. There a
    typical mistakes in configuration of the code generator, which lead to not considering
    any message from the DBC file. These kind of mistakes are address by this check. */
 _Static_assert( CDE_NO_CAN_FRAMES_PT
-              , "No single message from CAN_RT_attributed.dbc is considered by the"
+              , "No single message from sampleCanBus.dbc is considered by the"
                 " generated code. This is likely due to an error in the configuration"
                 " of the code generator. Did you set the node name correctly?"
               );
 
-/** Check the definition of the checksum of frame RT_IRTemp_Temp_1 (9503013, 0x910125)
+/** Check the definition of the checksum of frame StateEcu01 (1024, 0x400)
     on bus PT.\n
       A precondition for checksums is that they have eight Bit and are positioned at a byte
     position. */
-#if CAP_PT_RT_IRTEMP_TEMP_1_9503013_CHECKSUM_LENGTH != 8               \
-    || (!CAP_PT_RT_IRTEMP_TEMP_1_9503013_CHECKSUM_IS_BIG_ENDIAN        \
-        && CAP_PT_RT_IRTEMP_TEMP_1_9503013_CHECKSUM_STARTBIT%8 != 0    \
-        || CAP_PT_RT_IRTEMP_TEMP_1_9503013_CHECKSUM_IS_BIG_ENDIAN      \
-           && CAP_PT_RT_IRTEMP_TEMP_1_9503013_CHECKSUM_STARTBIT%8 != 7 \
+#if CAP_PT_STATEECU01_1024_CHECKSUM_LENGTH != 8               \
+    || (!CAP_PT_STATEECU01_1024_CHECKSUM_IS_BIG_ENDIAN        \
+        && CAP_PT_STATEECU01_1024_CHECKSUM_STARTBIT%8 != 0    \
+        || CAP_PT_STATEECU01_1024_CHECKSUM_IS_BIG_ENDIAN      \
+           && CAP_PT_STATEECU01_1024_CHECKSUM_STARTBIT%8 != 7 \
        )
-# error Input file CAN_RT_attributed.dbc, frame RT_IRTemp_Temp_1 (9503013, 0x910125): Checksums are supported only as an eight Bit integer on byte boundary
+# error Input file sampleCanBus.dbc, frame StateEcu01 (1024, 0x400): Checksums are supported only as an eight Bit integer on byte boundary
+#endif
+
+/** Check the definition of the checksum of frame StateEcu02 (1040, 0x410)
+    on bus PT.\n
+      A precondition for checksums is that they have eight Bit and are positioned at a byte
+    position. */
+#if CAP_PT_STATEECU02_1040_CHECKSUM_LENGTH != 8               \
+    || (!CAP_PT_STATEECU02_1040_CHECKSUM_IS_BIG_ENDIAN        \
+        && CAP_PT_STATEECU02_1040_CHECKSUM_STARTBIT%8 != 0    \
+        || CAP_PT_STATEECU02_1040_CHECKSUM_IS_BIG_ENDIAN      \
+           && CAP_PT_STATEECU02_1040_CHECKSUM_STARTBIT%8 != 7 \
+       )
+# error Input file sampleCanBus.dbc, frame StateEcu02 (1040, 0x410): Checksums are supported only as an eight Bit integer on byte boundary
+#endif
+
+/** Check the definition of the checksum of frame UserLimits (2032, 0x7f0)
+    on bus PT.\n
+      A precondition for checksums is that they have eight Bit and are positioned at a byte
+    position. */
+#if CAP_PT_USERLIMITS_2032_CHECKSUM_LENGTH != 8               \
+    || (!CAP_PT_USERLIMITS_2032_CHECKSUM_IS_BIG_ENDIAN        \
+        && CAP_PT_USERLIMITS_2032_CHECKSUM_STARTBIT%8 != 0    \
+        || CAP_PT_USERLIMITS_2032_CHECKSUM_IS_BIG_ENDIAN      \
+           && CAP_PT_USERLIMITS_2032_CHECKSUM_STARTBIT%8 != 7 \
+       )
+# error Input file sampleCanBus.dbc, frame UserLimits (2032, 0x7f0): Checksums are supported only as an eight Bit integer on byte boundary
+#endif
+
+/** Check the definition of the checksum of frame InfoPowerDisplay (1536, 0x600)
+    on bus PT.\n
+      A precondition for checksums is that they have eight Bit and are positioned at a byte
+    position. */
+#if CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_LENGTH != 8               \
+    || (!CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_IS_BIG_ENDIAN        \
+        && CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_STARTBIT%8 != 0    \
+        || CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_IS_BIG_ENDIAN      \
+           && CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_STARTBIT%8 != 7 \
+       )
+# error Input file sampleCanBus.dbc, frame InfoPowerDisplay (1536, 0x600): Checksums are supported only as an eight Bit integer on byte boundary
+#endif
+
+/** Check the definition of the checksum of frame StatusPowerDisplay (1537, 0x601)
+    on bus PT.\n
+      A precondition for checksums is that they have eight Bit and are positioned at a byte
+    position. */
+#if CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_LENGTH != 8               \
+    || (!CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_IS_BIG_ENDIAN        \
+        && CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_STARTBIT%8 != 0    \
+        || CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_IS_BIG_ENDIAN      \
+           && CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_STARTBIT%8 != 7 \
+       )
+# error Input file sampleCanBus.dbc, frame StatusPowerDisplay (1537, 0x601): Checksums are supported only as an eight Bit integer on byte boundary
+#endif
+
+/** Check the definition of the sequence counter of frame StateEcu01 (1024, 0x400)
+    on bus PT.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if CAP_PT_STATEECU01_1024_SQC_LENGTH > 8
+# error Input file sampleCanBus.dbc, frame StateEcu01 (1024, 0x400): Sequence counters must be no longer than eight Bit, found 4 Bit
+#endif
+
+/** Check the definition of the sequence counter of frame StateEcu02 (1040, 0x410)
+    on bus PT.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if CAP_PT_STATEECU02_1040_SQC_LENGTH > 8
+# error Input file sampleCanBus.dbc, frame StateEcu02 (1040, 0x410): Sequence counters must be no longer than eight Bit, found 4 Bit
+#endif
+
+/** Check the definition of the sequence counter of frame UserLimits (2032, 0x7f0)
+    on bus PT.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if CAP_PT_USERLIMITS_2032_SQC_LENGTH > 8
+# error Input file sampleCanBus.dbc, frame UserLimits (2032, 0x7f0): Sequence counters must be no longer than eight Bit, found 4 Bit
+#endif
+
+/** Check the definition of the sequence counter of frame InfoPowerDisplay (1536, 0x600)
+    on bus PT.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if CAP_PT_INFOPOWERDISPLAY_1536_SQC_LENGTH > 8
+# error Input file sampleCanBus.dbc, frame InfoPowerDisplay (1536, 0x600): Sequence counters must be no longer than eight Bit, found 4 Bit
+#endif
+
+/** Check the definition of the sequence counter of frame StatusPowerDisplay (1537, 0x601)
+    on bus PT.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if CAP_PT_STATUSPOWERDISPLAY_1537_SQC_LENGTH > 8
+# error Input file sampleCanBus.dbc, frame StatusPowerDisplay (1537, 0x601): Sequence counters must be no longer than eight Bit, found 7 Bit
+#endif
+
+/** Check the definition of the sequence counter of frame LimitsPowerDisplay (1538, 0x602)
+    on bus PT.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_LENGTH > 8
+# error Input file sampleCanBus.dbc, frame LimitsPowerDisplay (1538, 0x602): Sequence counters must be no longer than eight Bit, found 3 Bit
 #endif
 
 

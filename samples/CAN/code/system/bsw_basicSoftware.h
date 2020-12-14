@@ -33,7 +33,7 @@
 
 /** The process initialization tasks, which are provided by the application code, must not
     execute longer than this time budget. Otherwise the system won't start up. */
-#define BSW_TI_INIT_TASK_MAX_IN_US  0//5000
+#define BSW_TI_INIT_TASK_MAX_IN_US          5000
 
 /** CAN interface: The BSW uses index spaces for the mailboxes, which are offered to
     user the processes. Rx and Tx messages each have an own solid index space, which is not

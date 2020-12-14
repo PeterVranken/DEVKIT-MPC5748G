@@ -63,7 +63,7 @@ srcDirList := code/ comFramework/canInterface/components/canInterface/
 # Exclusion list: Edit the list of excluded files. A blank separated list of C or assembler
 # source files is expected (all file designations with relative path), which are excluded
 # from build.
-cFileListExcl :=
+cFileListExcl := asw_APSW.c
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).

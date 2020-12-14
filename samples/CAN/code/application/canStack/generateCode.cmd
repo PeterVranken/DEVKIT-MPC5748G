@@ -12,18 +12,8 @@ call codeGenerator ^
   -s SQC -re "(?i).*(aliv|sequence).*" ^
   --template-wrap-column 70 ^
   --bus-name PT ^
-    -dbc dbcFiles/CAN_RT_attributed.dbc ^
-    --include-frame-id 0:8520228 ^
-    --include-frame-id 9175074:9306402 ^
-    --include-frame-id 9438500:9503013 ^
-    --include-frame-id 9569060:9699876 ^
-    --include-frame-id 9767716:9962789 ^
-    --include-frame-id 9963045 ^
-    --include-frame-id 9962533 ^
-    --include-frame-id 9510437 ^
-    --include-frame-id 9509413 ^
-    --include-frame-id 9241634 ^
-    --include-frame-id 9241122 ^
+    --node-name PowerDisplay ^
+    -dbc dbcFiles/sampleCanBus.dbc ^
   --output-file-name cde_canStatistics.h ^
     --template-file-name cde_canStatistics.h.stg ^
     --template-name canStatistics_h ^
@@ -50,8 +40,21 @@ call codeGenerator ^
     --template-name overview ^
   %*
 
-REM   --node-name PowerDisplay ^
+REM  --bus-name PT ^
+REM    --node-name PowerDisplay ^
 REM    -dbc dbcFiles/sampleCanBus.dbc ^
 
-REM   --node-name ECU ^
+REM  --bus-name PT ^
+REM    --node-name ECU ^
 REM    -dbc dbcFiles/CAN_RT_attributed.dbc ^
+REM    --include-frame-id 0:8520228 ^
+REM    --include-frame-id 9175074:9306402 ^
+REM    --include-frame-id 9438500:9503013 ^
+REM    --include-frame-id 9569060:9699876 ^
+REM    --include-frame-id 9767716:9962789 ^
+REM    --include-frame-id 9963045 ^
+REM    --include-frame-id 9962533 ^
+REM    --include-frame-id 9510437 ^
+REM    --include-frame-id 9509413 ^
+REM    --include-frame-id 9241634 ^
+REM    --include-frame-id 9241122 ^

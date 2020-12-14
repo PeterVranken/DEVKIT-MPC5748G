@@ -62,8 +62,8 @@
 
 /** Our data tables with frame decriptions are separated in Rx and Tx frames. The interface
     engine has one solid handle space for all frames. This macro computes the array index of
-    a sent frame from the handle used by the engine. The index relates to array \a
-    cde_canTxFrameAry. */
+    a received frame from the handle used by the engine. The index relates to array \a
+    cde_canRxFrameAry. */
 #define CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde)                                  \
             (assert((idxFrCde) < sizeOfAry(cde_canRxFrameAry)),(idxFrCde))
 
@@ -95,8 +95,8 @@
 
 /** Our data tables with frame decriptions are separated in Rx and Tx frames. The interface
     engine has one solid handle space for all frames. This macro computes the array index of
-    a received frame from the handle used by the engine. The index relates to array \a
-    cde_canRxFrameAry. */
+    a sent frame from the handle used by the engine. The index relates to array \a
+    cde_canTxFrameAry. */
 #define CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde)                                  \
             (assert((idxFrCde)-(CDE_NO_CAN_FRAMES_RECEIVED) < sizeOfAry(cde_canTxFrameAry)),\
              (idxFrCde)-(CDE_NO_CAN_FRAMES_RECEIVED)                                        \

@@ -139,20 +139,6 @@ checkAttribs(bus) ::= <<
  <attribName.sendPeriod>. Check code generation configuration in template group file\
  attributes.stg
 <endif>
-//<if(bus.attribDefMap.(attribName.chksumDataId))>
-//<if(!bus.attribDefMap.(attribName.chksumDataId).isFrame
-//    || !bus.attribDefMap.(attribName.chksumDataId).isInt)>
-//<! A check of the range 0..255 would be possible, too, but only by always generating C
-//   preprocessor code conducting the test. Moreover, the attribute range specification
-//   is weak in that actual attribute value can exceed the range. !>
-//#error Input file <bus.networkFile.Name>, <attribName.chksumDataId> needs to be a frame related attribute of type integer
-//<endif>
-//<else>
-//<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.chksumDataId>})>
-//#error Input file <bus.networkFile.Name> does not contain frame attribute\
-// <attribName.chksumDataId>. Check code generation configuration in template group file\
-// attributes.stg
-//<endif>
 <if(bus.attribDefMap.(attribName.eventMinDistance))>
 <if(!bus.attribDefMap.(attribName.eventMinDistance).isFrame
     || !bus.attribDefMap.(attribName.eventMinDistance).isInt)>

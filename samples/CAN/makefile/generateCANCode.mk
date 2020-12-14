@@ -1,5 +1,5 @@
 #
-# Makefile for GNU Make 3.81
+# Makefile for GNU Make 3.82 (MinGW port only)
 #
 # Generation of C sources (and related files) from CAN network database files.
 #
@@ -23,20 +23,20 @@
 
 # Add a line of help to the general makefile help. This text prepends the general help and
 # relates to this additional makefile fragment only.
-.PHONY: help_generateCANCode
-help_generateCANCode:
-	$(info Note, as an additional target you may state generateCANCode on the $(EOL)\
+.PHONY: help_generateCanInterface
+help_generateCanInterface:
+	$(info Note, as an additional target you may state generateCanInterface on the $(EOL)\
            command line. The CAN stack is reproduced from the DBC Files)
-h help targets usage: help_generateCANCode
+h help targets usage: help_generateCanInterface
 
 # Generate the C code from the DBC file(s) with help of StringTemplate V4 templates. In
 # practice, we mainly modify the templates so this is the major dependency.
-.PHONY: generateCANCode
+.PHONY: generateCanInterface
 genDir := code/application/canStack/
 templateList := $(call rwildcard,$(genDir)templates/,*.stg)
 databaseList := $(wildcard $(genDir)dbcFiles/*.dbc)
 #$(info List of StringTemplate V4 templates: $(templateList), DBC files: $(databaseList))
-generateCANCode: $(genDir)makeTag_generateCode
+generateCanInterface: $(genDir)makeTag_generateCode
 
 # Caution, the recipe of this rule highly depends on the makefile configuration setting
 # .ONESHELL (see globalVariables.mk). It needs to be given. This allows to first change
@@ -48,18 +48,14 @@ $(genDir)makeTag_generateCode: $(templateList) $(databaseList) $(genDir)generate
 	cd $(call u2w,$(dir $@)) $(EOL)
 #	pwd
 	call generateCode.cmd -v WARN
-	echo Make tag for rule generateCANCode. Do not delete this file > $(notdir $@)
+	echo Make tag for rule generateCanInterface. Do not delete this file > $(notdir $@)
     
-souceFileList := $(call rwildcard,$(genDir),*.c *.h)
-#$(info List of generated CAN source files: $(souceFileList))
-$(souceFileList): $(genDir)makeTag_generateCode
-
 # clean: We can't delete all produced file as they are output of the external shell script
 # and not known to this makefile. However, deleting the tag file forces at least the
 # re-generation of the files, which is mostly the intention of a clean.
-.PHONY: clean_generateCANCode
-clean_generateCANCode:
+.PHONY: clean_generateCanInterface
+clean_generateCanInterface:
 	-$(rm) -f $(genDir)makeTag_generateCode
 
 # Make the local clean a dependency of the user known and demanded clean.
-clean: clean_generateCANCode
+clean: clean_generateCanInterface

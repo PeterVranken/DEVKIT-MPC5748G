@@ -66,31 +66,31 @@
 
 
 /** The total number of affected CAN frames in bus PT, i.e. either sent or received. */
-#define CDE_NO_CAN_FRAMES_PT 72u
+#define CDE_NO_CAN_FRAMES_PT 6u
 
 /** The number of sent CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_SENT_PT 6u
+#define CDE_NO_CAN_FRAMES_SENT_PT 3u
 
 /** The number of received CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_RECEIVED_PT 66u
+#define CDE_NO_CAN_FRAMES_RECEIVED_PT 3u
 
 /** The number of received regular CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_RECEIVED_REGULAR_PT 64u
+#define CDE_NO_CAN_FRAMES_RECEIVED_REGULAR_PT 2u
 
 /** The number of received event CAN frames in bus PT. */
 #define CDE_NO_CAN_FRAMES_RECEIVED_EVENT_PT 1u
 
 /** The number of received mixed mode CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_RECEIVED_MIXED_PT 1u
+#define CDE_NO_CAN_FRAMES_RECEIVED_MIXED_PT 0u
 
 /** The number of sent regular CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_SENT_REGULAR_PT 6u
+#define CDE_NO_CAN_FRAMES_SENT_REGULAR_PT 1u
 
 /** The number of sent event CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_SENT_EVENT_PT 0u
+#define CDE_NO_CAN_FRAMES_SENT_EVENT_PT 1u
 
 /** The number of sent mixed mode CAN frames in bus PT. */
-#define CDE_NO_CAN_FRAMES_SENT_MIXED_PT 0u
+#define CDE_NO_CAN_FRAMES_SENT_MIXED_PT 1u
 
 
 
