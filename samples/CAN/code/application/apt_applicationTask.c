@@ -10,7 +10,7 @@
  * The CAN interface engine updates all signal values and status in the global CAN API and
  * sends due frames, filled with information read from this API.
  *
- * Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -33,6 +33,12 @@
  *   bsw_taskUser100ms
  *   bsw_taskUser1000ms
  * Local functions
+ *   tokenizeCmdLine
+ *   version
+ *   showW
+ *   showC
+ *   greeting
+ *   help
  */
 
 
@@ -42,6 +48,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "cap_canApi.h"
@@ -54,12 +62,16 @@
 #include "cde_canDataTables.h"
 #include "f2d_float2Double.h"
 #include "can_canRuntime.h"
+#include "sio_serialIO.h"
 #include "apt_applicationTask.h"
 
 
 /*
  * Defines
  */
+
+/** Software version */
+#define VERSION "0.1.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -96,10 +108,209 @@
  * Data definitions
  */
 
+/** Simple counter of 1ms application task invokations. Used for timing operations. */
+volatile static unsigned int DATA_P1(_cntTask1ms) = 0;
+
+/** Simple counter of 10ms application task invokations. Used for timing operations. */
+volatile static unsigned int DATA_P1(_cntTask10ms) = 0;
+
 
 /*
  * Function implementation
  */
+
+
+/**
+ * Simple command line parsing. Replace white space in the command line by string
+ * termination characters and record the beginnings of the non white space regions.
+ *   @param pArgC
+ * Prior to call: * \a pArgC is set by the caller to the number of entries available in
+ * argV.\n
+ *   After return: The number of found arguments, i.e. the number of non white space
+ * regions in the command line.
+ *   @param argV
+ * The vector of arguments, i.e. pointers to the non white space regions in the command
+ * line.
+ *   @param cmdLine
+ * Prior to call: The original command line.\n
+ *   After return: White space in the command line is replaced by zero bytes. Note, not
+ * necessarily all white space due to the restriction superimposed by \a pArgC.
+ */
+static void tokenizeCmdLine( unsigned int * const pArgC
+                           , const char *argV[]
+                           , char * const cmdLine
+                           )
+{
+    char *pC = cmdLine;
+    unsigned int noArgsFound = 0;
+    while(noArgsFound < *pArgC)
+    {
+        /* Look for beginning of next argument. */
+        while(isspace((int)*pC))
+            ++ pC;
+
+        /* Decide if we found a new argument of if we reached the end of the command line. */
+        if(*pC != '\0')
+        {
+            /* New argument found. Record the beginning. */
+            argV[noArgsFound++] = pC;
+
+            /* Look for its end. */
+            do
+            {
+                ++ pC;
+            }
+            while(*pC != '\0'  && !isspace((int)*pC));
+
+            if(*pC != '\0')
+            {
+                /* There are characters left in the command line. Terminate the found
+                   argument and continue with the outer loop. */
+                * pC++ = '\0';
+            }
+            else
+            {
+                /* Command line has been parsed completely, leave outer loop and return. */
+                break;
+            }
+        }
+        else
+        {
+            /* Command line has been parsed completely, leave outer loop and return. */
+            break;
+
+        } /* End if(Further non white space region found?) */
+
+    } /* End while(Still room left in ArgV) */
+
+    *pArgC = noArgsFound;
+
+} /* End of tokenizeCmdLine */
+
+
+
+/**
+ * Print version designation.
+ */
+static void version()
+{
+    static const char RODATA(version)[] =
+    "DEVKIT-MPC5748G - CAN Demo, demonstrate use of safe-RTOS' CAN driver\r\n"
+    "Copyright (C) 2017-2020  Peter Vranken\r\n"
+    "Version " VERSION
+    #ifdef DEBUG
+    " (Configuration: DEBUG)"
+    #else
+    " (Configuration: PRODUCTION)"
+    #endif
+    "\r\n";
+
+    puts(version);
+    
+} /* End of version */
+
+
+/**
+ * GPL proposes 'show w', see http://www.gnu.org/licenses/gpl-3.0.html (downloaded
+ * Oct 27, 2017)
+ */
+static void showW()
+{
+    version();
+    
+    static const char RODATA(gplShowW)[] =
+    "GNU LESSER GENERAL PUBLIC LICENSE\r\n"
+    "\r\n"
+    "Version 3, 29 June 2007\r\n"
+    "\r\n"
+    "(...)\r\n"
+    "\r\n"
+    "15. Disclaimer of Warranty.\r\n"
+    "\r\n"
+    "THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY\r\n"
+    "APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT\r\n"
+    "HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT\r\n"
+    "WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT\r\n"
+    "LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\r\n"
+    "PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF\r\n"
+    "THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME\r\n"
+    "THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.\r\n";
+
+    puts(gplShowW);
+
+} /* End of showW */
+
+
+
+/**
+ * GPL proposes 'show c', see http://www.gnu.org/licenses/gpl-3.0.html (downloaded
+ * Oct 27, 2017)
+ */
+static void showC()
+{
+    version();
+    
+    static const char RODATA(gplShowC)[] =
+    "This program is free software: you can redistribute it and/or modify\r\n"
+    "it under the terms of the GNU Lesser General Public License as published\r\n"
+    "by the Free Software Foundation, either version 3 of the License, or\r\n"
+    "(at your option) any later version.\r\n"
+    "\r\n"
+    "This program is distributed in the hope that it will be useful,\r\n"
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n"
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n"
+    "GNU Lesser General Public License for more details.\r\n"
+    "\r\n"
+    "You should have received a copy of the GNU Lesser General Public License\r\n"
+    "along with this program.  If not, see <https://www.gnu.org/licenses/>.\r\n";
+
+    puts(gplShowC);
+
+} /* End of showC */
+
+
+
+/**
+ * Print program greeting.
+ */
+static void greeting()
+{
+    version();
+
+    static const char RODATA(usage)[] =
+    "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\r\n"
+    "This is free software, and you are welcome to redistribute it under certain\r\n"
+    "conditions; type `show c' for details.\r\n"
+    "Type `help' for usage.\r\n";
+
+    puts(usage);
+    
+} /* End of greeting */
+
+
+/**
+ * Print usage text.
+ */
+static void help()
+{
+    version();
+
+    static const char RODATA(help)[] =
+    "Type:\r\n"
+    "help: Get this help text\r\n"
+    "show c, show w: Show details of software license\r\n"
+//    "green, red: Switch LED color. The color may be followed by the desired period time"
+//      " in ms and the duty cycle in percent\r\n"
+//    "hello en, hello de: Call C++ code to print a greeting\r\n"
+    "time: Print current time\r\n"
+    "time hh mm [ss]: Set current time\r\n"
+//    "timing: Do some output and measure execution time\r\n"
+    "version: Print software version designation\r\n";
+
+    puts(help);
+
+} /* End of help */
+
 
 
 /**
@@ -121,6 +332,9 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
     assert(PID == bsw_pidUser);
 
     bool success = true;
+    
+    /* Print initial hello. */
+    greeting();
     
     /* Run the initialization of the CAN stack. */
     if(!can_initCanStack())
@@ -148,6 +362,8 @@ int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB
 {
     assert(PID == bsw_pidUser);
 
+    ++ _cntTask1ms;
+    
     /* Call the 1ms step function of the APSW. */
     //asw_taskApsw_1ms();
 
@@ -177,11 +393,170 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
 {
     assert(PID == bsw_pidUser);
 
+    ++ _cntTask10ms;
+    
     /* Call the step function of the CAN interface engine for this task. */
     cde_dispatcherMain(CAN_IDX_DISPATCHER_10MS);
 
-    /* Call the step function of the APSW, which computes new CAN output values. */
-    //asw_taskApsw_10ms();
+    /* Look for possible user input through serial interface. */
+    static unsigned int DATA_P1(cntIdleLoops_) = 0;
+    char inputMsg[80+1];
+    if(sio_getLine(inputMsg, sizeOfAry(inputMsg)) != NULL)
+    {
+        const char *argV[10];
+        unsigned int argC = sizeOfAry(argV);
+        tokenizeCmdLine(&argC, argV, inputMsg);
+        bool didNotUnderstand = false;
+        if(argC >= 1)
+        {
+//            /* Interpret the input as possible command. */
+//            if(strcmp(argV[0], "green") == 0)
+//            {
+//                /* To avoid race conditions with the interrupt, we require a
+//                   critial section. */
+//                /// @todo Double-check, is likely wrong, read-modify-write involved?
+//                uint32_t msr = ihw_enterCriticalSection();
+//                {
+//                    lbd_setLED(_ledPIT0Handler, /* isOn */ false);
+//                    _ledPIT0Handler = lbd_led_D4_grn;
+//                }
+//                ihw_leaveCriticalSection(msr);
+//
+//                /* Color followed by period time? Change frequency accordingly. */
+//                if(argC >= 2)
+//                    setD4Frequency(argV[1]);
+//
+//                /* Period time followed by duty cyle? Change DC accordingly. */
+//                if(argC >= 3)
+//                    setD4DutyCycle(argV[2]);
+//            }
+//            else if(strcmp(argV[0], "red") == 0)
+//            {
+//                uint32_t msr = ihw_enterCriticalSection();
+//                {
+//                    lbd_setLED(_ledPIT0Handler, /* isOn */ false);
+//                    _ledPIT0Handler = lbd_led_D4_red;
+//                }
+//                ihw_leaveCriticalSection(msr);
+//
+//                /* Color followed by period time? Change frequency accordingly. */
+//                if(argC >= 2)
+//                    setD4Frequency(argV[1]);
+//
+//                /* Period time followed by duty cyle? Change DC accordingly. */
+//                if(argC >= 3)
+//                    setD4DutyCycle(argV[2]);
+//            }
+/*            else*/ if(strcmp(argV[0], "show") == 0)
+            {
+                if(argC >= 2)
+                {
+                    if(strcmp(argV[1], "c") == 0)
+                        showC();
+                    else if(strcmp(argV[1], "w") == 0)
+                        showW();
+                }
+            }
+            else if(strcmp(argV[0], "help") == 0)
+                help();
+            else if(strcmp(argV[0], "version") == 0)
+                version();
+            else if(strcmp(argV[0], "time") == 0)
+            {
+                static unsigned int DATA_P1(_offsetInS) = 0;
+                if(argC >= 3)
+                {
+                    signed int i = atoi(argV[1]);
+                    if(i < 0)
+                        i = 0;
+                    else if(i >= 24)
+                        i = 23;
+                    _offsetInS = (unsigned)i * 3600u;
+                    
+                    i = atoi(argV[2]);
+                    if(i < 0)
+                        i = 0;
+                    else if(i >= 60)
+                        i = 59;
+                    _offsetInS += (unsigned)i * 60u;
+                    
+                    /* Designation of seconds is an option only. */
+                    if(argC >= 4)
+                    {
+                        i = atoi(argV[3]);
+                        if(i < 0)
+                            i = 0;
+                        else if(i >= 60)
+                            i = 59;
+                        _offsetInS += (unsigned)i;
+                    }
+                    assert(_offsetInS < 86400);
+                    
+                    /* Consider current system, which we don't want to reset. */
+                    _offsetInS -= _cntTask1ms / 1000;
+                }
+                
+                /* Print current time. */
+                const unsigned int noMillis = _cntTask1ms;
+                unsigned int noSec = noMillis / 1000 + _offsetInS;
+
+                /* Avoid expensive modulo. */
+                if(noSec >= 86400)
+                {
+                    noSec -= 86400;
+                    _offsetInS -= 86400;
+                }
+                assert(noSec < 86400);
+
+                unsigned int h, m, s;
+                h = noSec / 3600;
+                m = s = noSec - h*3600;
+                m /= 60;
+                s -= m*60;
+
+                iprintf( "Current time is %02u:%02u:%02u\r\n"
+                       , h, m, s
+                       );
+            }
+            else
+            {
+                didNotUnderstand = true;
+
+            } /* End if/else if(Command) */
+
+            /* Reset the timer for output of help if user has entered something. */
+            cntIdleLoops_ = 0;
+        }
+        else
+        {
+            didNotUnderstand = true;
+            
+        } /* End if(User input contains possible command) */
+        
+        if(didNotUnderstand)
+        {
+            /* Echo bad user input, which could not be consumed. */
+            puts("I couldn't understand you. You typed:");
+
+            unsigned int u;
+            for(u=0; u<argC; ++u)
+            {
+                puts(" ");
+                puts(argV[u]);
+            }
+            puts("\r\nTry `help'\r\n");
+        }
+    }
+    else
+    {
+        /* Offer help after 10s of no input. */
+        if(++cntIdleLoops_ >= 1000)
+        {
+            puts("Type `help' to get software usage information\r\n");
+            cntIdleLoops_ = 0;
+        }
+
+    } /* if(Got user input?) */
 
     return 0;
 

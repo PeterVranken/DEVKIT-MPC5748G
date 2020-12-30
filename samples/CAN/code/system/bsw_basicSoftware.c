@@ -247,6 +247,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     startSecondaryCore(/* idxCore */ 2 /* Z2 */, mzt_main_Z2);
 #endif
 
+#if 0
     /* Demonstrate the use of the serial interface. Note, the function is never blocking
        and we have left it for a long time before the characters are visible in the console
        window. Never blocking: If the buffer has not enough space then an according number
@@ -265,6 +266,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     #else
     sio_osWriteSerial(SIO_STR(Configuration: PRODUCTION));
     #endif
+#endif
 
     /* Register the process initialization tasks. They are located in the application code. */
     bool initOk = true;
