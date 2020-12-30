@@ -175,186 +175,264 @@ const cde_canSignal_t cde_canSignalAry[] =
 {
     [0] =
         { .name = "checksum"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = true
         , .getter = get_PT_1024_checksum
         , .setter = set_PT_1024_checksum
+        , .min = 0.0
+        , .max = 255.0
+        , .unit = ""
         },
     [1] =
         { .name = "speedOfRotation"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = true
         , .getter = get_PT_1024_speedOfRotation
         , .setter = set_PT_1024_speedOfRotation
+        , .min = 0.0
+        , .max = 6500.0
+        , .unit = "rpm"
         },
     [2] =
         { .name = "sequenceCounter"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = true
         , .getter = get_PT_1024_sequenceCounter
         , .setter = set_PT_1024_sequenceCounter
+        , .min = 0.0
+        , .max = 14.0
+        , .unit = ""
         },
     [3] =
         { .name = "checksum"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = true
         , .getter = get_PT_1040_checksum
         , .setter = set_PT_1040_checksum
+        , .min = 0.0
+        , .max = 255.0
+        , .unit = ""
         },
     [4] =
         { .name = "sequenceCounter"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = true
         , .getter = get_PT_1040_sequenceCounter
         , .setter = set_PT_1040_sequenceCounter
+        , .min = 15.0
+        , .max = 1.0
+        , .unit = ""
         },
     [5] =
         { .name = "torque"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = true
         , .getter = get_PT_1040_torque
         , .setter = set_PT_1040_torque
+        , .min = -500.0
+        , .max = 500.0
+        , .unit = "Nm"
         },
     [6] =
         { .name = "sequenceCounter"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = true
         , .getter = get_PT_2032_sequenceCounter
         , .setter = set_PT_2032_sequenceCounter
+        , .min = 1.0
+        , .max = 14.0
+        , .unit = ""
         },
     [7] =
         { .name = "minSpeedOfRotation"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = true
         , .getter = get_PT_2032_minSpeedOfRotation
         , .setter = set_PT_2032_minSpeedOfRotation
+        , .min = 0.0
+        , .max = 6500.0
+        , .unit = "rpm"
         },
     [8] =
         { .name = "maxSpeedOfRotation"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = true
         , .getter = get_PT_2032_maxSpeedOfRotation
         , .setter = set_PT_2032_maxSpeedOfRotation
+        , .min = 0.0
+        , .max = 6500.0
+        , .unit = "rpm"
         },
     [9] =
         { .name = "checksum"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = true
         , .getter = get_PT_2032_checksum
         , .setter = set_PT_2032_checksum
+        , .min = 0.0
+        , .max = 255.0
+        , .unit = ""
         },
     [10] =
         { .name = "minPower"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = true
         , .getter = get_PT_2032_minPower
         , .setter = set_PT_2032_minPower
+        , .min = -10.0
+        , .max = 240.0
+        , .unit = "KW"
         },
     [11] =
         { .name = "maxPower"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = true
         , .getter = get_PT_2032_maxPower
         , .setter = set_PT_2032_maxPower
+        , .min = -10.0
+        , .max = 240.0
+        , .unit = "KW"
         },
 
     [12] =
         { .name = "checksum"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = false
         , .getter = get_PT_1536_checksum
         , .setter = set_PT_1536_checksum
+        , .min = 0.0
+        , .max = 255.0
+        , .unit = ""
         },
     [13] =
         { .name = "sequenceCounter"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = false
         , .getter = get_PT_1536_sequenceCounter
         , .setter = set_PT_1536_sequenceCounter
+        , .min = 0.0
+        , .max = 14.0
+        , .unit = ""
         },
     [14] =
         { .name = "power"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = false
         , .getter = get_PT_1536_power
         , .setter = set_PT_1536_power
+        , .min = -500000.0
+        , .max = 500000.0
+        , .unit = "W"
         },
     [15] =
         { .name = "state"
-        , .idxCdeFrame = 0
+        , .idxFrame = 0
         , .isReceived = false
         , .getter = get_PT_1536_state
         , .setter = set_PT_1536_state
+        , .min = 0.0
+        , .max = 2.0
+        , .unit = ""
         },
     [16] =
         { .name = "noDlcErrors"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = false
         , .getter = get_PT_1537_noDlcErrors
         , .setter = set_PT_1537_noDlcErrors
+        , .min = 0.0
+        , .max = 2047.0
+        , .unit = ""
         },
     [17] =
         { .name = "noCheckSumErrors"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = false
         , .getter = get_PT_1537_noCheckSumErrors
         , .setter = set_PT_1537_noCheckSumErrors
+        , .min = 0.0
+        , .max = 2047.0
+        , .unit = ""
         },
     [18] =
         { .name = "noSqcErrors"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = false
         , .getter = get_PT_1537_noSqcErrors
         , .setter = set_PT_1537_noSqcErrors
+        , .min = 0.0
+        , .max = 2047.0
+        , .unit = ""
         },
     [19] =
         { .name = "sequenceCounter"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = false
         , .getter = get_PT_1537_sequenceCounter
         , .setter = set_PT_1537_sequenceCounter
+        , .min = 1.0
+        , .max = 126.0
+        , .unit = ""
         },
     [20] =
         { .name = "checksum"
-        , .idxCdeFrame = 1
+        , .idxFrame = 1
         , .isReceived = false
         , .getter = get_PT_1537_checksum
         , .setter = set_PT_1537_checksum
+        , .min = 0.0
+        , .max = 255.0
+        , .unit = ""
         },
     [21] =
         { .name = "sequenceCounter"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = false
         , .getter = get_PT_1538_sequenceCounter
         , .setter = set_PT_1538_sequenceCounter
+        , .min = 6.0
+        , .max = 1.0
+        , .unit = ""
         },
     [22] =
         { .name = "belowMinSpeedOfRotation"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = false
         , .getter = get_PT_1538_belowMinSpeedOfRotation
         , .setter = set_PT_1538_belowMinSpeedOfRotation
+        , .min = 0.0
+        , .max = 1.0
+        , .unit = ""
         },
     [23] =
         { .name = "aboveMaxSpeedOfRotation"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = false
         , .getter = get_PT_1538_aboveMaxSpeedOfRotation
         , .setter = set_PT_1538_aboveMaxSpeedOfRotation
+        , .min = 0.0
+        , .max = 1.0
+        , .unit = ""
         },
     [24] =
         { .name = "belowMinPower"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = false
         , .getter = get_PT_1538_belowMinPower
         , .setter = set_PT_1538_belowMinPower
+        , .min = 0.0
+        , .max = 1.0
+        , .unit = ""
         },
     [25] =
         { .name = "aboveMaxPower"
-        , .idxCdeFrame = 2
+        , .idxFrame = 2
         , .isReceived = false
         , .getter = get_PT_1538_aboveMaxPower
         , .setter = set_PT_1538_aboveMaxPower
+        , .min = 0.0
+        , .max = 1.0
+        , .unit = ""
         },
 }; /* cde_canSignalAry */
 

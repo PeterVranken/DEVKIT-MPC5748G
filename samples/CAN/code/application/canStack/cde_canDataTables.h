@@ -163,8 +163,9 @@ typedef struct cde_canSignal_t
     /** Name of signal. */
     const char *name;
 
-    /** Reference to containg CAN frame: Index into table of all frames. */
-    unsigned int idxCdeFrame;
+    /** Reference to containg CAN frame: Index into table of all frames, either
+        cde_canRxFrameAry or cde_canTxFrameAry. */
+    unsigned int idxFrame;
 
     /** Reference to containg CAN frame: Table of Rx or Tx frames? */
     boolean_t isReceived;
@@ -176,6 +177,15 @@ typedef struct cde_canSignal_t
     /** Setter for signal: Has a signal independent, generic prototype and allows to set
         the signal value in the global API. */
     void (*setter)(float newValue);
+
+    /** The minimum physical value of the signal. */
+    float min;
+
+    /** The maximum physical value of the signal. */
+    float max;
+
+    /** The unit of the signal value. */
+    const char *unit;
 
 } cde_canSignal_t;
 
@@ -194,6 +204,11 @@ extern const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED];
     The description of the frames is as detailed as required for implementation of their
     send/receive behavior in the callbacks of the event dispatchers. */
 extern const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT];
+
+/** A global table with the description of all CAN signals as required for the specific
+    functionality of this application: The user can select signals rather than frames for
+    reception and sending. */
+extern const cde_canSignal_t cde_canSignalAry[];
 
 
 /*
