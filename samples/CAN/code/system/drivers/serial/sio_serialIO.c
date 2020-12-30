@@ -39,6 +39,7 @@
 /* Module interface
  *   sio_osInitSerialInterface
  *   sio_scFlHdlr_writeSerial
+ *   sio_scSmplHdlr_getLine
  *   sio_writeSerial (inline)
  *   sio_osWriteSerial
  *   sio_osGetChar
@@ -906,7 +907,6 @@ unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
 
 } /* End of sio_scFlHdlr_writeSerial */
         
-        
 
         
 /** 
@@ -1120,6 +1120,53 @@ signed int sio_osGetChar(void)
 
 
 
+/** 
+ * System call handler for entry into data input sio_osGetLine(); a function, which is
+ * otherwise available only to OS code. The input buffer is checked for a complete new line
+ * of input. See sio_osGetLine() for details.
+ *   @return
+ * NULL if no input is avaliable yet, otherwise \a str. See sio_osGetLine() for details.
+ *   @param PID
+ * The process ID of the calling task.
+ *   @param str
+ * If input is avaliable then it is copied to \a str[]. All bytes str[0] till and including
+ * str[sizeOfStr-1] need to be owned by process \a PID. See sio_osGetLine() for details.
+ *   @param sizeOfStr
+ * The capacity of \a str[]. See sio_osGetLine() for details.
+ *   @remark
+ * This function must never be called directly. The function is only made for placing it in
+ * the global system call table.
+ */
+uint32_t sio_scSmplHdlr_getLine( uint32_t PID, char str[], unsigned int sizeOfStr)
+{
+    /* Note, the function is implemented as a simple handler. This has been decided because
+       the code in the implementation of the OS variant anyway forms a single large chunk
+       of critical section code. Does the time span consumed by the wrapper (mainly
+       checkUserCodeWritePtr) justify this? */
+    /// @todo Compare with write, consistency of design: Here the wrapper does less, the OS
+    // function forms a critical section, too, but the hnadler is still a full handler.
+
+    /* The system call handler gets a pointer to the memory location, where to place the
+       received input. We need to validate that this pointer, coming from the untrusted
+       user code doesn't break our safety concept. All bytes accessible through the pointer
+       need to be owned by the caling process. */
+    if(!rtos_checkUserCodeWritePtr(PID, str, sizeOfStr))
+    {
+        /* The user specified memory region is not entirely inside the permitted,
+           accessible range. This is a severe user code error, which is handeld with an
+           exception, task abort and counted error. */
+        rtos_osSystemCallBadArgument();
+    }
+    
+    /* After checking the potentially bad user input we may delegate it to the "normal"
+       function implementation. */
+    return (uint32_t)sio_osGetLine(str, sizeOfStr);
+
+} /* End of sio_scSmplHdlr_getLine */
+
+
+
+
 /**
  * The function reads a line of text from serial in and stores it into the string pointed
  * to by \a str. It stops when the end of line character is read and returns an
@@ -1146,10 +1193,13 @@ signed int sio_osGetChar(void)
  * a line of input.
  *   @param str
  * This is the pointer to an array of chars where the C string is stored. \a str is the
- * empty string if the function returns NULL.
+ * empty string if the function returns NULL - and given that \a sizeOfStr is greater than
+ * zero.
  *   @param sizeOfStr
  * The capacity of \a str in Byte. The maximum message length is one less since a
- * terminating zero character is always appended. A value of zero is caught by assertion.\n
+ * terminating zero character is always appended.\n
+ *   A value of zero is not allowed. The function will return NULL in case and \a str[] is
+ * undefined.\n
  *   Note, if \a sizeOfStr is less than the line of text to be returned then the complete
  * line of text will nonetheless be removed from the receive buffer. Some characters from
  * the input stream would be lost.
@@ -1171,7 +1221,7 @@ signed int sio_osGetChar(void)
  * will be silently concatenated with its successor. You may consider observing the global
  * variable \a sio_serialInLostBytes to recognize this situation. Note, because of the race
  * conditions between serial I/O interrupt and application software you can not clearly
- * relate a change of these variables to a particular message you get from this function.
+ * relate a change of this variable to a particular message you get from this function.
  * In particular, you must not try to reset the counter prior to a read operation in order
  * to establish such a relation. Your application will just know that there is some garbled
  * input.
@@ -1181,9 +1231,11 @@ signed int sio_osGetChar(void)
  */
 char *sio_osGetLine(char str[], unsigned int sizeOfStr)
 {
+    /* This function is callable only from one dedicated core. */
+    assert(rtos_osGetIdxCore() == INTC_IRQ_TARGET_CORE);
+    
     if(sizeOfStr == 0)
     {
-        assert(false);
         return NULL;
     }
     else

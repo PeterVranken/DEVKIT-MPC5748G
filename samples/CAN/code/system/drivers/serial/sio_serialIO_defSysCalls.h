@@ -63,6 +63,33 @@
 #endif
 
 
+#if !defined(RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0021)    \
+    && !defined(RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0021) \
+    && !defined(RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0021)
+    
+# if SIO_SYSCALL_GET_LINE != 21
+#  error Inconsistent definition of system call
+# endif
+
+/* The system call is not available only on the very core, which serves the serial input
+   interrupts. The others will be redirected to the illegal system call exception. */
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0021 \
+                                        RTOS_SC_TABLE_ENTRY(sio_scSmplHdlr_getLine, SIMPLE)
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0021 RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0021 RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+
+#else
+# error System call 0021 is ambiguously defined
+
+/* We purposely redefine the table entry and despite of the already reported error; this
+   makes the compiler emit a message with the location of the conflicting previous
+   definition.*/
+# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0021   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0021   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0021   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+#endif
+
+
 /*
  * Global type definitions
  */
@@ -82,5 +109,11 @@ unsigned int sio_scFlHdlr_writeSerial( uint32_t pidOfCallingTask
                                      , const char *msg
                                      , unsigned int noBytes
                                      );
+
+/* System call implementation to read a line of input text from the serial interface. */
+uint32_t sio_scSmplHdlr_getLine( uint32_t pidOfCallingTask
+                               , char str[]
+                               , unsigned int sizeOfStr
+                               );
 
 #endif  /* SIO_SERIALIO_DEFSYSCALLS_INCLUDED */
