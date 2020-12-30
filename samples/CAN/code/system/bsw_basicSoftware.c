@@ -260,6 +260,11 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         /* "\r\nunder certain conditions; type `show c' for details" */ ".\r\n"
     sio_osWriteSerial(GREETING, /* noBytes */ sizeof(GREETING)-1);
     #undef GREETING
+    #ifdef DEBUG
+    SIO_STR(Configuration: DEBUG);
+    #else
+    SIO_STR(Configuration: PRODUCTION);
+    #endif
 
     /* Register the process initialization tasks. They are located in the application code. */
     bool initOk = true;
