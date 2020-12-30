@@ -261,9 +261,9 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     sio_osWriteSerial(GREETING, /* noBytes */ sizeof(GREETING)-1);
     #undef GREETING
     #ifdef DEBUG
-    SIO_STR(Configuration: DEBUG);
+    sio_osWriteSerial(SIO_STR(Configuration: DEBUG));
     #else
-    SIO_STR(Configuration: PRODUCTION);
+    sio_osWriteSerial(SIO_STR(Configuration: PRODUCTION));
     #endif
 
     /* Register the process initialization tasks. They are located in the application code. */
