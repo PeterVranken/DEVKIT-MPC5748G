@@ -77,7 +77,10 @@ canStatistics_h(cluster, info) ::= <<
 #define CDE_NO_CAN_FRAMES_SENT_MIXED (<cluster.busAry:{bus|CDE_NO_CAN_FRAMES_SENT_MIXED_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
 
 
-<cluster.busAry:busStatistics()>
+<cluster.busAry:busStatistics()><\\>
+/** We have a global array of all sent and received signals, cde_canSignalAry, which is not
+    structured according to buses and fames. Here's the count of all contained signals. */
+#define CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS <countSignals(cluster)>
 >>
 
 
@@ -165,4 +168,17 @@ countBusObjects(frame) ::= <<
 <endif>
 <endif>
 >>
+
+
+// We have a global array of all signals, which is not structured according to buses and
+// fames. We need the count of all contained signals for the type declaration and for a
+// convenience macro.
+countSignals(cluster) ::= <<
+<info.calc.idxCdtCanSignalAryEntry_set_0><\\>
+<iterateSignalsOfCluster(cluster,"all","both","countNextSignal")><\\>
+<info.calc.idxCdtCanSignalAryEntry_get>u<\n>
+>>
+
+countNextSignal(signal,kind) ::= "<info.calc.idxCdtCanSignalAryEntry_add_1>"
+
 

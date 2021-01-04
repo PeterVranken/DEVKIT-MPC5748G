@@ -93,7 +93,7 @@ defineList := USE_NEWLIB \
               OSE_CAN_BUS_PT=0 \
 		      CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
               CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
-              LINK_IN_RAM \
+              #LINK_IN_RAM \
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

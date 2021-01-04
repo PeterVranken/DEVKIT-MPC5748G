@@ -148,6 +148,9 @@ dataTables_h(cluster,info) ::= <<
     behavior in the callbacks of the event dispatchers. */
 typedef struct cde_canFrame_t
 {
+    /** Name of frame. */
+    const char *name;
+    
     /** The CAN bus, which the reception event is simulated for. */
     unsigned int idxCanBus;
 
@@ -246,7 +249,7 @@ extern const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT];
 /** A global table with the description of all CAN signals as required for the specific
     functionality of this application: The user can select signals rather than frames for
     reception and sending. */
-extern const cde_canSignal_t cde_canSignalAry[];
+extern const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS];
 
 >>
 
@@ -272,7 +275,7 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
 /** A global table with the description of all CAN signals as required for the specific
     functionality of this application: The user can select signals rather than frames for
     reception and sending. */
-const cde_canSignal_t cde_canSignalAry[] =
+const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
 {<info.calc.idxCdtCanFrameAryEntry_set_1n><info.calc.idxCdtCanFrameAryEntry_sadd_1>
     <iteratePdusOfCluster(cluster,"received","canSignalAryFrameEntry")><\\>
 <info.calc.idxCdtCanFrameAryEntry_set_1n><info.calc.idxCdtCanFrameAryEntry_sadd_1>
@@ -333,7 +336,8 @@ verifyIdxRangeHandlerContextData() ::= <<
 
 canFrameAryEntry(pdu) ::= <<
 [<info.calc.idxCdtCanFrameAryEntry>] =
-    { .idxCanBus = <define.busId>
+    { .name = "<frame.name>"
+    , .idxCanBus = <define.busId>
     , .isExtId = <frame.isExtId>
     , .canId = <frame.id>
     , .isReceived = <frame.isReceived>

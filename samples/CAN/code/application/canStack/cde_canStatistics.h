@@ -7,7 +7,7 @@
  * This file has been created with comFramework - codeGenerator version 1.10.4,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -93,6 +93,9 @@
 #define CDE_NO_CAN_FRAMES_SENT_MIXED_PT 1u
 
 
+/** We have a global array of all sent and received signals, cde_canSignalAry, which is not
+    structured according to buses and fames. Here's the count of all contained signals. */
+#define CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS 26u
 
 
 /*

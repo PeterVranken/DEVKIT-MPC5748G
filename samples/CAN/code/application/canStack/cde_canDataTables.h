@@ -11,7 +11,7 @@
  * This file has been created with comFramework - codeGenerator version 1.10.4,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -111,6 +111,9 @@
     behavior in the callbacks of the event dispatchers. */
 typedef struct cde_canFrame_t
 {
+    /** Name of frame. */
+    const char *name;
+
     /** The CAN bus, which the reception event is simulated for. */
     unsigned int idxCanBus;
 
@@ -208,7 +211,7 @@ extern const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT];
 /** A global table with the description of all CAN signals as required for the specific
     functionality of this application: The user can select signals rather than frames for
     reception and sending. */
-extern const cde_canSignal_t cde_canSignalAry[];
+extern const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS];
 
 
 /*

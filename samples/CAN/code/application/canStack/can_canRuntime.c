@@ -61,6 +61,7 @@
 #include "cde_canDispatcherEngine.h"
 #include "cde_canStatistics.h"
 #include "cde_canDataTables.h"
+#include "cmd_canCommand.h"
 #include "can_canRuntime.h"
 
 
@@ -73,7 +74,7 @@
     which the CAN interface should decide on timeout. The latter time span needs to be
     greater than the former: CAN bus timing always requires a tolerance and the time
     measurement is done only with the resolution of the tick of the CAN interface engine. */
-#define TIMEOUT(tiCycle) (3*(tiCycle)+1)
+#define TIMEOUT(tiCycle) (assert((int)(3*(tiCycle)+1)>0),((signed int)(3*(tiCycle)+1)))
 
 /* Check the number of processed messages against the HW constraints. Note, the condition
    is necessary but not sufficient; a bad distrubution of messages between user and safety
@@ -232,6 +233,10 @@ static void onFrameReception(const cde_callbackContext_t *pContext)
            CAN API has not been updated with new signal values and no reception event must
            be notified. */
         ++ pFrDescCde->pInfoTransmission->noTransmittedFrames;
+        
+        /* This application makes use of a callback in order to be notified about any
+           successful reception event. */ 
+        cmd_onReceiveMessage(idxRxFr);
     }
     else
     {
@@ -241,6 +246,7 @@ static void onFrameReception(const cde_callbackContext_t *pContext)
         /* Report the failure. */
         pFrDescCde->pInfoTransmission->stsTransmission |= cap_stsTransm_errChecksum;
     }
+
 } /* End of onFrameReception */
 
 
@@ -461,7 +467,8 @@ static void onDueCheckEventFrame(const cde_callbackContext_t *pContext)
 
         /* The time when the timer should fire the next time depends. We had an event in
            this tick, so we need to regard the minimum distance. */
-        tiNewFromNow = pFrDescCde->tiMinDistance;
+        tiNewFromNow = (int)pFrDescCde->tiMinDistance;
+        assert(tiNewFromNow > 0);
     }
     else
     {
@@ -524,10 +531,11 @@ static void onDueCheckMixedFrame(const cde_callbackContext_t *pContext)
         /* The time when the due check should be done again depends. We had a sent event in
            this tick, so we need to regard the minimum distance.
              The timeout timer is retriggered. */
-        tiNewFromNowDueCheck = pFrDescCde->tiMinDistance;
+        tiNewFromNowDueCheck = (int)pFrDescCde->tiMinDistance;
+        assert(tiNewFromNowDueCheck > 0  &&  (int)pFrDescCde->tiCycle > 0);
         cde_retriggerSingleShotTimer( pContext
                                     , hTimerTimeout
-                                    , /* tiNewFromNow */ pFrDescCde->tiCycle
+                                    , /* tiNewFromNow */ (int)pFrDescCde->tiCycle
                                     );
     }
     else
@@ -572,11 +580,12 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
         case cap_enumSendMode_regular:
         {
             /* Regular frames are most simple. We apply a regular timer. */
+            assert((int)pFrDescCde->tiCycle > 0);
 #ifdef DEBUG
             cde_handleTimer_t hTimer =
 #endif
             cde_createPeriodicTimer( pContext
-                                   , /* tiPeriod */ pFrDescCde->tiCycle
+                                   , /* tiPeriod */ (int)pFrDescCde->tiCycle
                                    , /* callback */ onSendRegularFrame
                                    , /* pUserContextData */ NULL
                                    );
@@ -632,9 +641,10 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
                    != CDE_INVALID_TIMER_HANDLE
                   );
 
+            assert((int)pFrDescCde->tiCycle > 0);
             _hdlCtxDataOutMixedAry[idxCtxData].hTimerTimeout =
             cde_createSingleShotTimer( pContext
-                                     , /* tiPeriod */ pFrDescCde->tiCycle
+                                     , /* tiPeriod */ (int)pFrDescCde->tiCycle
                                      , /* callback */ onDueCheckMixedFrame
                                      , /* pUserContextData */ NULL
                                      , /* killAtDueTime */ false

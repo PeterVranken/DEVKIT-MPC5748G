@@ -63,6 +63,7 @@
 #include "f2d_float2Double.h"
 #include "can_canRuntime.h"
 #include "sio_serialIO.h"
+#include "cmd_canCommand.h"
 #include "apt_applicationTask.h"
 
 
@@ -71,7 +72,7 @@
  */
 
 /** Software version */
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -195,8 +196,8 @@ static void tokenizeCmdLine( unsigned int * const pArgC
 static void version()
 {
     static const char RODATA(version)[] =
-    "DEVKIT-MPC5748G - CAN Demo, demonstrate use of safe-RTOS' CAN driver\r\n"
-    "Copyright (C) 2017-2020  Peter Vranken\r\n"
+    "DEVKIT-MPC5748G - CAN Demo, demonstration of safe-RTOS' CAN driver\r\n"
+    "Copyright (C) 2017-2021  Peter Vranken\r\n"
     "Version " VERSION
     #ifdef DEBUG
     " (Configuration: DEBUG)"
@@ -277,13 +278,12 @@ static void greeting()
 {
     version();
 
-    static const char RODATA(usage)[] =
+    static const char RODATA(greeting)[] =
     "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\r\n"
     "This is free software, and you are welcome to redistribute it under certain\r\n"
-    "conditions; type `show c' for details.\r\n"
-    "Type `help' for usage.\r\n";
+    "conditions; type `show c' for details.\r\n";
 
-    puts(usage);
+    puts(greeting);
     
 } /* End of greeting */
 
@@ -299,12 +299,12 @@ static void help()
     "Type:\r\n"
     "help: Get this help text\r\n"
     "show c, show w: Show details of software license\r\n"
-//    "green, red: Switch LED color. The color may be followed by the desired period time"
-//      " in ms and the duty cycle in percent\r\n"
-//    "hello en, hello de: Call C++ code to print a greeting\r\n"
+    "listen [ID] signalName: Report changes of Rx signal. ID is a decimal CAN ID, for"
+    " disambiguation of signal name. Maybe preceeded by x to specify an extended CAN ID\r\n"
+    "unlisten [ID] signalName: No longer report changes of Rx signal\r\n"
+    "clearlisten: No longer report any Rx signal change\r\n"
     "time: Print current time\r\n"
     "time hh mm [ss]: Set current time\r\n"
-//    "timing: Do some output and measure execution time\r\n"
     "version: Print software version designation\r\n";
 
     puts(help);
@@ -399,7 +399,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
     cde_dispatcherMain(CAN_IDX_DISPATCHER_10MS);
 
     /* Look for possible user input through serial interface. */
-    static unsigned int DATA_P1(cntIdleLoops_) = 0;
+    static unsigned int DATA_P1(cntIdleLoops_) = 2800;
     char inputMsg[80+1];
     if(sio_getLine(inputMsg, sizeOfAry(inputMsg)) != NULL)
     {
@@ -409,45 +409,12 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
         bool didNotUnderstand = false;
         if(argC >= 1)
         {
-//            /* Interpret the input as possible command. */
-//            if(strcmp(argV[0], "green") == 0)
-//            {
-//                /* To avoid race conditions with the interrupt, we require a
-//                   critial section. */
-//                /// @todo Double-check, is likely wrong, read-modify-write involved?
-//                uint32_t msr = ihw_enterCriticalSection();
-//                {
-//                    lbd_setLED(_ledPIT0Handler, /* isOn */ false);
-//                    _ledPIT0Handler = lbd_led_D4_grn;
-//                }
-//                ihw_leaveCriticalSection(msr);
-//
-//                /* Color followed by period time? Change frequency accordingly. */
-//                if(argC >= 2)
-//                    setD4Frequency(argV[1]);
-//
-//                /* Period time followed by duty cyle? Change DC accordingly. */
-//                if(argC >= 3)
-//                    setD4DutyCycle(argV[2]);
-//            }
-//            else if(strcmp(argV[0], "red") == 0)
-//            {
-//                uint32_t msr = ihw_enterCriticalSection();
-//                {
-//                    lbd_setLED(_ledPIT0Handler, /* isOn */ false);
-//                    _ledPIT0Handler = lbd_led_D4_red;
-//                }
-//                ihw_leaveCriticalSection(msr);
-//
-//                /* Color followed by period time? Change frequency accordingly. */
-//                if(argC >= 2)
-//                    setD4Frequency(argV[1]);
-//
-//                /* Period time followed by duty cyle? Change DC accordingly. */
-//                if(argC >= 3)
-//                    setD4DutyCycle(argV[2]);
-//            }
-/*            else*/ if(strcmp(argV[0], "show") == 0)
+            /* Try interpret the input as supported CAN command. */
+            if(cmd_parseCanCommand(argC, argV))
+            {
+                /* The parser function has taken all required action, nothing to do here. */
+            }
+            else if(strcmp(argV[0], "show") == 0)
             {
                 if(argC >= 2)
                 {
@@ -549,8 +516,8 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
     }
     else
     {
-        /* Offer help after 10s of no input. */
-        if(++cntIdleLoops_ >= 1000)
+        /* Offer help after 30s of no input. */
+        if(++cntIdleLoops_ >= 3000)
         {
             puts("Type `help' to get software usage information\r\n");
             cntIdleLoops_ = 0;
@@ -612,17 +579,17 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
 
     /* Some test code of the uniform floating point signal API shaped for this sample. */
     
-    /* CAN ID 1024, Rx signal "speedOfRotation": Print current value. */
-    const cde_canSignal_t *pSpeedOfRotation = &cde_canSignalAry[1];
-    assert(pSpeedOfRotation->isReceived
-           &&  pSpeedOfRotation->idxFrame < sizeOfAry(cde_canRxFrameAry)
-          );
-    printf( "Frame %d, signal %s: %f %s\r\n"
-          , cde_canRxFrameAry[pSpeedOfRotation->idxFrame].canId
-          , pSpeedOfRotation->name
-          , f2d(pSpeedOfRotation->getter())
-          , pSpeedOfRotation->unit
-          );
+//    /* CAN ID 1024, Rx signal "speedOfRotation": Print current value. */
+//    const cde_canSignal_t *pSpeedOfRotation = &cde_canSignalAry[1];
+//    assert(pSpeedOfRotation->isReceived
+//           &&  pSpeedOfRotation->idxFrame < sizeOfAry(cde_canRxFrameAry)
+//          );
+//    printf( "Frame %d, signal %s: %f %s\r\n"
+//          , cde_canRxFrameAry[pSpeedOfRotation->idxFrame].canId
+//          , pSpeedOfRotation->name
+//          , f2d(pSpeedOfRotation->getter())
+//          , pSpeedOfRotation->unit
+//          );
 
     /* CAN ID 1536, Tx signal "power": Change value visibly. */
     const cde_canSignal_t *pPower = &cde_canSignalAry[14];

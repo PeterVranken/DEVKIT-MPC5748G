@@ -9,7 +9,7 @@
  * This file has been created with comFramework - codeGenerator version 1.10.4,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -65,7 +65,8 @@
 const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
 {
     [0] =
-        { .idxCanBus = OSE_CAN_BUS_PT
+        { .name = "StateEcu01"
+        , .idxCanBus = OSE_CAN_BUS_PT
         , .isExtId = false
         , .canId = 1024
         , .isReceived = true
@@ -79,7 +80,8 @@ const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
         , .tiMinDistance = 20
         },
     [1] =
-        { .idxCanBus = OSE_CAN_BUS_PT
+        { .name = "StateEcu02"
+        , .idxCanBus = OSE_CAN_BUS_PT
         , .isExtId = false
         , .canId = 1040
         , .isReceived = true
@@ -93,7 +95,8 @@ const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
         , .tiMinDistance = 20
         },
     [2] =
-        { .idxCanBus = OSE_CAN_BUS_PT
+        { .name = "UserLimits"
+        , .idxCanBus = OSE_CAN_BUS_PT
         , .isExtId = false
         , .canId = 2032
         , .isReceived = true
@@ -114,7 +117,8 @@ const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
 const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
 {
     [0] =
-        { .idxCanBus = OSE_CAN_BUS_PT
+        { .name = "InfoPowerDisplay"
+        , .idxCanBus = OSE_CAN_BUS_PT
         , .isExtId = false
         , .canId = 1536
         , .isReceived = false
@@ -128,7 +132,8 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
         , .tiMinDistance = 20
         },
     [1] =
-        { .idxCanBus = OSE_CAN_BUS_PT
+        { .name = "StatusPowerDisplay"
+        , .idxCanBus = OSE_CAN_BUS_PT
         , .isExtId = false
         , .canId = 1537
         , .isReceived = false
@@ -142,7 +147,8 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
         , .tiMinDistance = 50
         },
     [2] =
-        { .idxCanBus = OSE_CAN_BUS_PT
+        { .name = "LimitsPowerDisplay"
+        , .idxCanBus = OSE_CAN_BUS_PT
         , .isExtId = false
         , .canId = 1538
         , .isReceived = false
@@ -171,7 +177,7 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
 /** A global table with the description of all CAN signals as required for the specific
     functionality of this application: The user can select signals rather than frames for
     reception and sending. */
-const cde_canSignal_t cde_canSignalAry[] =
+const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
 {
     [0] =
         { .name = "checksum"
