@@ -1,0 +1,70 @@
+0) RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+1) RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+2) RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+3) RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+4) RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+5) rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+6) RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+
+
+7) rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+8) RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+9) RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+10) RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+11) RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+12) RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+13) RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+
+
+14) RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+15) RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+16) RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+17) rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+18) RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+19) RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+20) RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+
+
+21) RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+22) RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+23) RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+24) rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+25) RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+26) RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+27) RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+
+
+28) RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+29) RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+30) RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+31) RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+32) RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+33) rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+34) RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+
+
+Initially we have 1 numbers in the scratch pad.
+We initialize number "hex".
+Now we have 2 number(s) in the scratch pad: cnt1 hex
+x=7
+x=7
+y=23
+y=23
+z=23
+z=23
+uint16 noFrames = 7;
+#error x (-168) is out of range [0; 100]
+#error x (-1) is out of range [0; 100]
+#error x (101) is out of range [0; 100]
+Finally we have 8 numbers in the scratch pad:
+  cnt1 = 35 = 0x24
+  hex = -1 = 0xffffffffffffffff
+  noFrames = 7 = 0x7
+  x = 101 = 0x65
+  xBad = -1 = 0xffffffffffffffff
+  xTooLarge = -1 = 0xffffffffffffffff
+  y = -2 = 0xfffffffffffffffe
+  z = 11 = 0xb
+
+
+Iteration on command interpreter: <>

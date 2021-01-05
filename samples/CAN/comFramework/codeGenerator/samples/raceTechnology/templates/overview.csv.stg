@@ -1,0 +1,37 @@
+//
+// overview.csv.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The contents of a DBC file are listed as an Excel overview. The genuine Excel
+// shreadsheet formats can't be generate by a StringTemplate V4 backend but a csv file can.
+// This file can be opened by Excel just like that and can then be saved as a true Excel
+// file if appropriate.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+import "lib/iterations.stg"
+import "lib/typeMap.stg"
+
+overview(cluster, info) ::= <<
+Bus;Frame;ID;ID (hex);Sender;Signal;Receiver(s);Received by me;Byte Order;Type;No Bits;Start Bit;Min;Max;Scale;Offset;Unit
+<iterateSignalsOfCluster(cluster,"normal","all","renderSignal")>
+>>
+
+byteOrder(isM) ::= "<if(isM)>Motorola<else>Intel<endif>"
+
+renderSignal(signal,kind) ::= <<
+<bus.name>;<frame.name>;<frame.id>;<frame.id;format="0x%03x">;<frame.sender>;<signal.name>;<signal.receiverAry; separator=", ">;<signal.isReceived>;<byteOrder(signal.isMotorola)>;<bt(signal.type)>;<signal.length>;<signal.startBit>;<signal.min>;<signal.max>;<signal.factor>;<signal.offset>;<signal.unit><\n>
+>>

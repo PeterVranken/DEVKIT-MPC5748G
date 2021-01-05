@@ -1,0 +1,218 @@
+//
+// codeGenC.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// This file holds standard templates, which are useful for code generation in C and which
+// are widely application independent. The templates are likely reusable in all
+// environments. See doucmentation, where they may become subject to customization.
+//   If customization is needed you can easily override or modify the definition with the
+// genuine mechanism of StringTemplate V4. Do not alter this file!
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "typeMap.stg"
+
+
+// msgAry() is the access to the bytes of the PDU. The result needs to be an array or
+// pointer expression, which can be Byte indexed with the [] expression.
+//   This would typically subject to the customization. It can become the (static) name of
+// a function argument (this is the default implementation of the template) or the context
+// dependently composed name of a global interface variable, among more. To customize it,
+// just override it in your application related StringTemplate V4 group file.
+//   The default value "m" is explained by the usual code structure, where signal
+// extraction and PDU composition is done inside PDU related unpack and pack functions,
+// which have uint8 m[8] as function argument. Inside these functions the local symbol m is
+// the array of PDU bytes. We chose a one character name as the resulting expressions
+// become relatively long.
+msgAry() ::= "m"
+
+
+// This template implements the core operation of the code generator: The C code to unpack a
+// pdu; it handles the value of a single signal.
+//   The signal is passed in as attribute.
+//   The returned string is a C expression holding the signal value. It can e.g. be used as
+// LHS of an assignment.
+extractSignal(signal) ::= <<
+(<bt(signal.type)>)<\\>
+<if(signal.shiftRight)>(<if(signal.isSigned)>(<sbt(signal.accType)>)<endif><endif><\\>
+<if(signal.shiftLeft)>(<endif><\\>
+(<readWord(signal.byteAry,signal.maskAry)>)<\\>
+<if(signal.shiftLeft)> \<\< <signal.shiftLeft>)<endif><\\>
+<if(signal.shiftRight)> >\> <signal.shiftRight>)<endif>
+>>
+
+
+// This template implements the other core operation of the code generator: The C code to
+// pack a PDU. It handles the value of a single signal; the bits of this signal are OR-ed
+// into the array of PDU bytes.
+//   The signal description is passed in as attribute signal. It is the first attribute so
+// that it can be subject to an iteration along all signals of a PDU.
+//   The PDU object pdu containing the signal is passed in.
+//   The packed signal value is passed in as attribute value. It is a C expression that
+// evaluates to the encoded integer value (signed or unsigned). The passed expression is
+// part of an embedding expression; if it is not a monolithic symbol then it should better
+// be encapsulated in a pair of parenthesis.
+//   The packed bytes i..j are adressed by <msgAry()>[i..j], see other template msgAry.
+//   The template generates a not self-contained fragment of C code:
+//   The operation requires a properly initialized array of bytes of PDU-length at least.
+// Prior to running this template on the the first signal all bits of all bytes, which
+// can't be written as a whole need to be zero. The other template setPduDataAreaNull
+// supports this operation. Alternatively, all bytes of the PDU area can be zeroized.
+//   The generated code is a block statement holding the operations in a pair of braces.
+packSignal(signal, pdu, value) ::= <<
+/* Pack signal <signal.name>. */
+{
+    /* Assign the signal value to a temporary variable, where the signal value's bits
+       have the same byte-relative position as in the final, packed PDU. */
+    <bt(signal.accType)> s = (<bt(signal.accType)>)<value><packLeftShift(signal)>;
+    
+    /* Transfer all bytes of the temporary variable into the PDU. */
+    <writeWord("s",signal.byteAry,signal.maskAry)><\\>
+}<\n>
+>>
+
+
+// Two sub-templates of extractSignal: Get the signed type belonging to an unsigned tpye.
+// Needed for proper type casting of the access type to the signed type of same length
+// prior to the right shift needed for sign propagation.
+unsignedToSignedTypeMap ::=
+[
+    "uint8_t"  : "sint8_t",
+    "uint16_t" : "sint16_t",
+    "uint32_t" : "sint32_t",
+    "uint64_t" : "sint64_t",
+    default    : "InternalError_BadTypeNameForSignedOperation"
+]
+sbt(ty) ::= "<bt(unsignedToSignedTypeMap.(ty))>"
+
+
+// A sub-template of readWord, which creates either "m[n]" or "(m[n] & mask)". Flags and
+// the availablibity of a mask value other than the no-operation value 0xff control, which
+// of both patterns is applied.
+//   Reading the value of a signed signal is always done by first appending all bytes, then
+// shifting till it is left aligned, then shifting till it is right aligned. Since the
+// shifts do an implicit masking of unused bits the second pattern is never applied to
+// signed signal extraction code.
+readMaskedByte(idxByte, mask, doNotMask) ::= <<
+<if(doNotMask||(!mask)||signal.isSigned)><msgAry()>[<idxByte>]<\\>
+<else>(<msgAry()>[<idxByte>] & <mask; format="0x%02x">)<\\>
+<endif>
+>>
+
+
+// This is a sub-template of extractSignal only; never use it directly. It iterates along
+// all bytes contributing to the signal (and its related mask bytes).
+readWord(bytes, masks) ::= <<
+<if(rest(bytes))>((<readWord(trunc(bytes),trunc(masks))>) \<\< 8) | <readMaskedByte(last(bytes),last(masks),true)><\\>
+<elseif(bytes)>(<bt(signal.accType)>)<readMaskedByte(last(bytes),last(masks),false)><\\>
+<else>0<\\>
+<endif>
+>>
+
+
+
+// The pack operation basically write signal bits into memory. It does this bytewise. Since
+// several signals can address to the same byte it needs to to this in general by an
+// bitwise OR operation, which requires an initial zeroizing of the bytes. The code pattern
+// generated by this template sets those bytes initially to 0, which are not completely
+// filled by the pack operation.
+//   The implementation of the templates uses distinct assignments if not too many bytes
+// are affected and a memset otherwise.
+//   The PDU object pdu is passed in.
+setPduDataAreaNull(pdu) ::= <<
+<if(pdu.idxByteInitialNullAry)><\\>
+/* The further commands will partly use bitwise OR commands to write the signal values.
+   Those bytes, which are not entirely occupied by the signals need to be cleared at
+   the beginning. */
+<if(rest(rest(rest(pdu.idxByteInitialNullAry))))>memset(<msgAry()>, /* value */ 0, /* noBytes */ <pdu.size>);<\\>
+<else><pdu.idxByteInitialNullAry:{idxByte|<msgAry()>[<idxByte>] = 0x00;}; separator="\n"><\\>
+<endif><\\>
+<endif>
+>>
+
+
+// Effective right shift for signal packing: When packing a signal, the back and forth
+// applied to signed signals can be combined to the right shift of the difference of both
+// shift distances. (As sign propagation is not required for packing.) This macro makes the
+// appropriate shift expression.
+packLeftShift(signal) ::= <<
+<if(signal.shiftLeft && signal.shiftRight)> \<\< (<signal.shiftRight>-<signal.shiftLeft>)<\\>
+<elseif(signal.shiftRight)> \<\< <signal.shiftRight><\\>
+<elseif(signal.shiftLeft)>
+#error Code generation error, illegal internal state encountered: signal.shiftLeft="<signal.shiftLeft>" signal.shiftRight="<signal.shiftRight>"
+<endif>
+>>
+
+
+// writeWord: Split the word into bytes and write these bytes into the PDU array. Consider
+// that first and last byte may not capture the full eight bits of the target byte and that
+// the not captured bits need to be retained in order to not destroy neighboured signals.
+// The result looks like:
+//   m[3] |= (uint8_t)(s & 0xc0);
+//   s >>= 8;
+//   m[4] = (uint8_t)s;
+//   s >>= 8;
+//   m[5] |= (uint8_t)(s & 0x1f);
+writeWord(tmp, bytes, masks) ::= <<
+<if(bytes)>
+<msgAry()>[<last(bytes)>] <if(last(masks))>|= (<bt("uint8_t")>)(<tmp> & <last(masks); format="0x%02x">)<else>= (<bt("uint8_t")>)<tmp><endif>;
+<if(trunc(bytes))><tmp> >\>= 8;
+<endif>
+<writeWord(tmp,trunc(bytes),trunc(masks))><\\>
+<endif>
+>>
+
+
+// Generate a bit mask with a number of n least significant bits set. The bit mask is
+// returned in hexadecimal representation but without language specific pre- or suffix
+// like $, 0x or h. The typical use of the template looks like:
+//   0x<bitMask(signal.length)>
+//   n: The number of least significant set bits.
+bitMask(n) ::= <<
+<info.calc.codeGenCMask_set_0><\\>
+<info.calc.({codeGenCMaskIdx_set_<n>})><\\>
+<bitMask_recursion("codeGenCMask")><\\>
+<info.calc.codeGenCMask; format="%x">
+>>
+
+// Generate a bit mask with a number of N least significant bits set. The template expands
+// to noting and the resulting bit mask needs to be retrieved as an integer number from the
+// scratch pad. This enables - in contrast to the other template bitMask - arbitrary
+// formatting. A typical template sequence looks like:
+//   <bitMaskCalc("myMask",signal.length)><info.calc.myMask; format="0x%08X">
+//   nameOfVar: The name of the variable in the scratch pad <info.calc>, which will hold
+// the result. Retrieve the number with <info.calc.name>, where name is your input to this
+// template. This attribute will usually be a string literal, e.g.
+// <bitMaskCalc("myMask",attribN)>.
+//   n: The number of least significant set bits. Can be a string literal but will normally
+// be an attribute, which expands to a number literal.
+bitMaskCalc(nameOfVar, n) ::= <<
+<info.calc.({codeGenCMaskIdx_set_<n>})><\\>
+<info.calc.({<nameOfVar>_set_0})><\\>
+<bitMask_recursion(nameOfVar)>
+>>
+
+// Helper template for the bit mask operations. Never to be used directly.
+bitMask_recursion(nameOfVar) ::= <<
+<if(info.calc.codeGenCMaskIdx_isG_0)><\\>
+<info.calc.({<nameOfVar>_sl})><\\>
+<info.calc.({<nameOfVar>_add_1})><\\>
+<info.calc.codeGenCMaskIdx_sub_1><\\>
+<bitMask_recursion(nameOfVar)><\\>
+<endif>
+>>

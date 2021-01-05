@@ -1,0 +1,538 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>Cluster (Data Model of excelExporter for StringTemplate V4 templates)</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="Cluster (Data Model of excelExporter for StringTemplate V4 templates)";
+    }
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+<!-- ========= START OF TOP NAVBAR ======= -->
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/CellObject.CellType.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/Cluster.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/Cluster.html" target="_top">Frames</a></li>
+<li><a href="Cluster.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_class_summary">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
+<!-- ========= END OF TOP NAVBAR ========= -->
+<!-- ======== START OF CLASS DATA ======== -->
+<div class="header">
+<div class="subTitle">excelExporter.excelParser.dataModel</div>
+<h2 title="Class Cluster" class="title">Class Cluster</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</li>
+<li>
+<ul class="inheritance">
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">excelExporter.excelParser.dataModel.ObjectMap</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a>&gt;</li>
+<li>
+<ul class="inheritance">
+<li>excelExporter.excelParser.dataModel.Cluster</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</dd>
+</dl>
+<hr>
+<br>
+<pre>public class <span class="strong">Cluster</span>
+extends <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a>&gt;</pre>
+<div class="block">The root of all parsed and rendered information.<p>
+   The "data model" is the Java representation of the Excel input, the parse tree with
+ other words. The "Cluster" is the root of the data model and information rendering in a
+ StringTemplate V4 template will always begin with the one and only object of this
+ class.<p>
+   An object of this class contains the results of parsing the input files, completed by
+ some configuration data. The object is passed to the template engine for rendering the
+ information in the wanted format.<p>
+   Formally, a <a href="../../../excelExporter/excelParser/dataModel/Cluster.html" title="class in excelExporter.excelParser.dataModel"><code>Cluster</code></a> object is a Java Map, which contains Excel workbooks,
+ looked up by name. The name of a workbook is subject to the application configuration.
+ It might be the Excel file name but this is not a must and not even common practice. If
+ the application has parsed two Excel workbooks "myBookA" and "myBookB", then these
+ workbooks would be accessed from a StringTemplate V4 template with an expression like
+ <code>&lt;cluster.myBookA&gt;</code> or <code>&lt;cluster.myBookB&gt;</code>.<p>
+   The cluster provides more information to the rendering process. The map of workbooks
+ is extended by some so-called "pseudo-fields", which can be accessed from a template by
+ means of the dot notation. As an example, the cluster has a name and this name can be
+ accessed by the template expression <code>&lt;cluster.name_&gt;</code>; where <code>name_</code> denotes
+ a pseudo-field. (It's impossible to name a workbook "name_", this is a reserved
+ keyword.)<p>
+   The list of all supported pseudo-fields is documented as enumeration  <a href="../../../excelExporter/excelParser/dataModel/Cluster.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><code>Cluster.PseudoFieldName</code></a>.<p>
+   <a href="../../../excelExporter/excelParser/dataModel/Cluster.html" title="class in excelExporter.excelParser.dataModel"><code>Cluster</code></a> is derived from its base class and the base class' pseudo-fields are
+ inherited and can be accessed in the same way. They are documented as enumeration  <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><code>ObjectMap.PseudoFieldName</code></a>.</div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="nested_class_summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Nested Class Summary table, listing nested classes, and an explanation">
+<caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Class and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel">Cluster.PseudoFieldName</a></strong></code>
+<div class="block">This is the list of pseudo-fields of class <a href="../../../excelExporter/excelParser/dataModel/Cluster.html" title="class in excelExporter.excelParser.dataModel"><code>Cluster</code></a> that can be accessed
+        from a StringTemplate V4 template.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.util.AbstractMap">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from class&nbsp;java.util.AbstractMap</h3>
+<code>java.util.AbstractMap.SimpleEntry&lt;K,V&gt;, java.util.AbstractMap.SimpleImmutableEntry&lt;K,V&gt;</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.util.Map">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from interface&nbsp;java.util.Map</h3>
+<code>java.util.Map.Entry&lt;K,V&gt;</code></li>
+</ul>
+</li>
+</ul>
+<!-- =========== FIELD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#noSheets">noSheets</a></strong></code>
+<div class="block">The total number of parsed sheets, regardless of how this relates to different
+        books and sheet groups.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,<a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel">ObjectList</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel">ExcelWorksheet</a>&gt;&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#sheetGroupMap">sheetGroupMap</a></strong></code>
+<div class="block">The worksheets of all the workbooks are held a second time in a map of global
+        worksheet groups.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a></code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#theOnlyWorkbook">theOnlyWorkbook</a></strong></code>
+<div class="block">To simplify template writing in a special but quite common case the data model
+        offers a direct reference to the workbook.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel">ExcelWorksheet</a></code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#theOnlyWorksheet">theOnlyWorksheet</a></strong></code>
+<div class="block">To simplify template writing in a special but quite common case the data model
+        offers a direct reference to the worksheet.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="fields_inherited_from_class_excelExporter.excelParser.dataModel.ObjectMap">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;excelExporter.excelParser.dataModel.<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a></h3>
+<code><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#exists">exists</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#i_">i_</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#i0_">i0_</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemAry">itemAry</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap">itemMap</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#name_">name_</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#objId">objId</a></code></li>
+</ul>
+</li>
+</ul>
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#Cluster(excelExporter.excelParser.ErrorCounter,%20java.lang.String)">Cluster</a></strong>(excelExporter.excelParser.ErrorCounter&nbsp;errCnt,
+       java.lang.String&nbsp;name)</code>
+<div class="block">Create a new cluster object.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#getNoSheetGroups()">getNoSheetGroups</a></strong>()</code>
+<div class="block">The number of global groups of worksheets in <a href="../../../excelExporter/excelParser/dataModel/Cluster.html#sheetGroupMap"><code>sheetGroupMap</code></a>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#putBook(excelExporter.excelParser.dataModel.ExcelWorkbook)">putBook</a></strong>(<a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a>&nbsp;book)</code>
+<div class="block">Add a new workbook.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#reportDirectDataAccess()">reportDirectDataAccess</a></strong>()</code>
+<div class="block">User feedback: This method reports if the direct access to a single
+ workbook/worksheet is available.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Cluster.html#sort(excelExporter.excelParser.SortOrder.Order,%20excelExporter.excelParser.SortOrder.Order)">sort</a></strong>(<a href="../../../excelExporter/excelParser/SortOrder.Order.html" title="enum in excelExporter.excelParser">SortOrder.Order</a>&nbsp;sortOrderBooks,
+    <a href="../../../excelExporter/excelParser/SortOrder.Order.html" title="enum in excelExporter.excelParser">SortOrder.Order</a>&nbsp;sortOrderSheets)</code>
+<div class="block">Sort the workbooks of this cluster and the worksheets in the global groups, which
+ are managed by the cluster.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_excelExporter.excelParser.dataModel.ObjectMap">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;excelExporter.excelParser.dataModel.<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a></h3>
+<code><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#containsKey(java.lang.Object)">containsKey</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#createComparator(excelExporter.excelParser.SortOrder.Order)">createComparator</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#entrySet()">entrySet</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#get(java.lang.Object)">get</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#getNoItems()">getNoItems</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#put(java.lang.Object,%20java.lang.Object)">put</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#putItem(java.lang.String,%20T)">putItem</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#setIndexInCollection(int)">setIndexInCollection</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#toString()">toString</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.util.AbstractMap">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.util.AbstractMap</h3>
+<code>clear, containsValue, equals, hashCode, isEmpty, keySet, putAll, remove, size, values</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>getClass, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="theOnlyWorkbook">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>theOnlyWorkbook</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a> theOnlyWorkbook</pre>
+<div class="block">To simplify template writing in a special but quite common case the data model
+        offers a direct reference to the workbook. This will work only if only a single
+        workbook is parsed in total. If no or more than one workbook is parsed this
+        reference is set to null in order to avoid unrecognized problems due to
+        ambiguities.<p>
+          How this field is set, how it relates to parsed workbooks is written to the
+        application log on logging level INFO and more in detail on logging level DEBUG.<p>
+          This field can be available even if the other field <a href="../../../excelExporter/excelParser/dataModel/Cluster.html#theOnlyWorksheet"><code>theOnlyWorksheet</code></a> is
+        null.</div>
+</li>
+</ul>
+<a name="theOnlyWorksheet">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>theOnlyWorksheet</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel">ExcelWorksheet</a> theOnlyWorksheet</pre>
+<div class="block">To simplify template writing in a special but quite common case the data model
+        offers a direct reference to the worksheet. This will work only if a single
+        worksheet is parsed in total. In all other cases this reference is set to null in
+        order to avoid unrecognized problems due to ambiguities.<p>
+          How this field is set, how it relates to parsed worksheets is written to the
+        application log on logging level INFO and more in detail on logging level DEBUG.<p>
+          If this field is available (not null) then the other field <a href="../../../excelExporter/excelParser/dataModel/Cluster.html#theOnlyWorkbook"><code>theOnlyWorkbook</code></a> will be available, too.</div>
+</li>
+</ul>
+<a name="sheetGroupMap">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>sheetGroupMap</h4>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel">ObjectList</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel">ExcelWorksheet</a>&gt;&gt; sheetGroupMap</pre>
+<div class="block">The worksheets of all the workbooks are held a second time in a map of global
+        worksheet groups. The names of the groups and the assignment of worksheets into
+        these groups is user-specified by means of application configuration.<p>
+          The use case is to order the worksheets of inhomogenous workbooks into homogenous
+        groups of identically structured worksheets. Using the map of groups one can iterate
+        along all worksheets of same structure.<p>
+          This field is null if no global sheet groups are defined.</div>
+</li>
+</ul>
+<a name="noSheets">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>noSheets</h4>
+<pre>public&nbsp;int noSheets</pre>
+<div class="block">The total number of parsed sheets, regardless of how this relates to different
+        books and sheet groups. Please note, the number of references to parsed sheets will
+        in general be greater since one and the same sheet can be held in more than one
+        collection.</div>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="Cluster(excelExporter.excelParser.ErrorCounter, java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>Cluster</h4>
+<pre>public&nbsp;Cluster(excelExporter.excelParser.ErrorCounter&nbsp;errCnt,
+       java.lang.String&nbsp;name)</pre>
+<div class="block">Create a new cluster object.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>errCnt</code> - A client supplied error counter. The use case is to permit consecutive error
+ counting across different phases of processing.</dd><dd><code>name</code> - The user chosen name of the data cluster.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getNoSheetGroups()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoSheetGroups</h4>
+<pre>public&nbsp;int&nbsp;getNoSheetGroups()</pre>
+<div class="block">The number of global groups of worksheets in <a href="../../../excelExporter/excelParser/dataModel/Cluster.html#sheetGroupMap"><code>sheetGroupMap</code></a>. From a
+        StringTemplate V4 template this member is accessed as <code>&lt;cluster.noSheetGroups&gt;</code>.</div>
+</li>
+</ul>
+<a name="putBook(excelExporter.excelParser.dataModel.ExcelWorkbook)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>putBook</h4>
+<pre>public&nbsp;void&nbsp;putBook(<a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a>&nbsp;book)</pre>
+<div class="block">Add a new workbook. From a StringTemplate V4 template this member is inaccessible.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>book</code> - The added workbook object. Its name must not be empty; it is the key into the map to
+ fetch the book.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="reportDirectDataAccess()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>reportDirectDataAccess</h4>
+<pre>public&nbsp;void&nbsp;reportDirectDataAccess()</pre>
+<div class="block">User feedback: This method reports if the direct access to a single
+ workbook/worksheet is available.</div>
+<dl><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="sort(excelExporter.excelParser.SortOrder.Order, excelExporter.excelParser.SortOrder.Order)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>sort</h4>
+<pre>public&nbsp;void&nbsp;sort(<a href="../../../excelExporter/excelParser/SortOrder.Order.html" title="enum in excelExporter.excelParser">SortOrder.Order</a>&nbsp;sortOrderBooks,
+        <a href="../../../excelExporter/excelParser/SortOrder.Order.html" title="enum in excelExporter.excelParser">SortOrder.Order</a>&nbsp;sortOrderSheets)</pre>
+<div class="block">Sort the workbooks of this cluster and the worksheets in the global groups, which
+ are managed by the cluster.<p>
+   This method should be called at the end of parsing all the workbooks.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>sortOrderBooks</code> - The wanted sort order for the workbooks. Sorting is done with respect to the names
+ of the workbooks. Sorting is done based on <a href="../../../excelExporter/excelParser/SortOrder.html#createComparatorString(excelExporter.excelParser.SortOrder.Order)"><code>SortOrder.createComparatorString(excelExporter.excelParser.SortOrder.Order)</code></a>;
+ refer to this method to get details about the behavior of sorting.</dd><dd><code>sortOrderSheets</code> - The wanted sort order for the worksheets. Sorting is done with respect to the names
+ of the worksheets. Sorting is done based on <a href="../../../excelExporter/excelParser/SortOrder.html#createComparatorString(excelExporter.excelParser.SortOrder.Order)"><code>SortOrder.createComparatorString(excelExporter.excelParser.SortOrder.Order)</code></a>; refer to this method to get details about the
+ behavior of sorting.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<!-- ========= END OF CLASS DATA ========= -->
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/CellObject.CellType.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/Cluster.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/Cluster.html" target="_top">Frames</a></li>
+<li><a href="Cluster.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_class_summary">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+</body>
+</html>

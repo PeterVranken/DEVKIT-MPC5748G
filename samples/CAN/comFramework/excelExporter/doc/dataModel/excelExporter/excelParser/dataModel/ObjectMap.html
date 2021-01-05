@@ -1,0 +1,759 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>ObjectMap (Data Model of excelExporter for StringTemplate V4 templates)</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="ObjectMap (Data Model of excelExporter for StringTemplate V4 templates)";
+    }
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+<!-- ========= START OF TOP NAVBAR ======= -->
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/ObjectMap.html" target="_top">Frames</a></li>
+<li><a href="ObjectMap.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_class_summary">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
+<!-- ========= END OF TOP NAVBAR ========= -->
+<!-- ======== START OF CLASS DATA ======== -->
+<div class="header">
+<div class="subTitle">excelExporter.excelParser.dataModel</div>
+<h2 title="Class ObjectMap" class="title">Class ObjectMap&lt;T&gt;</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</li>
+<li>
+<ul class="inheritance">
+<li>excelExporter.excelParser.dataModel.ObjectMap&lt;T&gt;</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</dd>
+</dl>
+<dl>
+<dt>Direct Known Subclasses:</dt>
+<dd><a href="../../../excelExporter/excelParser/dataModel/Cluster.html" title="class in excelExporter.excelParser.dataModel">Cluster</a>, <a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel">ExcelWorkbook</a>, <a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>, <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel">RowObjectContainer</a></dd>
+</dl>
+<hr>
+<br>
+<pre>public class <span class="strong">ObjectMap&lt;T&gt;</span>
+extends java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</pre>
+<div class="block">This is the base class of most elements in the data model, a map of objects, which is
+ compliant with the interface of the StringTemplate V4 engine. Such a map offers
+ arbitrary data elements from the parsed input next to fixed, predefined elements, which
+ support the data model.<p>
+   The class extends the Java Map. The map values are the data items from the parsed
+ input which can thus be accessed directly by name from a StringTemplate V4 template, by
+ using separating dots similar to the notation of fields in Java objects.<p>
+   Most objects of the data model are instances of this kind of container. The idea is to
+ access the data items in the container under their natural name. As an example, if the
+ container is the representation of an Excel workbook then the principal data items are
+ the worksheets of that book and they could be accessed by name. Be the workbook "myBook"
+ and have it two worksheets, named "mySheetA" and "mySheetB". From a StringTemplate V4
+ template one could access the parsed data like <code>&lt;myBook.mySheetA&gt;</code> or <code>&lt;myBook.mySheetB&gt;</code>.<p>
+   This way to access dynamic data (the names of the "fields" of <code>myBook</code> are
+ determined by the application input) is convenient and in the template syntactically
+ very close to the conventional StringTemplate data model, which is a predefined Java
+ data structure consisting of nested Java classes having public fields of predefined
+ names. In either case the dot notation is used in the template.<p>
+   The major difference between this container class and the conventional data model is
+ the inaccessibility of additional public fields. For map objects the StringTemplate V4
+ template engine only supports the map lookup but not the "normal" introspection for
+ public fields of requested name. If we extend the container with public fields, e.g. we
+ want to add the field "noSheets" to our workbook, then this field would not be visible
+ from a template. We support such fields by mapping them into the map's contents. The
+ Java Map implementation is overridden to do so. Now all access from the template engine
+ is done via the map interface, be it access of predefined fields like our example
+ "noSheets" or be it access of true, dynamic contents, i.e. data items like "mySheetA" or
+ "mySheetB". We call the predefined fields "pseudo-fields" since from a template they
+ look like and behave like true public fields of the Java object but in fact they are
+ implemented as map content items.<p>
+   This class implements a map, which supports true map behavior (dynamic data items
+ from the application input) and having predefined pseudo-fields (predefined by our
+ application design), that are merged into the map contents. Some generic pseudo-fields
+ are already defined by this base class (e.g. the name of the container) and it provides
+ the mechanisms to let a derived class define its own, further pseudo-fields.<p>
+   Two problems arise.<p> 
+   Evidently, pseudo-fields and true, dynamic data contents share the map key space. All
+ keys are Java String objects with the meaning name-of-object. The name under which a
+ pseudo-field is stored and accessed cannot be used for a dynamic data item at the same
+ time. Since we have the pseudo-field "name_" there can't be a worksheet called <code>name_</code> in the workbook <code>myBook</code> in our example above. From a template <code>&lt;myBook.name_&gt;</code> refers to the name of <code>myBook</code> but not to a worksheet of that
+ name.<p>
+   The implementation of this map class checks for name clashes of this kind at parse
+ time, when the map is filled with the information from the application input.<p>
+   It is impossible to complete parsing if there's such a name clash. Since naming of
+ data items can be controlled via command line options this will not mean that it would
+ be impossible to successfully read the input, only some fine tuning of the application
+ configuration will be required.<p>
+   In practice, name clashes will occur only exceptional. Typical names of pseudo-fields
+ in the data model will not likely appear in natural Excel input. Where this is not the
+ case we decided to rename our pseudo-fields, even if this leads to less neat template
+ code. The most prominent example is the name of an object. In the conventional data
+ model this is the public field <code>name</code>. Since "name" can easily appear in natural
+ input we called the pseudo-field "name_". The same happens for the index-in-collection,
+ our conventional "i" and "i0" became "i_" and "i0_", respectively.<p>
+   The second problem is the documentation. Conventional data models, which are
+ predefined, nested Java classes are appropriately documented with Javadoc. All public
+ fields are listed and explained in meaningful HTML representation and their nesting is
+ easily understandable. Using this container class the pseudo-fields are implemented by
+ run-time code and won't appear as such in the Javadoc documentation.<p>
+   At several points the design of the implementation of this map class was driven by
+ considerations how to make information important to StringTemplate V4 template writers
+ visible in the Javadoc documentation. First of all, the pseudo-fields are held in true
+ fields. These are inaccessible via the template engine and not required by surrounding
+ Java code. Under normal circumstances these fields would be implemented private. We made
+ them public so that the application user will find them in Javadoc. The user sees these
+ fields as public - and can indeed access them (if not as public fields but via the map
+ interface as pseudo-field). Secondary, all pseudo-fields are listed as a Java
+ enumeration. For this base class and for each derived container class you will find the
+ related enumeration and each named value will be documented with a short explanation of
+ the pseudo-field it relates to. See e.g. <a href="../../../excelExporter/excelParser/dataModel/Cluster.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><code>Cluster.PseudoFieldName</code></a> or <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><code>ObjectMap.PseudoFieldName</code></a>.</div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="nested_class_summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Nested Class Summary table, listing nested classes, and an explanation">
+<caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Class and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel">ObjectMap.PseudoFieldName</a></strong></code>
+<div class="block">This is the list of pseudo-fields of class <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel"><code>ObjectMap</code></a> that can be accessed
+        from a StringTemplate V4 template.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.util.AbstractMap">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from class&nbsp;java.util.AbstractMap</h3>
+<code>java.util.AbstractMap.SimpleEntry&lt;K,V&gt;, java.util.AbstractMap.SimpleImmutableEntry&lt;K,V&gt;</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.util.Map">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from interface&nbsp;java.util.Map</h3>
+<code>java.util.Map.Entry&lt;K,V&gt;</code></li>
+</ul>
+</li>
+</ul>
+<!-- =========== FIELD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#exists">exists</a></strong></code>
+<div class="block">The presence of a container object as Boolean.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#i_">i_</a></strong></code>
+<div class="block">The one based index of the object in a collection of those.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#i0_">i0_</a></strong></code>
+<div class="block">The null based index of the object in a collection of those.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel">ObjectList</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="type parameter in ObjectMap">T</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemAry">itemAry</a></strong></code>
+<div class="block">All real data items (in contrast to the pseudo-fields), which are held in the map
+        <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap"><code>itemMap</code></a> are stored a second time in this list.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="type parameter in ObjectMap">T</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap">itemMap</a></strong></code>
+<div class="block">This is an embedded map, which stores all real data items (in contrast to the
+        pseudo-fields).</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel">Identifier</a></code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#name_">name_</a></strong></code>
+<div class="block">The name of the object.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#objId">objId</a></strong></code>
+<div class="block">The ID of this object.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#containsKey(java.lang.Object)">containsKey</a></strong>(java.lang.Object&nbsp;key)</code>
+<div class="block">Check for presence of a given key,value pair in the map.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static &lt;T&gt;&nbsp;<a href="../../../excelExporter/excelParser/SortOrder.Comparator.html" title="interface in excelExporter.excelParser">SortOrder.Comparator</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a>&lt;T&gt;&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#createComparator(excelExporter.excelParser.SortOrder.Order)">createComparator</a></strong>(<a href="../../../excelExporter/excelParser/SortOrder.Order.html" title="enum in excelExporter.excelParser">SortOrder.Order</a>&nbsp;sortOrder)</code>
+<div class="block">A comparator for sorting containers in a Java List is created and returned.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Set&lt;java.util.Map.Entry&lt;java.lang.Object,java.lang.Object&gt;&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#entrySet()">entrySet</a></strong>()</code>
+<div class="block">Deriving a new Map class from AbstractMap requires at minimum overloading the
+ entrySet function.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#get(java.lang.Object)">get</a></strong>(java.lang.Object&nbsp;key)</code>
+<div class="block">Get an object from the Map as it is seen by the StringTemplate V4 engine.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#getNoItems()">getNoItems</a></strong>()</code>
+<div class="block">The number of data items in <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemAry"><code>itemAry</code></a> and <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap"><code>itemMap</code></a>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#put(java.lang.Object,%20java.lang.Object)">put</a></strong>(java.lang.Object&nbsp;key,
+   java.lang.Object&nbsp;value)</code>
+<div class="block">Adding a real data item to this map object must only be done using <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#putItem(java.lang.String,%20T)"><code>putItem(java.lang.String, T)</code></a>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#putItem(java.lang.String,%20T)">putItem</a></strong>(java.lang.String&nbsp;objectName,
+       <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="type parameter in ObjectMap">T</a>&nbsp;object)</code>
+<div class="block">Add a real data item to the map.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#setIndexInCollection(int)">setIndexInCollection</a></strong>(int&nbsp;i0)</code>
+<div class="block">Set the index-in-collection.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#toString()">toString</a></strong>()</code>
+<div class="block">Get the string representation of the map object; it's its name as an identifier.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.util.AbstractMap">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.util.AbstractMap</h3>
+<code>clear, containsValue, equals, hashCode, isEmpty, keySet, putAll, remove, size, values</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>getClass, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="objId">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>objId</h4>
+<pre>public final&nbsp;int objId</pre>
+<div class="block">The ID of this object. Each object in the data model gets a unique ID, which can be
+        useful for having related data objects in the generated code with individual
+        names.</div>
+</li>
+</ul>
+<a name="name_">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>name_</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel">Identifier</a> name_</pre>
+<div class="block">The name of the object.</div>
+<dl><dt><span class="strong">Remark:</span></dt>
+  <dd>The name is stored as an object of type <a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel"><code>Identifier</code></a>. If is is
+        rendered like <code>&lt;obj.name_&gt;</code> in a StringTemplate V4 template you will not get
+        the given name but the C identifier, which is most similar to the given name - this
+        can even be identical to the name. If you really want to get the given name then
+        you'd rather put <code>&lt;obj.name_.givenName&gt;</code> into your template.<p>
+          For consistency, this field would be better named "name" (compare to other
+        elements of the data model). However, all public field names of this class are
+        reserved key words at the same time and can't be used as designations in the
+        application input. Therefore, we can't apply such a common designation as "name".</dd></dl>
+</li>
+</ul>
+<a name="i0_">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>i0_</h4>
+<pre>public&nbsp;int i0_</pre>
+<div class="block">The null based index of the object in a collection of those. If the object is held
+        in more than one collection then the index relates to the most important one. The
+        index can be used to support the implementation of arrays or enumerations of
+        objects in the generated output.<p></div>
+<dl><dt><span class="strong">Remark:</span></dt>
+  <dd>This field should be named <code>i0</code> for consistency with our usual data
+        model naming scheme. However, all public field names of this class are
+        reserved key words at the same time and can't be used as designations in the
+        application input. Therefore, we can't apply such a common designation as "i0".</dd></dl>
+</li>
+</ul>
+<a name="i_">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>i_</h4>
+<pre>public&nbsp;int i_</pre>
+<div class="block">The one based index of the object in a collection of those. If the object is held
+        in more than one collection then the index relates to the most important one. The
+        index can be used to support the implementation of arrays or enumerations of
+        objects in the generated output.<p>
+          The value of this index is <code>i0_ + 1</code>.<p></div>
+<dl><dt><span class="strong">Remark:</span></dt>
+  <dd>This field should be named <code>i</code> for consistency with our usual data
+        model naming scheme. However, all public field names of this class are
+        reserved key words at the same time and can't be used as designations in the
+        application input. Therefore, we can't apply such a common designation as "i"</dd></dl>
+</li>
+</ul>
+<a name="itemMap">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>itemMap</h4>
+<pre>public final&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="type parameter in ObjectMap">T</a>&gt; itemMap</pre>
+<div class="block">This is an embedded map, which stores all real data items (in contrast to the
+        pseudo-fields). Which are the real data items depends on the actual container. This
+        is the base class implementation and different derived conatiner classes will
+        typically contain different kinds of data items:<p>
+        <ul>
+        <li><a href="../../../excelExporter/excelParser/dataModel/Cluster.html" title="class in excelExporter.excelParser.dataModel"><code>Cluster</code></a>: Data items are <a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel"><code>ExcelWorkbook</code></a> objects
+        <li><a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html" title="class in excelExporter.excelParser.dataModel"><code>ExcelWorkbook</code></a>: Data items are <a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel"><code>ExcelWorksheet</code></a> objects
+        <li><a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel"><code>ExcelWorksheet</code></a>: Data items are <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a> objects, the
+          groups of row objects
+        <li><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a>: Recursively contains data items of same type. This
+        model the recursive grouping of row objects
+        <li><a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel"><code>RowObject</code></a>: Data items are <a href="../../../excelExporter/excelParser/dataModel/CellObject.html" title="class in excelExporter.excelParser.dataModel"><code>CellObject</code></a> objects</ul></div>
+</li>
+</ul>
+<a name="itemAry">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>itemAry</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel">ObjectList</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="type parameter in ObjectMap">T</a>&gt; itemAry</pre>
+<div class="block">All real data items (in contrast to the pseudo-fields), which are held in the map
+        <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap"><code>itemMap</code></a> are stored a second time in this list.</div>
+<dl><dt><span class="strong">Remark:</span></dt>
+  <dd>The list is sorted; which order is determined by the application
+        configuration and is kept for reference in <a href="../../../excelExporter/excelParser/dataModel/ObjectList.html#sortOrder"><code>ObjectList.sortOrder</code></a>. From a
+        StringTemplate V4 template the sort order can be queried with an expression like
+        <code>&lt;obj.itemAry.sortOrder&gt;</code>.</dd></dl>
+</li>
+</ul>
+<a name="exists">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>exists</h4>
+<pre>public final&nbsp;boolean exists</pre>
+<div class="block">The presence of a container object as Boolean. From a StringTemplate V4 template it
+        is a bit tricky to query the existance of a container of this class. While the
+        existance of an object in the data model is normally queried by a template
+        expression like<p>
+          <code>&lt;if(cluster.object)&gt;"object" is present&lt;endif&gt;</code><p>
+        will this fail for Java Map objects. <code>&lt;if(cluster.mapObject)&gt;</code> will return
+        <code>false</code> even if the map object exists but if it is empty. Empty maps are
+        however quite common in our data model. Let's take for example a flat worksheet
+        "mySheet" of workbook "myBook" that owns all row objects in the root level and
+        doesn't have nested sub-groups of row objects. The template expression<p>
+          <code>&lt;if(myBook.mySheet)&gt;&lt;myBook.mySheet.rowAry:renderRow()&gt;&lt;endif&gt;</code><p>
+        would fail and not render any row object. (Since the <i>map</i> <code>mySheet</code> is
+        empty.) Using the flag <code>exists</code> the template can be formulated meaningful and
+        safe:<p>
+          <code>&lt;if(myBook.mySheet.exists)&gt;&lt;myBook.mySheet.rowAry:renderRow()&gt;&lt;endif&gt;</code></div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../constant-values.html#excelExporter.excelParser.dataModel.ObjectMap.exists">Constant Field Values</a></dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getNoItems()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoItems</h4>
+<pre>public&nbsp;int&nbsp;getNoItems()</pre>
+<div class="block">The number of data items in <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemAry"><code>itemAry</code></a> and <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap"><code>itemMap</code></a>. From a
+        StringTemplate V4 template this member is accessed as <code>&lt;obj.noItems&gt;</code>.</div>
+</li>
+</ul>
+<a name="setIndexInCollection(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setIndexInCollection</h4>
+<pre>public&nbsp;void&nbsp;setIndexInCollection(int&nbsp;i0)</pre>
+<div class="block">Set the index-in-collection.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>i0</code> - The new value for the null based index of this object in an embedding collection.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="entrySet()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>entrySet</h4>
+<pre>public&nbsp;java.util.Set&lt;java.util.Map.Entry&lt;java.lang.Object,java.lang.Object&gt;&gt;&nbsp;entrySet()</pre>
+<div class="block">Deriving a new Map class from AbstractMap requires at minimum overloading the
+ entrySet function. The StringTemplate V4 engine will call this method if the
+ template iterates through the map.<p>
+   We overload this method to filter out the pseudo fields, we want to hide when an
+ iteration along all map entries takes place. Filtering the pseudo fields here is a
+ contradictory behavior with the overloaded get method, which will return the pseudo
+ fields. Theoretically, this contradiction could be recognized by the StringTemplate
+ V4 engine but by experience it doesn't complain about.</div>
+<dl>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>entrySet</code>&nbsp;in interface&nbsp;<code>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>entrySet</code>&nbsp;in class&nbsp;<code>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="containsKey(java.lang.Object)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>containsKey</h4>
+<pre>public&nbsp;boolean&nbsp;containsKey(java.lang.Object&nbsp;key)</pre>
+<div class="block">Check for presence of a given key,value pair in the map.<p>
+   The StringTemplate V4 engine will use this Map method prior to the query for the
+ value. We say "is available" to both, contained real data items and pseudo fields.
+ This is a contradictory behavior with the behavior of method entrySet, which won't
+ list the pseudo fields. Theoretically, the contradiction could be recognized by the
+ StringTemplate V4 engine but by experience it doesn't complain about.<p>
+   There's a pit-fall: The template engine has a two step approach to find the map
+ entries. First, it tries to identify the entry by passing in the template attribute,
+ which is used in the template map operator <code>.()</code>. The attribute is represented
+ in the StringTemplate defined Java class; different template constructs will yield
+ different Java classes. If the engine gets a negative response then it tries again,
+ this time with the attribute rendered as text, as a Java String object. (If the
+ internal attribute representation already is a Java String then no second attempt is
+ made.)<p>
+   For us, it's impossible to operate on the internal StringTemplate classes.
+ Therefore we reject all queries with key objects, which are not of Java class String
+ and wait for the second attempt.</div>
+<dl>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>containsKey</code>&nbsp;in interface&nbsp;<code>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><strong>Overrides:</strong></dt>
+<dd><code>containsKey</code>&nbsp;in class&nbsp;<code>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><span class="strong">Parameters:</span></dt><dd><code>key</code> - The key attribute from the template.</dd>
+<dt><span class="strong">Returns:</span></dt><dd><code>true</code> for contained real data items and pseudo fields if referenced to by
+ Java String keys, <code>false</code> otherwise.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="get(java.lang.Object)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>get</h4>
+<pre>public&nbsp;java.lang.Object&nbsp;get(java.lang.Object&nbsp;key)</pre>
+<div class="block">Get an object from the Map as it is seen by the StringTemplate V4 engine. The object
+ can either be a pseudo-field or a real data item.</div>
+<dl>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>get</code>&nbsp;in interface&nbsp;<code>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><strong>Overrides:</strong></dt>
+<dd><code>get</code>&nbsp;in class&nbsp;<code>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><span class="strong">Parameters:</span></dt><dd><code>key</code> - The key, which the demanded object is associated with. In practice and due to the
+ behavior of the StringTemplate V4 engine this will always be a Java String. This
+ type is ensured by assertion. See method <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#containsKey(java.lang.Object)"><code>containsKey(java.lang.Object)</code></a>, too.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>Get the object or null if no such object exists.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="put(java.lang.Object, java.lang.Object)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>put</h4>
+<pre>public&nbsp;java.lang.Object&nbsp;put(java.lang.Object&nbsp;key,
+                   java.lang.Object&nbsp;value)</pre>
+<div class="block">Adding a real data item to this map object must only be done using <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#putItem(java.lang.String,%20T)"><code>putItem(java.lang.String, T)</code></a>. Java's <code>Map.put(K, V)</code> is overridden only to double-check this by
+ assertion.</div>
+<dl>
+<dt><strong>Specified by:</strong></dt>
+<dd><code>put</code>&nbsp;in interface&nbsp;<code>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><strong>Overrides:</strong></dt>
+<dd><code>put</code>&nbsp;in class&nbsp;<code>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><span class="strong">Parameters:</span></dt><dd><code>key</code> - The name of the object.</dd><dd><code>value</code> - The added object of template type <T>.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>Always returns null. But will always fire an assertion before.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="putItem(java.lang.String,java.lang.Object)">
+<!--   -->
+</a><a name="putItem(java.lang.String, T)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>putItem</h4>
+<pre>public&nbsp;boolean&nbsp;putItem(java.lang.String&nbsp;objectName,
+              <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="type parameter in ObjectMap">T</a>&nbsp;object)</pre>
+<div class="block">Add a real data item to the map.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>objectName</code> - This is the name under which the object is stored in the map. Must not be null.</dd><dd><code>object</code> - The object to add. Must not be null.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>Get the Boolean information whether the object could be added to the
+ map. Adding can fail if the object's name clashes with a reserved keyword or an
+ already contained object.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="createComparator(excelExporter.excelParser.SortOrder.Order)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createComparator</h4>
+<pre>public static&nbsp;&lt;T&gt;&nbsp;<a href="../../../excelExporter/excelParser/SortOrder.Comparator.html" title="interface in excelExporter.excelParser">SortOrder.Comparator</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a>&lt;T&gt;&gt;&nbsp;createComparator(<a href="../../../excelExporter/excelParser/SortOrder.Order.html" title="enum in excelExporter.excelParser">SortOrder.Order</a>&nbsp;sortOrder)</pre>
+<div class="block">A comparator for sorting containers in a Java List is created and returned.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>sortOrder</code> - The wanted sort order. Sorting is done with respect to the name <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#name_"><code>name_</code></a> of
+ the container. Sorting is done based on <a href="../../../excelExporter/excelParser/SortOrder.html#createComparatorString(excelExporter.excelParser.SortOrder.Order)"><code>SortOrder.createComparatorString(excelExporter.excelParser.SortOrder.Order)</code></a>;
+ refer to this method to get details about the behavior of sorting.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>Get the temporary comparator object as usable with the Java Collections
+ class.</dd></dl>
+</li>
+</ul>
+<a name="toString()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>toString</h4>
+<pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<div class="block">Get the string representation of the map object; it's its name as an identifier.
+ From a StringTemplate V4 template this representation of the object is not
+ accessible. Here you need to reference the object's name, e.g. <code>&lt;obj.name_&gt;</code>.</div>
+<dl>
+<dt><strong>Overrides:</strong></dt>
+<dd><code>toString</code>&nbsp;in class&nbsp;<code>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</code></dd>
+<dt><span class="strong">Returns:</span></dt><dd>Get the string value.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<!-- ========= END OF CLASS DATA ========= -->
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/ObjectMap.html" target="_top">Frames</a></li>
+<li><a href="ObjectMap.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_class_summary">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+</body>
+</html>

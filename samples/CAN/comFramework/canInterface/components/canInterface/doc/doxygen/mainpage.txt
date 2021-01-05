@@ -1,0 +1,17 @@
+/*! @mainpage Software Documentation for comFramework - CAN Interface
+
+@section secIntro Introduction
+
+comFramework - CAN Interface - A highly flexible CAN interface for embedded platforms
+
+This is not the manual. The purpose of this documentation is to be a kind
+of API browser to support the implementation of the software, which is
+going to integrate the CAN interface. Get a quick overview on the source
+files of the interface engine and the contained functions and applied data
+types. Use it as a reference book while working on your embedding
+software.
+
+For everything else, please refer to the <a
+href="https://sourceforge.net/p/comframe/wiki/Home/">comFramework Wiki pages</a>.
+
+*/

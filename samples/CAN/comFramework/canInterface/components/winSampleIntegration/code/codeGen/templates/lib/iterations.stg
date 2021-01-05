@@ -1,0 +1,194 @@
+//
+// iterations.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates collected in this library file allow to iterate along all frames (of the
+// cluster, of buses), all PDUs (of cluster, buses, frames) and along all signals (of
+// cluster, buses, frames, pdus). The iterations can be controlled by simple filters, which
+// restrict the iteration e.g. to in- or outbound frames or signals.
+//
+// Copyright (C) 2015-2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// The iterations finally apply a user-specified template T to all visited objects. This
+// templated is expanded by reference. Usually, it'll be passed in as a literal, i.e. the
+// template name in double quotes.
+//   The reference to the template is the last argument of all iterations, the formal name
+// of this argument is T.
+//   The required template T normally has a single argument: The visited object. Only the
+// iterations along the signals of a parent object use a second argument for T; T gets a
+// string attribute as second argument kind, which is either "normal", "muxSel" or "muxed",
+// i.e. three out of the four possible choices of the filter mux of the signal iterations.
+// Attribute kind tells the applied template what matched against the filter. This is
+// relevant only if the filter mux was set to "all". T can use the templates
+// <strcmpNormal.(kind)>, <strcmpMuxSel.(kind)> or <strcmpMuxed.(kind)> to test, of which
+// kind the signal is.
+
+// By convention all iterations use argument scoping to access the embracing elements,
+// which are closer to the root of everything, which is the cluster. This convention means
+// to have hard-coded names for these elements. The leaf of the iteration, the applied
+// user-specified template T, needs to be aware of this and needs to use these given names.
+// The following names apply:
+//   cluster: The union of all buses
+//   bus:     A bus, i.e. the representation of a single CAN network database
+//   frame:   A CAN frame or message
+//   pdu:     A PDU of the frame. For CAN this is a one by one relation
+//   muxSSet: The set of multiplexed signals, which do all have the same multiplex switch
+//            value
+//   signal:  A signal
+
+// All iterations along frames, PDUs and signals use the attribute dir (for direction) to
+// filter in- and outbound objects. The attribute will usually be passed in as a literal,
+// i.e. a string in double-quotes. The following values are recognized for attribute dir:
+//   sent:     outbound objects only
+//   received: inbound objects only
+//   both:     all objects, which are either in- or outbound
+//   foreign:  all objects, which are neither in- nor outbound
+//   loopback: Objects, which are sent by the given network node, but which it listens to
+//             at the same time
+//   all:      all objects, including those which are not transmitted by the given network
+//             node. This value will probably be useful only for reporting and overview
+//             documents
+
+// All iterations along signals besides those of a multiplexed signal set use the attribute
+// mux (for multiplexing) to filter either normal or multiplexed signals. This filter is
+// AND combined with the direction filter; both filters must match. The attribute will
+// usually be passed in as a literal, i.e. a string in double-quotes. The following values
+// are recognized for attribute mux:
+//   normal: Only the normal signals match
+//   muxSel: Only the multiplex selector signal matches
+//   muxed:  Only the multiplexed signals match. The matching signals are not reasonably
+//           grouped in sets. If you need this grouping you will only iterate along
+//           multiplexed signal sets
+//   all:    All signals, the union of those before. The normal signals of a PDU are
+//           visited prior to the multiplex selector signal of the PDU prior to the
+//           signals of the multiplexed signal sets of the PDU. This enables the use of
+//           iteration along "all" signals for pack and unpack operations.
+
+
+// Iterate along all buses. This can solely be done for the root of all, the cluster. No
+// filtering is offered.
+iterateBusesOfCluster(cluster, T) ::= "<cluster.busAry:(T)()>"
+
+
+// Iterate along all frames. This can be done at the root of all, the cluster, or one can
+// enter the iteration selectively in a sub-element, i.e. a bus.
+iterateFramesOfCluster(cluster,dir,T) ::= "<cluster.busAry:iterateFramesOfBus(dir,T)>"
+iterateFramesOfBus(bus,dir,T) ::= "<bus.frameAry:applyTToFrame(dir,T)>"
+applyTToFrame(frame,dir,T) ::= <<
+<if(strcmpSent.(dir) && frame.isSent
+    ||  strcmpReceived.(dir) && frame.isReceived
+    ||  strcmpBoth.(dir) && (frame.isSent || frame.isReceived)
+    ||  strcmpForeign.(dir) && !frame.isSent && !frame.isReceived
+    ||  strcmpLoopback.(dir) && frame.isSent && frame.isReceived
+    ||  strcmpAll.(dir)
+   )><(T)(frame)><\\>
+<endif>
+>>
+
+
+// Iterate along all PDUs. This can be done at the root of all, the cluster, or one can
+// enter the iteration selectively in a sub-element, i.e. a bus or a frame.
+iteratePdusOfCluster(cluster,dir,T) ::= "<cluster.busAry:iteratePdusOfBus(dir,T)>"
+iteratePdusOfBus(bus,dir,T) ::= "<bus.frameAry:iteratePdusOfFrame(dir,T)>"
+iteratePdusOfFrame(frame,dir,T) ::= <<
+<if(strcmpSent.(dir) && frame.isSent
+    ||  strcmpReceived.(dir) && frame.isReceived
+    ||  strcmpBoth.(dir) && (frame.isSent || frame.isReceived)
+    ||  strcmpForeign.(dir) && !frame.isSent && !frame.isReceived
+    ||  strcmpLoopback.(dir) && frame.isSent && frame.isReceived
+    ||  strcmpAll.(dir)
+   )><frame.pduAry:{pdu|<(T)(pdu)>}><\\>
+<endif>
+>>
+
+
+// Iterate along all sets of multiplex signals. This can be done at the root of all, the
+// cluster, or one can enter the iteration selectively in a sub-element, i.e. a bus, a
+// frame or a PDU.
+//   CAUTION: The transmission direction of a multiplexed set of signals is not well
+// defined in the data model. The signals of the set can have differing properties
+// isReceived and useful set operations are not implemented. In these iterations, the
+// argument dir refer to the containing PDU's (and the frame's) transmission direction.
+iterateMuxSSetsOfCluster(cluster,dir,T) ::= "<cluster.busAry:iterateMuxSSetsOfBus(dir,T)>"
+iterateMuxSSetsOfBus(bus,dir,T) ::= "<bus.frameAry:iterateMuxSSetsOfFrame(dir,T)>"
+iterateMuxSSetsOfFrame(frame,dir,T) ::= <<
+<if(strcmpSent.(dir) && frame.isSent
+    ||  strcmpReceived.(dir) && frame.isReceived
+    ||  strcmpBoth.(dir) && (frame.isSent || frame.isReceived)
+    ||  strcmpForeign.(dir) && !frame.isSent && !frame.isReceived
+    ||  strcmpLoopback.(dir) && frame.isSent && frame.isReceived
+    ||  strcmpAll.(dir)
+   )><frame.pduAry:{pdu|<iterateMuxSSetsOfPdu(pdu,T)>}><\\>
+<endif>
+>>
+iterateMuxSSetsOfPdu(pdu,T) ::= "<pdu.muxSignalSetAry:{muxSSet|<(T)(muxSSet)>}>"
+
+
+// Iterate along all signals. This can be done at the root of all, the
+// cluster, or one can enter the iteration selectively in a sub-element, i.e. a bus, a
+// frame, a PDU or a multiplexed signal set.
+//   Please note, if the kind of signals include the multiplexed ones then it is guaranteed
+// that the normal signals of a PDU are handled prior to the multiplex selector signal of
+// the PDU prior to the signals of the multiplexed signal sets of the PDU. This enables
+// the use of iteration along "all" signals for pack and unpack operations.
+//   CAUTION: Different to the other iterations does the applied user-specified template T
+// take a second argument (the first argument always is the visited object); T gets a
+// string attribute as argument kind, which is either "normal", "muxSel" or "muxed", i.e. three
+// out of the four possible choices of the filter mux of the iteration. This attribute
+// tells the applied template what matched against the filter. This is relevant only if the
+// filter mux was set to "all". T can use the templates <strcmpNormal.(kind)>,
+// <strcmpMuxSel.(kind)> or <strcmpMuxed.(kind)> to test, of which kind the signal is.
+iterateSignalsOfCluster(cluster,mux,dir,T) ::= "<cluster.busAry:iterateSignalsOfBus(mux,dir,T)>"
+iterateSignalsOfBus(bus,mux,dir,T) ::= "<bus.frameAry:iterateSignalsOfFrame(mux,dir,T)>"
+iterateSignalsOfFrame(frame,mux,dir,T) ::= "<frame.pduAry:iterateSignalsOfPdu(mux,dir,T)>"
+iterateSignalsOfPdu(pdu,mux,dir,T) ::= <<
+<if(strcmpNormal.(mux) || strcmpAll.(mux))><pdu.signalAry:applyTToSignal(dir,T,"normal")><endif><\\>
+<if(strcmpMuxSel.(mux) || strcmpAll.(mux))><pdu.muxSelector:applyTToSignal(dir,T,"muxSel")><endif><\\>
+<if(strcmpMuxed.(mux) || strcmpAll.(mux))><pdu.muxSignalSetAry:iterateSignalsOfMuxSSet(dir,T)><endif>
+>>
+iterateSignalsOfMuxSSet(muxSSet,dir,T) ::= "<muxSSet.signalAry:applyTToSignal(dir,T,\"muxed\")>"
+applyTToSignal(signal,dir,T,kind) ::= <<
+<if(strcmpSent.(dir) && frame.isSent
+    ||  strcmpReceived.(dir) && signal.isReceived
+    ||  strcmpBoth.(dir) && (frame.isSent || signal.isReceived)
+    ||  strcmpForeign.(dir) && !frame.isSent && !signal.isReceived
+    ||  strcmpLoopback.(dir) && frame.isSent && signal.isReceived
+    ||  strcmpAll.(dir)
+   )><(T)(signal,kind)><\\>
+<endif>
+>>
+
+
+// Implementation of the direction filter: A dictionary is applied to recognize the
+// possible choices. The result is returned as a Boolean, which can be used in an <if()>
+// construct.
+strcmpSent ::= ["sent": true, default: false]
+strcmpReceived ::= ["received": true, default: false]
+strcmpBoth ::= ["both": true, default: false]
+strcmpForeign ::= ["foreign": true, default: false]
+strcmpLoopback ::= ["loopback": true, default: false]
+strcmpAll ::= ["all": true, default: false]
+
+
+// Implementation of the kind of signal filter: A dictionary is applied to recognize the
+// possible choices. The result is returned as a Boolean, which can be used in an <if()>
+// construct.
+strcmpNormal ::= ["normal": true, default: false]
+strcmpMuxSel ::= ["muxSel": true, default: false]
+strcmpMuxed  ::= ["muxed": true, default: false]
+// strcmpAll is already defined for the filer dir

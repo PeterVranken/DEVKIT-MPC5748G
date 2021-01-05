@@ -1,0 +1,154 @@
+//
+// xls2dbc.stg
+//
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The file is a simple demonstration of the grouping facilities of excelExporter.
+//
+// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+dbc(cluster,info) ::= <<
+VERSION "Created by <info.application> <info.version>"
+
+NS_ : 
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: <ecu()>
+
+<go(cluster.bkCom.Frames,cluster.bkCom.Signals,cluster.bkCom.Signal_Values)>
+>>
+
+// The network node's name, which the DBC file is made for.
+ecu() ::= "<cluster.bkCom.optionMap.ECU>"
+
+go(shFr,shSig,shSigVal) ::= <<
+<if(!shFr.isRoot || !shSig.isRoot || !shSigVal.isRoot)><\\>
+<info.error.([ "Missing worksheet. Please double check the format of input file "
+             , cluster.bkCom.excelFile])><\\>
+<endif>
+<shFr.rowAry:renderFrame()><\\>
+<! Render the comments of frames and signals of frames !>
+<shFr.rowAry:renderFrameComments()><\\>
+<! Static attribute definition parts !>
+BA_DEF_ "Author" STRING;
+BA_DEF_ BO_ "frameSendMode" ENUM  "regular","event","mixed";
+BA_DEF_ BO_ "sendPeriod" INT 5 10000;
+BA_DEF_ BO_ "crcStartValue" INT 1 255;
+BA_DEF_ BO_ "eventMinDistance" INT 5 10000;
+BA_DEF_ SG_ "initialSignalValue" FLOAT -1e38 1e38;
+BA_DEF_DEF_ "Author" "http://sourceforge.net/projects/comframe/";
+BA_DEF_DEF_ "frameSendMode" "regular";
+BA_DEF_DEF_ "sendPeriod" 10;
+BA_DEF_DEF_ "crcStartValue" 1;
+BA_DEF_DEF_ "eventMinDistance" 10;
+BA_DEF_DEF_ "initialSignalValue" 0.0;
+<! Dynamic attribute definition parts, individual values !>
+<shFr.rowAry:renderFrameAttributes()><\\>
+<! Render the enumerations formed by named signal values. We iterate all frames and
+   the signals of those in an inner iteration. We then access possible named values
+   by direct lookup of frame and signal name !>
+<shFr.rowAry:renderAFramesSignalValues()>
+>>
+
+renderFrame(frame) ::= <<
+<! frame is a row object describing the frame. !>
+BO_ <frame.ID> <frame.Name>: <frame.Size> <\\>
+<if(frame.isReceived.bool)>Vector__XXX<else><ecu()><endif>
+  <shSig.(frame.Name).rowAry:renderSignal()><\n>
+>>
+
+renderSignal(signal) ::= <<
+SG_ <signal.Name> : <signal.StartBit>|<signal.Length>@<\\>
+<if(signal.isMotorola.bool)>0<else>1<endif><if(signal.isSigned.bool)>-<else>+<endif> <\\>
+(<signal.Factor>,<signal.Offset>) [<signal.Min>|<signal.Max>] "<signal.Unit>" <\\>
+<if(frame.isReceived.bool)><ecu()><else>Vector__XXX<endif><\n>
+>>
+
+renderFrameComments(frame) ::= <<
+<if(frame.Comment.text)><\\>
+CM_ BO_ <frame.ID> "<frame.Comment>";
+<endif>
+<shSig.(frame.Name).rowAry:renderSignalComment()>
+>>
+
+renderSignalComment(signal) ::= <<
+<if(signal.Comment.text)><\\>
+CM_ SG_ <frame.ID> <signal.Name> "<signal.Comment>";
+<endif>
+>>
+
+// Enumeration SendType: Mapping from enumeration value name to numeric value.
+frameSendType ::= 
+  [ "regular": "0"
+  , "event": "1"
+  , "mixed": "2"
+  , default: {<info.error.(["Bad send type ",frame.SendType," used in row ",frame.iRow])>}
+  ]
+
+renderFrameAttributes(frame) ::= <<
+<if(frame.SendType)><\\>
+BA_ "frameSendMode" BO_ <frame.ID> <frameSendType.(frame.SendType)>;
+<endif>
+<if(frame.SendTime)><\\>
+BA_ "sendPeriod" BO_ <frame.ID> <frame.SendTime>;
+<endif>
+<if(frame.MinDistance)><\\>
+BA_ "eventMinDistance" BO_ <frame.ID> <frame.MinDistance>;
+<endif>
+<if(frame.CrcStartValue)><\\>
+BA_ "crcStartValue" BO_ <frame.ID> <frame.CrcStartValue>;
+<endif>
+<shSig.(frame.Name).rowAry:renderSignalAttributes()>
+>>
+
+renderSignalAttributes(signal) ::= <<
+<if(signal.InitialValue)><\\>
+BA_ "initialSignalValue" SG_ <frame.ID> <signal.Name> <signal.InitialValue.d>;
+<endif>
+>>
+
+renderAFramesSignalValues(frame) ::= <<
+<shSig.(frame.Name).rowAry:renderASignalsValues()>
+>>
+
+renderASignalsValues(signal) ::= <<
+<if(shSigVal.(frame.Name).(signal.Name).exists)><\\>
+VAL_ <frame.ID> <signal.Name><shSigVal.(frame.Name).(signal.Name).rowAry:{val|<" "><val.Value> "<val.Name>"}>;
+<endif>
+>>

@@ -1,0 +1,318 @@
+//
+// AUTOSAR_AISpecification.arxml.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// This file contains a template for the AUTOSAR physical quantities.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "$", "$"
+
+packageAUTOSAR_AISpecification() ::= <<
+<AR-PACKAGE>
+  <SHORT-NAME>AUTOSAR_AISpecification</SHORT-NAME>
+  <AR-PACKAGES>
+    <AR-PACKAGE UUID="c37a83ca-b70e-345c-94e6-c323262cb767">
+      <SHORT-NAME>PhysicalDimensions</SHORT-NAME>
+      <CATEGORY>STANDARD</CATEGORY>
+      <ELEMENTS>
+        <PHYSICAL-DIMENSION UUID="92660d16-187b-4048-84be-3aaaa98069d1">
+          <SHORT-NAME>Current1</SHORT-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">The electric current</L-2>
+          </DESC>
+          <CURRENT-EXP>1</CURRENT-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="5cca1b14-ec6c-3d52-a007-e476feef401c">
+          <SHORT-NAME>Len1</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Length 1</L-4>
+          </LONG-NAME>
+          <LENGTH-EXP>1</LENGTH-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="ca89fb31-3391-3a7c-98b9-e56244895bfd">
+          <SHORT-NAME>Len1M1TiNeg2</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Length 1 Mass 1 Time -2</L-4>
+          </LONG-NAME>
+          <LENGTH-EXP>1</LENGTH-EXP>
+          <MASS-EXP>1</MASS-EXP>
+          <TIME-EXP>-2</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="11e0f06a-aef0-3062-9b72-bc716f9eb6af">
+          <SHORT-NAME>Len2M1TiNeg2</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Length 2 Mass 1 Time -2</L-4>
+          </LONG-NAME>
+          <LENGTH-EXP>2</LENGTH-EXP>
+          <MASS-EXP>1</MASS-EXP>
+          <TIME-EXP>-2</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="a85d1431-4cde-3fa9-97bf-aef9895e942e">
+          <SHORT-NAME>Len2M1TiNeg3INeg1</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Length 2 Mass 1 Time -3 Electric current -1</L-4>
+          </LONG-NAME>
+          <LENGTH-EXP>2</LENGTH-EXP>
+          <MASS-EXP>1</MASS-EXP>
+          <TIME-EXP>-3</TIME-EXP>
+          <CURRENT-EXP>-1</CURRENT-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="63ac829f-822b-3310-a4e2-02ae321386e8">
+          <SHORT-NAME>LenNeg1M1TiNeg2</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Length -1 Mass 1 Time -2</L-4>
+          </LONG-NAME>
+          <LENGTH-EXP>-1</LENGTH-EXP>
+          <MASS-EXP>1</MASS-EXP>
+          <TIME-EXP>-2</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="fab78f7d-5553-3c5e-a8a6-4a6db0e80b12">
+          <SHORT-NAME>M3TiNeg1</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Mass 1 Time -1</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">Volume flow</L-2>
+          </DESC>
+          <LENGTH-EXP>3</LENGTH-EXP>
+          <MASS-EXP>0</MASS-EXP>
+          <TIME-EXP>-1</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="96b79883-51df-3891-afb5-ceb520bf009a">
+          <SHORT-NAME>NoDimension</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">No Dimension</L-4>
+          </LONG-NAME>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="7772973f-4c30-333a-be9f-b9262321324a">
+          <SHORT-NAME>T1</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Temperature 1</L-4>
+          </LONG-NAME>
+          <TEMPERATURE-EXP>1</TEMPERATURE-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="20debafc-daf0-3af2-86ae-ec0c0c147c9a">
+          <SHORT-NAME>Ti1</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Time 1</L-4>
+          </LONG-NAME>
+          <TIME-EXP>1</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="fed95f80-ef42-38d9-9d20-78369cb1457d">
+          <SHORT-NAME>TiNeg1</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Time -1</L-4>
+          </LONG-NAME>
+          <TIME-EXP>-1</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+        <PHYSICAL-DIMENSION UUID="4f386d11-6e48-384d-a521-e8c2cf0d90b7">
+          <SHORT-NAME>TiNeg2</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Time -2</L-4>
+          </LONG-NAME>
+          <TIME-EXP>-2</TIME-EXP>
+        </PHYSICAL-DIMENSION>
+      </ELEMENTS>
+    </AR-PACKAGE>
+    <AR-PACKAGE UUID="225e7a13-ff6a-320e-ad5c-1ce6311d05c4">
+      <SHORT-NAME>Units</SHORT-NAME>
+      <CATEGORY>STANDARD</CATEGORY>
+      <REFERENCE-BASES>
+        <REFERENCE-BASE>
+          <SHORT-LABEL>PhysicalDimensions</SHORT-LABEL>
+          <IS-DEFAULT>false</IS-DEFAULT>
+          <IS-GLOBAL>false</IS-GLOBAL>
+          <BASE-IS-THIS-PACKAGE>false</BASE-IS-THIS-PACKAGE>
+          <PACKAGE-REF DEST="AR-PACKAGE">/AUTOSAR_AISpecification/PhysicalDimensions</PACKAGE-REF>
+        </REFERENCE-BASE>
+      </REFERENCE-BASES>
+      <ELEMENTS>
+        <UNIT UUID="715169cf-a63f-479b-aadb-f0af4e126bd6">
+          <SHORT-NAME>Ampere</SHORT-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">Base unit of the eletric current</L-2>
+          </DESC>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">Current1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="d0f41b3c-0ec9-358b-a050-df9822a9bf52">
+          <SHORT-NAME>Bar</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Bar</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">pressure, no SI unit; 1 bar = 100,000 Pascal (Pa)</L-2>
+          </DESC>
+          <DISPLAY-NAME>bar</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1E-05</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">LenNeg1M1TiNeg2</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="6042f531-2bfb-4036-b1e1-d19e24944a8b">
+          <SHORT-NAME>CentiMtr3PerSec</SHORT-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">Volume flow</L-2>
+          </DESC>
+          <FACTOR-SI-TO-UNIT>1E-06</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">M3TiNeg1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="a228a240-a038-4b29-b1eb-b011eb45c6d7">
+          <SHORT-NAME>DegAngle</SHORT-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">Degree as used for angles. 3600 degrees is the full circle or 2*pi respectively</L-2>
+          </DESC>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">NoDimension</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="e4349556-5c43-33c2-9eb8-c0bad7e8406d">
+          <SHORT-NAME>DegCgrd</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Degree Centigrade</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">temperature, no SI unit, (degC = Kelvin - 273.15)</L-2>
+          </DESC>
+          <DISPLAY-NAME>degC</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>-273.15</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">T1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="c1c7976b-fd7c-3cec-b0c2-e3c34b29bd2d">
+          <SHORT-NAME>MilliMtr</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Meter</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">SI base unit of length</L-2>
+          </DESC>
+          <DISPLAY-NAME>m</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>0.001</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">Len1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="10a8ed31-9ce1-3696-92b4-1a77b5b138b2">
+          <SHORT-NAME>NoUnit</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">No Unit</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">Unit for dimensionless continuous value data types like numbers, factors and coefficients</L-2>
+          </DESC>
+          <DISPLAY-NAME>-</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">NoDimension</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="24d473b3-9fa2-34e6-b8b4-7f2c190dd2ff">
+          <SHORT-NAME>Nwt</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Newton</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">SI derived unit of force</L-2>
+          </DESC>
+          <DISPLAY-NAME>N</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">Len1M1TiNeg2</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="e66e27c5-72f5-336a-ae7f-c961b4227c1f">
+          <SHORT-NAME>NwtMtr</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Newton Meter</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">SI derived unit of moment of force (torque = kg m^2/s^2)</L-2>
+          </DESC>
+          <DISPLAY-NAME>Nm</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">Len2M1TiNeg2</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="9a73c740-4ace-3531-a5bc-347e543dedb0">
+          <SHORT-NAME>Perc</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Percent</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">a percentage is a way of expressing a number as a fraction of 100 (no SI unit).</L-2>
+          </DESC>
+          <DISPLAY-NAME>%</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>100</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">NoDimension</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="75657cf8-bdd2-32e2-9d17-83525435690c">
+          <SHORT-NAME>Rpm</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Rpm</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">revolutions per minute - no SI unit</L-2>
+          </DESC>
+          <DISPLAY-NAME>rpm</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>0.01666667</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">TiNeg1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="c0d99008-e73c-3444-897f-4d9305e47dac">
+          <SHORT-NAME>RpmPerSec</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Revolutions per minute per Second</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">time-derivative of revolutions per minute - no SI unit</L-2>
+          </DESC>
+          <DISPLAY-NAME>rpm/s</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>0.01666667</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">TiNeg2</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="42125d8f-d6b7-3bd3-9e60-44f84e23037d">
+          <SHORT-NAME>Sec</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Second</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">SI base unit of time</L-2>
+          </DESC>
+          <DISPLAY-NAME>s</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">Ti1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+        <UNIT UUID="d533a165-37d5-3a1c-b634-a139935adf3d">
+          <SHORT-NAME>Volt</SHORT-NAME>
+          <LONG-NAME>
+            <L-4 L="EN">Volt</L-4>
+          </LONG-NAME>
+          <DESC>
+            <L-2 L="EN">SI derived unit of electric potential difference</L-2>
+          </DESC>
+          <DISPLAY-NAME>V</DISPLAY-NAME>
+          <FACTOR-SI-TO-UNIT>1</FACTOR-SI-TO-UNIT>
+          <OFFSET-SI-TO-UNIT>0</OFFSET-SI-TO-UNIT>
+          <PHYSICAL-DIMENSION-REF DEST="PHYSICAL-DIMENSION" BASE="PhysicalDimensions">Len2M1TiNeg3INeg1</PHYSICAL-DIMENSION-REF>
+        </UNIT>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AR-PACKAGE>
+>>

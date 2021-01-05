@@ -1,0 +1,57 @@
+The European Capitals
+
+The capital of Albania is Tirana.
+The capital of Andorra is Andorra la Vella.
+The capital of Armenia is Yerevan.
+The capital of Austria is Vienna.
+The capital of Azerbaijan is Baku.
+The capital of Belarus is Minsk.
+The capital of Belgium is Brussels.
+The capital of Bosnia and Herzegovina is Sarajevo.
+The capital of Bulgaria is Sofia.
+The capital of Croatia is Zagreb.
+The capital of Cyprus is Nicosia.
+The capital of Czech Republic is Prague.
+The capital of Denmark is Copenhagen.
+The capital of Estonia is Tallinn.
+The capital of Finland is Helsinki.
+The capital of France is Paris.
+The capital of Georgia is Tbilisi.
+The capital of Germany is Berlin.
+The capital of Greece is Athens.
+The capital of Hungary is Budapest.
+The capital of Iceland is Reykjavik.
+The capital of Ireland is Dublin.
+The capital of Italy is Rome.
+The capital of Kazakhstan is Astana.
+The capital of Kosovo is Pristina.
+The capital of Latvia is Riga.
+The capital of Liechtenstein is Vaduz.
+The capital of Lithuania is Vilnius.
+The capital of Luxembourg is Luxembourg.
+The capital of Macedonia is Skopje.
+The capital of Malta is Valletta.
+The capital of Moldova is Chisinau.
+The capital of Monaco is Monaco.
+The capital of Montenegro is Podgorica.
+The capital of Netherlands is Amsterdam.
+The capital of Norway is Oslo.
+The capital of Poland is Warsaw.
+The capital of Portugal is Lisbon.
+The capital of Romania is Bucharest.
+The capital of Russia is Moscow.
+The capital of San Marino is San Marino.
+The capital of Serbia is Belgrade.
+The capital of Slovakia is Bratislava.
+The capital of Slovenia is Ljubljana.
+The capital of Spain is Madrid.
+The capital of Sweden is Stockholm.
+The capital of Switzerland is Bern.
+The capital of Turkey is Ankara.
+The capital of Ukraine is Kyiv.
+The capital of United Kingdom is London.
+The capital of Vatican City (Holy See) is Vatican City.
+
+(The rendered information has been taken from
+https://www.countries-ofthe-world.com/capitals-of-europe.html
+on Feb 9, 2016.)

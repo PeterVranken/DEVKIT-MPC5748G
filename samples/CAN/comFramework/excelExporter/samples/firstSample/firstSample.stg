@@ -1,0 +1,40 @@
+//
+// firstSample.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The most simple form of an Excel input file is rendered. This is the introductory sample
+// of excelExporter. Just see how literal text is intermingled with the StringTemplate V4
+// template variables to get the desired text output.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+renderTable(cluster,info) ::= <<
+<renderSheet(cluster.EuropeanCapitals.Capitals)>
+>>
+
+renderSheet(sheet) ::= <<
+The European Capitals
+
+<sheet.rowAry:renderRow()><\\>
+
+(The rendered information has been taken from
+https://www.countries-ofthe-world.com/capitals-of-europe.html
+on Feb 9, 2016.)
+>>
+
+renderRow(row) ::= <<
+The capital of <row.Country> is <row.Capital>.<\n>
+>>

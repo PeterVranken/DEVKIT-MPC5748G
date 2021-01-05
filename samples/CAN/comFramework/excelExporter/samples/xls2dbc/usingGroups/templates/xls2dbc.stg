@@ -1,0 +1,220 @@
+//
+// xls2dbc.stg
+//
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The file is a simple demonstration of the grouping facilities of excelExporter.
+//
+// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+dbc(cluster,info) ::= <<
+VERSION "Created by <info.application> <info.version>"
+
+NS_ : 
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: <ecu()>
+
+<! Check a prerequiste in the parsed workbook !>
+<if(!cluster.comSpec.exists)>
+<info.error.("Parsed workbook comSpec is missing")>
+<endif><\\>
+
+<renderSheet(cluster.comSpec.frames)>
+>>
+
+// The network node's name, which the DBC file is made for.
+ecu() ::= "<cluster.comSpec.optionMap.ECU>"
+
+// The data model in this sample is specific in that it only consists of groups, which have
+// a single row-object. It's easy to mess up the Excel input. The next template
+// double-checks the special chracteristics of a group in order to give feedback in case in
+// errors in the input.
+//   This template does not produce any output.
+checkGroup(gr) ::= <<
+<if(!gr.prop)><\\>
+<info.error.(["Bad structure of Excel input detected. Any group needs to contain a single row. Group ", gr.name_, " contains however ", length(gr.rowAry)])>
+<endif>
+>>
+
+// Four nested templates are used to render the frame with signals construct in the DBC
+// file.
+//   The data model uses a one-by-one relation between groups and CAN objects in the
+// network database. By convention such a group has a single row-object. The properties of
+// the row-object are the properties of the represented CAN object. To select this one and
+// only row-object of a group we apply the StringTemplate V4 expression <container.prop>; this
+// explains the need for four levels of template nesting although we only have two nesting
+// levels in the data model.
+//   The convention is checked for all visited groups. An error in the Exel input will
+// inhibit the code generation.
+renderSignal(signal) ::= <<
+SG_ <signal.Signal> : <signal.StartBit.d>|<signal.Length.d>@<\\>
+<if(signal.isMotorola.bool)>0<else>1<endif><if(signal.isSigned.bool)>-<else>+<endif> <\\>
+(<signal.Factor>,<signal.Offset>) [<signal.Min>|<signal.Max>] "<signal.Unit>" <\\>
+<if(frame.isReceived.bool)><ecu()><else>Vector__XXX<endif><\n>
+>>
+
+renderSignalGroup(sigGrp) ::= <<
+<checkGroup(sigGrp)><\\>
+<renderSignal(sigGrp.prop)>
+>>
+
+renderFrame(frame) ::= <<
+BO_ <frame.ID> <frame.Frame>: <frame.Size.d> <\\>
+<if(frame.isReceived.bool)>Vector__XXX<else><ecu()><endif>
+  <frGrp.groupAry:renderSignalGroup()>
+
+>>
+
+renderFrameGroup(frGrp) ::= <<
+<checkGroup(frGrp)><\\>
+<renderFrame(frGrp.prop)>
+>>
+
+
+// The next four templates implement the same iteration along frames and signals as used
+// above for the frame with signals construct. However, this time the the final expansion
+// yields the comment lines in the DBC file.
+//   The check of the groups is not repeated as the same groups are visited as in the
+// preceding iteration.
+renderSignalComment(signal) ::= <<
+CM_ SG_ <frame.ID> <signal.Signal> "<signal.Comment>";<\n>
+>>
+
+renderSignalGroupComments(sigGrp) ::= <<
+<renderSignalComment(sigGrp.prop)>
+>>
+
+renderFrameComments(frame) ::= <<
+<if(frame.Comment.text)><\\>
+CM_ BO_ <frame.ID> "<frame.Comment>";
+<endif>
+<frGrp.groupAry:renderSignalGroupComments()>
+>>
+
+renderFrameGroupComments(frGrp) ::= <<
+<renderFrameComments(frGrp.prop)>
+>>
+
+
+// The next five templates implement the same iteration along frames and signals as used
+// above for the frame with signals construct. However, this time the the final expansion
+// yields the attribute value lines in the DBC file.
+
+// Enumeration SendType: Mapping from enumeration value name to numeric value.
+frameSendType ::= 
+  [ "regular": "0"
+  , "event": "1"
+  , "mixed": "2"
+  , default: {<info.error.(["Bad send type ",frame.SendType," used in row ",frame.iRow])>}
+  ]
+
+renderSignalAttrib(signal) ::= <<
+<if(signal.InitialValue)><\\>
+BA_ "initialSignalValue" SG_ <frame.ID> <signal.Signal> <signal.InitialValue.d>;
+<endif>
+>>
+
+renderSignalGroupAttribs(sigGrp) ::= <<
+<renderSignalAttrib(sigGrp.prop)>
+>>
+
+renderFrameAttribs(frame) ::= <<
+<if(frame.SendType)><\\>
+BA_ "frameSendMode" BO_ <frame.ID> <frameSendType.(frame.SendType)>;
+<endif>
+<if(frame.SendTime)><\\>
+BA_ "sendPeriod" BO_ <frame.ID> <frame.SendTime>;
+<endif>
+<if(frame.MinDistance)><\\>
+BA_ "eventMinDistance" BO_ <frame.ID> <frame.MinDistance>;
+<endif>
+<if(frame.CrcStartValue)><\\>
+BA_ "crcStartValue" BO_ <frame.ID> <frame.CrcStartValue>;
+<endif>
+<frGrp.groupAry:renderSignalGroupAttribs()>
+>>
+
+renderFrameGroupAttribs(frGrp) ::= <<
+<renderFrameAttribs(frGrp.prop)>
+>>
+
+
+// The next three templates implement an iteration along all signals and their named
+// values.
+renderSignalValue(signal,sigValGrpAry) ::= <<
+<if(sigValGrpAry)><\\>
+VAL_ <frame.ID> <signal.Signal><sigValGrpAry:{sigValGrp|<" "><checkGroup(sigValGrp)><\\>
+<sigValGrp.prop.InitialValue> "<sigValGrp.prop.SignalValueName>"}>;
+<endif>
+>>
+
+renderSignalGroupValues(sigGrp,frame) ::= <<
+<renderSignalValue(sigGrp.prop,sigGrp.groupAry)>
+>>
+
+renderFrameGroupSignalValues(frGrp) ::= <<
+<frGrp.groupAry:renderSignalGroupValues(frGrp.prop)>
+>>
+
+
+// The main template, which renders the dynamic part of the DBC file. It branches at the
+// right location in the generated output into the different iterations above.
+renderSheet(sheet) ::= <<
+<sheet.groupAry:renderFrameGroup()><\\>
+<! Render the comments of frames and signals of frames !>
+<sheet.groupAry:renderFrameGroupComments()><\\>
+<! Static attribute definition parts !>
+BA_DEF_ "Author" STRING;
+BA_DEF_ BO_ "frameSendMode" ENUM  "regular","event","mixed";
+BA_DEF_ BO_ "sendPeriod" INT 5 10000;
+BA_DEF_ BO_ "crcStartValue" INT 1 255;
+BA_DEF_ BO_ "eventMinDistance" INT 5 10000;
+BA_DEF_ SG_ "initialSignalValue" FLOAT -1e38 1e38;
+BA_DEF_DEF_ "Author" "http://sourceforge.net/projects/comframe/";
+BA_DEF_DEF_ "frameSendMode" "regular";
+BA_DEF_DEF_ "sendPeriod" 10;
+BA_DEF_DEF_ "crcStartValue" 1;
+BA_DEF_DEF_ "eventMinDistance" 10;
+BA_DEF_DEF_ "initialSignalValue" 0.0;
+<! Dynamic attribute definition parts, individual values !>
+<sheet.groupAry:renderFrameGroupAttribs()><\\>
+<! The named signal values, i.e. enumerations for signals !>
+<sheet.groupAry:renderFrameGroupSignalValues()>
+>>

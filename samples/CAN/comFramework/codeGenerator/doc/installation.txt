@@ -1,0 +1,49 @@
+Installation of binary distribution of Java application comFramework codeGenerator
+----------------------------------------------------------------------------------
+
+The code generator belonging to project comFramework is a stand-alone Java
+7 application. To install it you copy the contents of the archive to any
+location. However, to avoid later problems with localizing files you
+should only consider paths, which do not contain any blanks.
+
+The complete installation path, including the name of the root folder in
+the archive and the folder name codeGenerator is assigned to a new
+environment variable COMFRAMEWORK_CODEGENERATOR_HOME. The script that
+launches the Java application, will set the Java CLASSPATH based on this
+root directory. Java will fail to locate the required jar files if the
+environment variable is not properly set. Given, you'd copied the
+archive's contents to the folder c:\ProgramFiles, then you could issue the
+command
+
+setx COMFRAMEWORK_CODEGENERATOR_HOME c:\ProgramFiles\comFramework\codeGenerator
+
+from a Command Prompt window. (Now you need to open another shell window
+to proceed; the current one will not take the new setting.) Please note,
+that the proposed command will only install the new environment for the
+current user. A machine wide setting by putting /m at the end of the
+command line requires administrator rights.
+
+The application launcher is a Windows script named codeGenerator.cmd. It
+is located in the folder codeGenerator\dist. It's a very simple script and
+Linux and Mac OS users won't have any problems to write the same script in
+their respective shell script languages. The script becomes most useful if
+the folder dist is added to the system search path (i.e. environment
+variable PATH would be extended by
+c:\ProgramFiles\comFramework\codeGenerator\dist in the example above).
+Consider to type
+
+pathman c:\ProgramFiles\comFramework\codeGenerator\dist
+
+in a shell window.
+
+Alternatively, the tiny script codeGenerator.cmd can be copied to all
+locations where the code generator is about to be used.
+
+If you decided to extend your PATH variable then you should test your
+installation by opening a new shell window, cd'ing to an arbitrary working
+directory and submitting the command:
+
+codeGenerator.cmd --help
+
+The application should be started and it should respond with its usage
+text.

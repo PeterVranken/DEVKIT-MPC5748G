@@ -1,0 +1,148 @@
+VERSION "0.2"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: ECU PowerDisplay
+
+BO_ 1024 StateEcu01: 4 ECU
+ SG_ speedOfRotation : 11|16@0+ (0.1,0) [0|6500] "rpm" PowerDisplay
+ SG_ checksum : 7|8@0+ (1,0) [0|255] "" PowerDisplay
+ SG_ sequenceCounter : 12|4@1+ (1,0) [0|14] "" PowerDisplay
+
+BO_ 1040 StateEcu02: 4 ECU
+ SG_ torque : 22|11@0- (0.5,0) [-500|500] "Nm" PowerDisplay
+ SG_ checksum : 0|8@1+ (1,0) [0|255] "" PowerDisplay
+ SG_ sequenceCounter : 8|4@1+ (1,0) [15|1] "" PowerDisplay
+
+BO_ 2032 UserLimits: 8 ECU
+ SG_ sequenceCounter : 2|4@1+ (1,0) [1|14] "" PowerDisplay
+ SG_ minSpeedOfRotation : 6|12@1+ (1.6,0) [0|6500] "rpm" PowerDisplay
+ SG_ maxSpeedOfRotation : 18|12@1+ (1.6,0) [0|6500] "rpm" PowerDisplay
+ SG_ checksum : 39|8@0+ (1,0) [0|255] "" PowerDisplay
+ SG_ minPower : 47|9@0+ (0.5,-10) [-10|240] "KW" PowerDisplay
+ SG_ maxPower : 53|9@0+ (0.5,-10) [-10|240] "KW" PowerDisplay
+
+BO_ 1536 InfoPowerDisplay: 6 PowerDisplay
+ SG_ checksum : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ sequenceCounter : 8|4@1+ (1,0) [0|14] "" Vector__XXX
+ SG_ power : 13|15@1+ (32,-500e3) [-500e3|500e3] "W" Vector__XXX
+ SG_ state : 33|3@0+ (1,0) [0|2] "" Vector__XXX
+
+BO_ 1537 StatusPowerDisplay: 6 PowerDisplay
+ SG_ noDlcErrors : 0|11@1+ (1,0) [0|2047] "" Vector__XXX
+ SG_ noCheckSumErrors : 11|11@1+ (1,0) [0|2047] "" Vector__XXX
+ SG_ noSqcErrors : 22|11@1+ (1,0) [0|2047] "" Vector__XXX
+ SG_ sequenceCounter : 39|7@0+ (1,0) [1|126] "" Vector__XXX
+ SG_ checksum : 47|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1538 LimitsPowerDisplay: 1 PowerDisplay
+ SG_ sequenceCounter : 0|3@1+ (1,0) [6|1] "" Vector__XXX
+ SG_ belowMinSpeedOfRotation : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ aboveMaxSpeedOfRotation : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ belowMinPower : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ aboveMaxPower : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+
+CM_ BU_ ECU "Hypothetic engine control unit, which delivers information about speed of rotation and torque in one or more messages";
+CM_ BU_ PowerDisplay "The control unit, which is implemented by the demonstration code. It reads the ECU information about torque and rotational speed and provides the current engine power on the CAN bus";
+CM_ BO_ 1024 "A (hypothetic) ECU provided message we can read the current speed of rotation of the engine from";
+CM_ BO_ 1040 "A (hypothetic) ECU provided message we can read the current engine torque from";
+CM_ BO_ 1536 "A new CAN message which is sent by the control unit, which is implemented by the demonstration code. It broadcasts the current engine power to other network nodes";
+CM_ BO_ 1537 "Status of power display operation. Error events are counted and broadcasted
+whenever the status changes. If no change occurs then the status frame is repeated
+every 1000 ms";
+CM_ BO_ 2032 "User command: New limits have been set for supervision of speed of rotation and power. This is a purely data change driven frame, it is not sent until the user changes a least one of the limits";
+CM_ BO_ 1538 "If a user set limit for speed of rotation or power is crossed (in either direction) then a related status bit is updated and sending this frame is triggered. This is a purely data change driven frame, it is not sent if no data change appears";
+CM_ SG_ 2032 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around from 14 to 1";
+CM_ SG_ 2032 minSpeedOfRotation "User set minimum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the speed falls below this limit";
+CM_ SG_ 2032 maxSpeedOfRotation "User set maximum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded";
+CM_ SG_ 2032 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
+CM_ SG_ 2032 minPower "User set minimum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the power falls below this limit";
+CM_ SG_ 2032 maxPower "User set maximum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded";
+CM_ SG_ 1538 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 6";
+CM_ SG_ 1538 belowMinSpeedOfRotation "Boolean: True if and only if the speed of rotation is currently below the user set minimum";
+CM_ SG_ 1538 aboveMaxSpeedOfRotation "Boolean: True if and only if the speed of rotation is currently above the user set maximum";
+CM_ SG_ 1538 belowMinPower "Boolean: True if and only if the engine power is currently below the user set minimum";
+CM_ SG_ 1538 aboveMaxPower "Boolean: True if and only if the engine power is currently above the user set maximum";
+CM_ SG_ 1024 speedOfRotation "Speed of rotation of the engine";
+CM_ SG_ 1024 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
+CM_ SG_ 1024 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14";
+
+CM_ SG_ 1040 torque "Current engine torque as estimated by the ECU";
+CM_ SG_ 1040 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
+CM_ SG_ 1040 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 15";
+
+CM_ SG_ 1536 power "The computed, current output power of the engine";
+CM_ SG_ 1536 state "The status of the power computation. If the input information is invalid or suspicious or if there is an overflow in the computation then the computed power is unreliable. This status information will indicate whether the power information is reliabale or not and why not";
+CM_ SG_ 1536 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
+CM_ SG_ 1536 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14";
+CM_ SG_ 1537 noDlcErrors "Number of recognized DLC errors in CAN input";
+CM_ SG_ 1537 noCheckSumErrors "Number of recognized checksum errors in CAN input";
+CM_ SG_ 1537 noSqcErrors "Number of recognized sequence errors in CAN input";
+CM_ SG_ 1537 sequenceCounter "Sequence counter of message. The counter is incremented prior to sending the frame. The counter wraps around from 126 to 1. 0 and 127 are invalid values";
+CM_ SG_ 1536 power "The computed, current output power of the engine";
+CM_ SG_ 1537 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
+BA_DEF_ "Author" STRING;
+BA_DEF_ BO_ "frameSendMode" ENUM "regular","event","mixed";
+BA_DEF_ BO_ "sendPeriod" INT 5 10000;
+BA_DEF_ BO_ "checksumStartValue" INT 0 255;
+BA_DEF_ BO_ "eventMinDistance" INT 5 10000;
+BA_DEF_ SG_ "initialValue" FLOAT -1e99 1e99;
+BA_DEF_DEF_ "Author" "peter_vranken@yahoo.de";
+BA_DEF_DEF_ "frameSendMode" "regular";
+BA_DEF_DEF_ "sendPeriod" 10;
+BA_DEF_DEF_ "checksumStartValue" 0;
+BA_DEF_DEF_ "eventMinDistance" 20;
+BA_DEF_DEF_ "initialValue" 0.0;
+BA_ "frameSendMode" BO_ 1024 0;
+BA_ "sendPeriod" BO_ 1024 10;
+BA_ "checksumStartValue" BO_ 1024 17;
+BA_ "frameSendMode" BO_ 1040 0;
+BA_ "sendPeriod" BO_ 1040 25;
+BA_ "checksumStartValue" BO_ 1040 218;
+BA_ "frameSendMode" BO_ 1536 0;
+BA_ "sendPeriod" BO_ 1536 30;
+BA_ "checksumStartValue" BO_ 1536 112;
+BA_ "frameSendMode" BO_ 1537 2;
+BA_ "sendPeriod" BO_ 1537 1000;
+BA_ "eventMinDistance" BO_ 1537 50;
+BA_ "checksumStartValue" BO_ 1537 113;
+BA_ "initialValue" SG_ 1537 sequenceCounter 1;
+BA_ "frameSendMode" BO_ 2032 1;
+BA_ "eventMinDistance" BO_ 2032 65;
+BA_ "checksumStartValue" BO_ 2032 119;
+BA_ "initialValue" SG_ 2032 sequenceCounter 1;
+BA_ "initialValue" SG_ 2032 minSpeedOfRotation 800.0;
+BA_ "initialValue" SG_ 2032 maxSpeedOfRotation 6000.0;
+BA_ "initialValue" SG_ 2032 minPower -1;
+BA_ "initialValue" SG_ 2032 maxPower 100;
+BA_ "frameSendMode" BO_ 1538 1;
+BA_ "eventMinDistance" BO_ 1538 20;
+BA_ "initialValue" SG_ 1538 sequenceCounter 6;
+BA_ "initialValue" SG_ 1538 belowMinSpeedOfRotation 0;
+BA_ "initialValue" SG_ 1538 aboveMaxSpeedOfRotation 0;
+BA_ "initialValue" SG_ 1538 belowMinPower 0;
+BA_ "initialValue" SG_ 1538 aboveMaxPower 0;
+VAL_ 1536 state 0 "valid" 1 "invalid input" 2 "overflow";

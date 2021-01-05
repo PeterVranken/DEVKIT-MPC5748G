@@ -1,0 +1,364 @@
+Buses:
+  RT_simplified with 7 frames and 5 attribute definitions
+
+All Frames:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+All Frames in lexical order:
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+All Frames in inverse lexical order:
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+All Frames in order of CAN ID:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+All Frames in inverse order of CAN ID:
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+All Frames in order of parsing:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+Transmitted Frames:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+Foreign Frames:
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24) on bus RT_simplified
+Loopback Frames:
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+Inbound Frames:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+Outbound Frames:
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24) on bus RT_simplified
+
+All PDUs:
+  rt_SB_INS_Vel_Body_Axes_mux, in: true, out: false, no signals: 6
+  RT_SB_INS_Vel_Body_Axes, in: true, out: false, no signals: 9
+  RT_SB_Trig_Initial_Condition, in: false, out: false, no signals: 6
+  RT_DL1MK3_Speed, in: true, out: false, no signals: 4
+  RT_DL1MK3_GPS_Time, in: false, out: true, no signals: 5
+  RT_DL1MK3_Measure_Time_12, in: false, out: false, no signals: 1
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+Transmitted PDUs:
+  rt_SB_INS_Vel_Body_Axes_mux, in: true, out: false, no signals: 6
+  RT_SB_INS_Vel_Body_Axes, in: true, out: false, no signals: 9
+  RT_DL1MK3_Speed, in: true, out: false, no signals: 4
+  RT_DL1MK3_GPS_Time, in: false, out: true, no signals: 5
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+Foreign PDUs:
+  RT_SB_Trig_Initial_Condition, in: false, out: false, no signals: 6
+  RT_DL1MK3_Measure_Time_12, in: false, out: false, no signals: 1
+Loopback PDUs:
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+Inbound PDUs:
+  rt_SB_INS_Vel_Body_Axes_mux, in: true, out: false, no signals: 6
+  RT_SB_INS_Vel_Body_Axes, in: true, out: false, no signals: 9
+  RT_DL1MK3_Speed, in: true, out: false, no signals: 4
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+Outbound PDUs:
+  RT_DL1MK3_GPS_Time, in: false, out: true, no signals: 5
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+
+All multiplexed signal sets:
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 1, signals: Accuracy_INS_Vel_Body_org, INS_Vel_Forwards_2D_org
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 2, signals: Accuracy_INS_Vel_Body_no2, INS_Vel_Forwards_2D_no2
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 3, signals: Accuracy_INS_Vel_Body_no3, INS_Vel_Forwards_2D_no3
+Transmitted multiplexed signal sets:
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 1, signals: Accuracy_INS_Vel_Body_org, INS_Vel_Forwards_2D_org
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 2, signals: Accuracy_INS_Vel_Body_no2, INS_Vel_Forwards_2D_no2
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 3, signals: Accuracy_INS_Vel_Body_no3, INS_Vel_Forwards_2D_no3
+Foreign multiplexed signal sets:
+Loopback multiplexed signal sets:
+Inbound multiplexed signal sets:
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 1, signals: Accuracy_INS_Vel_Body_org, INS_Vel_Forwards_2D_org
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 2, signals: Accuracy_INS_Vel_Body_no2, INS_Vel_Forwards_2D_no2
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 3, signals: Accuracy_INS_Vel_Body_no3, INS_Vel_Forwards_2D_no3
+Outbound multiplexed signal sets:
+All signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Byte4_Bits67 (muxSel), in: true, out: false
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_12 (normal), in: false, out: false
+  Measured_Time_10 (normal), in: true, out: true
+All transmitted signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Byte4_Bits67 (muxSel), in: true, out: false
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+All foreign signals:
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Measured_Time_12 (normal), in: false, out: false
+All loopback signals:
+  Measured_Time_10 (normal), in: true, out: true
+All inbound signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Byte4_Bits67 (muxSel), in: true, out: false
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Measured_Time_10 (normal), in: true, out: true
+All outbound signals:
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+
+All normal signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_12 (normal), in: false, out: false
+  Measured_Time_10 (normal), in: true, out: true
+Transmitted normal signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+Foreign normal signals:
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Measured_Time_12 (normal), in: false, out: false
+Loopback normal signals:
+  Measured_Time_10 (normal), in: true, out: true
+Inbound normal signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Measured_Time_10 (normal), in: true, out: true
+Outbound normal signals:
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+
+All multiplex selector signals:
+  Byte4_Bits67 (muxSel), in: true, out: false
+Transmitted multiplex selector signals:
+  Byte4_Bits67 (muxSel), in: true, out: false
+Foreign multiplex selector signals:
+Loopback multiplex selector signals:
+Inbound multiplex selector signals:
+  Byte4_Bits67 (muxSel), in: true, out: false
+Outbound multiplex selector signals:
+All multiplexed signals:
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+Transmitted multiplexed signals:
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+Foreign multiplexed signals:
+Loopback multiplexed signals:
+Inbound multiplexed signals:
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+Outbound multiplexed signals:

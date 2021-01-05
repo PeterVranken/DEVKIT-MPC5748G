@@ -1,0 +1,15 @@
+Data of run "No Sorting":
+1) Excel line: 4, ID: 1, Title: "Der rote Wolf", Author: Marklund, Liza, Genre: Thriller, 448 Pages
+2) Excel line: 5, ID: 2, Title: "Studio 6", Author: Marklund, Liza, Genre: Thriller, 512 Pages
+3) Excel line: 6, ID: 3, Title: "Der weiße Tod", Author: Marklund, Liza, Genre: Thriller, 445 Pages
+4) Excel line: 7, ID: 4, Title: "Die Brüder Karamasow", Author: Dostojewski, Fjodor Michailowitsch, Genre: Roman, 1025 Pages
+5) Excel line: 8, ID: 5, Title: "Schuld und Sühne", Author: Dostojewski, Fjodor Michailowitsch, Genre: Roman, 678 Pages
+6) Excel line: 9, ID: 6, Title: "Die Dämonen", Author: Dostojewski, Fjodor Michailowitsch, Genre: Roman, 1000 Pages
+7) Excel line: 10, ID: 7, Title: "Der Spieler", Author: Dostojewski, Fjodor Michailowitsch, Genre: Novelle, 167 Pages
+8) Excel line: 11, ID: 8, Title: "Das Totenhaus", Author: Dostojewski, Fjodor Michailowitsch, Genre: Erzählung, 135 Pages
+9) Excel line: 12, ID: 9, Title: "Herr und Hund", Author: Mann, Thomas, Genre: Novelle, 89 Pages
+10) Excel line: 13, ID: 10, Title: "Mephisto", Author: Mann, Klaus, Genre: Roman, 340 Pages
+11) Excel line: 14, ID: 11, Title: "Die Buddenbrooks", Author: Mann, Thomas, Genre: Roman, 678 Pages
+12) Excel line: 15, ID: 12, Title: "Der Vulkan", Author: Mann, Klaus, Genre: Roman, 424 Pages
+13) Excel line: 16, ID: 13, Title: "Der Zauberberg", Author: Mann, Thomas, Genre: Roman, 1025 Pages
+14) Excel line: 17, ID: 14, Title: "Wallenstein", Author: Mann, Golo, Genre: Geschichte, 1100 Pages

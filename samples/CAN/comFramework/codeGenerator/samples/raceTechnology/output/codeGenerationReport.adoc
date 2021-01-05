@@ -1,0 +1,4669 @@
+= Code Generation Report for CAN Network raceCar
+:Author:    comFramework - codeGenerator version 1.10.4 (http://sourceforge.net/projects/comframe/)
+:toc:
+:toclevels: 4
+:xrefstyle: short
+:numbered:
+
+== General
+* Operating system: `Windows_NT`
+* USER: `vranken`
+* Cluster name: `raceCar`
+* Node name, which code is generated for: `ECU`
+
+== Files
+=== Generated report file
+* Name        : `codeGenerationReport.adoc`
+* Raw name    : `codeGenerationReport`
+* Mnemonic    : 
+* Name stem   : `codeGenerationReport`
+* Extension   : `adoc`
+* User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true
+
+=== Template file used for rendering the information
+* Name          : `codeGenerationReport.adoc.stg`
+
+== Cluster raceCar
+
+
+=== Bus `PT`
+* Network file name: `..\dbcFiles\CAN_RT_attributed.dbc`
+* User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true
+* Nodes: `ECU`, `SB`, `DL1MK3`, `IMU06`, `IRTemp`
+* Attribute values:
+ ** Author: www.race-technology.com (default)
+
+
+==== Attribute definitions
+1. Attribute `frameSendMode`
+ ** Object Type: frame
+  *** Type Enum
+  *** Range: [0..2]
+  *** Name, value pairs:
+   **** regular: 0
+   **** event: 1
+   **** mixed: 2
+ ** Default value: regular (0)
+2. Attribute `sendPeriod`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 10
+3. Attribute `crcStartValue`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [1..255]
+ ** Default value: 1
+4. Attribute `eventMinDistance`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 10
+5. Attribute `Author`
+ ** Object Type: bus
+  *** Type String
+ ** Default value: www.race-technology.com
+
+==== Frames
+
+
+===== 1: `RT_SB_INS_Vel_Body_Axes`
+* CAN ID:  (0x215)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 3 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Vel_Forwards|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Vel_Sideways|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Bit4|Bool|1|4|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Bit7|Bool|1|7|false|0.0|1.0|1.0|0.0||1|true||0
+|5|Byte2_Bit0|Bool|1|16|false|0.0|1.0|1.0|0.0||1|true||0
+|6|INS_Vel_Sideways_2D|Int32|23|40|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|7{set:cellbgcolor:lightgrey}|Byte4_Bits67{set:cellbgcolor:!}|UInt8|2|39|true|1.0|3.0|1.0|0.0|Mpx selection|1|true|S|0
+|8{set:cellbgcolor:lightgrey}|Accuracy_INS_Vel_Body_org{set:cellbgcolor:!}|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true|1|0
+|9{set:cellbgcolor:lightgrey}|INS_Vel_Forwards_2D_org{set:cellbgcolor:!}|Int32|21|17|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true|1|0
+|10{set:cellbgcolor:lightgrey}|Accuracy_INS_Vel_Body_no2{set:cellbgcolor:!}|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true|2|0
+|11{set:cellbgcolor:lightgrey}|INS_Vel_Forwards_2D_no2{set:cellbgcolor:!}|Int32|21|17|false|-104.0|104.0|1.0E-4|0.0|m/s|1|true|2|0
+|12{set:cellbgcolor:lightgrey}|Accuracy_INS_Vel_Body_no3{set:cellbgcolor:!}|UInt16|15|15|true|0.0|32.768|0.001|0.0||1|true|3|0
+|13{set:cellbgcolor:lightgrey}|INS_Vel_Forwards_2D_no3{set:cellbgcolor:!}|Int16|14|24|false|-81.92|81.91|0.01|0.0|m/s|1|true|3|0
+|=======
+
+===== 2: `RT_DL1MK3_Speed`
+* CAN ID:  (0x8392740)
+* Size: 7 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Speed|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_Speed|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|Direction|UInt8|2|17|true|-1.0|1.0|2.0|-1.0||1|true||0
+|4|Speed|Int32|32|18|false|-20000.0|20000.0|1.0E-5|0.0|m/s|1|true||0
+|=======
+
+===== 3: `RT_DL1MK3_GPS_Time`
+* CAN ID:  (0x9175332)
+* Size: 8 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Time|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Week|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Time|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Time|UInt32|32|16|false|0.0|604800.0|0.001|0.0|s|1|true||0
+|5|GPS_Week|UInt16|16|48|false|0.0|65535.0|1.0|0.0||1|true||0
+|=======
+
+===== 4: `RT_DL1MK3_GPS_Pos_LLH_2`
+* CAN ID:  (0x9175844)
+* Size: 8 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|GPS_Pos_LLH_Longitude|Int32|32|0|false|-180.0|180.0|1.0E-7|0.0|degrees|1|true||0
+|2|GPS_Pos_LLH_Altitude|Int32|32|32|false|-1000.0|100000.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 5: `RT_DL1MK3_GPS_Pos_LLH_1`
+* CAN ID:  (0x9175588)
+* Size: 8 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Pos_LLH_Latitude|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Pos_LLH_Longitude|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_GPS_Pos_LLH_Altitude|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_GPS_Pos_LLH_Latitude|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accuracy_GPS_Pos_LLH_Longitude|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|6|Accuracy_GPS_Pos_LLH_Altitude|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|7|GPS_Pos_LLH_Latitude|Int32|32|32|false|-90.0|90.0|1.0E-7|0.0|degrees|1|true||0
+|=======
+
+===== 6: `RT_DL1MK3_GPS_Speed`
+* CAN ID:  (0x1234)
+* Size: 8 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Speed_2D|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Speed_3D|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Speed|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Speed_2D|UInt32|24|16|false|0.0|1675.0|1.0E-4|0.0|m/s|1|true||0
+|5|GPS_Speed_3D|UInt32|24|40|false|0.0|1675.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 7: `RT_IRTemp_Temp_7`
+* CAN ID:  (0x9504549)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_7|Int16|16|0|false|0.0|0.0|0.1|0.0||1|false||0
+|=======
+
+===== 8: `RT_IRTemp_Temp_RR_2`
+* CAN ID:  (0x9963557)
+* Size: 8 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_29|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|IR_Temperature_30|Int16|16|16|false|0.0|0.0|0.1|0.0||2|true||0
+|3|IR_Temperature_31|Int16|16|32|false|0.0|0.0|0.1|0.0||2|true||0
+|4|IR_Temperature_32|Int16|16|48|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 9: `RT_IRTemp_Temp_RL_2`
+* CAN ID:  (0x9963045)
+* Size: 8 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_21|Int16|16|0|false|0.0|0.0|0.1|0.0||2|false||0
+|2|IR_Temperature_22|Int16|16|16|false|0.0|0.0|0.1|0.0||1|false||0
+|3|IR_Temperature_23|Int16|16|32|false|0.0|0.0|0.1|0.0||1|false||0
+|4|IR_Temperature_24|Int16|16|48|false|0.0|0.0|0.1|0.0||1|false||0
+|=======
+
+===== 10: `RT_IRTemp_Temp_FR_2`
+* CAN ID:  (0x9962533)
+* Size: 8 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_13|Int16|16|0|false|0.0|0.0|0.1|0.0||2|false||0
+|2|IR_Temperature_14|Int16|16|16|false|0.0|0.0|0.1|0.0||1|false||0
+|3|IR_Temperature_15|Int16|16|32|false|0.0|0.0|0.1|0.0||1|false||0
+|4|IR_Temperature_16|Int16|16|48|false|0.0|0.0|0.1|0.0||1|false||0
+|=======
+
+===== 11: `RT_IRTemp_Temp_FL_2`
+* CAN ID:  (0x9962021)
+* Size: 8 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_5|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|IR_Temperature_6|Int16|16|16|false|0.0|0.0|0.1|0.0||1|true||0
+|3|IR_Temperature_7|Int16|16|32|false|0.0|0.0|0.1|0.0||1|true||0
+|4|IR_Temperature_8|Int16|16|48|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 12: `RT_IRTemp_Temp_RR_1`
+* CAN ID:  (0x9963301)
+* Size: 8 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_25|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|IR_Temperature_26|Int16|16|16|false|0.0|0.0|0.1|0.0||1|true||0
+|3|IR_Temperature_27|Int16|16|32|false|0.0|0.0|0.1|0.0||1|true||0
+|4|IR_Temperature_28|Int16|16|48|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 13: `RT_IRTemp_Temp_RL_1`
+* CAN ID:  (0x9962789)
+* Size: 8 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_17|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|IR_Temperature_18|Int16|16|16|false|0.0|0.0|0.1|0.0||1|true||0
+|3|IR_Temperature_19|Int16|16|32|false|0.0|0.0|0.1|0.0||1|true||0
+|4|IR_Temperature_20|Int16|16|48|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 14: `RT_IRTemp_Temp_FR_1`
+* CAN ID:  (0x9962277)
+* Size: 8 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_9|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|IR_Temperature_10|Int16|16|16|false|0.0|0.0|0.1|0.0||1|true||0
+|3|IR_Temperature_11|Int16|16|32|false|0.0|0.0|0.1|0.0||1|true||0
+|4|IR_Temperature_12|Int16|16|48|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 15: `RT_IRTemp_Temp_FL_1`
+* CAN ID:  (0x9961765)
+* Size: 8 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_1|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|IR_Temperature_2|Int16|16|16|false|0.0|0.0|0.1|0.0||1|true||0
+|3|IR_Temperature_3|Int16|16|32|false|0.0|0.0|0.1|0.0||1|true||0
+|4|IR_Temperature_4|Int16|16|48|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 16: `RT_IRTemp_Temp_32`
+* CAN ID:  (0x9510949)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_32|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 17: `RT_IRTemp_Temp_31`
+* CAN ID:  (0x9510693)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_31|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 18: `RT_IRTemp_Temp_30`
+* CAN ID:  (0x9510437)
+* Size: 2 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_30|Int16|16|0|false|0.0|0.0|0.1|0.0||1|false||0
+|=======
+
+===== 19: `RT_IRTemp_Temp_29`
+* CAN ID:  (0x9510181)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_29|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 20: `RT_IRTemp_Temp_28`
+* CAN ID:  (0x9509925)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_28|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 21: `RT_IRTemp_Temp_27`
+* CAN ID:  (0x9509669)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_27|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 22: `RT_IRTemp_Temp_26`
+* CAN ID:  (0x9509413)
+* Size: 2 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_26|Int16|16|0|false|0.0|0.0|0.1|0.0||1|false||0
+|=======
+
+===== 23: `RT_IRTemp_Temp_25`
+* CAN ID:  (0x9509157)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_25|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 24: `RT_IRTemp_Temp_24`
+* CAN ID:  (0x9508901)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_24|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 25: `RT_IRTemp_Temp_22`
+* CAN ID:  (0x9508389)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_22|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 26: `RT_IRTemp_Temp_23`
+* CAN ID:  (0x9508645)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_23|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 27: `RT_IRTemp_Temp_21`
+* CAN ID:  (0x9508133)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_21|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 28: `RT_IRTemp_Temp_20`
+* CAN ID:  (0x9507877)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_20|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 29: `RT_IRTemp_Temp_19`
+* CAN ID:  (0x9507621)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_19|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 30: `RT_IRTemp_Temp_18`
+* CAN ID:  (0x9507365)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_18|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 31: `RT_IRTemp_Temp_16`
+* CAN ID:  (0x9506853)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_16|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 32: `RT_IRTemp_Temp_15`
+* CAN ID:  (0x9506597)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_15|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 33: `RT_IRTemp_Temp_14`
+* CAN ID:  (0x9506341)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_14|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 34: `RT_IRTemp_Temp_13`
+* CAN ID:  (0x9506085)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_13|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 35: `RT_IRTemp_Temp_12`
+* CAN ID:  (0x9505829)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_12|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 36: `RT_IRTemp_Temp_11`
+* CAN ID:  (0x9505573)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_11|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 37: `RT_IRTemp_Temp_10`
+* CAN ID:  (0x9505317)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_10|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 38: `RT_IRTemp_Temp_8`
+* CAN ID:  (0x9504805)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_8|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 39: `RT_IRTemp_Temp_9`
+* CAN ID:  (0x9505061)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_9|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 40: `RT_IRTemp_Temp_17`
+* CAN ID:  (0x9507109)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_17|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 41: `RT_IRTemp_Temp_6`
+* CAN ID:  (0x9504293)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_6|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 42: `RT_IRTemp_Temp_5`
+* CAN ID:  (0x9504037)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_5|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 43: `RT_IRTemp_Temp_4`
+* CAN ID:  (0x9503781)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_4|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 44: `RT_IRTemp_Temp_3`
+* CAN ID:  (0x9503525)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_3|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 45: `RT_IRTemp_Temp_2`
+* CAN ID:  (0x9503269)
+* Size: 2 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_2|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 46: `RT_IRTemp_Temp_1`
+* CAN ID:  (0x9503013)
+* Size: 3 Byte
+* Sender: `IRTemp`
+* Attribute values:
+ ** eventMinDistance: 50
+ ** frameSendMode: mixed (2)
+ ** crcStartValue: 23
+ ** sendPeriod: 1000
+
+
+* SendMode: Data change driven
+ ** Minimum distance in time: 50 ms
+ ** Filtered special signals:
+  * checksum: CRC
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|IR_Temperature_1|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|2|CRC|UInt8|8|23|true|1.0|255.0|1.0|0.0||0|false||0
+|=======
+
+===== 47: `RT_SB_Trig_Final_Condition`
+* CAN ID:  (0x9242402)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Final_Speed|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Final_Speed|UInt32|24|8|false|0.0|1675.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 48: `RT_SB_Trig_Initial_Condition`
+* CAN ID:  (0x794)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Initial_Speed|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Initial_Heading|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Initial_Speed|UInt32|24|8|false|0.0|1675.0|1.0E-4|0.0|m/s|1|true||0
+|4|Initial_Heading|Int16|16|32|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|5|MFDD_Start_Threshold|UInt8|8|48|false|0.0|100.0|1.0|0.0|%|1|true||0
+|6|MFDD_End_Threshold|UInt8|8|56|false|0.0|100.0|1.0|0.0|%|1|true||0
+|=======
+
+===== 49: `RT_SB_Trig_Direct_Dist`
+* CAN ID:  (0x9241890)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Direct_Distance|UInt32|32|0|false|0.0|4294970.0|0.001|0.0|m|1|true||0
+|2|Path_Distance_2D|UInt32|32|32|false|0.0|4294970.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 50: `RT_SB_Trig_Forward_Dist`
+* CAN ID:  (0x9241634)
+* Size: 8 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Forward_Distance|Int32|32|0|false|-2147480.0|2147480.0|0.001|0.0|m|1|false||0
+|2|Deviation_Distance|Int32|32|32|false|-2147480.0|2147480.0|0.001|0.0|m|1|false||0
+|=======
+
+===== 51: `RT_SB_Trig_Path_Dist`
+* CAN ID:  (0x9241378)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Path_Distance_3D|UInt32|32|0|false|0.0|4294970.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 52: `RT_SB_Trig_Accel`
+* CAN ID:  (0x9241122)
+* Size: 8 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_MFDD|Bool|1|0|false|0.0|1.0|1.0|0.0||1|false||0
+|2|Validity_Average_Accel|Bool|1|1|false|0.0|1.0|1.0|0.0||0|false||0
+|3|Validity_Triggered_Time|Bool|1|2|false|0.0|1.0|1.0|0.0||0|false||0
+|4|MFDD|Int16|16|8|false|-65.0|65.0|0.001|0.0|g|1|false||0
+|5|Average_Accel|Int16|16|24|false|-65.0|65.0|0.001|0.0|g|1|false||0
+|6|Triggered_Time|UInt32|24|40|false|0.0|167772.0|0.01|0.0|s|0|false||0
+|=======
+
+===== 53: `RT_DL1MK3_Measure_Time_12`
+* CAN ID:  (0x9833508)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_12|UInt32|24|0|false|0.0|0.0|1.0|0.0||0|false||0
+|=======
+
+===== 54: `RT_DL1MK3_Measure_Time_11`
+* CAN ID:  (0x9833252)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_11|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 55: `RT_DL1MK3_Measure_Time_10`
+* CAN ID:  (0x9832996)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_10|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 56: `RT_DL1MK3_Measure_Time_9`
+* CAN ID:  (0x9832740)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_9|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 57: `RT_DL1MK3_Measure_Time_8`
+* CAN ID:  (0x9832484)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_8|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 58: `RT_DL1MK3_Measure_Time_7`
+* CAN ID:  (0x9832228)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_7|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 59: `RT_DL1MK3_Measure_Time_6`
+* CAN ID:  (0x9831972)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_6|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 60: `RT_DL1MK3_Measure_Time_5`
+* CAN ID:  (0x9831716)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_5|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 61: `RT_DL1MK3_Measure_Time_4`
+* CAN ID:  (0x9831460)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_4|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 62: `RT_DL1MK3_Measure_Time_3`
+* CAN ID:  (0x9831204)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_3|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 63: `RT_DL1MK3_Measure_Time_2`
+* CAN ID:  (0x9830948)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_2|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 64: `RT_DL1MK3_Measure_Time_1`
+* CAN ID:  (0x9830692)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Measured_Time_1|UInt32|24|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 65: `RT_DL1MK3_RPM`
+* CAN ID:  (0x9767972)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 20
+
+
+* SendMode: Regular
+ ** Period: 20 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|RPM|UInt16|16|0|false|0.0|0.0|1.0|0.0||1|true||0
+|=======
+
+===== 66: `RT_DL1MK3_Freq_4`
+* CAN ID:  (0x9767716)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Frequency_4|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 67: `RT_DL1MK3_Freq_3`
+* CAN ID:  (0x9767460)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Frequency_3|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 68: `RT_DL1MK3_Freq_2`
+* CAN ID:  (0x9767204)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Frequency_2|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 69: `RT_DL1MK3_Misc_3`
+* CAN ID:  (0x9896740)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Misc_3|UInt16|16|0|false|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 70: `RT_DL1MK3_Misc_2`
+* CAN ID:  (0x9896484)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Misc_2|UInt16|16|0|false|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 71: `RT_DL1MK3_Misc_1`
+* CAN ID:  (0x9896228)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Misc_1|UInt16|16|0|false|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 72: `RT_DL1MK3_Aux_31`
+* CAN ID:  (0x9707300)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_31|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 73: `RT_DL1MK3_Aux_30`
+* CAN ID:  (0x9707044)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_30|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 74: `RT_DL1MK3_Aux_29`
+* CAN ID:  (0x9706788)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_29|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 75: `RT_DL1MK3_Aux_28`
+* CAN ID:  (0x9706532)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_28|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 76: `RT_DL1MK3_Aux_27`
+* CAN ID:  (0x9706276)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_27|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 77: `RT_DL1MK3_Aux_26`
+* CAN ID:  (0x9706020)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_26|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 78: `RT_DL1MK3_Aux_25`
+* CAN ID:  (0x9705764)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_25|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 79: `RT_DL1MK3_Aux_24`
+* CAN ID:  (0x9705508)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_24|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 80: `RT_DL1MK3_Aux_23`
+* CAN ID:  (0x9705252)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_23|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 81: `RT_DL1MK3_Aux_22`
+* CAN ID:  (0x9704996)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_22|UInt16|16|0|false|0.0|0.0|10.0|0.0||1|true||0
+|=======
+
+===== 82: `RT_DL1MK3_Aux_21`
+* CAN ID:  (0x9704740)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_21|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 83: `RT_DL1MK3_Aux_20`
+* CAN ID:  (0x9704484)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_20|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 84: `RT_DL1MK3_Aux_19`
+* CAN ID:  (0x9704228)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_19|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 85: `RT_DL1MK3_Aux_18`
+* CAN ID:  (0x9703972)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_18|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 86: `RT_DL1MK3_Aux_17`
+* CAN ID:  (0x9703716)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_17|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 87: `RT_DL1MK3_Aux_16`
+* CAN ID:  (0x9703460)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_16|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 88: `RT_DL1MK3_Aux_15`
+* CAN ID:  (0x9703204)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_15|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 89: `RT_DL1MK3_Aux_14`
+* CAN ID:  (0x9702948)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_14|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 90: `RT_DL1MK3_Aux_13`
+* CAN ID:  (0x9702692)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_13|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 91: `RT_DL1MK3_Aux_12`
+* CAN ID:  (0x9702436)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_12|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 92: `RT_DL1MK3_Aux_11`
+* CAN ID:  (0x9702180)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_11|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 93: `RT_DL1MK3_Aux_9`
+* CAN ID:  (0x9701668)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_9|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 94: `RT_DL1MK3_Aux_10`
+* CAN ID:  (0x9701924)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_10|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 95: `RT_DL1MK3_Aux_8`
+* CAN ID:  (0x9701412)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_8|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 96: `RT_DL1MK3_Aux_7`
+* CAN ID:  (0x9701156)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_7|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 97: `RT_DL1MK3_Aux_6`
+* CAN ID:  (0x9700900)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_6|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 98: `RT_DL1MK3_Aux_5`
+* CAN ID:  (0x9700644)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_5|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 99: `RT_DL1MK3_Aux_4`
+* CAN ID:  (0x9700388)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_4|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 100: `RT_DL1MK3_Aux_3`
+* CAN ID:  (0x9700132)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_3|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 101: `RT_DL1MK3_Aux_2`
+* CAN ID:  (0x9699876)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_2|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 102: `RT_DL1MK3_Aux_1`
+* CAN ID:  (0x9699620)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|AUX_1|UInt16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 103: `RT_DL1MK3_Pressure_5`
+* CAN ID:  (0x9438500)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Pressure_5|UInt32|24|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 104: `RT_DL1MK3_Pressure_4`
+* CAN ID:  (0x9438244)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Pressure_4|UInt32|24|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 105: `RT_DL1MK3_Pressure_3`
+* CAN ID:  (0x9437988)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Pressure_3|UInt32|24|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 106: `RT_DL1MK3_Pressure_2`
+* CAN ID:  (0x9437732)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Pressure_2|UInt32|24|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 107: `RT_DL1MK3_Pressure_1`
+* CAN ID:  (0x9437476)
+* Size: 3 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Pressure_1|UInt32|24|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 108: `RT_DL1MK3_Angle_3`
+* CAN ID:  (0x9569060)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Angle_3|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 109: `RT_DL1MK3_Angle_2`
+* CAN ID:  (0x9568804)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Angle_2|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 110: `RT_DL1MK3_Angle_1`
+* CAN ID:  (0x9568548)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Angle_1|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 111: `RT_DL1MK3_Temp_25`
+* CAN ID:  (0x9509156)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_25|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 112: `RT_DL1MK3_Temp_24`
+* CAN ID:  (0x9508900)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_24|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 113: `RT_DL1MK3_Temp_23`
+* CAN ID:  (0x9508644)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_23|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 114: `RT_DL1MK3_Temp_22`
+* CAN ID:  (0x9508388)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_22|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 115: `RT_DL1MK3_Temp_21`
+* CAN ID:  (0x9508132)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_21|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 116: `RT_DL1MK3_Temp_20`
+* CAN ID:  (0x9507876)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_20|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 117: `RT_DL1MK3_Temp_19`
+* CAN ID:  (0x9507620)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_19|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 118: `RT_DL1MK3_Temp_18`
+* CAN ID:  (0x9507364)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_18|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 119: `RT_DL1MK3_Temp_17`
+* CAN ID:  (0x9507108)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_17|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 120: `RT_DL1MK3_Temp_16`
+* CAN ID:  (0x9506852)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_16|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 121: `RT_DL1MK3_Temp_15`
+* CAN ID:  (0x9506596)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_15|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 122: `RT_DL1MK3_Temp_14`
+* CAN ID:  (0x9506340)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_14|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 123: `RT_DL1MK3_Temp_13`
+* CAN ID:  (0x9506084)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_13|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 124: `RT_DL1MK3_Temp_12`
+* CAN ID:  (0x9505828)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_12|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 125: `RT_DL1MK3_Temp_11`
+* CAN ID:  (0x9505572)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_11|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 126: `RT_DL1MK3_Temp_10`
+* CAN ID:  (0x9505316)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10000
+
+
+* SendMode: Regular
+ ** Period: 10000 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_10|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 127: `RT_DL1MK3_Temp_9`
+* CAN ID:  (0x9505060)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 750
+
+
+* SendMode: Regular
+ ** Period: 750 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_9|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 128: `RT_DL1MK3_Temp_8`
+* CAN ID:  (0x9504804)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 750
+
+
+* SendMode: Regular
+ ** Period: 750 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_8|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 129: `RT_DL1MK3_Temp_7`
+* CAN ID:  (0x9504548)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 1000
+
+
+* SendMode: Regular
+ ** Period: 1000 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_7|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 130: `RT_DL1MK3_Temp_6`
+* CAN ID:  (0x9504292)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 1000
+
+
+* SendMode: Regular
+ ** Period: 1000 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_6|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 131: `RT_DL1MK3_Temp_5`
+* CAN ID:  (0x9504036)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 1000
+
+
+* SendMode: Regular
+ ** Period: 1000 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_5|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 132: `RT_DL1MK3_Temp_4`
+* CAN ID:  (0x9503780)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 500
+
+
+* SendMode: Regular
+ ** Period: 500 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_4|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 133: `RT_DL1MK3_Temp_3`
+* CAN ID:  (0x9503524)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 500
+
+
+* SendMode: Regular
+ ** Period: 500 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_3|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 134: `RT_DL1MK3_Temp_2`
+* CAN ID:  (0x9503268)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 500
+
+
+* SendMode: Regular
+ ** Period: 500 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_2|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 135: `RT_DL1MK3_Temp_1`
+* CAN ID:  (0x9503012)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: event (1)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 500
+
+
+* SendMode: Data change driven, regular if there are no changes
+ ** Period: 500 ms
+ ** Minimum distance in time: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Temperature_1|Int16|16|0|false|0.0|0.0|0.1|0.0||1|true||0
+|=======
+
+===== 136: `RT_DL1MK3_Analog_32`
+* CAN ID:  (0x8527652)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_32|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 137: `RT_DL1MK3_Analog_31`
+* CAN ID:  (0x8527396)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_31|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 138: `RT_DL1MK3_Analog_30`
+* CAN ID:  (0x8527140)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_30|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 139: `RT_DL1MK3_Analog_29`
+* CAN ID:  (0x8526884)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_29|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 140: `RT_DL1MK3_Analog_28`
+* CAN ID:  (0x8526628)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_28|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 141: `RT_DL1MK3_Analog_27`
+* CAN ID:  (0x8526372)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_27|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 142: `RT_DL1MK3_Analog_26`
+* CAN ID:  (0x8526116)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_26|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 143: `RT_DL1MK3_Analog_25`
+* CAN ID:  (0x8525860)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_25|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 144: `RT_DL1MK3_Analog_15`
+* CAN ID:  (0x8523300)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_15|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 145: `RT_DL1MK3_Analog_14`
+* CAN ID:  (0x8523044)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_14|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 146: `RT_DL1MK3_Analog_17`
+* CAN ID:  (0x8523812)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_17|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 147: `RT_DL1MK3_Analog_24`
+* CAN ID:  (0x8525604)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_24|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 148: `RT_DL1MK3_Analog_23`
+* CAN ID:  (0x8525348)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_23|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 149: `RT_DL1MK3_Analog_22`
+* CAN ID:  (0x8525092)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_22|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 150: `RT_DL1MK3_Analog_21`
+* CAN ID:  (0x8524836)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_21|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 151: `RT_DL1MK3_Analog_20`
+* CAN ID:  (0x8524580)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_20|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 152: `RT_DL1MK3_Analog_19`
+* CAN ID:  (0x8524324)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_19|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 153: `RT_DL1MK3_Analog_16`
+* CAN ID:  (0x8523556)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_16|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 154: `RT_DL1MK3_Analog_18`
+* CAN ID:  (0x8524068)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_18|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 155: `RT_DL1MK3_Analog_12`
+* CAN ID:  (0x8522532)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_12|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 156: `RT_DL1MK3_Analog_11`
+* CAN ID:  (0x8522276)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_11|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 157: `RT_DL1MK3_Analog_10`
+* CAN ID:  (0x8522020)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_10|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 158: `RT_DL1MK3_Analog_9`
+* CAN ID:  (0x8521764)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_9|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 159: `RT_DL1MK3_Analog_8`
+* CAN ID:  (0x8521508)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_8|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 160: `RT_DL1MK3_Analog_7`
+* CAN ID:  (0x8521252)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_7|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 161: `RT_DL1MK3_Analog_6`
+* CAN ID:  (0x8520996)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_6|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 162: `RT_DL1MK3_Analog_5`
+* CAN ID:  (0x8520740)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_5|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 163: `RT_DL1MK3_Analog_4`
+* CAN ID:  (0x8520484)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_4|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 164: `RT_DL1MK3_Analog_3`
+* CAN ID:  (0x8520228)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_3|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 165: `RT_DL1MK3_Analog_2`
+* CAN ID:  (0x8519972)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_2|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 166: `RT_DL1MK3_Analog_1`
+* CAN ID:  (0x8519716)
+* Size: 2 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Analog_1|UInt16|16|7|true|0.0|0.0|0.001|0.0||1|true||0
+|=======
+
+===== 167: `RT_DL1MK3_Accel`
+* CAN ID:  (0x8388644)
+* Size: 8 Byte
+* Sender: `DL1MK3`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+ ** Filtered special signals:
+  * alivCtr: SQC
+* 8 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Accel_Longitudinal|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Accel_Lateral|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_Accel_Vertical|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|SQC|UInt8|4|7|true|0.0|14.0|1.0|0.0||0|false||0
+|5|Accuracy_Accel|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|6|Accel_Longitudinal|Int16|16|16|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|7|Accel_Lateral|Int16|16|32|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|8|Accel_Vertical|Int16|16|48|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|=======
+
+===== 168: `RT_SB_INS_Vpt_4_Vel_NED_2`
+* CAN ID:  (0x9384482)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_4_Vel_NED_D|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_4_Heading|Int16|16|32|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|3|Virtual_4_Slip|Int16|16|48|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 169: `RT_SB_INS_Vpt_4_Vel_NED_1`
+* CAN ID:  (0x9384226)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: mixed (2)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Data change driven
+ ** Minimum distance in time: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_4_Vel_NED_N|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_4_Vel_NED_E|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 170: `RT_SB_INS_Vpt_4_Offset`
+* CAN ID:  (0x9383970)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_4_Offset_X|Int16|16|0|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|2|Virtual_4_Offset_Y|Int16|16|16|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|3|Virtual_4_Offset_Z|Int16|16|32|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|=======
+
+===== 171: `RT_SB_INS_Vpt_3_Vel_NED_2`
+* CAN ID:  (0x9380386)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_3_Vel_NED_D|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_3_Heading|Int16|16|32|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|3|Virtual_3_Slip|Int16|16|48|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 172: `RT_SB_INS_Vpt_3_Vel_NED_1`
+* CAN ID:  (0x9380130)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_3_Vel_NED_N|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_3_Vel_NED_E|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 173: `RT_SB_INS_Vpt_3_Offset`
+* CAN ID:  (0x9379874)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_3_Offset_X|Int16|16|0|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|2|Virtual_3_Offset_Y|Int16|16|16|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|3|Virtual_3_Offset_Z|Int16|16|32|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|=======
+
+===== 174: `RT_SB_INS_Vpt_2_Vel_NED_2`
+* CAN ID:  (0x9376290)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_2_Vel_NED_D|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_2_Heading|Int16|16|32|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|3|Virtual_2_Slip|Int16|16|48|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 175: `RT_SB_INS_Vpt_2_Vel_NED_1`
+* CAN ID:  (0x9376034)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_2_Vel_NED_N|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_2_Vel_NED_E|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 176: `RT_SB_INS_Vpt_2_Offset`
+* CAN ID:  (0x9375778)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_2_Offset_X|Int16|16|0|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|2|Virtual_2_Offset_Y|Int16|16|16|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|3|Virtual_2_Offset_Z|Int16|16|32|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|=======
+
+===== 177: `RT_SB_INS_Vpt_1_Vel_NED_2`
+* CAN ID:  (0x9372194)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_1_Vel_NED_D|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_1_Heading|Int16|16|32|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|3|Virtual_1_Slip|Int16|16|48|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 178: `RT_SB_INS_Vpt_1_Vel_NED_1`
+* CAN ID:  (0x9371938)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_1_Vel_NED_N|Int32|24|0|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|2|Virtual_1_Vel_NED_E|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 179: `RT_SB_INS_Vpt_1_Offset`
+* CAN ID:  (0x9371682)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Virtual_1_Offset_X|Int16|16|0|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|2|Virtual_1_Offset_Y|Int16|16|16|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|3|Virtual_1_Offset_Z|Int16|16|32|false|-32.768|32.767|0.001|0.0|m|1|true||0
+|=======
+
+===== 180: `RT_SB_INS_Slip`
+* CAN ID:  (0x9311778)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Slip|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Squat|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_INS_Slip|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|INS_Slip|Int16|16|16|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|5|Accuracy_INS_Squat|UInt8|8|32|false|0.0|255.0|1.0|0.0||1|true||0
+|6|INS_Squat|Int16|16|40|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 181: `RT_SB_INS_Vel_ECEF_2`
+* CAN ID:  (0x9311010)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Vel_ECEF_Y|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Vel_ECEF_Z|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|INS_Vel_ECEF_Y|Int32|24|8|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|4|INS_Vel_ECEF_Z|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 182: `RT_SB_INS_Vel_ECEF_1`
+* CAN ID:  (0x9310754)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Vel_ECEF_X|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_INS_Vel_ECEF_X|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|Accuracy_INS_Vel_ECEF_Y|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|4|Accuracy_INS_Vel_ECEF_Z|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|5|INS_Vel_ECEF_X|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 183: `RT_SB_INS_Vel_NED_2`
+* CAN ID:  (0x9310498)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Vel_NED_D|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_INS_Vel_D|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|INS_Vel_NED_D|Int32|24|16|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 184: `RT_SB_INS_Vel_NED_1`
+* CAN ID:  (0x9310242)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Vel_NED_N|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Vel_NED_E|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_INS_Vel_NE|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|INS_Vel_NED_N|Int32|24|16|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|5|INS_Vel_NED_E|Int32|24|40|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 185: `RT_SB_INS_Pos_ECEF_2`
+* CAN ID:  (0x9307426)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|INS_Pos_ECEF_Y|Int32|32|0|false|-1.0E7|1.0E7|0.01|0.0|m|1|true||0
+|2|INS_Pos_ECEF_Z|Int32|32|32|false|-1.0E7|1.0E7|0.01|0.0|m|1|true||0
+|=======
+
+===== 186: `RT_SB_INS_Pos_ECEF_1`
+* CAN ID:  (0x9307170)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Pos_ECEF_X|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Pos_ECEF_Y|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_INS_Pos_ECEF_Z|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_INS_Pos_ECEF_X|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accuracy_INS_Pos_ECEF_Y|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|6|Accuracy_INS_Pos_ECEF_Z|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|7|INS_Pos_ECEF_X|Int32|32|32|false|-1.0E7|1.0E7|0.01|0.0|m|1|true||0
+|=======
+
+===== 187: `RT_SB_INS_Pos_LLH_2`
+* CAN ID:  (0x9306914)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|INS_Pos_LLH_Longitude|Int32|32|0|false|-180.0|180.0|1.0E-7|0.0|degrees|1|true||0
+|2|INS_Pos_LLH_Altitude|Int32|32|32|false|-1000.0|100000.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 188: `RT_SB_INS_Pos_LLH_1`
+* CAN ID:  (0x9306658)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Pos_LLH_Latitude|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Pos_LLH_Longitude|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_INS_Pos_LLH_Altitude|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_INS_Pos_LLH_Latitude|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accuracy_INS_Pos_LLH_Longitude|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|6|Accuracy_INS_Pos_LLH_Altitude|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|7|INS_Pos_LLH_Latitude|Int32|32|32|false|-90.0|90.0|1.0E-7|0.0|degrees|1|true||0
+|=======
+
+===== 189: `RT_SB_INS_Heading_Gradient_2`
+* CAN ID:  (0x9311522)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Heading|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Gradient|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_INS_Heading|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|INS_Heading_2|UInt16|16|16|false|0.0|360.0|0.01|0.0|degrees|1|true||0
+|5|Accuracy_INS_Gradient|UInt8|8|32|false|0.0|255.0|1.0|0.0||1|true||0
+|6|INS_Gradient|Int16|16|40|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 190: `RT_SB_INS_Heading_Gradient`
+* CAN ID:  (0x9311266)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_INS_Heading|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_INS_Gradient|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_INS_Heading|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|INS_Heading|Int16|16|16|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|5|Accuracy_INS_Gradient|UInt8|8|32|false|0.0|255.0|1.0|0.0||1|true||0
+|6|INS_Gradient|Int16|16|40|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 191: `RT_SB_INS_Status`
+* CAN ID:  (0x9306146)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 1 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|INS_Status|UInt8|8|0|false|0.0|255.0|1.0|0.0||1|true||3
+|=======
+
+===== 192: `RT_SB_INS_Attitude`
+* CAN ID:  (0x9306402)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Yaw|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||2
+|2|Validity_Pitch|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||2
+|3|Validity_Roll|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||2
+|4|Accuracy_Attitude|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Attitude_Yaw|Int16|16|16|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|6|Attitude_Pitch|Int16|16|32|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|7|Attitude_Roll|Int16|16|48|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 193: `RT_SB_Output_Status`
+* CAN ID:  (0x9240866)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 10 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Status_Timestamp|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Status_Analogue_1|Bool|1|8|false|0.0|1.0|1.0|0.0||1|true||2
+|3|Status_Analogue_2|Bool|1|9|false|0.0|1.0|1.0|0.0||1|true||2
+|4|Status_Analogue_3|Bool|1|10|false|0.0|1.0|1.0|0.0||1|true||2
+|5|Status_Analogue_4|Bool|1|11|false|0.0|1.0|1.0|0.0||1|true||2
+|6|Status_Pulse_Output|Bool|1|12|false|0.0|1.0|1.0|0.0||1|true||2
+|7|Status_Serial_Output_1|Bool|1|13|false|0.0|1.0|1.0|0.0||1|true||2
+|8|Status_Serial_Output_2|Bool|1|14|false|0.0|1.0|1.0|0.0||1|true||2
+|9|Status_Trigger|Bool|1|15|false|0.0|1.0|1.0|0.0||1|true||2
+|10|GPS_Time|UInt32|32|32|false|0.0|604800.0|0.001|0.0|s|1|true||0
+|=======
+
+===== 194: `RT_SB_GPS_Heading_Gradient_2`
+* CAN ID:  (0x9180706)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Heading|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Gradient|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Heading|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Heading_2|UInt16|16|16|false|0.0|360.0|0.01|0.0|degrees|1|true||0
+|5|Accuracy_GPS_Gradient|UInt8|8|32|false|0.0|255.0|1.0|0.0||1|true||0
+|6|GPS_Gradient|Int16|16|40|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 195: `RT_SB_Cumulative_Distance_2`
+* CAN ID:  (0x8397090)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Cumulative_Time|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Cumulative_Distance|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Cumulative_Time|UInt32|24|8|false|0.0|167772.0|0.01|0.0|s|1|true||0
+|4|Cumulative_Distance|UInt32|32|32|false|0.0|4294970.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 196: `RT_SB_Cumulative_Distance_1`
+* CAN ID:  (0x8396834)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Cumulative_Time|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Cumulative_Distance|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Cumulative_Time|UInt32|24|8|false|0.0|167772.0|0.01|0.0|s|1|true||0
+|4|Cumulative_Distance|UInt32|32|32|false|0.0|4294970.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 197: `RT_SB_Trigger_Timestamp`
+* CAN ID:  (0x9240610)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Trigger_Timestamp|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_Trigger_Timestamp|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|Trigger_Number|UInt8|7|16|false|0.0|128.0|1.0|1.0||1|true||0
+|4|Trigger_Timestamp_Type|Bool|1|23|false|0.0|1.0|1.0|0.0||1|true||2
+|5|GPS_High_Resolution_Time|UInt64|40|24|false|0.0|604800.0|1.0E-6|0.0|s|1|true||0
+|=======
+
+===== 198: `RT_IMU06_Gyro_Rates`
+* CAN ID:  (0x8388897)
+* Size: 8 Byte
+* Sender: `IMU06`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Gyro_Rate_Yaw|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Gyro_Rate_Pitch|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_Gyro_Rate_Roll|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_Gyro_Rates|UInt8|8|8|false|0.0|0.0|1.0|0.0||1|true||0
+|5|Gyro_Rate_Yaw|Int16|16|16|false|-327.0|327.0|0.01|0.0|degrees/s|1|true||0
+|6|Gyro_Rate_Pitch|Int16|16|32|false|-327.0|327.0|0.01|0.0|degrees/s|1|true||0
+|7|Gyro_Rate_Roll|Int16|16|48|false|-327.0|327.0|0.01|0.0|degrees/s|1|true||0
+|=======
+
+===== 199: `RT_IMU06_Accel`
+* CAN ID:  (0x8388641)
+* Size: 8 Byte
+* Sender: `IMU06`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Accel_Longitudinal|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Accel_Lateral|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_Accel_Vertical|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_Accel|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accel_Longitudinal|Int16|16|16|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|6|Accel_Lateral|Int16|16|32|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|7|Accel_Vertical|Int16|16|48|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|=======
+
+===== 200: `RT_SB_Speed`
+* CAN ID:  (0x8392738)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Speed|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_Speed|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|Speed|Int32|32|16|false|-20000.0|20000.0|1.0E-5|0.0|m/s|1|true||0
+|=======
+
+===== 201: `RT_SB_RTK_Slip`
+* CAN ID:  (0x9183522)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_RTK_Slip|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_RTK_Squat|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_RTK_Baseline|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_RTK_Baseline|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|RTK_Slip|Int16|16|16|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|6|RTK_Squat|Int16|16|32|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|7|RTK_Baseline|UInt16|16|48|false|0.0|65535.0|1.0|0.0|mm|1|true||0
+|=======
+
+===== 202: `RT_SB_RTK_Attitude`
+* CAN ID:  (0x9183266)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_RTK_Yaw|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_RTK_Pitch|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_RTK_Roll|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_RTK_Attitude|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|RTK_Attitude_Yaw|Int16|16|16|false|-360.0|360.0|0.01|0.0|degrees|1|true||0
+|6|RTK_Attitude_Pitch|Int16|16|32|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|7|RTK_Attitude_Roll|Int16|16|48|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 203: `RT_SB_GPS_Mcycle_Lean`
+* CAN ID:  (0x9187362)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Lateral_Accel|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Mcycle_Lean|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Lateral_Accel|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Lateral_Accel|Int16|16|16|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|5|GPS_Mcycle_Lean_Angle|Int16|16|32|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 204: `RT_SB_GPS_Status`
+* CAN ID:  (0x9175074)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 8 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|GPS_Status|UInt8|8|0|false|0.0|255.0|1.0|0.0||1|true||13
+|2|Firmware_Version_Major|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|Firmware_Version_Intermediate|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|4|Firmware_Version_Minor|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|5|GPS_nSv|UInt8|8|32|false|0.0|16.0|1.0|0.0||1|true||0
+|6|GPS_nSv_2|UInt8|8|40|false|0.0|16.0|1.0|0.0||1|true||0
+|7|GPS_nSv_RTK|UInt8|8|48|false|0.0|16.0|1.0|0.0||1|true||0
+|8|RTK_Status|UInt8|8|56|false|0.0|255.0|1.0|0.0||1|true||5
+|=======
+
+===== 205: `RT_SB_GPS_Pos_ECEF_2`
+* CAN ID:  (0x9176354)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|GPS_Pos_ECEF_Y|Int32|32|0|false|-1.0E7|1.0E7|0.01|0.0|m|1|true||0
+|2|GPS_Pos_ECEF_Z|Int32|32|32|false|-1.0E7|1.0E7|0.01|0.0|m|1|true||0
+|=======
+
+===== 206: `RT_SB_GPS_Pos_ECEF_1`
+* CAN ID:  (0x9176098)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Pos_ECEF_X|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Pos_ECEF_Y|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_GPS_Pos_ECEF_Z|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_GPS_Pos_ECEF_X|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accuracy_GPS_Pos_ECEF_Y|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|6|Accuracy_GPS_Pos_ECEF_Z|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|7|GPS_Pos_ECEF_X|Int32|32|32|false|-1.0E7|1.0E7|0.01|0.0|m|1|true||0
+|=======
+
+===== 207: `RT_SB_GPS_Pos_LLH_2`
+* CAN ID:  (0x9175842)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 2 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|GPS_Pos_LLH_Longitude|Int32|32|0|false|-180.0|180.0|1.0E-7|0.0|degrees|1|true||0
+|2|GPS_Pos_LLH_Altitude|Int32|32|32|false|-1000.0|100000.0|0.001|0.0|m|1|true||0
+|=======
+
+===== 208: `RT_SB_GPS_Pos_LLH_1`
+* CAN ID:  (0x9175586)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Pos_LLH_Latitude|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Pos_LLH_Longitude|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_GPS_Pos_LLH_Altitude|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_GPS_Pos_LLH_Latitude|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accuracy_GPS_Pos_LLH_Longitude|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|6|Accuracy_GPS_Pos_LLH_Altitude|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|7|GPS_Pos_LLH_Latitude|Int32|32|32|false|-90.0|90.0|1.0E-7|0.0|degrees|1|true||0
+|=======
+
+===== 209: `RT_SB_GPS_Heading_Gradient`
+* CAN ID:  (0x9180450)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Heading|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Gradient|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Heading|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Heading|Int16|16|16|false|-180.0|180.0|0.01|0.0|degrees|1|true||0
+|5|Accuracy_GPS_Gradient|UInt8|8|32|false|0.0|255.0|1.0|0.0||1|true||0
+|6|GPS_Gradient|Int16|16|40|false|-90.0|90.0|0.01|0.0|degrees|1|true||0
+|=======
+
+===== 210: `RT_SB_GPS_Vel_ECEF_2`
+* CAN ID:  (0x9180194)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Vel_ECEF_Y|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Vel_ECEF_Z|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|GPS_Vel_ECEF_Y|Int32|24|8|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|4|GPS_Vel_ECEF_Z|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 211: `RT_SB_GPS_Vel_ECEF_1`
+* CAN ID:  (0x9179938)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Vel_ECEF_X|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_GPS_Vel_ECEF_X|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Vel_ECEF_Y|UInt8|8|16|false|0.0|255.0|1.0|0.0||1|true||0
+|4|Accuracy_GPS_Vel_ECEF_Z|UInt8|8|24|false|0.0|255.0|1.0|0.0||1|true||0
+|5|GPS_Vel_ECEF_X|Int32|24|32|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 212: `RT_SB_GPS_Vel_NED_2`
+* CAN ID:  (0x000)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Vel_NED_D|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Accuracy_GPS_Vel_D|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|3|GPS_Vel_NED_D|Int32|24|16|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 213: `RT_SB_GPS_Vel_NED_1`
+* CAN ID:  (0x536870911)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Vel_NED_N|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Vel_NED_E|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Vel_NE|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Vel_NED_N|Int32|24|16|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|5|GPS_Vel_NED_E|Int32|24|40|false|-838.0|838.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 214: `RT_SB_GPS_Speed`
+* CAN ID:  (0x1818)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Speed_2D|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Speed_3D|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Speed|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Speed_2D|UInt32|24|16|false|0.0|1675.0|1.0E-4|0.0|m/s|1|true||0
+|5|GPS_Speed_3D|UInt32|24|40|false|0.0|1675.0|1.0E-4|0.0|m/s|1|true||0
+|=======
+
+===== 215: `RT_SB_GPS_Time`
+* CAN ID:  (0x2047)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_GPS_Time|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_GPS_Week|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Accuracy_GPS_Time|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|4|GPS_Time|UInt32|32|16|false|0.0|604800.0|0.001|0.0|s|1|true||0
+|5|GPS_Week|UInt16|16|48|false|0.0|65535.0|1.0|0.0||1|true||0
+|=======
+
+===== 216: `RT_SB_Accel`
+* CAN ID:  (0x290)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Accel_Longitudinal|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Accel_Lateral|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_Accel_Vertical|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_Accel|UInt8|8|8|false|0.0|255.0|1.0|0.0||1|true||0
+|5|Accel_Longitudinal|Int16|16|16|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|6|Accel_Lateral|Int16|16|32|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|7|Accel_Vertical|Int16|16|48|false|-65.0|65.0|0.001|0.0|g|1|true||0
+|=======
+
+===== 217: `RT_SB_Gyro_Rates`
+* CAN ID:  (0x8388898)
+* Size: 8 Byte
+* Sender: `SB`
+* Attribute values:
+ ** eventMinDistance: 10 (default)
+ ** frameSendMode: regular (0) (default)
+ ** crcStartValue: 1 (default)
+ ** sendPeriod: 10 (default)
+
+
+* SendMode: Regular
+ ** Period: 10 ms
+* 7 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|Validity_Gyro_Rate_Yaw|Bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|Validity_Gyro_Rate_Pitch|Bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|Validity_Gyro_Rate_Roll|Bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|Accuracy_Gyro_Rates|UInt8|8|8|false|0.0|0.0|1.0|0.0||1|true||0
+|5|Gyro_Rate_Yaw|Int16|16|16|false|-327.0|327.0|0.01|0.0|degrees/s|1|true||0
+|6|Gyro_Rate_Pitch|Int16|16|32|false|-327.0|327.0|0.01|0.0|degrees/s|1|true||0
+|7|Gyro_Rate_Roll|Int16|16|48|false|-327.0|327.0|0.01|0.0|degrees/s|1|true||0
+|=======

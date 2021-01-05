@@ -1,0 +1,605 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>Bus (Data Model of codeGenerator for StringTemplate V4 templates)</title>
+<link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="Bus (Data Model of codeGenerator for StringTemplate V4 templates)";
+    }
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+<!-- ========= START OF TOP NAVBAR ======= -->
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../codeGenerator/dataModelListener/package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../index-all.html">Index</a></li>
+<li><a href="../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../codeGenerator/dataModelListener/AttributeDef.ObjectType.html" title="enum in codeGenerator.dataModelListener"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../codeGenerator/dataModelListener/Cluster.html" title="class in codeGenerator.dataModelListener"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../index.html?codeGenerator/dataModelListener/Bus.html" target="_top">Frames</a></li>
+<li><a href="Bus.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
+<!-- ========= END OF TOP NAVBAR ========= -->
+<!-- ======== START OF CLASS DATA ======== -->
+<div class="header">
+<div class="subTitle">codeGenerator.dataModelListener</div>
+<h2 title="Class Bus" class="title">Class Bus</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li><a href="../../codeGenerator/dataModelListener/NetObject.html" title="class in codeGenerator.dataModelListener">codeGenerator.dataModelListener.NetObject</a></li>
+<li>
+<ul class="inheritance">
+<li>codeGenerator.dataModelListener.Bus</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<hr>
+<br>
+<pre>public class <span class="strong">Bus</span>
+extends <a href="../../codeGenerator/dataModelListener/NetObject.html" title="class in codeGenerator.dataModelListener">NetObject</a></pre>
+<div class="block">The data structure describing a communication bus in the cluster.
+   An object of this class contains the results of parsing a single DBC input file. The
+ object is part of the nested data structure passed to the template engine for rendering
+ the information in the wanted format.<p>
+   The basic design principle is the use of public members because such members can be
+ directly accessed from the output templates. Boolean decisions are either expressed as
+ explicit public Boolean members or by references to nested member objects, which are
+ null if an optional member is not used or applicable: StringTemplate can query public
+ Boolean members or check for null references.</div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- =========== FIELD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.ArrayList&lt;<a href="../../codeGenerator/dataModelListener/AttributeDef.html" title="class in codeGenerator.dataModelListener">AttributeDef</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#attribDefAry">attribDefAry</a></strong></code>
+<div class="block">The same attribute definition objects, which are stored in the map attribDefMap can
+        also be referenced from this array.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,<a href="../../codeGenerator/dataModelListener/AttributeDef.html" title="class in codeGenerator.dataModelListener">AttributeDef</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#attribDefMap">attribDefMap</a></strong></code>
+<div class="block">A map of attribute definitions, including the default values.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.ArrayList&lt;<a href="../../codeGenerator/dataModelListener/Frame.html" title="class in codeGenerator.dataModelListener">Frame</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#frameAry">frameAry</a></strong></code>
+<div class="block">A bus knows frames, which are exchanged with the given network node on this bus.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#hasFloatingPointSignals">hasFloatingPointSignals</a></strong></code>
+<div class="block">Theoretically a signal may have a floating point data type.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#hasScaledFloatingPointSignals">hasScaledFloatingPointSignals</a></strong></code>
+<div class="block">Theoretically a floating point signal in a network database file can have a linear
+        scaling.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#isTransmissionDirectionInverted">isTransmissionDirectionInverted</a></strong></code>
+<div class="block">The transmission direction of frames (sent, received, none of these or both) is
+        encoded in the network database and can be found in according fields in <a href="../../codeGenerator/dataModelListener/Frame.html" title="class in codeGenerator.dataModelListener"><code>Frame</code></a>, <a href="../../codeGenerator/dataModelListener/Pdu.html" title="class in codeGenerator.dataModelListener"><code>Pdu</code></a> and <a href="../../codeGenerator/dataModelListener/Signal.html" title="class in codeGenerator.dataModelListener"><code>Signal</code></a>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../codeGenerator/dataModelListener/FileExt.html" title="class in codeGenerator.dataModelListener">FileExt</a></code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#networkFile">networkFile</a></strong></code>
+<div class="block">The name of the network description file, which has been parsed into this object.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../codeGenerator/dataModelListener/Node.html" title="class in codeGenerator.dataModelListener">Node</a>[]</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#nodeAry">nodeAry</a></strong></code>
+<div class="block">A bus has network nodes.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#optionMap">optionMap</a></strong></code>
+<div class="block">A map of user specified options or template attributes.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>codeGenerator.dataModelListener.ST4CmdInterpreter&lt;java.lang.Object,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#sortFrameAry">sortFrameAry</a></strong></code>
+<div class="block">This field can be used to demand a certain sort order of the frame list <a href="../../codeGenerator/dataModelListener/Bus.html#frameAry"><code>frameAry</code></a>.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="fields_inherited_from_class_codeGenerator.dataModelListener.NetObject">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;codeGenerator.dataModelListener.<a href="../../codeGenerator/dataModelListener/NetObject.html" title="class in codeGenerator.dataModelListener">NetObject</a></h3>
+<code><a href="../../codeGenerator/dataModelListener/NetObject.html#attribMap">attribMap</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#desc">desc</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#i">i</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#i0">i0</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#name">name</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#objId">objId</a></code></li>
+</ul>
+</li>
+</ul>
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#Bus(codeGenerator.dbcParser.ErrorCounter)">Bus</a></strong>(codeGenerator.dbcParser.ErrorCounter&nbsp;errCnt)</code>
+<div class="block">Create the Bus object.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#getNoAttribDefs()">getNoAttribDefs</a></strong>()</code>
+<div class="block">The number of attribute definitions in <b>attribDefAry</b> and <b>attribDefMap</b>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#getNoFrames()">getNoFrames</a></strong>()</code>
+<div class="block">The number of frames in <b>frameAry</b>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#getNoOptions()">getNoOptions</a></strong>()</code>
+<div class="block">The number of user options in <b>optionMap</b>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<td class="colLast"><code><strong><a href="../../codeGenerator/dataModelListener/Bus.html#interpret(java.lang.Object,%20java.lang.String)">interpret</a></strong>(java.lang.Object&nbsp;context,
+         java.lang.String&nbsp;cmd)</code>
+<div class="block">This method implements the command listener, which is used to apply the sorting of
+ the frame array.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_codeGenerator.dataModelListener.NetObject">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;codeGenerator.dataModelListener.<a href="../../codeGenerator/dataModelListener/NetObject.html" title="class in codeGenerator.dataModelListener">NetObject</a></h3>
+<code><a href="../../codeGenerator/dataModelListener/NetObject.html#getNoAttribs()">getNoAttribs</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#storeAttribValue(java.lang.String,%20codeGenerator.dataModelListener.Attribute)">storeAttribValue</a>, <a href="../../codeGenerator/dataModelListener/NetObject.html#toString()">toString</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="networkFile">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>networkFile</h4>
+<pre>public&nbsp;<a href="../../codeGenerator/dataModelListener/FileExt.html" title="class in codeGenerator.dataModelListener">FileExt</a> networkFile</pre>
+<div class="block">The name of the network description file, which has been parsed into this object.
+          The network file is described with an extended Java File object. This
+        object extends the Java class File by adding some information about parts of the
+        file name (like its extension). Please refer to class FileExt.<p>
+          The information from the Java class File is partly accessible: All methods
+        starting with get or is can be used by placing the method name without the syllable
+        get/is into the template, e.g. <networkFile.name> would yield the return value of
+        File.getName().<p>
+          Please refer to the online help of Java class File for details.</div>
+</li>
+</ul>
+<a name="attribDefMap">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>attribDefMap</h4>
+<pre>public&nbsp;java.util.HashMap&lt;java.lang.String,<a href="../../codeGenerator/dataModelListener/AttributeDef.html" title="class in codeGenerator.dataModelListener">AttributeDef</a>&gt; attribDefMap</pre>
+<div class="block">A map of attribute definitions, including the default values. An attribute is
+        referenced by its name. The list contains all user-requested attributes, regardless
+        whether it refers to the bus, to a node, a frame or a signal. This is safely
+        possible as all attribute share the same namespace.</div>
+</li>
+</ul>
+<a name="attribDefAry">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>attribDefAry</h4>
+<pre>public&nbsp;java.util.ArrayList&lt;<a href="../../codeGenerator/dataModelListener/AttributeDef.html" title="class in codeGenerator.dataModelListener">AttributeDef</a>&gt; attribDefAry</pre>
+<div class="block">The same attribute definition objects, which are stored in the map attribDefMap can
+        also be referenced from this array. The array structure supports the implementation
+        of overview tables of attributes in a template.</div>
+</li>
+</ul>
+<a name="nodeAry">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>nodeAry</h4>
+<pre>public&nbsp;<a href="../../codeGenerator/dataModelListener/Node.html" title="class in codeGenerator.dataModelListener">Node</a>[] nodeAry</pre>
+<div class="block">A bus has network nodes.</div>
+</li>
+</ul>
+<a name="frameAry">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>frameAry</h4>
+<pre>public&nbsp;java.util.ArrayList&lt;<a href="../../codeGenerator/dataModelListener/Frame.html" title="class in codeGenerator.dataModelListener">Frame</a>&gt; frameAry</pre>
+<div class="block">A bus knows frames, which are exchanged with the given network node on this bus.
+        Initially, the frames in the array have the order of appearance in the parsed
+        network database. The array can be sorted using the command <a href="../../codeGenerator/dataModelListener/Bus.html#sortFrameAry"><code>sortFrameAry</code></a>.</div>
+</li>
+</ul>
+<a name="sortFrameAry">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>sortFrameAry</h4>
+<pre>public final&nbsp;codeGenerator.dataModelListener.ST4CmdInterpreter&lt;java.lang.Object,java.lang.Object&gt; sortFrameAry</pre>
+<div class="block">This field can be used to demand a certain sort order of the frame list <a href="../../codeGenerator/dataModelListener/Bus.html#frameAry"><code>frameAry</code></a>. The order of frames is changed by passing the wanted sort order in a
+        StringTemplate V4 template expression like <code>&lt;bus.sortFrameAry.byId&gt;</code>, where
+        <code>byId</code> is meant an example of a supported sort order. All subsequently
+        evaluated template expressions will find the field <code>&lt;bus.frameAry&gt;</code> in the
+        new sort order. Supported sort orders are:<p><ul>
+          <li> <code>byName</code>: Ascending lexical order of names 
+          <li> <code>byNameInverse</code>: Descending lexical order of names 
+          <li> <code>byId</code>: Ascending CAN ID
+          <li> <code>byIdInverse</code>: Descending CAN ID
+          <li> <code>bySize</code>: Ascending size of payload
+          <li> <code>bySizeInverse</code>: Descending size of payload
+          <li> <code>sentFirst</code>: Sent frames before received frames
+          <li> <code>receivedFirst</code>: Received frames before sent frames
+        </ul><p>
+          Some sort orders, e.g. sorting by size of payload, are undecided for several
+        frames. A secondary, sub-ordinated sort criterion can be implemented by sorting
+        twice. Begin with the sub-ordinated criterion (e.g. sorting by CAN ID) followed by
+        the principal sort order (e.g. by size of payload). In this example would larger
+        frames follow smaller ones and all equally sized would be ordered by ascending CAN
+        ID.<p>
+          Please note, once you've sorted the array of frames the initial order is lost and
+        can't be restored again. This is the order of appearance in the network file.
+        However, a frame iteration in this order is still possible via field <a href="../../codeGenerator/dataModelListener/Cluster.html#frameInFileOrderAry"><code>Cluster.frameInFileOrderAry</code></a>. Reordering a bus' frame list won't affect the frame
+        lists owned by <a href="../../codeGenerator/dataModelListener/Cluster.html" title="class in codeGenerator.dataModelListener"><code>Cluster</code></a>; <a href="../../codeGenerator/dataModelListener/Cluster.html#frameByNameAry"><code>Cluster.frameByNameAry</code></a>, <a href="../../codeGenerator/dataModelListener/Cluster.html#frameByIdAry"><code>Cluster.frameByIdAry</code></a> and <a href="../../codeGenerator/dataModelListener/Cluster.html#frameInFileOrderAry"><code>Cluster.frameInFileOrderAry</code></a> are constant
+        throughout the complete template expansion process.</div>
+</li>
+</ul>
+<a name="isTransmissionDirectionInverted">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isTransmissionDirectionInverted</h4>
+<pre>public&nbsp;boolean isTransmissionDirectionInverted</pre>
+<div class="block">The transmission direction of frames (sent, received, none of these or both) is
+        encoded in the network database and can be found in according fields in <a href="../../codeGenerator/dataModelListener/Frame.html" title="class in codeGenerator.dataModelListener"><code>Frame</code></a>, <a href="../../codeGenerator/dataModelListener/Pdu.html" title="class in codeGenerator.dataModelListener"><code>Pdu</code></a> and <a href="../../codeGenerator/dataModelListener/Signal.html" title="class in codeGenerator.dataModelListener"><code>Signal</code></a>. However, on command line demand can this
+        information be inverted in order to support code generation for residual bus
+        simulation. Actually sent frames are reported as being received and 
+        vice versa. (See command line argument invert-transmission-direction.)<p>
+          This field reflects the value of the command line argument. A StringTemplate V4
+        template can be made aware of transmission direction inversion.</div>
+<dl><dt><span class="strong">Remark:</span></dt>
+  <dd>Caution, the inversion of the transmission direction only relates to the fields
+        <code>isSent</code> and <code>isReceived</code> of frames, PDUs and signals. The textual
+        information about senders and receivers is not affected. In this sense is the
+        resulting data model inconsistent if inversion is applied.</dd></dl>
+</li>
+</ul>
+<a name="hasFloatingPointSignals">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasFloatingPointSignals</h4>
+<pre>public&nbsp;boolean hasFloatingPointSignals</pre>
+<div class="block">Theoretically a signal may have a floating point data type. Since this is very rare
+        in practice any normal application of the code generator will likely not support
+        this case. To enable safe code generation templates here's a flag which tells if
+        there is at least one floating point signal in use in the bus. If so, the template
+        could generate an error.</div>
+</li>
+</ul>
+<a name="hasScaledFloatingPointSignals">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasScaledFloatingPointSignals</h4>
+<pre>public&nbsp;boolean hasScaledFloatingPointSignals</pre>
+<div class="block">Theoretically a floating point signal in a network database file can have a linear
+        scaling. However, this is completely useless and won't probably be ever supported
+        by any code generation template. To enable safe code generation templates here's a
+        flag which tells if there is at least one scaled floating point signal in use in
+        the bus. If so, the template could generate an error.</div>
+</li>
+</ul>
+<a name="optionMap">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>optionMap</h4>
+<pre>public&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.Object&gt; optionMap</pre>
+<div class="block">A map of user specified options or template attributes. User options are template
+        attributes, which are simply passed through from the application's command line to
+        the StringTemplate V4 template and can there be used to control the code
+        generation. The use case are optional constructs in the generated code, which are
+        controlled from the command line.<p>
+          User options/attributes can be given in the global context of the command line or
+        in the context of a bus or an output file. This map holds all options given in the
+        context of the bus. (Refer to <a href="../../codeGenerator/dataModelListener/Info.html#optionMap"><code>Info.optionMap</code></a> for the output file related
+        options.)<p>
+          User options, which are set in the global context of the command line are adopted
+        by all buses. Nonetheless, a particular bus can re-specify the same option with
+        deviating value.<p>
+          The name of an option or template attribute is the key into the map and the
+        attribute's value is the value of the map entry. The value object's Java type is
+        one out of String, Boolean, Integer or Double, depending on which fits best to the
+        original command line argument; a command line argument <i>cmdLineArg</i> with
+        value <code>true</code> would obviously be passed as Boolean into the template and would
+        permit conditional code by using a construct like: <code>&lt;if(bus.optionMap.cmdLineArg)&gt;Command line argument is TRUE!&lt;endif&gt;</code></div>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="Bus(codeGenerator.dbcParser.ErrorCounter)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>Bus</h4>
+<pre>public&nbsp;Bus(codeGenerator.dbcParser.ErrorCounter&nbsp;errCnt)</pre>
+<div class="block">Create the Bus object.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>errCnt</code> - Template emitted and caused errors are counted in this object.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getNoAttribDefs()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoAttribDefs</h4>
+<pre>public&nbsp;int&nbsp;getNoAttribDefs()</pre>
+<div class="block">The number of attribute definitions in <b>attribDefAry</b> and <b>attribDefMap</b>.
+        From a StringTemplate V4 template this member is accessed as <code>&lt;bus.noAttribDefs&gt;</code>.</div>
+</li>
+</ul>
+<a name="getNoFrames()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoFrames</h4>
+<pre>public&nbsp;int&nbsp;getNoFrames()</pre>
+<div class="block">The number of frames in <b>frameAry</b>. From a StringTemplate V4
+        template this member is accessed as <code>&lt;bus.noFrames&gt;</code>.</div>
+</li>
+</ul>
+<a name="getNoOptions()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoOptions</h4>
+<pre>public&nbsp;int&nbsp;getNoOptions()</pre>
+<div class="block">The number of user options in <b>optionMap</b>. From a StringTemplate V4
+        template this member is accessed as <code>&lt;bus.noOptions&gt;</code>.</div>
+</li>
+</ul>
+<a name="interpret(java.lang.Object, java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>interpret</h4>
+<pre>public&nbsp;java.lang.Object&nbsp;interpret(java.lang.Object&nbsp;context,
+                         java.lang.String&nbsp;cmd)</pre>
+<div class="block">This method implements the command listener, which is used to apply the sorting of
+ the frame array.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>context</code> - The context is not used; the listener is connected only to a single command
+ interpreter. It expects null.</dd><dd><code>cmd</code> - The command string, which is interpreted as a sort command.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>The function will always return null: The template engine must not
+ generate any ouput because of the sort command.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<!-- ========= END OF CLASS DATA ========= -->
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../codeGenerator/dataModelListener/package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../index-all.html">Index</a></li>
+<li><a href="../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../codeGenerator/dataModelListener/AttributeDef.ObjectType.html" title="enum in codeGenerator.dataModelListener"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../codeGenerator/dataModelListener/Cluster.html" title="class in codeGenerator.dataModelListener"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../index.html?codeGenerator/dataModelListener/Bus.html" target="_top">Frames</a></li>
+<li><a href="Bus.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+</body>
+</html>

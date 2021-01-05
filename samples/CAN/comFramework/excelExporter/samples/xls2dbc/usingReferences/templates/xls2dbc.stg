@@ -1,0 +1,151 @@
+//
+// xls2dbc.stg
+//
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The file is a simple demonstration of the grouping facilities of excelExporter.
+//
+// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+dbc(cluster,info) ::= <<
+VERSION "Created by <info.application> <info.version>"
+
+NS_ : 
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: <ecu()>
+
+<! Check a prerequiste in the parsed workbook !>
+<if(!cluster.theOnlyWorkbook.exists)><info.error.("Expect one and only one workbook in the cluster")>
+<endif><\\>
+<if(!cluster.sheetGroupMap.signalValues || rest(cluster.sheetGroupMap.signalValues))><\\>
+<info.error.(["Expect one and only one worksheet in group signalValues, but found ",
+             length(cluster.sheetGroupMap.signalValues)])>
+<endif><\\>
+
+<cluster.sheetGroupMap.DBC:renderSheet(first(cluster.sheetGroupMap.signalValues))>
+>>
+
+// The network node's name, which the DBC file is made for.
+ecu() ::= "<cluster.theOnlyWorkbook.optionMap.ECU>"
+
+
+renderSheet(sheet,signalValMap) ::= <<
+<! The root level row objects describe the frames.
+     The root level's children groups have the names of the frames and contain the signals of
+   those messages. We iterate the frames and extract the child group by using the frame's
+   name as key. Both, frame describing row object and signal containing group are passed to
+   the template, which renders the frame. !>
+<sheet.rowAry:{f|<renderFrame(f,sheet.(f.Name))>}><\\>
+<! Render the comments of frames and signals of frames !>
+<sheet.rowAry:{f|<renderFrameComments(f,sheet.(f.Name))>}><\\>
+<! Static attribute definition parts !>
+BA_DEF_ "Author" STRING;
+BA_DEF_ BO_ "frameSendMode" ENUM  "regular","event","mixed";
+BA_DEF_ BO_ "sendPeriod" INT 5 10000;
+BA_DEF_ BO_ "crcStartValue" INT 1 255;
+BA_DEF_ BO_ "eventMinDistance" INT 5 10000;
+BA_DEF_ SG_ "initialSignalValue" FLOAT -1e38 1e38;
+BA_DEF_DEF_ "Author" "http://sourceforge.net/projects/comframe/";
+BA_DEF_DEF_ "frameSendMode" "regular";
+BA_DEF_DEF_ "sendPeriod" 10;
+BA_DEF_DEF_ "crcStartValue" 1;
+BA_DEF_DEF_ "eventMinDistance" 10;
+BA_DEF_DEF_ "initialSignalValue" 0.0;
+<! Dynamic attribute definition parts, individual values !>
+<sheet.rowAry:{f|<renderFrameAttributes(f,sheet.(f.Name))>}><\\>
+<! Render the enumerations formed by named signal values !>
+<sheet.rowAry:{f|<renderSignalValues(f,sheet.(f.Name))>}><\\>
+
+>>
+
+renderFrame(frame,signalSet) ::= <<
+<! frame is a row object describing the frame. signalSet is a row object container holding
+   the signals of the frame. !>
+BO_ <frame.FrameID> <frame.Name>: <frame.Size> <\\>
+<if(frame.isReceived.bool)>Vector__XXX<else><ecu()><endif>
+  <signalSet.rowAry:renderSignal()><\n>
+>>
+
+renderSignal(signal) ::= <<
+SG_ <signal.Name> : <signal.StartBit>|<signal.Length>@<\\>
+<if(signal.isMotorola.bool)>0<else>1<endif><if(signal.isSigned.bool)>-<else>+<endif> <\\>
+(<signal.Factor>,<signal.Offset>) [<signal.Min>|<signal.Max>] "<signal.Unit>" <\\>
+<if(frame.isReceived.bool)><ecu()><else>Vector__XXX<endif><\n>
+>>
+
+renderFrameComments(frame,signalSet) ::= <<
+<if(frame.Comment.text)><\\>
+CM_ BO_ <frame.FrameID> "<frame.Comment>";
+<endif>
+<signalSet.rowAry:{signal|CM_ SG_ <frame.FrameID> <signal.Name> "<signal.Comment>";<\n>}>
+>>
+
+// Enumeration SendType: Mapping from enumeration value name to numeric value.
+frameSendType ::= 
+  [ "regular": "0"
+  , "event": "1"
+  , "mixed": "2"
+  , default: {<info.error.(["Bad send type ",frame.SendType," used in row ",frame.iRow])>}
+  ]
+
+renderFrameAttributes(frame,signalSet) ::= <<
+<if(frame.SendType)><\\>
+BA_ "frameSendMode" BO_ <frame.FrameID> <frameSendType.(frame.SendType)>;
+<endif>
+<if(frame.SendTime)><\\>
+BA_ "sendPeriod" BO_ <frame.FrameID> <frame.SendTime>;
+<endif>
+<if(frame.MinDistance)><\\>
+BA_ "eventMinDistance" BO_ <frame.FrameID> <frame.MinDistance>;
+<endif>
+<if(frame.CrcStartValue)><\\>
+BA_ "crcStartValue" BO_ <frame.FrameID> <frame.CrcStartValue>;
+<endif>
+<signalSet.rowAry:{signal|<\\>
+<if(signal.InitialValue)><\\>
+BA_ "initialSignalValue" SG_ <frame.FrameID> <signal.Name> <signal.InitialValue.d>;
+<endif>}>
+>>
+
+
+renderSignalValues(frame,signalSet) ::= <<
+<signalSet.rowAry:{signal|<if(signalValMap.(frame.Name).(signal.Name).rowAry)><\\>
+VAL_ <frame.FrameID> <signal.Name><signalValMap.(frame.Name).(signal.Name).rowAry:{r|<" "><r.Value> "<r.ValueName>"}>;<\n><endif>}>
+>>

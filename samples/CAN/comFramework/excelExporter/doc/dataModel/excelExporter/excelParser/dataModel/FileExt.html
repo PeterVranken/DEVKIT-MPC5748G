@@ -1,0 +1,405 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>FileExt (Data Model of excelExporter for StringTemplate V4 templates)</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="FileExt (Data Model of excelExporter for StringTemplate V4 templates)";
+    }
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+<!-- ========= START OF TOP NAVBAR ======= -->
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/FileExt.html" target="_top">Frames</a></li>
+<li><a href="FileExt.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
+<!-- ========= END OF TOP NAVBAR ========= -->
+<!-- ======== START OF CLASS DATA ======== -->
+<div class="header">
+<div class="subTitle">excelExporter.excelParser.dataModel</div>
+<h2 title="Class FileExt" class="title">Class FileExt</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li>java.io.File</li>
+<li>
+<ul class="inheritance">
+<li>excelExporter.excelParser.dataModel.FileExt</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.io.Serializable, java.lang.Comparable&lt;java.io.File&gt;</dd>
+</dl>
+<hr>
+<br>
+<pre>public class <span class="strong">FileExt</span>
+extends java.io.File</pre>
+<div class="block">The Java class File already brings some valuable information about the name of a
+ file and parts of it, which is accessible from a StringTemplate V4 template - but in
+ this derived class it is even extended.<p>
+   See <a href="https://docs.oracle.com/javase/7/docs/api/java/io/File.html">java.io.File</a>
+   The practice of code generation requires some more details on file names. Here's an
+ extended class, which adds these to the Java File class in order to make this
+ information easily accessible from a StringTemplate V4 template.<p>
+   Note, to fetch the information from the Java base class
+ <a href="https://docs.oracle.com/javase/7/docs/api/java/io/File.html">java.io.File</a>
+ you need to be aware of the way, the StringTemplate V4 engine accesses public methods of
+ a class: The access is restricted to public methods with names starting with "get",
+ followed by a capitalized character. The function must not have any function argument.
+ From a template, such a function is accessed without the "get" and with lower case first
+ character, see these examples:<p>
+   - <code>&lt;info.output.canonicalFile&gt;</code> to access <code>File.getCanonicalFile()</code>
+ for the currently generated file<p>
+   - <code>&lt;info.templateFile.absoluteFile&gt;</code> to access <code>File.getAbsoluteFile()</code>
+ for the currently applied template group file</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../serialized-form.html#excelExporter.excelParser.dataModel.FileExt">Serialized Form</a></dd></dl>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- =========== FIELD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/FileExt.html#ext">ext</a></strong></code>
+<div class="block">The file name extension without the dot.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/FileExt.html#mnm">mnm</a></strong></code>
+<div class="block">The file name prefix or menmonic.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/FileExt.html#nameStem">nameStem</a></strong></code>
+<div class="block">The file name stem, the name without path, menmonic and extension.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/FileExt.html#rawName">rawName</a></strong></code>
+<div class="block">The file name without extension (and without the separating dot).</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="fields_inherited_from_class_java.io.File">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;java.io.File</h3>
+<code>pathSeparator, pathSeparatorChar, separator, separatorChar</code></li>
+</ul>
+</li>
+</ul>
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../excelExporter/excelParser/dataModel/FileExt.html#FileExt(java.lang.String)">FileExt</a></strong>(java.lang.String&nbsp;fName)</code>
+<div class="block">Split a file name into parts and store all details about the file name and path
+ in public fields.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/FileExt.html#toString()">toString</a></strong>()</code>
+<div class="block">The default representation of the file name in user feedback.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.io.File">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.io.File</h3>
+<code>canExecute, canRead, canWrite, compareTo, createNewFile, createTempFile, createTempFile, delete, deleteOnExit, equals, exists, getAbsoluteFile, getAbsolutePath, getCanonicalFile, getCanonicalPath, getFreeSpace, getName, getParent, getParentFile, getPath, getTotalSpace, getUsableSpace, hashCode, isAbsolute, isDirectory, isFile, isHidden, lastModified, length, list, list, listFiles, listFiles, listFiles, listRoots, mkdir, mkdirs, renameTo, setExecutable, setExecutable, setLastModified, setReadable, setReadable, setReadOnly, setWritable, setWritable, toPath, toURI, toURL</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>getClass, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="rawName">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>rawName</h4>
+<pre>public&nbsp;java.lang.String rawName</pre>
+<div class="block">The file name without extension (and without the separating dot). null if
+        the name stem is blank (as in ".ext").</div>
+</li>
+</ul>
+<a name="nameStem">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>nameStem</h4>
+<pre>public&nbsp;java.lang.String nameStem</pre>
+<div class="block">The file name stem, the name without path, menmonic and extension. Does not
+        include the dot and underscore, which separate mnemonic and extension. null if
+        the name stem is blank (as in ".ext").</div>
+</li>
+</ul>
+<a name="ext">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ext</h4>
+<pre>public&nbsp;java.lang.String ext</pre>
+<div class="block">The file name extension without the dot. null if there is no extension.</div>
+</li>
+</ul>
+<a name="mnm">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>mnm</h4>
+<pre>public&nbsp;java.lang.String mnm</pre>
+<div class="block">The file name prefix or menmonic. It is defined as the matching characters of
+        the first (true) group of the regular expression<p>
+          "(?i)^([a-z][a-z_0-9]*)_.+$"<p>
+        on the file name stem. If the regular expression doesn't match then this field
+        is null.<p>
+          The use case of this file name part is to shape a kind of name space for
+        global objects in plain C code. Normally, a three character menemonic ("mnm")
+        of the file or module name is used and this will then prepend the names of all
+        global objects in the generated C code.</div>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="FileExt(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>FileExt</h4>
+<pre>public&nbsp;FileExt(java.lang.String&nbsp;fName)</pre>
+<div class="block">Split a file name into parts and store all details about the file name and path
+ in public fields.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>fName</code> - The file name.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="toString()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>toString</h4>
+<pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<div class="block">The default representation of the file name in user feedback.</div>
+<dl>
+<dt><strong>Overrides:</strong></dt>
+<dd><code>toString</code>&nbsp;in class&nbsp;<code>java.io.File</code></dd>
+<dt><span class="strong">Returns:</span></dt><dd>Get the file name with extension but without path.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<!-- ========= END OF CLASS DATA ========= -->
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/FileExt.html" target="_top">Frames</a></li>
+<li><a href="FileExt.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+</body>
+</html>

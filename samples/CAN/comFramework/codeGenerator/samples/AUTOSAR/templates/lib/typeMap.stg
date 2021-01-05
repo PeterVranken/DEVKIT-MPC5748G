@@ -1,0 +1,74 @@
+///
+// @file typeMap.stg
+// A translation table that supports environment dependent names of the
+// basic C types. Any type reference in the application templates should be writen like
+// {@code <bt("uint8")>}, where the argument of template bt can either be a string or a
+// type designation from the rendered data model.
+//   A simlar second table translates the same basic types to the related AUTOSAR type names.
+// Use the construct <asType("uint8")> to access this translation table.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// Most embedded environments have their own naming of the basic types; the standard C
+// names are barely used. This is supported by a simple translation table.
+baseTypeMap ::=
+[
+    "bool_t"   : "boolean",
+    "uint8_t"  : "uint8",
+    "uint16_t" : "uint16",
+    "uint32_t" : "uint32",
+    "uint64_t" : "uint64",
+    "sint8_t"  : "int8",
+    "sint16_t" : "int16",
+    "sint32_t" : "int32",
+    "sint64_t" : "int64",
+    "float32_t": "float32",
+    "float64_t": "float64",
+    default    : "InternalError_BadTypeName"
+]
+
+// The same basic types are translated into the names of corresponding AUTOSAR types. The
+// standard AUTOSAR package path is not considered.
+autosarTypeMap ::=
+[
+    "bool_t"   : "boolean",
+    "uint8_t"  : "uint8",
+    "uint16_t" : "uint16",
+    "uint32_t" : "uint32",
+    "uint64_t" : "uint64",
+    "sint8_t"  : "sint8",
+    "sint16_t" : "sint16",
+    "sint32_t" : "sint32",
+    "sint64_t" : "sint64",
+    "float32_t": "float32",
+    "float64_t": "float64",
+    default    : "InternalError_BadTypeName"
+]
+
+// To shorten the call of the translation table into C types we provide a convenience
+// template. Use expressions like <bt("uint16_t")> anywhere in your templates, where you refer
+// to base types.
+bt(type) ::= "<baseTypeMap.(type)>"
+
+
+// To shorten the call of the translation table into AUTOSAR types we provide a convenience
+// template. Use expressions like <asType("uint16")> or <asTypePath("uint16")> anywhere in
+// your templates, where you refer to AUTOSAR types. The former template expands to the
+// pure type name whereas the latter includes the standard (absolute) package path.
+asType(type) ::= "<autosarTypeMap.(type)>"
+asTypePath(type) ::= "/AUTOSAR_PlatformTypes/ImplementationDataTypes/<autosarTypeMap.(type)>"

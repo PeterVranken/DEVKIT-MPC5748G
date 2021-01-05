@@ -1,0 +1,55 @@
+//
+// test.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// 
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+
+test(cluster,info) ::= <<
+<iterateBusesOfCluster(cluster,"renderBus")>
+>>
+
+renderBus(bus) ::= <<
+This is bus <bus>
+Test: <bus.test>
+Sheet.name: <bus.sheet.name>
+<renderContainer(bus.sheet)>
+>>
+
+renderContainer(C) ::= <<
+Container: <C.name>
+<C.objAry:{obj|Object <i>, <obj.name>:<\n><renderObj(obj)>}>
+<if(C.myChildren)>
+<if(!C.myChildren)>Error! Inconistency 1!<endif>
+<if(!C.nested)>Error! Inconistency 2!<endif>
+My sub-container "nested":
+<renderContainer(C.nested)>
+<else>
+<if(C.myChildren)>Error! Inconistency 3!<endif>
+<if(C.nested)>Error! Inconistency 4!<endif>
+<endif>
+Rendering all sub-folders by iteration:
+<C.myChildren:renderContainer()>
+>>
+
+renderObj(o) ::= <<
+<o:{key|Property <i>: <key>=<o.(key)><\n>}>
+>>

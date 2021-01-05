@@ -1,0 +1,378 @@
+//
+// mapCanIdToFrameIdx.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Demonstrate the capabilities of the library file iterations.stg to build a mapping table
+// that associates the pair (bus index, CAN ID) to the CAN interface's frame index. Such a
+// mapping is required on platforms, where the CAN notifications use bus and CAN ID as
+// arguments to identify the affected CAN frame.
+//   On such a platform the use of the interface engine's native build-up mechanism for
+// such a  map is inefficient: it forces to hold the map in expensive RAM, while a cheap
+// ROM table would suffice. This template helps to build an appropriate table in ROM, which
+// furthermore permits an efficient lookup algorithm.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+import "lib/typeMap.stg"
+import "lib/iterations.stg"
+import "symbols.stg"
+
+// Root template: Generate C implementation file.
+fileContentsC(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["\n", moduleDescription()])>
+<! The list of functions is put after the file frame shaped by modC !>
+#if <define.useDirectLookup> != 0
+/**
+ * Get the frame index as used by the CAN interface engine from the pair of CAN bus and
+ * CAN standard ID. This function is restricted\n
+ *   @return
+ * The frame index is returned. If the pair of bus and CAN id does not designate a frame,
+ * which had been registered in the CAN interface engine, thus a frame, which can't be
+ * processed by the engine, then (<bt("uint8_t")>)-1 or 255 is returned instead of a valid index.
+ *   @param idxBus
+ * The index of the bus. Please see enum <symbol.enumIdxBus_t> for details.
+ *   @param canId
+ * The CAN ID, which needs to be an 11 Bit standard ID. Extended IDs can't be handled by
+ * this function. This is double-checked by assertion.
+ *   @remark
+ * The frame index is returned as <bt("uint8_t")>. If more than 254 CAN frames should be in use
+ * then the implemented table will not fit and the lookup function would fail. In this case
+ * the code generation needs (simple) reconfiguration and the ROM consumption of the table
+ * will be doubled.
+ */
+<bt("uint8_t")> <symbol.fctLookupFrIdxByStdId>(<bt("uint8_t")> idxBus, <bt("uint16_t")> canId)
+{
+    assert(idxBus \< <cluster.noBuses>  &&  canId \< 0x800);
+    
+    /* An assertion double-checks that there aren't to many frame for the 8 Bit integer
+       type, which is used for the direct lookup table in order to don't make it
+       unnecessarily large. This is not fully satisfactory: Firstly, the test should be
+       made only once and not in every call of this function. If we had a piece of once
+       executed module initialization code then we would place the check there. Secondary,
+       the condition is too strict. The true condition is that there must be no frame with
+       standard CAN ID and index larger than 254. There may however be frames with larger
+       index if they only have an extended IDs.
+         The best way out would be to let the code-generator make a #define with the number
+       of frames and a preprocessor compile time check. This has been demonstrated in
+       another sample, see raceTechnology, cst_canStatistics.h.stg. */
+    assert(idxFr_maxIdxFrame \<= 254);
+
+    /* The fields of the table hold 0 for unset pairs and the CAN ID plus one otherwise. We
+       just have to subtract one to handled registered and unregistered pairs of bus index
+       and CAN ID. */
+    return (<bt("uint8_t")>)(<symbol.lookupTableFrameIdxByBusAndId>[idxBus][canId] - 1);
+
+} /* End of <symbol.fctLookupFrIdxByStdId> */
+#endif<\n>
+>>
+
+
+// Root template: Generate header file.
+fileContentsH(cluster,info) ::= <<
+<! First put a file header with the reusable library template modH !>
+<modH(["\n", headerComment()])>
+>>
+
+
+moduleDescription() ::= <<
+ * A standard use case of sorted frame iteration is the implementation of a mapping table
+ * to map the pair CAN bus index plus CAN frame ID (as occasionally used as frame
+ * identification in the CAN callback in some platforms) to the null based linear frame
+ * index as used by the CAN interface engine. If we sort the tables in raising order of CAN
+ * IDs and separated by buses then an efficient binary search can be applied.\n
+ *   As an optimization for (typical) platform, which offer a lot of ROM space but limited
+ * CPU power and very limited RAM space, we can further optimize the mapping by separating
+ * standard CAN IDs, which are mostly used, for the rarely used extended CAN identifiers.
+ * The former span a numeric range of 2048 values, which permits to have a direct lookup
+ * table with complexity O(1). Only the few N extended identifiers need a binary search with
+ * a complexity O(log(N)).\n
+ *   The simplest way to relate the table entries to registered frames is to use the position
+ * in the table as index of the frame in the interface engine. This requires that frame
+ * registration in our CAN interface is done in the same iteration of frames. It's also
+ * possible to have an enumeration of frames and to generate the enumeration in the same
+ * iteration as the registration process. This is less ROM efficient but much more
+ * transparent. This is what we demonstrate here.\n
+ *   Please note, the usual way of doing is to let the code generator produce only the data
+ * dependent code (i.e. dependent on the network databases). Consequently, you will not
+ * find the algorithms to use the generated tables, particularly the binary search. This is
+ * one-time code and such code should not be developed and maintained through a template.
+ * Write this code directly as plain C file.
+>>
+
+headerComment() ::= <<
+ * Public data interface of the mapping table, which associates the pair CAN bus index plus
+ * CAN frame ID (as occasionally used as frame identification in the CAN callback in some
+ * platforms) to the null based linear frame index as used by the CAN interface engine.\n
+ *   This interface does not contain the lookup algorithm; this is data independent program
+ * code, which doesn't belong into an auto-generated module. It's however straightforward
+ * to implement the function that operates on the generated data tables.
+>>
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The included
+// files.
+@modC.includes() ::= <<
+#include \<stdio.h>
+#include \<stdlib.h>
+#include \<string.h>
+#include \<assert.h>
+
+#include "types.h"<\n>
+>>
+
+// Configure the template mod.stg:modH, which shapes the module header file: The included
+// files.
+@modH.includes() ::= <<
+#include "types.h"<\n>
+>>
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The local
+// defines.
+@modC.defines() ::= <<
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the module header file contents: The
+// global defines.
+@modH.defines() ::= <<
+/** The code can either use the map for all CAN IDs or a mixture of a direct lookup table
+    for the limited range of standard CAN IDs and a map for the extended CAN IDs. If the
+    dircet lookup table is used then the lookup is much faster for standard IDs on cost of
+    higher ROM consumption: Now a table of the fixed size 2048*\<numberOfCanBuses> Byte is
+    placed in ROM.\n
+      The macro can be set to either 0 or 1. */
+#ifndef <define.useDirectLookup>
+# define <define.useDirectLookup>   1
+#endif
+
+/** This define controls whether code for the support of extended CAN identifiers is
+    required or not. The value of this define depends on the actual data found in the
+    network databases and must not be changed. */
+<defineIfExtIdIsUsed()>
+>>
+
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The global
+// types.
+@modC.typedefs() ::= <<
+/** An enumeration gives meaningful names to the values of the linear, null based frame
+    index.
+      @remark Normally, in a full scale integration of the CAN interface such an
+    enumeration would probably be globally available, located and generated in the header
+    file of another module, see the generation of callback code in the sample integrations
+    of the CAN interface. In this sample we place it here as a local definition to make the
+    sample code self-contained. From outside the index is only seen as integer number.
+      @remark This enumeration is needed for technical reasons not only to improve the
+    readability of the code: A StringTemplate V4 template can't do numerical operations and
+    particularly it can't generate number sequences like 0, 1, 2, 3 ... By generating an
+    enumeration we do exactly this but on text not on number basis. */
+typedef enum <symbol.enumIdxFrame_t>
+{
+<! This iteration must be the same as used when generating the frame registration calls at
+   the interface engine. !>
+    <iterateFramesOfCluster(cluster,"both","enumValueDef")><\\>
+    
+    /* The number of frames indexes is used to recognize overflow of the 8 bit integers,
+       which are partly used to reduce the table sizes. */
+    idxFr_maxIdxFrame
+
+} <symbol.enumIdxFrame_t>;
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the module header file contents: The
+// global types.
+@modH.typedefs() ::= <<
+/** An enumeration gives meaningful names to the different CAN buses, which are addressed
+    by a linear, null based index. The named values defined here can be used as index into
+    the generated tables (or as argument of a generated function) anywhere, where a bus
+    index is expected.
+      @remark Normally, in a full scale integration of the CAN interface such an
+    enumeration would probably be not generated here as already defined by the Basic
+    Software provider (be it as enum or as series of \#define's. In which case it has to be
+    ensured that the indexes are compatible. From code generation side this is controlled
+    by the parsing order of network database files, i.e. by the command line of the code
+    generator. Additionally, one should generate some preprocessor or assert statements,
+    which actively double-check the identity of indexes. */
+typedef enum <symbol.enumIdxBus_t>
+{
+    <cluster.busAry:{bus|<symbol.idxBus>,<\n>}><\\>
+    <symbol.noBuses>
+
+} <symbol.enumIdxBus_t>;
+
+
+#if <define.useDirectLookup> == 0  ||  <define.swSupportExtCanIds> != 0
+/** Map entry: Makes the association from CAN ID to frame index. We just need to find the
+    CAN ID by binary search to have the frame index. */
+typedef struct <symbol.pairIdAndIdx_t>
+{
+    /** The CAN ID. */
+#if <define.swSupportExtCanIds>
+    <bt("uint32_t")> id;
+#else
+    <bt("uint16_t")> id;
+#endif
+
+    /** The frame index in the CAN interface engine. */
+    <bt("uint16_t")> idx;
+
+} <symbol.pairIdAndIdx_t>;
+#endif
+<\n>
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the module header file contents: The
+// declaration of global data.
+@modH.data() ::= <<
+#if <define.useDirectLookup> == 0  ||  <define.swSupportExtCanIds> != 0
+/** A two dimensional lookup table to get the frame index from the pair (bus, CAN ID).
+    First, the right row is selected by the bus index. Then a binary search can be
+    applied to the row data as it is sorted in order of raising CAN IDs. */
+const <symbol.pairIdAndIdx_t> * const <symbol.mapFrameIdxByBusAndId>[<cluster.noBuses>];
+
+
+/** The number of entries of the rows of the two dimensional map <symbol.mapFrameIdxByBusAndId>.
+    The bus index is used as index. The number of row elements is required to initialize
+    the binary search for the CAN ID in the bus related row of the map. */
+extern const size_t <symbol.rowLengthAry>[<cluster.noBuses>];
+#endif<\n>
+>>
+
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The data
+// definitions.
+@modC.data() ::= <<
+#if <define.useDirectLookup> != 0
+/** The direct lookup table for 11 Bit standard CAN IDs. This table uses a byte as value in
+    order to save ROM space. The lookup algorithm will use this table for all CAN IDs less
+    or equal to 2047.\n
+      The code generator fills those elements of the table, which belong to known
+    associations. All other elements are implicitly initialized to 0. Since 0 is a valid
+    frame index the unset elements cannot be distinguished from avlid fields. A lookup
+    could not decide on an unknown CAN ID. Therefore, we do not store the aimed frame index
+    but the index plus 1. Now 0 is a valid indication of a bad query. The successful lookup
+    will subtract one from the found value in order to yield the true frame index. This is
+    why we hide the table and only make the lookup function global.
+      @remark The compiler will generate a message if there should be frames with index
+    greater 254 and a standard CAN ID but this is a warning only. Bad code with table
+    overflow can be compiler but will fail to work properly. */
+static const <bt("uint8_t")> <symbol.lookupTableFrameIdxByBusAndId>[<cluster.noBuses>][0x800] =
+{
+    <iterateFramesOfCluster(cluster,"both","lookupTableFrameIdxByBusAndIdEntry")><\\>
+};
+#endif
+
+#if <define.useDirectLookup> == 0  ||  <define.swSupportExtCanIds> != 0
+<iterateBusesOfCluster(cluster,"mapFrameIdxById_bus")><\\>
+
+/** A two dimensional lookup table to get the frame index from the pair (bus, CAN ID).
+    First, the right row is selected by the bus index. Then a binary search can be
+    applied to the row data as it is sorted in order of raising CAN IDs. */
+const <symbol.pairIdAndIdx_t> * const <symbol.mapFrameIdxByBusAndId>[<cluster.noBuses>] =
+{
+    <iterateBusesOfCluster(cluster,"refMapFrameIdxById_bus")><\\>
+};
+
+/** The number of entries of the rows of the two dimensional map <symbol.mapFrameIdxByBusAndId>.
+    The bus index is used as index. The number of row elements is required to initialize
+    the binary search for the CAN ID in the bus related row of the map. */
+const size_t <symbol.rowLengthAry>[<cluster.noBuses>] =
+{
+    <iterateBusesOfCluster(cluster,"rowLengthAryEntry")><\\>
+};
+#endif /* Two dimensional lookup table required? */<\n>
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the module header file contents: The
+// declaration of the functions.
+@modH.prototypes() ::= <<
+#if <define.useDirectLookup> != 0
+/** Get the frame index as used by the CAN interface engine from the pair of CAN bus and
+    CAN standard ID. */
+<bt("uint8_t")> <symbol.fctLookupFrIdxByStdId>(<bt("uint8_t")> idxBus, <bt("uint16_t")> canId);
+#endif<\n>
+>>
+
+
+enumValueDef(frame) ::= "<symbol.idxFrame>,<\n>"
+
+lookupTableFrameIdxByBusAndIdEntry(frame) ::= <<
+<if(!frame.isExtId)>[<symbol.idxBus>][<frame.id; format="0x%03x">] = <symbol.idxFrame>+1,
+<endif>
+>>
+
+mapFrameIdxById_bus(bus) ::= <<
+/** One row of the two dimensional lookup table: The CAN ID to frame index associations for
+    bus <bus>. */
+const <symbol.pairIdAndIdx_t> <symbol.mapFrameIdxById>[] =
+{
+<! Here we need the sorted iteration in raising order of CAN IDs. !>
+    <iterateFramesOfBusById(bus,"both","mapEntry")><\\>
+};
+<\n>
+>>
+
+// An entry in the array of row lengths of main map mapFrameIdxByBusAndId.
+rowLengthAryEntry(bus) ::= <<
+sizeof(<symbol.mapFrameIdxById>)/sizeof(<symbol.mapFrameIdxById>[0]),<\n>
+>>
+
+// The direct lookup table means to use the CAN ID as index into the array, which has the
+// size to hold all existing 2048 standard IDs. This is only possible with C99 and its
+// designated initializers.
+directLookupTableEntry(frame) ::= <<
+<if(!frame.isExtId)>
+[<frame.id; format="0x%03x">] = <symbol.idxFrame>,<\n>
+<endif>
+>>
+
+mapEntry(frame) ::= <<
+<if(!frame.isExtId)>#if <define.useDirectLookup> == 0
+<endif><\\>
+{.id = <frame.id; format="%#x">, .idx = <symbol.idxFrame>},
+<if(!frame.isExtId)>#endif
+<endif>
+>>
+
+refMapFrameIdxById_bus(bus) ::= "&<symbol.mapFrameIdxById>[0],<\n>"
+
+
+// Find out if at least one frame uses the extended identifier and note the result down as
+// #define.
+//   We use a recursion as a loop. Stopping the recursion when an extended ID is seen is
+// like breaking the loop.
+defineIfExtIdIsUsed() ::= "<hasExtId(cluster.frameInFileOrderAry )>"
+hasExtId(frameRefList) ::= <<
+<if(frameRefList)><\\>
+<! checked: <first(frameRefList).frame.id>, isExtId: <first(frameRefList).frame.isExtId> !>
+<if(first(frameRefList).frame.isExtId
+    && (first(frameRefList).frame.isReceived || first(frameRefList).frame.isSent)
+   )
+><\\>
+#define <define.swSupportExtCanIds> 1
+<else><\\>
+<hasExtId(rest(frameRefList))><\\>
+<endif><\\>
+<else><\\>
+#define <define.swSupportExtCanIds> 0
+<endif>
+>>

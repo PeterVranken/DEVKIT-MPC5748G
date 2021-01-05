@@ -1,0 +1,1040 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>Info (Data Model of excelExporter for StringTemplate V4 templates)</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="Info (Data Model of excelExporter for StringTemplate V4 templates)";
+    }
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+<!-- ========= START OF TOP NAVBAR ======= -->
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/Info.html" target="_top">Frames</a></li>
+<li><a href="Info.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
+<!-- ========= END OF TOP NAVBAR ========= -->
+<!-- ======== START OF CLASS DATA ======== -->
+<div class="header">
+<div class="subTitle">excelExporter.excelParser.dataModel</div>
+<h2 title="Class Info" class="title">Class Info</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li>excelExporter.excelParser.dataModel.Info</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<hr>
+<br>
+<pre>public class <span class="strong">Info</span>
+extends java.lang.Object</pre>
+<div class="block">The data structure holding general information for code generation.
+   The basic design principle is the use of public members because such members can be
+ directly accessed from the output templates. Boolean decisions are either expressed as
+ explicit public Boolean members or by references to nested member objects, which are
+ null if an optional member is not used or applicable: StringTemplate can query public
+ Boolean members or check for null references.</div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- =========== FIELD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#application">application</a></strong></code>
+<div class="block">The name of the code generating application.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#calc">calc</a></strong></code>
+<div class="block">This is a Java Map object, which can hold custom number objects.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#debug">debug</a></strong></code>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#envVarHOME">envVarHOME</a></strong></code>
+<div class="block">The value of the environment variable HOME.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#envVarOS">envVarOS</a></strong></code>
+<div class="block">The value of the environment variable OS.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#envVarTMP">envVarTMP</a></strong></code>
+<div class="block">The value of the environment variable TMP.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#envVarUSERNAME">envVarUSERNAME</a></strong></code>
+<div class="block">The value of the environment variable USERNAME.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#error">error</a></strong></code>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#info">info</a></strong></code>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static java.util.Map&lt;java.lang.String,java.lang.Boolean&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#isVersionDataModel">isVersionDataModel</a></strong></code>
+<div class="block">The version designation <b>versionDataModel</b> for the data model, which is
+        essential for relating templates to permitted, compatible tool revisions, is
+        testable through this data element.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.LinkedHashMap&lt;java.lang.String,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#optionMap">optionMap</a></strong></code>
+<div class="block">A map of user specified options or template attributes.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/FileExt.html" title="class in excelExporter.excelParser.dataModel">FileExt</a></code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#output">output</a></strong></code>
+<div class="block">The generated output file as an extended Java File object.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#templateArgNameCluster">templateArgNameCluster</a></strong></code>
+<div class="block">The StringTemplate V4 template, which is used to render the information has an
+        argument, that contains all network related information.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#templateArgNameInfo">templateArgNameInfo</a></strong></code>
+<div class="block">The StringTemplate V4 template, which is used to render the information has an
+        argument, that contains general purpose information (e.g.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/FileExt.html" title="class in excelExporter.excelParser.dataModel">FileExt</a></code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#templateFile">templateFile</a></strong></code>
+<div class="block">The StringTemplate V4 group template file as an extended Java File object.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#templateName">templateName</a></strong></code>
+<div class="block">The name of the StringTemplate V4 template used to render the information.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Integer</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#templateWrapCol">templateWrapCol</a></strong></code>
+<div class="block">Information rendering can optionally apply line wrapping.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#time">time</a></strong></code>
+<div class="block">Time of code generation.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#version">version</a></strong></code>
+<div class="block">The first parts of the version of the tool, which relate to the functional
+        state of the application.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#versionBuild">versionBuild</a></strong></code>
+<div class="block">Forth part of version designation of the application.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#versionDataModel">versionDataModel</a></strong></code>
+<div class="block">The version of the data model supported by the code generator.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#versionFix">versionFix</a></strong></code>
+<div class="block">Third part of version designation of the application.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#versionMajor">versionMajor</a></strong></code>
+<div class="block">Major part of version designation of the application.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#versionMinor">versionMinor</a></strong></code>
+<div class="block">Minor part of version designation of the application.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#warn">warn</a></strong></code>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#year">year</a></strong></code>
+<div class="block">Year of date (as applicable for copyright notices).</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#Info(excelExporter.excelParser.ErrorCounter)">Info</a></strong>(excelExporter.excelParser.ErrorCounter&nbsp;errCnt)</code>
+<div class="block">Create the Info object.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#getNoCalcNumbers()">getNoCalcNumbers</a></strong>()</code>
+<div class="block">The number of user stored numbers in the scratch pad <a href="../../../excelExporter/excelParser/dataModel/Info.html#calc"><code>calc</code></a>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#getNoOptions()">getNoOptions</a></strong>()</code>
+<div class="block">The number of user options in <a href="../../../excelExporter/excelParser/dataModel/Info.html#optionMap"><code>optionMap</code></a>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#interpret(java.lang.Integer,%20java.lang.String)">interpret</a></strong>(java.lang.Integer&nbsp;logLevel,
+         java.lang.String&nbsp;message)</code>
+<div class="block">This method implements the command listener, which is used to emit a message to the
+ application log under control of the currently expanded StringTemplate V4 template.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#setApplicationInfo(java.lang.String,%20int[],%20int)">setApplicationInfo</a></strong>(java.lang.String&nbsp;appName,
+                  int[]&nbsp;versionAry,
+                  int&nbsp;verDataModel)</code>
+<div class="block">Set the information about this application.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#setOutputInfo(java.lang.String)">setOutputInfo</a></strong>(java.lang.String&nbsp;fileName)</code>
+<div class="block">Fill the information concerning the generated output file.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#setTemplateInfo(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20int)">setTemplateInfo</a></strong>(java.lang.String&nbsp;tFileName,
+               java.lang.String&nbsp;tName,
+               java.lang.String&nbsp;tArgCluster,
+               java.lang.String&nbsp;tArgInfo,
+               int&nbsp;tWrapCol)</code>
+<div class="block">Fill the object with information about the template in use.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#setUserOptions(java.util.LinkedHashMap)">setUserOptions</a></strong>(java.util.LinkedHashMap&lt;java.lang.String,java.lang.Object&gt;&nbsp;map)</code>
+<div class="block">Copy a map with user attributes by reference into the Info object.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/Info.html#toString()">toString</a></strong>()</code>
+<div class="block">Get the string representation of the Info object; it's composed from some of some of
+ its general fields.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>equals, getClass, hashCode, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="application">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>application</h4>
+<pre>public static&nbsp;java.lang.String application</pre>
+<div class="block">The name of the code generating application.</div>
+</li>
+</ul>
+<a name="version">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>version</h4>
+<pre>public static&nbsp;java.lang.String version</pre>
+<div class="block">The first parts of the version of the tool, which relate to the functional
+        state of the application.</div>
+</li>
+</ul>
+<a name="versionMajor">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>versionMajor</h4>
+<pre>public static&nbsp;int versionMajor</pre>
+<div class="block">Major part of version designation of the application. This part relates to major
+        releases.</div>
+</li>
+</ul>
+<a name="versionMinor">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>versionMinor</h4>
+<pre>public static&nbsp;int versionMinor</pre>
+<div class="block">Minor part of version designation of the application. This part relates to
+        functional changes; a change of the data model will always cause an increment of
+        this part.</div>
+</li>
+</ul>
+<a name="versionFix">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>versionFix</h4>
+<pre>public static&nbsp;int versionFix</pre>
+<div class="block">Third part of version designation of the application. This part relates to fixes
+        or insignificant functional changes.</div>
+</li>
+</ul>
+<a name="versionBuild">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>versionBuild</h4>
+<pre>public static&nbsp;int versionBuild</pre>
+<div class="block">Forth part of version designation of the application. This part is updated with
+        every change of the any of the files of the application - regardless whether it is
+        a functional change, a documentation change or a change of the samples.</div>
+</li>
+</ul>
+<a name="versionDataModel">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>versionDataModel</h4>
+<pre>public static&nbsp;int versionDataModel</pre>
+<div class="block">The version of the data model supported by the code generator. This version is
+        synchronized with the major parts of the tool version when but only when the data
+        model is changed. Any change of the data model will lead to a change of at least
+        one of the tool's two major version parts. A template should make a check of the
+        data model version and create an error message if the data model version it is
+        designed for differs from the one passed into the template by the tool.<p>
+          To make conditional code for error generation easier this version designation is
+        an integer number. The number is composed as M*1000+m if M.m.f used to be the
+        version designation of the tool when the data model was changed the last time.<p>
+          Please refer to <b>isVersionDataModel</b> for testing the data model version from
+        a template.</div>
+</li>
+</ul>
+<a name="isVersionDataModel">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isVersionDataModel</h4>
+<pre>public static&nbsp;java.util.Map&lt;java.lang.String,java.lang.Boolean&gt; isVersionDataModel</pre>
+<div class="block">The version designation <b>versionDataModel</b> for the data model, which is
+        essential for relating templates to permitted, compatible tool revisions, is
+        testable through this data element. It is a map with a single key, value pair. The
+        value is Boolean true, the key is the String "v"+versionDataModel, e.g. v2012 for
+        data model revision 2.12.<p> 
+          A template can use an expressing like 
+        <pre>
+          &lt;if(!isVersionDataModel.v2012)&gt;#error Wrong tool revision, need data model 2.12&lt;endif&gt;
+        </pre>
+        to validate that it is running on a revision of the code generator tool, which
+        supports the data model the template was designed for. (Any none matching key
+        evaluates to a Boolean false.)</div>
+</li>
+</ul>
+<a name="time">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>time</h4>
+<pre>public final&nbsp;java.lang.String time</pre>
+<div class="block">Time of code generation.</div>
+</li>
+</ul>
+<a name="year">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>year</h4>
+<pre>public final&nbsp;java.lang.String year</pre>
+<div class="block">Year of date (as applicable for copyright notices).</div>
+</li>
+</ul>
+<a name="templateFile">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>templateFile</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/FileExt.html" title="class in excelExporter.excelParser.dataModel">FileExt</a> templateFile</pre>
+<div class="block">The StringTemplate V4 group template file as an extended Java File object. This
+        object extends the Java class File by adding some information about parts of the
+        file name (like its extension). Please refer to class FileExt.<p>
+          The information from the Java class File is partly accessible: All methods
+        starting with get or is can be used by placing the method name without the syllable
+        get/is into the template, e.g. <templateFile.name> would yield the return value of
+        File.getName().<p>
+          Please refer to the online help of Java class File for details.</div>
+</li>
+</ul>
+<a name="templateName">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>templateName</h4>
+<pre>public&nbsp;java.lang.String templateName</pre>
+<div class="block">The name of the StringTemplate V4 template used to render the information.</div>
+</li>
+</ul>
+<a name="templateArgNameCluster">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>templateArgNameCluster</h4>
+<pre>public&nbsp;java.lang.String templateArgNameCluster</pre>
+<div class="block">The StringTemplate V4 template, which is used to render the information has an
+        argument, that contains all network related information. This is the name of this
+        argument.</div>
+</li>
+</ul>
+<a name="templateArgNameInfo">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>templateArgNameInfo</h4>
+<pre>public&nbsp;java.lang.String templateArgNameInfo</pre>
+<div class="block">The StringTemplate V4 template, which is used to render the information has an
+        argument, that contains general purpose information (e.g. data, time, file names).
+        This is the name of this argument.<p>
+          The object passed in into the template under this argument name is an instance of
+        this class codeGenerator.dataModelListener.Info.</div>
+</li>
+</ul>
+<a name="templateWrapCol">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>templateWrapCol</h4>
+<pre>public&nbsp;java.lang.Integer templateWrapCol</pre>
+<div class="block">Information rendering can optionally apply line wrapping. If so then
+        templateWrapCol is an Integer with the wrap column. Normally it is null and no
+        wrapping takes place.</div>
+</li>
+</ul>
+<a name="output">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>output</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/FileExt.html" title="class in excelExporter.excelParser.dataModel">FileExt</a> output</pre>
+<div class="block">The generated output file as an extended Java File object. This object extends the
+        Java class File by adding some information about parts of the file name (like its
+        extension). Please refer to class FileExt.<p>
+          The information from the Java class File is partly accessible: All methods
+        starting with get or is can be used by placing the method name without the syllable
+        get/is into the template, e.g. <output.name> would yield the return value of
+        File.getName().<p>
+          Please refer to the online help of Java class File for details.</div>
+</li>
+</ul>
+<a name="envVarUSERNAME">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>envVarUSERNAME</h4>
+<pre>public static final&nbsp;java.lang.String envVarUSERNAME</pre>
+<div class="block">The value of the environment variable USERNAME.</div>
+</li>
+</ul>
+<a name="envVarHOME">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>envVarHOME</h4>
+<pre>public static final&nbsp;java.lang.String envVarHOME</pre>
+<div class="block">The value of the environment variable HOME.</div>
+</li>
+</ul>
+<a name="envVarTMP">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>envVarTMP</h4>
+<pre>public static final&nbsp;java.lang.String envVarTMP</pre>
+<div class="block">The value of the environment variable TMP.</div>
+</li>
+</ul>
+<a name="envVarOS">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>envVarOS</h4>
+<pre>public static final&nbsp;java.lang.String envVarOS</pre>
+<div class="block">The value of the environment variable OS.</div>
+</li>
+</ul>
+<a name="calc">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>calc</h4>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,java.lang.Object&gt; calc</pre>
+<div class="block">This is a Java Map object, which can hold custom number objects. The normal
+        operation of a number is to start at 0 and to count up each time it is referenced.
+        These counters can be used to generate null based linear indexes in the generated
+        code. However, special operations permit to use more general arithmetic and binary
+        operations on the numbers. Furthermore, they can be compared against boundary
+        values.<p>
+          Please note, unlike the other fields of <a href="../../../excelExporter/excelParser/dataModel/Info.html" title="class in excelExporter.excelParser.dataModel"><code>Info</code></a> does <code>calc</code> not bring
+        any information into the template expansion process. It's an empty scratch pad for
+        some simple arithmetics on numeric value (which need to come from other elements of
+        the data model). The main use case it the support of linear counters (numeric
+        enumerations) in the generated code and the possibility to have conditional code on
+        numeric data elements like integer message attributes.<p>
+          All numbers are 64 Bit integers, all operations are 64 Bit integer operations.<p>
+          The reading of a number is got by simply querying it by name in the map. All of
+        the more complex operations are submitted by using pseudo map element names, which
+        encode number name, operation and operand at the same time. Reading the number and
+        doing the comparisons are the only operations, which affect the template expansion:
+        They return a numeric or Boolean object to engine and template. All other operations
+        only have their side-effect on the addressed number in the map but return null to
+        the template engine - no text will be generated from those.<p>
+          The pseudo element names have the pattern <code>&lt;numberName&gt;[_&lt;operation&gt;[_&lt;operand&gt;]]</code>. The operand either is a literal number or
+        the name of an other number, which must already exist in the map.<p>
+          Literal numbers are either signed decimal numbers, which may have the suffix n or
+        positive hexadecimal numbers with prefix 0x or one of the Boolean constants true and
+        false. The suffix n means a negation of the decimal number literal. Examples are
+        12, -123, 123n or 0xffff.<p>
+          The negation suffix n has been added as an alternative to the common dash for
+        sake of simple template writing. Using this syntax pattern enables using the
+        simpler StringTemplate V4 map access operator <code>map.key</code>, where <code>map</code>
+        and <code>key</code> need to be identifiers. This holds for literals. If the operand is
+        a signed integer attribute from the data model one will anyway have to use the more
+        complex access operator <code>map.(&lt;sub-template&gt;)</code> and here the usual rendering
+        of negative values with the preceding dash would be applied. (Examples below.)<p>
+          The default for the optional operand depends on the operation. Most typical use
+        cases are supported like linear counters and comparison with null.<p>
+          The destination number of the operation should already exist in the map. If it
+        doesn't it is created by side effect. The initial value depends on the operation.
+        This is only possible for a few operations like set, sadd, ssub and smul and
+        referencing a number for read. Except for set, linear or logarithmic counters are
+        assumed.<p>
+          The operations are set, get, add, sub, mul, div, sadd, ssub, smul, and, or, xor,
+        not, sr, asr, sl, isGE, isLE, isG, isL, isE and isNE.<p>
+          set is the assignment. Only the value is assigned; if the operand is another
+        number than its possible sticky operation (see below) is not inherited.<p>
+          get means reading a number. It is a unary operator and must not have an operand.
+        The difference to normal reading by just stating the number's name is that a sticky
+        post operation is not executed after reading. This is particular useful for
+        debugging of the template code; values can be printed without altering the behavior
+        of the code generation.<p>
+          add, sub, mul, div are the basic numeric operations.<p>
+          sadd, ssub, smul do the same as add, sub, mul but they are sticky, meaning that
+        the operation is repeated every time after reading the number. This stickiness is
+        how the counters are implemented. The sticky operation is cleared by applying any
+        of the non sticky operations with the exception of set. Keeping the sticky
+        operation for operation set further supports the use of counters as main purpose of
+        the scratch pad: A counter can be adjusted to a new value but keeps counting as
+        before.<p>
+          and, or, xor, not, sr, asr, sl are the binary operations, the latter three mean
+        shifting. Note that not is a unary operator and must not have an operand.<p>
+          isGE, isLE, isG, isL, isE, isNE are the comparisons >=, <=, >, <, ==, !=,
+        respectively. They yield a Boolean result, which is returned to the template engine
+        and which can be used in a StringTemplate V4 conditional expression. Please note,
+        the Boolean result is not assigned to the destination number; all of these
+        operations do not alter the map contents, they just affect the code generation.<p>
+          The default operand of all comparisons is null. You can check if number x is
+        negative by a simple <code>&lt;info.calc.x_isL&gt;</code>.<p>
+          Examples:<p>
+          <code>&lt;info.calc.x&gt;</code>: Read number x, i.e. return the numeric value to the
+        template and expand it there into text. Create it as linear null based counter, if
+        this should be the first reference to x. (x gets the initial value 0 and the sticky
+        operation +1.)<p>
+          <code>&lt;info.calc.x_mul_23n&gt;</code>: Multiply x with -23.<p>
+          <code>&lt;info.calc.y_set_0xff&gt;</code>: Create y and set it to 255. No sticky operation
+        is defined for y.<p>
+          <code>&lt;info.calc.y_ssub_x&gt;</code>: Assign the difference y-x to y. Next reading of y
+        will yield this value but subtract the same value again as internal post operation;
+        subtracting x's value is the sticky operation. Note, due to the post-processing y's
+        internal value always differs from the one got from reading y. Note, the sticky
+        operation subtracts x's value as it was at the evaluation time of this command, not
+        x's current value meanwhile.<p>
+          <code>&lt;info.calc.({noFrames_set_&lt;cluster.noFrames&gt;})&gt;</code>: A typical way to get
+        "real" numeric information into the initially empty scratch pad <calc> is
+        the use of the StringTemplate V4 map operator <code>.()</code>, which builds the key to
+        the wanted value by template expansion prior to querying the map.<p>
+          <code>&lt;if(info.calc.noFrames_isG_0)&gt;uint16 noFrames =
+        &lt;info.calc.noFrames&gt;;&lt;else&gt;&lt;info.error.("No frames are defined!")&gt;&lt;endif&gt;</code>: Use of
+        comparison operation to generate conditional output from a template.<p>
+          Since Boolean results are not stored back into the map just like that can Boolean
+        expressions be computed only with the work around of using conditional template
+        code. If we express the Boolean true as -1 and false as 0 then the available binary
+        operators behave like Boolean operators; this is the meaning of the Boolean literals
+        true and false:<p>
+          <code>&lt;if(info.calc.x_isL_0)&gt;&lt;info.calc.xBad_set_false&gt;&lt;else&gt;&lt;info.calc.xBad_set_true&gt;&lt;endif&gt;&lt;\\&gt;</code><p>
+          <code>&lt;if(info.calc.x_isG_100)&gt;&lt;info.calc.xTooLarge_set_true&gt;&lt;else&gt;&lt;info.calc.xTooLarge_set_false&gt;&lt;endif&gt;&lt;\\&gt;</code><p>
+          <code>&lt;info.calc.xBad_or_xTooLarge&gt;&lt;\\&gt;</code><p>
+          <code>&lt;if(info.calc.xBad_isNE)&gt;#error x (&lt;info.calc.x&gt;) is out of range [0; 100]&lt;endif&gt;</code></div>
+</li>
+</ul>
+<a name="optionMap">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>optionMap</h4>
+<pre>public&nbsp;java.util.LinkedHashMap&lt;java.lang.String,java.lang.Object&gt; optionMap</pre>
+<div class="block">A map of user specified options or template attributes. User options are template
+        attributes, which are simply passed through from the application's command line to
+        the StringTemplate V4 template and can there be used to control the code
+        generation. The use case are optional constructs in the generated code, which are
+        controlled from the command line.<p>
+          User options/attributes can be given in the context of an in- or output file.
+        This map holds all options given in the context of the currently generated output
+        file. (Refer to <a href="../../../excelExporter/excelParser/dataModel/ExcelWorkbook.html#optionMap"><code>ExcelWorkbook.optionMap</code></a> for the input related options.)<p>
+          The name of an option or template attribute is the key into the map and the
+        attribute's value is the value of the map entry. The value object's Java type is
+        one out of String, Boolean, Integer or Double, depending on which fits best to the
+        original command line argument; a command line argument <i>cmdLineArg</i> with
+        value <code>true</code> would obviously be passed as Boolean into the template and would
+        permit conditional code by using a construct like: <code>&lt;if(info.optionMap.cmdLineArg)&gt;Command line argument is TRUE!&lt;endif&gt;</code><p>
+          A sorted map is used for the implementation. The map retains the order of
+        appearance of options on the command line. A map iteration in the StringTemplate V4
+        template will yield this order. Example:<p>
+          <code>&lt;info.optionMap:{name|&lt;name&gt;=&lt;info.optionMap.(name)&gt;&lt;\n&gt;}&gt;</code></div>
+</li>
+</ul>
+<a name="error">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>error</h4>
+<pre>public final&nbsp;excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt; error</pre>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model. If it is used from a
+        template then it expands to nothing. It operates only by side-effect on its
+        argument: The argument is treated as error message during code generation. It is
+        printed to the code generator's application log and the code generation fails. It
+        should be used if the conditional template code detects some unwanted state, like
+        an empty list of frames for example:<p>
+          <code>&lt;if(!bus.frameAry)&gt;&lt;info.error.("There are no frames defined!")&gt;&lt;endif&gt;</code></div>
+</li>
+</ul>
+<a name="warn">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>warn</h4>
+<pre>public final&nbsp;excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt; warn</pre>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model. If it is used from a
+        template then it expands to nothing. It operates only by side-effect on its
+        argument: The argument is treated as a warning during code generation. It is
+        printed to the code generator's application log but the code generation continues.
+        It should be used if the conditional template code detects some unwanted state,
+        which can be tolerated. The example reports if there's only a single frame
+        defined:<p>
+          <code>&lt;if(!rest(bus.frameAry))&gt;&lt;info.warn.("There's only one frame defined!")&gt;&lt;endif&gt;</code></div>
+</li>
+</ul>
+<a name="info">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>info</h4>
+<pre>public final&nbsp;excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt; info</pre>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model. If it is used from a
+        template then it expands to nothing. It operates only by side-effect on its
+        argument: The argument is treated as a informative output during code generation.
+        It is printed to the code generator's application log and the code generation
+        continues. It can be used to report some status information:<p>
+          <code>&lt;info.info.(["There are ", length(bus.frameAry), " frames defined"])&gt;</code></div>
+</li>
+</ul>
+<a name="debug">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>debug</h4>
+<pre>public final&nbsp;excelExporter.excelParser.dataModel.ST4CmdInterpreter&lt;java.lang.Integer,java.lang.Object&gt; debug</pre>
+<div class="block">This is a pseudo field of the StringTemplate V4 data model. If it is used from a
+        template then it expands to nothing. It operates only by side-effect on its
+        argument: The argument is treated as a informative output during code generation.
+        It is printed to the code generator's application log and the code generation
+        continues. It can be used to report verbose progress information:<p>
+          <code>&lt;bus.frameAry:{f|&lt;info.debug.({Process frame &lt;f.name&gt;})&gt;}&gt;</code></div>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="Info(excelExporter.excelParser.ErrorCounter)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>Info</h4>
+<pre>public&nbsp;Info(excelExporter.excelParser.ErrorCounter&nbsp;errCnt)</pre>
+<div class="block">Create the Info object.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>errCnt</code> - Template emitted and caused errors are counted in this object.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getNoCalcNumbers()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoCalcNumbers</h4>
+<pre>public&nbsp;int&nbsp;getNoCalcNumbers()</pre>
+<div class="block">The number of user stored numbers in the scratch pad <a href="../../../excelExporter/excelParser/dataModel/Info.html#calc"><code>calc</code></a>. From a
+        StringTemplate V4 template this member is accessed as <code>&lt;info.noCalcNumbers&gt;</code>.</div>
+</li>
+</ul>
+<a name="getNoOptions()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoOptions</h4>
+<pre>public&nbsp;int&nbsp;getNoOptions()</pre>
+<div class="block">The number of user options in <a href="../../../excelExporter/excelParser/dataModel/Info.html#optionMap"><code>optionMap</code></a>. From a StringTemplate V4
+        template this member is accessed as <code>&lt;info.noOptions&gt;</code>.</div>
+</li>
+</ul>
+<a name="toString()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>toString</h4>
+<pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<div class="block">Get the string representation of the Info object; it's composed from some of some of
+ its general fields.</div>
+<dl>
+<dt><strong>Overrides:</strong></dt>
+<dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+<dt><span class="strong">Returns:</span></dt><dd>The string value</dd></dl>
+</li>
+</ul>
+<a name="setApplicationInfo(java.lang.String, int[], int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setApplicationInfo</h4>
+<pre>public static&nbsp;void&nbsp;setApplicationInfo(java.lang.String&nbsp;appName,
+                      int[]&nbsp;versionAry,
+                      int&nbsp;verDataModel)</pre>
+<div class="block">Set the information about this application.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>appName</code> - The application name.</dd><dd><code>versionAry</code> - The four parts of the version designation of the application</dd><dd><code>verDataModel</code> - The version of the data model for the templates.</dd></dl>
+</li>
+</ul>
+<a name="setTemplateInfo(java.lang.String, java.lang.String, java.lang.String, java.lang.String, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTemplateInfo</h4>
+<pre>public&nbsp;void&nbsp;setTemplateInfo(java.lang.String&nbsp;tFileName,
+                   java.lang.String&nbsp;tName,
+                   java.lang.String&nbsp;tArgCluster,
+                   java.lang.String&nbsp;tArgInfo,
+                   int&nbsp;tWrapCol)</pre>
+<div class="block">Fill the object with information about the template in use.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>tFileName</code> - The name of the template file.</dd><dd><code>tName</code> - The name of the template.</dd><dd><code>tArgCluster</code> - The name of the template argument with network information.</dd><dd><code>tArgInfo</code> - The name of the template argument with general information.</dd><dd><code>tWrapCol</code> - The wrap column or a value <= 0 if no wrapping takes place.</dd></dl>
+</li>
+</ul>
+<a name="setOutputInfo(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setOutputInfo</h4>
+<pre>public&nbsp;void&nbsp;setOutputInfo(java.lang.String&nbsp;fileName)</pre>
+<div class="block">Fill the information concerning the generated output file.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>fileName</code> - The name of the generated output file.</dd></dl>
+</li>
+</ul>
+<a name="setUserOptions(java.util.LinkedHashMap)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setUserOptions</h4>
+<pre>public&nbsp;void&nbsp;setUserOptions(java.util.LinkedHashMap&lt;java.lang.String,java.lang.Object&gt;&nbsp;map)</pre>
+<div class="block">Copy a map with user attributes by reference into the Info object.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>map</code> - The map with pairs of attribute names (key) and attribute values.</dd></dl>
+</li>
+</ul>
+<a name="interpret(java.lang.Integer, java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>interpret</h4>
+<pre>public&nbsp;java.lang.Object&nbsp;interpret(java.lang.Integer&nbsp;logLevel,
+                         java.lang.String&nbsp;message)</pre>
+<div class="block">This method implements the command listener, which is used to emit a message to the
+ application log under control of the currently expanded StringTemplate V4 template.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>logLevel</code> - The listener is connected to different command interpreters. The interpreters relate
+ to the different logging severity levels and this information is passed in as
+ context. The context is the integer value of the static Log4j Level objects, e.g.
+ <code>Level</code>.</dd><dd><code>message</code> - The command string, which is interpreted as message to be logged.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>The function will always return null: The template engine must not
+ generate any ouput because of the log command.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<!-- ========= END OF CLASS DATA ========= -->
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/Info.html" target="_top">Frames</a></li>
+<li><a href="Info.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+</body>
+</html>

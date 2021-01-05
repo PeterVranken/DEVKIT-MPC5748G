@@ -1,0 +1,52 @@
+///
+// @file unitMap.stg
+// A translation table that translate the units from the network databases into the well
+// defined AUTOSAR unit names. The map is needed as the unit strings in the CAN network
+// database files are uncontrained text fields, which are quite heterogenousls filled in
+// practice. One will collect all ever appearing variants of units string here in this map
+// and asscoiate them with the AUTOSAR unit designations.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// The default entry should only be AUTOSAR's noUnit in order to never end up with an
+// invalid arxml file.
+unitMap ::=
+[
+    "A": "Ampere",
+    "Ampere": "Ampere",
+    "Bar": "Bar",
+    "bar": "Bar",
+    "CentiMtr3PerSec": "CentiMtr3PerSec",
+    "degree": "DegAngle",
+    "DegAngle": "DegAngle",
+    "DegCelsius": "DegCgrd",
+    "Celsius": "DegCgrd",
+    "DegCgrd": "DegCgrd",
+    "mm": "MilliMtr",
+    "N": "Nwt",
+    "Nm": "NwtMtr",
+    "%": "Perc",
+    "Rpm": "Rpm",
+    "rpm": "Rpm",
+    "rpm/s": "RpmPerSec",
+    "s": "Sec",
+    "V": "Volt",
+    "Volt": "Volt",
+    
+    default: "NoUnit"
+]

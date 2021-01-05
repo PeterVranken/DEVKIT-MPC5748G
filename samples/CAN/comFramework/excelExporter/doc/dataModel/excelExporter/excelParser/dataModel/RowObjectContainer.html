@@ -1,0 +1,577 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- NewPage -->
+<html lang="en">
+<head>
+<title>RowObjectContainer (Data Model of excelExporter for StringTemplate V4 templates)</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<script type="text/javascript"><!--
+    if (location.href.indexOf('is-external=true') == -1) {
+        parent.document.title="RowObjectContainer (Data Model of excelExporter for StringTemplate V4 templates)";
+    }
+//-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+<!-- ========= START OF TOP NAVBAR ======= -->
+<div class="topNav"><a name="navbar_top">
+<!--   -->
+</a><a href="#skip-navbar_top" title="Skip navigation links"></a><a name="navbar_top_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/RowObject.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/RowObjectContainer.html" target="_top">Frames</a></li>
+<li><a href="RowObjectContainer.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_top">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_class_summary">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_top">
+<!--   -->
+</a></div>
+<!-- ========= END OF TOP NAVBAR ========= -->
+<!-- ======== START OF CLASS DATA ======== -->
+<div class="header">
+<div class="subTitle">excelExporter.excelParser.dataModel</div>
+<h2 title="Class RowObjectContainer" class="title">Class RowObjectContainer</h2>
+</div>
+<div class="contentContainer">
+<ul class="inheritance">
+<li>java.lang.Object</li>
+<li>
+<ul class="inheritance">
+<li>java.util.AbstractMap&lt;java.lang.Object,java.lang.Object&gt;</li>
+<li>
+<ul class="inheritance">
+<li><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">excelExporter.excelParser.dataModel.ObjectMap</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel">RowObjectContainer</a>&gt;</li>
+<li>
+<ul class="inheritance">
+<li>excelExporter.excelParser.dataModel.RowObjectContainer</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="description">
+<ul class="blockList">
+<li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd>java.util.Map&lt;java.lang.Object,java.lang.Object&gt;</dd>
+</dl>
+<dl>
+<dt>Direct Known Subclasses:</dt>
+<dd><a href="../../../excelExporter/excelParser/dataModel/ExcelWorksheet.html" title="class in excelExporter.excelParser.dataModel">ExcelWorksheet</a></dd>
+</dl>
+<hr>
+<br>
+<pre>public class <span class="strong">RowObjectContainer</span>
+extends <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel">RowObjectContainer</a>&gt;</pre>
+<div class="block">This is the recursive data structure, which holds the tree structure of groups or
+ containers of row objects. An Excel worksheet is one such container.<p>
+   Formally, a <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a> object is a Java Map, which contains other
+ <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a> objects, looked up by name. The map entries are the nested
+ groups of row objects, which can thus be accessed directly by name from a StringTemplate
+ V4 template and by means of the dot notation. If the worksheet <code>ws</code> defines the
+ groups <code>A</code> and <code>B</code> on root level then the template can address to these
+ groups by <code>&lt;ws.A&gt;</code> and <code>&lt;ws.B&gt;</code>. If <code>C</code> was a sub-group of  <code>A</code>
+ then then the template can address to <code>C</code> by an expression like <code>&lt;ws.A.C&gt;</code><p>
+   The map entries are sorted in case-sensitive lexical order. If in a StringTemplate V4
+ template the map iteration operator is applied to a group object then it delivers the
+ keys (i.e. group names) in lexical order. This order is hard coded and can't be
+ influenced by command line arguments. Map iteration could look as follows in a template:<p>
+   <code>All sub groups of worksheet: &lt;ws:{key|&lt;\n&gt; group name: &lt;key&gt;}&gt;&lt;\n&gt;</code><p>
+ In the example before, the produced output should list <code>A</code> and <code>B</code>, maybe
+ among more sub-groups of the worksheet.<p>
+   The <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a> object provides more information to the rendering
+ process. The map of row object groups is extended by some so-called "pseudo-fields",
+ which can be accessed from a template by means of the same dot notation. As an example,
+ the group/container has a name and this name can be accessed by the template expression
+ <code>&lt;group.name_&gt;</code>; where <code>name_</code> denotes a pseudo-field. (It's impossible to
+ name a group of rows "name_", this is a reserved keyword.)<p>
+   The list of all supported pseudo-fields is documented as enumeration <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><code>RowObjectContainer.PseudoFieldName</code></a>.<p>
+   <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a> is derived from its base class and the base class'
+ pseudo-fields are inherited and can be accessed in the same way. They are documented as
+ enumeration <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><code>ObjectMap.PseudoFieldName</code></a>.<p>
+   There are two (sorted) list objects which give access to the row objects of the given
+ group (the leafs of the data tree) and to its nested sub-groups. The sort order is
+ controlled from the application command line. The first pseudo-field <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.PseudoFieldName.html#rowAry"><code>RowObjectContainer.PseudoFieldName.rowAry</code></a> permits an iteration of the row objects owned
+ by the given group.<p>
+   Extending the previous example, the root level row objects of the worksheet would be
+ visisted by <code>&lt;ws.rowAry:{row|&lt;renderRowObject(row)&gt;}&gt;</code>. The iteration of all row
+ objects owned by group <code>A</code> would look like <code>&lt;ws.A.rowAry:{row|&lt;renderRowObject(row)&gt;}&gt;</code>.<p>
+   The second additional field <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.PseudoFieldName.html#groupAry"><code>RowObjectContainer.PseudoFieldName.groupAry</code></a>
+ permits an iteration of the sub-groups of the group in controlled sort order. Different
+ to the example above, which applied the map iteration of the StringTemplate V4 engine,
+ will the iteration of this list object directly visit the <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a>
+ objects that represent the sub-groups. Putting it all together will we get a complete
+ recursive iteration of the worksheet by a template fragment like:<p>
+   <code>&lt;renderGroup(workSheet)&gt;</code><p>
+   <code>renderGroup(g) ::= "&lt;g.rowAry:{row|&lt;renderRowObject(row)&gt;}&gt;
+ &lt;g.groupAry:{subGroup|&lt;renderGroup(subGroup)&gt;}&gt;"</code><p></div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="nested_class_summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Nested Class Summary table, listing nested classes, and an explanation">
+<caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Class and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel">RowObjectContainer.PseudoFieldName</a></strong></code>
+<div class="block">This is the list of pseudo-fields of class <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a> that can be
+        accessed from a StringTemplate V4 template.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.util.AbstractMap">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from class&nbsp;java.util.AbstractMap</h3>
+<code>java.util.AbstractMap.SimpleEntry&lt;K,V&gt;, java.util.AbstractMap.SimpleImmutableEntry&lt;K,V&gt;</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="nested_classes_inherited_from_class_java.util.Map">
+<!--   -->
+</a>
+<h3>Nested classes/interfaces inherited from interface&nbsp;java.util.Map</h3>
+<code>java.util.Map.Entry&lt;K,V&gt;</code></li>
+</ul>
+</li>
+</ul>
+<!-- =========== FIELD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a></code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#prop">prop</a></strong></code>
+<div class="block">A reference to the one and only row object in <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#rowAry"><code>rowAry</code></a>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel">ObjectList</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#rowAry">rowAry</a></strong></code>
+<div class="block">The list of leaf objects of the tree of row objects and groups of such.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="fields_inherited_from_class_excelExporter.excelParser.dataModel.ObjectMap">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;excelExporter.excelParser.dataModel.<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a></h3>
+<code><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#exists">exists</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#i_">i_</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#i0_">i0_</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemAry">itemAry</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#itemMap">itemMap</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#name_">name_</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#objId">objId</a></code></li>
+</ul>
+</li>
+</ul>
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#RowObjectContainer(excelExporter.excelParser.ErrorCounter,%20java.lang.String,%20excelExporter.excelParser.dataModel.Identifier,%20int)">RowObjectContainer</a></strong>(excelExporter.excelParser.ErrorCounter&nbsp;errCnt,
+                  java.lang.String&nbsp;logContext,
+                  <a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel">Identifier</a>&nbsp;name,
+                  int&nbsp;idxColWorksheet)</code>
+<div class="block">Create a new container object.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#addRow(excelExporter.excelParser.dataModel.RowObject)">addRow</a></strong>(<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>&nbsp;row)</code>
+<div class="block">Add a row object to the list of those.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#addRowWithPath(excelExporter.excelParser.dataModel.RowObject,%20excelExporter.excelParser.ColumnTitleMgr)">addRowWithPath</a></strong>(<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>&nbsp;row,
+              excelExporter.excelParser.ColumnTitleMgr&nbsp;colTitleMgr)</code>
+<div class="block">Add a row object to the list of those in the right group.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#getNoRows()">getNoRows</a></strong>()</code>
+<div class="block">The number of row objects in <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#rowAry"><code>rowAry</code></a>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#putGroup(excelExporter.excelParser.dataModel.RowObjectContainer,%20int,%20int)">putGroup</a></strong>(<a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel">RowObjectContainer</a>&nbsp;group,
+        int&nbsp;idxRow,
+        int&nbsp;idxCol)</code>
+<div class="block">Add a group object (i.e.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><strong><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#sort(excelExporter.excelParser.ColumnTitleMgr)">sort</a></strong>(excelExporter.excelParser.ColumnTitleMgr&nbsp;colTitleMgr)</code>
+<div class="block">Sort the contents of this container, sort the row objects and the sub-groups in this
+ container.</div>
+</td>
+</tr>
+</table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_excelExporter.excelParser.dataModel.ObjectMap">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;excelExporter.excelParser.dataModel.<a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html" title="class in excelExporter.excelParser.dataModel">ObjectMap</a></h3>
+<code><a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#containsKey(java.lang.Object)">containsKey</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#createComparator(excelExporter.excelParser.SortOrder.Order)">createComparator</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#entrySet()">entrySet</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#get(java.lang.Object)">get</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#getNoItems()">getNoItems</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#put(java.lang.Object,%20java.lang.Object)">put</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#putItem(java.lang.String,%20T)">putItem</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#setIndexInCollection(int)">setIndexInCollection</a>, <a href="../../../excelExporter/excelParser/dataModel/ObjectMap.html#toString()">toString</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.util.AbstractMap">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.util.AbstractMap</h3>
+<code>clear, containsValue, equals, hashCode, isEmpty, keySet, putAll, remove, size, values</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<code>getClass, notify, notifyAll, wait, wait, wait</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field_detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="rowAry">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>rowAry</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/ObjectList.html" title="class in excelExporter.excelParser.dataModel">ObjectList</a>&lt;<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>&gt; rowAry</pre>
+<div class="block">The list of leaf objects of the tree of row objects and groups of such. Each row of
+        the Excel worksheet is considered one data object, mostly refered to as a "row
+        object". It is placed in the root container (the worksheet object) or in one of its
+        groups or nested sub-groups. The collection <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#rowAry"><code>rowAry</code></a> holds all row objects,
+        which belong into the group represented by this <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel"><code>RowObjectContainer</code></a>
+        object.<p>
+          The order of row objects in the list is controlled by the application command
+        line arguments <code>sort-order-of-column</code> and <code>sort-priority-of-column</code>.
+        Please note, that several instances of these arguments may all affect the sort
+        order.</div>
+</li>
+</ul>
+<a name="prop">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>prop</h4>
+<pre>public&nbsp;<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a> prop</pre>
+<div class="block">A reference to the one and only row object in <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#rowAry"><code>rowAry</code></a>.<p>
+          A typical use case of grouping is the implementation of direct lookup of row
+        objects by name. The group has the name of the row object and the group will
+        contain one and only one row object. In this situation some typical template code
+        could look like:<p>
+          <code>&lt;first(mySheet.(myRowObjsName).rowAry).myRowObjsProp&gt;</code><p>
+        This example assumes that <code>mySheet</code> is a worksheet object, which has a group
+        for each row object, which direct look up is implemented for. The name of the
+        particular row object of interest is held in attribute <code>myRowObjsName</code> and the
+        requested property of that row object is (literally) <code>myRowObjsProp</code>. Using
+        this field here, <code>prop</code>, the same result would be achieved with:<p>
+          <code>&lt;mySheet.(myRowObjsName).prop.myRowObjsProp&gt;</code><p>
+        which is much more to the point and a bit shorter.<p>
+          The name of this field has been chosen to support the use-case: From the
+        perspective of the Excel spreadsheet maintenance the group actually isn't a group
+        but rather a row object (that can be accessed by name). Now <code>.prop</code>
+        references its properties and <code>.myRowObjsProp</code> selects a particular
+        one out of them.<p>
+          <code>prop</code> is null if there are no or more than one row objects in the group.
+        (This field is designed only to support the outline use-case.) Having null for
+        <code>prop</code> implicitly makes the template code safer: The former but not the
+        latter template example would require additional explicit code for error reporting
+        if the input doesn't matches the assumed format, i.e. if there were more than a
+        single row object in the group.<p>
+          Note, the StringTemplate V4 engine will not make a difference between not having
+        a single row object (and <code>prop</code> being null) or having a single row object
+        (<code>prop</code> not being null) without any property; <code>&lt;if(mySheet.(myRowObjsName).prop)&gt;</code> will evaluate to the unmet condition in either
+        case. For most template applications will this however be irrelevant as either
+        situation will be considered an error.</div>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor_detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="RowObjectContainer(excelExporter.excelParser.ErrorCounter, java.lang.String, excelExporter.excelParser.dataModel.Identifier, int)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>RowObjectContainer</h4>
+<pre>public&nbsp;RowObjectContainer(excelExporter.excelParser.ErrorCounter&nbsp;errCnt,
+                  java.lang.String&nbsp;logContext,
+                  <a href="../../../excelExporter/excelParser/dataModel/Identifier.html" title="class in excelExporter.excelParser.dataModel">Identifier</a>&nbsp;name,
+                  int&nbsp;idxColWorksheet)</pre>
+<div class="block">Create a new container object.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>errCnt</code> - A client supplied error counter. The use case is to permit consecutive error
+ counting across different phases of parsing.</dd><dd><code>logContext</code> - A string used to precede all logging statements of this module. Pass null if not
+ needed.</dd><dd><code>name</code> - The container represents a group of row objects. This is the name of the group.</dd><dd><code>idxColWorksheet</code> - The null based index of the column of the input worksheet, which initially specifies
+ this group and its properties.<p>
+    Pass pseudo index -1 for the root container, which represents the whole
+ worksheet.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getNoRows()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNoRows</h4>
+<pre>public&nbsp;int&nbsp;getNoRows()</pre>
+<div class="block">The number of row objects in <a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html#rowAry"><code>rowAry</code></a>. From a StringTemplate V4 template
+        this member is accessed as <code>&lt;group.noRows&gt;</code>.</div>
+</li>
+</ul>
+<a name="putGroup(excelExporter.excelParser.dataModel.RowObjectContainer, int, int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>putGroup</h4>
+<pre>public&nbsp;boolean&nbsp;putGroup(<a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.html" title="class in excelExporter.excelParser.dataModel">RowObjectContainer</a>&nbsp;group,
+               int&nbsp;idxRow,
+               int&nbsp;idxCol)</pre>
+<div class="block">Add a group object (i.e. a sub-container) to the map.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>group</code> - The object to add.</dd><dd><code>idxRow</code> - The null based row index; used for error reporting.</dd><dd><code>idxCol</code> - The null based column index; used for error reporting.</dd>
+<dt><span class="strong">Returns:</span></dt><dd>Get the Boolean information whether the group object could be added to the
+ map. Adding can fail if the group name clashes with a reserved keyword or an
+ already existing group.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="addRow(excelExporter.excelParser.dataModel.RowObject)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addRow</h4>
+<pre>public&nbsp;void&nbsp;addRow(<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>&nbsp;row)</pre>
+<div class="block">Add a row object to the list of those.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>row</code> - The object to add.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="addRowWithPath(excelExporter.excelParser.dataModel.RowObject, excelExporter.excelParser.ColumnTitleMgr)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addRowWithPath</h4>
+<pre>public&nbsp;void&nbsp;addRowWithPath(<a href="../../../excelExporter/excelParser/dataModel/RowObject.html" title="class in excelExporter.excelParser.dataModel">RowObject</a>&nbsp;row,
+                  excelExporter.excelParser.ColumnTitleMgr&nbsp;colTitleMgr)</pre>
+<div class="block">Add a row object to the list of those in the right group. The right group is
+ addressed by a path of groups and child-groups. A sub-set of the row object's
+ properties is specified to be path elements in a particular order. The values of
+ these properties specify groups and child groups until the targeted parent of the
+ row object is found.<p>
+   The path matching starts with container this. The path therefore is a relative
+ path in general. Only if this is the root container (i.e. the container associated
+ with the worksheet) then the path is interpreted as an absolute path.<p>
+   If the groups of the path don't exist yet then they are created as side effect of
+ the operation.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>row</code> - The object to add.</dd><dd><code>colTitleMgr</code> - The column title manager by reference. Used to retrieve the information about the
+ grouping path scheme.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+<a name="sort(excelExporter.excelParser.ColumnTitleMgr)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>sort</h4>
+<pre>public&nbsp;void&nbsp;sort(excelExporter.excelParser.ColumnTitleMgr&nbsp;colTitleMgr)</pre>
+<div class="block">Sort the contents of this container, sort the row objects and the sub-groups in this
+ container. This is done recursively for all sub-groups and their row-objects and
+ sub-groups.<p>
+   This method should be called after complete build-up of the container.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>colTitleMgr</code> - The column title manager by reference. Used to retrieve the information about the
+ column sort attributes.</dd><dt><span class="strong">Remark:</span></dt>
+  <dd>This method is irrelevant and meaningless to a StringTemplate V4 template.</dd></dl>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<!-- ========= END OF CLASS DATA ========= -->
+<!-- ======= START OF BOTTOM NAVBAR ====== -->
+<div class="bottomNav"><a name="navbar_bottom">
+<!--   -->
+</a><a href="#skip-navbar_bottom" title="Skip navigation links"></a><a name="navbar_bottom_firstrow">
+<!--   -->
+</a>
+<ul class="navList" title="Navigation">
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
+<li class="navBarCell1Rev">Class</li>
+<li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../deprecated-list.html">Deprecated</a></li>
+<li><a href="../../../index-all.html">Index</a></li>
+<li><a href="../../../help-doc.html">Help</a></li>
+</ul>
+</div>
+<div class="subNav">
+<ul class="navList">
+<li><a href="../../../excelExporter/excelParser/dataModel/RowObject.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../../excelExporter/excelParser/dataModel/RowObjectContainer.PseudoFieldName.html" title="enum in excelExporter.excelParser.dataModel"><span class="strong">Next Class</span></a></li>
+</ul>
+<ul class="navList">
+<li><a href="../../../index.html?excelExporter/excelParser/dataModel/RowObjectContainer.html" target="_top">Frames</a></li>
+<li><a href="RowObjectContainer.html" target="_top">No Frames</a></li>
+</ul>
+<ul class="navList" id="allclasses_navbar_bottom">
+<li><a href="../../../allclasses-noframe.html">All Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_bottom");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+</div>
+<div>
+<ul class="subNavList">
+<li>Summary:&nbsp;</li>
+<li><a href="#nested_class_summary">Nested</a>&nbsp;|&nbsp;</li>
+<li><a href="#field_summary">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_summary">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_summary">Method</a></li>
+</ul>
+<ul class="subNavList">
+<li>Detail:&nbsp;</li>
+<li><a href="#field_detail">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#constructor_detail">Constr</a>&nbsp;|&nbsp;</li>
+<li><a href="#method_detail">Method</a></li>
+</ul>
+</div>
+<a name="skip-navbar_bottom">
+<!--   -->
+</a></div>
+<!-- ======== END OF BOTTOM NAVBAR ======= -->
+</body>
+</html>

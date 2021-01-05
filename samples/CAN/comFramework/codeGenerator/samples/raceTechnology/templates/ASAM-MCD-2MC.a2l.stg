@@ -1,0 +1,111 @@
+//
+// ASAM-MCD-2MC.a2l.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// This template can be used to generate a description file for internal ECU variables used
+// for measurement and calibration purposes. All signal related interface variables are
+// described in this format.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+import "shared.stg"
+
+ASAM_MCD_2MC(cluster, info) ::= <<
+// ASAM MCD-2MC interface specification for CAN network cluster <cluster>
+// Created with <info.application> version <info.version>, see http://sourceforge.net/projects/comframe/
+/begin PROJECT
+    MERGED_PROJECT "CAN interface of cluster <cluster>"
+    /begin HEADER
+       "This is an A2L fragment which has to be merged into the main project"
+       VERSION "<info.time>"
+    /end HEADER
+    /begin MODULE
+        MERGED_MODULE "CAN interface of cluster <cluster>"
+
+        /begin MOD_PAR
+            "MODULE PARAMETERS"
+            VERSION "<info.time>"
+        /end MOD_PAR
+
+        <iterateSignalsOfCluster(cluster,"all","all","measurement")>
+    /end MODULE
+/end PROJECT
+>>
+
+
+// All signals are represented as measurment points. It is a limitation of the code
+// generation process that every signal has its own private scaling object. Sharing them
+// would require the ability of recognizing same data type and scaling, which is
+// impossible.
+measurement(s,kind) ::= <<
+// Measurement point for signal <s> of frame <frame>, <frame.id> (<frame.id; format="0x%03x">)
+/begin MEASUREMENT <cSigName()>
+    "signal <s> of frame <frame>, <frame.id> (<frame.id; format="0x%03x">)<if(s.desc)>. <s.desc><endif>"
+    <typeMap.(s.type)>
+    CONV_<cSigName()>
+    <s.factor> 100.0
+    <if(s.isInteger && s.isVoidScaling)><s.min; format="%.0f"><else><s.min><endif> // Lower world value limit
+    <if(s.isInteger && s.isVoidScaling)><s.max; format="%.0f"><else><s.max><endif> // Upper world value limit
+    ECU_ADDRESS 0x0000
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV_<cSigName()>
+    "Linear scaling, used for variable <cSigName()>, signal <s>"
+    RAT_FUNC
+    "<typeToFormatMap.(s.type)>" // Display format
+    "<s.unit>"
+    COEFFS <if(s.isVoidScaling)>0 1 0 0 0 1<else>0 1 -<s.offset> 0 0 <s.factor><endif>
+/end COMPU_METHOD<\n><\n>
+>>
+
+
+// A dictionary is used to translate the code generator's type designations into ASAP2 types
+typeMap ::=
+[
+    "bool_t"   : "UBYTE",
+    "uint8_t"  : "UBYTE",
+    "uint16_t" : "UWORD",
+    "uint32_t" : "ULONG",
+    "uint64_t" : "A_UINT64",
+    "sint8_t"  : "SBYTE",
+    "sint16_t" : "SWORD",
+    "sint32_t" : "SLONG",
+    "sint64_t" : "A_INT64",
+    "float32_t": "FLOAT32_IEEE",
+    "float64_t": "FLOAT64_IEEE",
+    default    : "Internal error: Bad type name"
+]
+
+// A dictionary is used to translate the code generator's type designations into
+// appropriate display field widths
+typeToFormatMap ::=
+[
+    "bool_t"   : "%1",
+    "uint8_t"  : "%4",
+    "uint16_t" : "%6",
+    "uint32_t" : "%12",
+    "uint64_t" : "%24", // Does probably not exits
+    "sint8_t"  : "%4",
+    "sint16_t" : "%6",
+    "sint32_t" : "%12",
+    "sint64_t" : "%24", // Does probably not exist
+    "float32_t": "%15",
+    "float64_t": "%15",
+    default    : "Internal error: Bad type name"
+]

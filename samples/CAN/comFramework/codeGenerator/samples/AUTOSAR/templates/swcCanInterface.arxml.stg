@@ -1,0 +1,340 @@
+//
+// swcCanInterface.arxml.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The template make the comFramework code generator render the CAN network databases as an
+// AUTOSAR Software Component, which has the basic structure to read and write all signals
+// of the CAN buses, considering scaling information. By adding the implementation of the
+// SW-C one can process all signals, either directly or by delegating the signals to other
+// SW-Cs.
+//   The CAN signals are organized in required and provided sender/receiver ports. The
+// normal use case would be an integration, where these ports are mapped to the related
+// signals of the COM component in the system.
+//
+// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "$", "$"
+
+import "lib/typeMap.stg"
+import "lib/iterations.stg"
+import "unitMap.stg"
+import "AUTOSAR_AISpecification.arxml.stg"
+import "AUTOSAR_PlatformTypes.arxml.stg"
+
+// TODO: Make         <SW-CALIBRATION-ACCESS>NOT-ACCESSIBLE</SW-CALIBRATION-ACCESS> accessible as user option and check if expected value is given, error generation otherwise. Explain as comment in the template that this is a kind of documentation of the otherwise undocumented command line switch
+// TODO: Would it be possible to have an additional, user controlled package path in front of every path beginning with /$swc()$/ so that the arxml can be prepared for import at any package path in the targeted AUTOSAR project? Problem: The arxml would nolonger be self-contained since we can't generate the package hierachie ourselves. Import would be possible only by copy and paste not by an application's arxml import function
+
+// Check the prerequisites of this temlate file. if a prerequisite is not fulfilled then
+// some error message will be written into the generated output, which will surely be
+// reported (as syntax or file format error) by any application reading the file.
+checkPrecos(dir) ::= <<
+$if(!info.isVersionDataModel.v1010)$
+$! The template should fit to the data model supported by the code generator !$
+ARXML error: This code is generated from a template designed for data model revision 1010 but run with data model revision $info.versionDataModel$
+$info.error.({This code is generated from a template designed for data model revision 1010 but run with data model revision $info.versionDataModel$})$
+$endif$
+$if(!info.output.mnm)$
+$! By convention a module and thus a SW-C should have a three character mnemonic as
+   beginning of its name !$
+ARXML error: The generated output file needs to match the pattern <mnm>_<name>. The mnemonic <mnm> will be inherited by the generated SW-C
+$endif$
+>>
+
+
+// This is the root template; the complete CAN cluster is rendered.
+swcCanInterface(cluster, info) ::= <<
+$checkPrecos("both")$$\\$
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Created with $info.application$ version $info.version$, see http://sourceforge.net/projects/comframe/ -->
+<AUTOSAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://autosar.org/schema/r4.0" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-1-3.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>$swc()$</SHORT-NAME>
+      <ELEMENTS>
+        <APPLICATION-SW-COMPONENT-TYPE>
+          <SHORT-NAME>$swc()$</SHORT-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">This SW-C may serve as interface to the low level CAN communication. It is connected to the ISignals of the COM component. Its runnable can read and write all in- and output signals and can either process them or delegate them to other SW-Cs</L-2>
+          </DESC>
+          <PORTS>
+            $iteratePdusOfCluster(cluster,"sent","pPortPdu")$
+            $iteratePdusOfCluster(cluster,"received","rPortPdu")$
+          </PORTS>
+          <INTERNAL-BEHAVIORS>
+            <SWC-INTERNAL-BEHAVIOR>
+              <SHORT-NAME>ib_$swc()$</SHORT-NAME>
+              <DESC>
+                <L-2 L="FOR-ALL">The internal behavior of SW-C $swc()$ that implements the CAN interface of the APSW of the AUTOSAR application. It has by default a single runnable, which has access to all in- and outbound CAN signals by sender/receiver ports. The implementation of the SW-C can process all CAN signals and/or delegate them to other SW-Cs.&#10;  $\\$
+The intention is to connect all the ports' data elements to the related ISignals of the COM component in the BSW</L-2>
+              </DESC>
+              <DATA-TYPE-MAPPING-REFS>
+                <DATA-TYPE-MAPPING-REF DEST="DATA-TYPE-MAPPING-SET">/$swc()$/$info.output.mnm$_dataTypeMappingSet</DATA-TYPE-MAPPING-REF>
+              </DATA-TYPE-MAPPING-REFS>
+              <EVENTS>
+                <TIMING-EVENT>
+                  <SHORT-NAME>eventRegular</SHORT-NAME>
+                  <DESC>
+                    <L-2 L="FOR-ALL">This event is just an example of how the SW-C and its runnable could be integrated into a real environment. If done by a regular timer event as this one, one would process all CAN signals in a regular timing pattern, which actually means a kind of polling. Real application will need a more sophisticated approach, at least several such runnables at different update rates</L-2>
+                  </DESC>
+                  <START-ON-EVENT-REF DEST="RUNNABLE-ENTITY">/$swc()$/$swc()$/ib_$swc()$/reApswCanInterface</START-ON-EVENT-REF>
+                  <PERIOD>0.01</PERIOD>
+                </TIMING-EVENT>
+              </EVENTS>
+              <HANDLE-TERMINATION-AND-RESTART>NO-SUPPORT</HANDLE-TERMINATION-AND-RESTART>
+              <RUNNABLES>
+                <RUNNABLE-ENTITY>
+                  <SHORT-NAME>reApswCanInterface</SHORT-NAME>
+                  <DESC>
+                    <L-2 L="FOR-ALL">This runnable is configured to have read access to all signals of all inbound CAN frames of all buses and it has write access to all signals of all outbound frames of all buses. It is triggered periodically by a regular event</L-2>
+                  </DESC>
+                  <MINIMUM-START-INTERVAL>0</MINIMUM-START-INTERVAL>
+                  <CAN-BE-INVOKED-CONCURRENTLY>false</CAN-BE-INVOKED-CONCURRENTLY>
+                  <DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                    $iterateSignalsOfCluster(cluster,"all","received","rVariableAccess")$
+                  </DATA-RECEIVE-POINT-BY-ARGUMENTS>
+                  <DATA-SEND-POINTS>
+                    $iterateSignalsOfCluster(cluster,"all","sent","pVariableAccess")$
+                  </DATA-SEND-POINTS>
+                  <SYMBOL>$info.output.mnm$_reApswCanInterface</SYMBOL>
+                </RUNNABLE-ENTITY>
+              </RUNNABLES>
+              <SUPPORTS-MULTIPLE-INSTANTIATION>false</SUPPORTS-MULTIPLE-INSTANTIATION>
+            </SWC-INTERNAL-BEHAVIOR>
+          </INTERNAL-BEHAVIORS>
+        </APPLICATION-SW-COMPONENT-TYPE>
+        <DATA-TYPE-MAPPING-SET>
+          <SHORT-NAME>$info.output.mnm$_dataTypeMappingSet</SHORT-NAME>
+          <DESC>
+            <L-2 L="FOR-ALL">Data type mapping for all application data types, one for each signal of each bus. The application data type is mapped to the appropriate implementation type</L-2>
+          </DESC>
+          <DATA-TYPE-MAPS>
+            $iterateSignalsOfCluster(cluster,"all","all","dataTypeMap")$
+          </DATA-TYPE-MAPS>
+        </DATA-TYPE-MAPPING-SET>
+      </ELEMENTS>
+      <AR-PACKAGES>
+        $cluster.busAry:packageBus()$
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+    $packageAUTOSAR_AISpecification()$
+    $packageAUTOSAR_PlatformTypes()$
+  </AR-PACKAGES>
+</AUTOSAR>
+>>
+
+
+swc() ::= "$info.output.rawName$"
+packageNameBus() ::= "CANBus_$bus$"
+rPortName() ::= "RP_$bus$_$frame.id; format=\"%03x\"$"
+pPortName() ::= "PP_$bus$_$frame.id; format=\"%03x\"$"
+ifName() ::= "if$frame.id; format=\"%03x\"$"
+signalType() ::= "$info.output.mnm$_$frame.id; format=\"0x%03x\"$_$signal$_t"
+signalType_CM() ::= "$info.output.mnm$_$frame.id; format=\"0x%03x\"$_$signal$_CM"
+signalType_DC() ::= "$info.output.mnm$_$frame.id; format=\"0x%03x\"$_$signal$_DC"
+dir() ::= "$if(pdu.isReceived)$input$else$output$endif$"
+Dir() ::= "$if(pdu.isReceived)$Input$else$Output$endif$"
+
+
+pPortPdu(pdu) ::= <<
+<P-PORT-PROTOTYPE>
+  <SHORT-NAME>$pPortName()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">This is a provided port for all signals of outbound CAN frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$). The data elements of this port will typically be mapped to the related outbound ISignals of the COM component. $frame.desc; format="xml-encode"$</L-2>
+  </DESC>
+  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/$swc()$/$packageNameBus()$/interfaces/$ifName()$</PROVIDED-INTERFACE-TREF>
+</P-PORT-PROTOTYPE>$\n$
+>>
+
+rPortPdu(pdu) ::= <<
+<R-PORT-PROTOTYPE>
+  <SHORT-NAME>$rPortName()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">This is a required port for all signals of inbound CAN frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$). The data elements of this port will typically be mapped to the related inbound ISignals of the COM component. $frame.desc; format="xml-encode"$</L-2>
+  </DESC>
+  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">/$swc()$/$packageNameBus()$/interfaces/$ifName()$</REQUIRED-INTERFACE-TREF>
+</R-PORT-PROTOTYPE>$\n$
+>>
+
+
+
+pVariableAccess(signal,kind) ::= <<
+<VARIABLE-ACCESS>
+  <SHORT-NAME>DSP_$pPortName()$_$signal$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">Grant write access to output signal $signal$ to the runnable</L-2>
+  </DESC>
+  <ACCESSED-VARIABLE>
+    <AUTOSAR-VARIABLE-IREF>
+      <PORT-PROTOTYPE-REF DEST="P-PORT-PROTOTYPE">/$swc()$/$swc()$/$pPortName()$</PORT-PROTOTYPE-REF>
+      <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/$swc()$/$packageNameBus()$/interfaces/$ifName()$/$signal$</TARGET-DATA-PROTOTYPE-REF>
+    </AUTOSAR-VARIABLE-IREF>
+  </ACCESSED-VARIABLE>
+</VARIABLE-ACCESS>$\n$
+>>
+
+rVariableAccess(signal,kind) ::= <<
+<VARIABLE-ACCESS>
+  <SHORT-NAME>DRP_$rPortName()$_$signal$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">Grant read access to input signal $signal$ to the runnable</L-2>
+  </DESC>
+  <ACCESSED-VARIABLE>
+    <AUTOSAR-VARIABLE-IREF>
+      <PORT-PROTOTYPE-REF DEST="R-PORT-PROTOTYPE">/$swc()$/$swc()$/$rPortName()$</PORT-PROTOTYPE-REF>
+      <TARGET-DATA-PROTOTYPE-REF DEST="VARIABLE-DATA-PROTOTYPE">/$swc()$/$packageNameBus()$/interfaces/$ifName()$/$signal$</TARGET-DATA-PROTOTYPE-REF>
+    </AUTOSAR-VARIABLE-IREF>
+  </ACCESSED-VARIABLE>
+</VARIABLE-ACCESS>$\n$
+>>
+
+
+
+packageBus(bus) ::= <<
+<AR-PACKAGE>
+  <SHORT-NAME>$packageNameBus()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">This package contains the frame related interface specifications and signal related data type specifications for CAN bus $bus$. They are held in two dedicated sub-folders. Only those frames and signals are considered, which are either sent or received by the modeled network node $cluster.nodeName$. $bus.desc; format="xml-encode"$</L-2>
+  </DESC>
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>applicationDataTypes</SHORT-NAME>
+      <DESC>
+        <L-2 L="FOR-ALL">This package contains an application data type definition for each signal appearing in bus $bus$. The data type object is completed by a compu-method object holding the scaling information and a data constraint object holding the signal's world value range</L-2>
+      </DESC>
+      <ELEMENTS>
+        $iterateSignalsOfBus(bus,"all","all","apdtSignal")$
+      </ELEMENTS>
+    </AR-PACKAGE>
+    <AR-PACKAGE>
+      <SHORT-NAME>interfaces</SHORT-NAME>
+      <DESC>
+        <L-2 L="FOR-ALL">This package contains an interface specification for each frame appearing in bus $bus$, which is either sent or received by network node $cluster.nodeName$</L-2>
+      </DESC>
+      <ELEMENTS>
+        $iteratePdusOfBus(bus,"both","interface")$
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AR-PACKAGE>$\n$
+>>
+
+
+apdtSignal(signal,kind) ::= <<
+<APPLICATION-PRIMITIVE-DATA-TYPE>
+  <SHORT-NAME>$signalType()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">The type of CAN $dir()$ signal $signal$, frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$). $signal.desc; format="xml-encode"$&#10;  $\\$
+Implementation type is $bt(signal.type)$</L-2>
+  </DESC>
+  <CATEGORY>VALUE</CATEGORY>
+  <SW-DATA-DEF-PROPS>
+    <SW-DATA-DEF-PROPS-VARIANTS>
+      <SW-DATA-DEF-PROPS-CONDITIONAL>
+        <SW-CALIBRATION-ACCESS>NOT-ACCESSIBLE</SW-CALIBRATION-ACCESS>
+        <COMPU-METHOD-REF DEST="COMPU-METHOD">/$swc()$/$packageNameBus()$/applicationDataTypes/$signalType_CM()$</COMPU-METHOD-REF>
+        <DATA-CONSTR-REF DEST="DATA-CONSTR">/$swc()$/$packageNameBus()$/applicationDataTypes/$signalType_DC()$</DATA-CONSTR-REF>
+      </SW-DATA-DEF-PROPS-CONDITIONAL>
+    </SW-DATA-DEF-PROPS-VARIANTS>
+  </SW-DATA-DEF-PROPS>
+</APPLICATION-PRIMITIVE-DATA-TYPE>
+<COMPU-METHOD>
+  <SHORT-NAME>$signalType_CM()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">The scaling of CAN $dir()$ signal $signal$, frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$).&#10;  $\\$
+Scaling: WorldValue = $\\$
+$if(signal.isVoidScaling)$BinaryValue$else$$signal.factor$*BinaryValue + $signal.offset$$endif$ [$signal.unit$].&#10;  $\\$
+Unit: The unit $if(signal.unit)$$signal.unit$$else$""$endif$ from the network database is mapped to the AUTOSAR unit $unitMap.(signal.unit)$</L-2>
+  </DESC>
+  <CATEGORY>LINEAR</CATEGORY>
+  <UNIT-REF DEST="UNIT">/AUTOSAR_AISpecification/Units/$unitMap.(signal.unit)$</UNIT-REF>
+  <COMPU-INTERNAL-TO-PHYS>
+    <COMPU-SCALES>
+      <COMPU-SCALE>
+        <COMPU-RATIONAL-COEFFS>
+          <COMPU-NUMERATOR>
+            <V>$signal.offset$</V>
+            <V>$signal.factor$</V>
+          </COMPU-NUMERATOR>
+          <COMPU-DENOMINATOR>
+            <V>1.0</V>
+          </COMPU-DENOMINATOR>
+        </COMPU-RATIONAL-COEFFS>
+      </COMPU-SCALE>
+    </COMPU-SCALES>
+  </COMPU-INTERNAL-TO-PHYS>
+</COMPU-METHOD>
+<DATA-CONSTR>
+  <SHORT-NAME>$signalType_DC()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">The range of CAN $dir()$ signal $signal$, frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$).&#10;  $\\$
+Range (world values): $signal.min$ ... $signal.max$ [$signal.unit$]</L-2>
+  </DESC>
+  <DATA-CONSTR-RULES>
+    <DATA-CONSTR-RULE>
+      <CONSTR-LEVEL>0</CONSTR-LEVEL>
+      <PHYS-CONSTRS>
+        <LOWER-LIMIT INTERVAL-TYPE="CLOSED">$signal.min$</LOWER-LIMIT>
+        <UPPER-LIMIT INTERVAL-TYPE="CLOSED">$signal.max$</UPPER-LIMIT>
+      </PHYS-CONSTRS>
+    </DATA-CONSTR-RULE>
+  </DATA-CONSTR-RULES>
+</DATA-CONSTR>$\n$
+>>
+
+
+interface(pdu) ::= <<
+<SENDER-RECEIVER-INTERFACE>
+  <SHORT-NAME>$ifName()$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">This interface contains a data element for each signal of $dir()$ frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$). $frame.desc; format="xml-encode"$&#10;  $\\$
+$if(pdu.muxSelector)$$\\$
+The frame has $pdu.noSignals$ normal signals and $pdu.noMuxSignalSets$ multiplexed signal sets$\\$
+$else$$\\$
+The frame has $pdu.noSignals$ signals$\\$
+$endif$</L-2>
+  </DESC>
+  <IS-SERVICE>false</IS-SERVICE>
+  <DATA-ELEMENTS>
+    $iterateSignalsOfPdu(pdu,"all","all","interfaceElement")$
+  </DATA-ELEMENTS>
+</SENDER-RECEIVER-INTERFACE>$\n$
+>>
+
+
+interfaceElement(signal,kind) ::= <<
+<VARIABLE-DATA-PROTOTYPE>
+  <SHORT-NAME>$signal$</SHORT-NAME>
+  <DESC>
+    <L-2 L="FOR-ALL">$Dir()$ signal $signal$ of frame $frame$, $frame.id$ ($frame.id; format="0x%03x"$). $signal.desc; format="xml-encode"$</L-2>
+  </DESC>
+  <SW-DATA-DEF-PROPS>
+    <SW-DATA-DEF-PROPS-VARIANTS>
+      <SW-DATA-DEF-PROPS-CONDITIONAL>
+        <SW-IMPL-POLICY>STANDARD</SW-IMPL-POLICY>
+      </SW-DATA-DEF-PROPS-CONDITIONAL>
+    </SW-DATA-DEF-PROPS-VARIANTS>
+  </SW-DATA-DEF-PROPS>
+  <TYPE-TREF DEST="APPLICATION-PRIMITIVE-DATA-TYPE">/$swc()$/$packageNameBus()$/applicationDataTypes/$signalType()$</TYPE-TREF>
+</VARIABLE-DATA-PROTOTYPE>$\n$
+>>
+
+
+dataTypeMap(signal,kind) ::= <<
+<DATA-TYPE-MAP>  
+  <APPLICATION-DATA-TYPE-REF DEST="APPLICATION-PRIMITIVE-DATA-TYPE">/$swc()$/$packageNameBus()$/applicationDataTypes/$signalType()$</APPLICATION-DATA-TYPE-REF>
+  <IMPLEMENTATION-DATA-TYPE-REF DEST="IMPLEMENTATION-DATA-TYPE">$asTypePath(signal.type)$</IMPLEMENTATION-DATA-TYPE-REF>
+</DATA-TYPE-MAP>$\n$
+>>
