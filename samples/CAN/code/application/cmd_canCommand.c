@@ -24,6 +24,7 @@
  *   checkNoArgs
  *   searchSignalToListenTo
  *   parseCanSignal
+ *   compareCanId
  *   identifySignalInDb
  *   parseCanSignalInDb
  *   addSignalToListener
@@ -301,7 +302,42 @@ static bool parseCanSignal( const char * * const pSignalName
             
             
             
-            
+/**
+ * Helper of identifySignalInDb(): Compare if the CAN ID of a signal in the CAN DB matches
+ * the user specification.
+ *   @return
+ * Get \a true if it matches.
+ *   @param canId
+ * The CAN ID of the message, * \a pSignalInDb belongs to.
+ *   @param isExtId
+ * \a true, if \a canId designates an extended CAN ID, \a false for a standard 11 Bit ID.
+ *   @param pSignalInDb
+ * The signal to compare to by reference.
+ *   @param isReceived
+ * \a true if the signal is expected to be an Rx signal and \a false if it should be
+ * a Tx signal.
+ */
+static bool compareCanId( unsigned int canId
+                        , bool isExtId
+                        , const cde_canSignal_t * const pSignalInDb
+                        , bool isReceived
+                        )
+{
+    if(isReceived)
+    {
+        return cde_canRxFrameAry[pSignalInDb->idxFrame].canId == canId
+               &&  cde_canRxFrameAry[pSignalInDb->idxFrame].isExtId == isExtId;
+    }
+    else
+    {
+        return cde_canTxFrameAry[pSignalInDb->idxFrame].canId == canId
+               &&  cde_canTxFrameAry[pSignalInDb->idxFrame].isExtId == isExtId;
+    }
+} /* End of compareCanId */
+
+
+
+
 /**
  * Look for a particular signal in the global database, which is a representation of the
  * CAN *.dbc file.
@@ -340,10 +376,7 @@ static unsigned int identifySignalInDb( unsigned int canId
         const cde_canSignal_t *pSig = &cde_canSignalAry[idxSig];
         
         if(pSig->isReceived == isReceived
-           && (!doCompareCanId
-               ||  cde_canRxFrameAry[pSig->idxFrame].canId == canId
-                   &&  cde_canRxFrameAry[pSig->idxFrame].isExtId == isExtId
-              )
+           && (!doCompareCanId || compareCanId(canId, isExtId, pSig, isReceived))
            &&  stricmp(signalName, pSig->name) == 0
           )
         {
@@ -596,8 +629,8 @@ static void setSignalValue(unsigned int idxSignalInCanDb, float value)
 {
     assert(idxSignalInCanDb < sizeOfAry(cde_canSignalAry));
     const cde_canSignal_t * const pSignal = &cde_canSignalAry[idxSignalInCanDb];
-    assert(pSignal->idxFrame < sizeOfAry(cde_canRxFrameAry));
-    const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSignal->idxFrame];
+    assert(pSignal->idxFrame < sizeOfAry(cde_canTxFrameAry));
+    const cde_canFrame_t * const pFrame = &cde_canTxFrameAry[pSignal->idxFrame];
     
     /* Use range information to prperly saturate the set value. */
     bool needSaturation = false;

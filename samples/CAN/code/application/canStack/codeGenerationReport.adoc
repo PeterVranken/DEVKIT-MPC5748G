@@ -224,7 +224,7 @@
 [frame="none",width="90%",options="header"]
 |=======
 |ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
-|1|sequenceCounter|uint8_t|3|0|false|6.0|1.0|1.0|0.0||0|false||0
+|1|sequenceCounter|uint8_t|3|0|false|1.0|6.0|1.0|0.0||0|false||0
 |2|belowMinSpeedOfRotation|boolean_t|1|3|false|0.0|1.0|1.0|0.0||0|false||0
 |3|aboveMaxSpeedOfRotation|boolean_t|1|4|false|0.0|1.0|1.0|0.0||0|false||0
 |4|belowMinPower|boolean_t|1|5|false|0.0|1.0|1.0|0.0||0|false||0

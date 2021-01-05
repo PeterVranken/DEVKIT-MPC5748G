@@ -450,7 +450,7 @@ static void onDueCheckEventFrame(const cde_callbackContext_t *pContext)
           );
 
     /* The OS handle of the frame is the index in the OSE owned configuration table. This
-       is a simple and efficient descision, which has been taken in the call of the
+       is a simple and efficient decision, which has been taken in the call of the
        registration method. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
                      , idxTxFr = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);

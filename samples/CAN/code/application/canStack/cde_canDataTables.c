@@ -396,8 +396,8 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .isReceived = false
         , .getter = get_PT_1538_sequenceCounter
         , .setter = set_PT_1538_sequenceCounter
-        , .min = 6.0
-        , .max = 1.0
+        , .min = 1.0
+        , .max = 6.0
         , .unit = ""
         },
     [22] =

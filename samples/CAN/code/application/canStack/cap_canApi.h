@@ -326,11 +326,11 @@
 
 /** The minmum value of the sequence counter of frame LimitsPowerDisplay (1538, 0x602)
     on bus PT. */
-#define CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_FROM	6
+#define CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_FROM	1
 
 /** The maximum value of the sequence counter of frame LimitsPowerDisplay (1538, 0x602)
     on bus PT. */
-#define CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_TO	1
+#define CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_TO	6
 
 
 /** The minimum of the world value of signal checksum of frame
@@ -643,11 +643,11 @@
 
 /** The minimum of the world value of signal sequenceCounter of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_SEQUENCECOUNTER_MIN	(6)
+#define CAP_PT_1538_SEQUENCECOUNTER_MIN	(1)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_SEQUENCECOUNTER_MAX	(1)
+#define CAP_PT_1538_SEQUENCECOUNTER_MAX	(6)
 
 /** The minimum of the world value of signal belowMinSpeedOfRotation of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
