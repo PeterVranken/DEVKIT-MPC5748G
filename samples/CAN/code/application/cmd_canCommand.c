@@ -23,7 +23,11 @@
  * Local functions
  *   checkNoArgs
  *   searchSignalToListenTo
+ *   parseCanSignal
+ *   identifySignalInDb
+ *   parseCanSignalInDb
  *   addSignalToListener
+ *   setSignalValue
  */
 
 /*
@@ -128,7 +132,7 @@ void cmd_onReceiveMessage(unsigned int idxRxFr)
                 assert(idxRxFr < sizeOfAry(cde_canRxFrameAry));
                 const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[idxRxFr];
 
-                printf( "Frame %s (%d), signal %s: %f %s\r\n"
+                printf( "Frame %s (%lu), signal %s: %f %s\r\n"
                       , pFrame->name
                       , pFrame->canId
                       , pSig->name
@@ -171,14 +175,14 @@ static bool checkNoArgs( const char *cmd
         {
             iprintf( "Bad number of arguments for command %s; expect %u to %u arguments"
                      " but received %u."
-                   , cmd, noArguments, min, max
+                   , cmd, min, max, noArguments
                    );
         }
         else
         {
             iprintf( "Bad number of arguments for command %s; expect %u arguments"
                      " but received %u."
-                   , cmd, noArguments, min
+                   , cmd, min, noArguments
                    );
         }
         iprintf(" Type `help' to get more information about command %s\r\n", cmd);
@@ -191,6 +195,232 @@ static bool checkNoArgs( const char *cmd
 
 
 
+/**
+ * Interpret some command line arguments as designation of a signal from the CAN database.
+ *   @return
+ * \a true, if function succeeded, else \a false. Parse results, signal name and CAN ID are
+ * valid only if the function returns \a true. In case of \a false, all appropriate
+ * feedback has written to serial out.
+ *   @param pSignalName
+ * If function succeeds then the pointer to the signal name is returned by reference. The
+ * pointer points to one of the command line arguments and it is valid only as long as \a
+ * argV is alive.
+ *   @param pCanId
+ * If function succeeds, and if the user specified it, the CAN ID is returned by reference.
+ * Otherwise UINT_MAX is returned.
+ *   @param pExtId
+ * If function succeeds, and if the user specified a CAN ID, then the Boolean information
+ * whether \a CAN ID designates an extended ID is returned by reference. Otherwise \a false
+ * is returned.
+ *   @param argC
+ * The number of white space separated words of received user input. Needs to be 2 or 3.
+ *   @param argV
+ * The command line as \a argC received words of user input. This function expects two or
+ * three words. The first one is the name of the command (needed only for feedback),
+ * followed by an optional CAN ID (required if signal name should be ambiguous) and ending
+ * with the name of the signal.
+ */
+static bool parseCanSignal( const char * * const pSignalName
+                          , unsigned int * const pCanId
+                          , bool * const pIsExtId
+                          , unsigned int argC
+                          , const char *argV[]
+                          )
+{
+    assert(argC >= 1);
+    const char * const cmd = argV[0];
+    
+    *pSignalName = NULL;
+    *pCanId = UINT_MAX;
+    *pIsExtId = false;
+
+    bool cmdOk = false;
+    if(checkNoArgs(cmd, argC-1, 1, 2))
+    {
+        /* A CAN ID 0xffffffff, which doesn't exist, indicates that the user has not
+           specified a particular ID. */
+        unsigned int canId = UINT_MAX;
+        bool isExtId = false;
+
+        if(argC == 3)
+        {
+            /* The first argument is the decimal CAN ID for disambiguation of the
+               signal name. A leading x indicates an extended ID. */
+            const char *canIdStr = argV[1];
+            unsigned int noChars = strlen(canIdStr);
+            assert(noChars > 0);
+
+            isExtId = (toupper((int)*canIdStr) == 'X');
+            if(isExtId)
+            {
+                ++ canIdStr;
+                -- noChars;
+            }
+
+            if(noChars > 0  && isdigit((int)*canIdStr))
+                canId = (unsigned)atoi(canIdStr);
+
+            /* Trailing characters in the CAN ID argument are silently ignored. */
+
+            /* Check range of received CAN ID. If we didn't get any then the check
+               fails, too, due to the chosen default value for canId. */
+            if((canId & ~0x1fffffffu) == 0
+               &&  (isExtId ||  (canId & ~0x7ffu) == 0)
+              )
+            {
+                cmdOk = true;
+
+                /* The second argument is the name of the signal to listen to. */
+                *pSignalName =  argV[2];
+
+                *pCanId = canId;
+                *pIsExtId = isExtId;
+            }
+            else
+            {
+                iprintf( "Bad 1st argument received for command %s; %s is not a valid CAN"
+                         " ID."
+                         " Type `help' to get more information about command %s\r\n"
+                       , cmd
+                       , argV[1]
+                       , cmd
+                       );
+            }
+        }
+        else
+        {
+            /* The first and only argument is the name of the signal to listen to. */
+            *pSignalName =  argV[1];
+            cmdOk = true;
+        }
+    }
+    
+    return cmdOk;
+    
+} /* End of parseCanSignal */
+            
+            
+            
+            
+/**
+ * Look for a particular signal in the global database, which is a representation of the
+ * CAN *.dbc file.
+ *   @return
+ * If the referenced signal was identified in the CAN database then the function returns
+ * the found signal as index into the global table \a cde_canSignalAry. Otherwise it
+ * returns UINT_MAX. Appropriate user feedback has been written to the serial output in
+ * case of \a UINT_MAX.
+ *   @param canId
+ * The CAN ID of the message, \a signalName belongs to. May be UINT_MAX if the signal
+ * should be searched across all messages in the database.
+ *   @param isExtId
+ * \a true, if \a canId designates an extended CAN ID, \a false for a standard 11 Bit ID.
+ *   @param signalName
+ * The CAN database is searched for this signal. The name matching is done case
+ * insensitive.
+ *   @param isReceived
+ * \a true if the signal is expected to be an Rx signal and \a false if it should be
+ * a Tx signal.
+ */
+static unsigned int identifySignalInDb( unsigned int canId
+                                      , bool isExtId
+                                      , const char *signalName
+                                      , bool isReceived
+                                      )
+{
+    const bool doCompareCanId = canId != UINT_MAX;
+    
+    /* This is just sample code. We don't spent effort on optimized search/hash algorithms.
+       Just iterate all signals in the global database and compare. */
+    unsigned int noMatches = 0
+               , idxSignalInGlobalTable = UINT_MAX
+               , idxSig;
+    for(idxSig=0; idxSig<CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS; ++idxSig)
+    {
+        const cde_canSignal_t *pSig = &cde_canSignalAry[idxSig];
+        
+        if(pSig->isReceived == isReceived
+           && (!doCompareCanId
+               ||  cde_canRxFrameAry[pSig->idxFrame].canId == canId
+                   &&  cde_canRxFrameAry[pSig->idxFrame].isExtId == isExtId
+              )
+           &&  stricmp(signalName, pSig->name) == 0
+          )
+        {
+            /* Match! */
+            ++ noMatches;
+            idxSignalInGlobalTable = idxSig;
+        }
+    } /* End for(All known signals) */
+                
+    if(noMatches == 1)
+    {
+        /* Success, signal unambiguously identified. */
+    }
+    else if(noMatches == 0)
+    {
+        assert(idxSignalInGlobalTable == UINT_MAX);
+        iprintf( "No %s signal %s found in the CAN database\r\n"
+               , isReceived? "Rx": "Tx"
+               , signalName
+               );
+    }
+    else
+    {
+        idxSignalInGlobalTable = UINT_MAX;
+        iprintf( "%s signal name %s is ambiguous in the CAN database. Got %u matches\r\n"
+                 "Consider using the CAN ID in the issued command for disambiguation."
+                 " Type `help' to get more information\r\n"
+               , isReceived? "Rx": "Tx"
+               , signalName
+               , noMatches
+               );
+    }
+   
+    return idxSignalInGlobalTable;
+
+} /* End of identifySignalInDb */
+
+
+
+
+/**
+ * Interpret some command line arguments as designation of a signal from the CAN database.
+ * This function is a variant of parseCanSignal(): It filters the raw parse result from the
+ * latter with the actual contents of the CAN DB.
+ *   @return
+ * If the referenced signal was identified in the CAN database then the function returns
+ * the found signal as index into the global table \a cde_canSignalAry. Otherwise it
+ * returns UINT_MAX. Appropriate user feedback has been written to the serial output in
+ * case of \a UINT_MAX.
+ *   @param argC
+ * The number of white space separated words of received user input. Needs to be 2 or 3.
+ *   @param argV
+ * The command line as \a argC received words of user input. This function expects two or
+ * three words. The first one is the name of the command (needed only for feedback),
+ * followed by an optional CAN ID (required if signal name should be ambiguous) and ending
+ * with the name of the signal.
+ *   @param isReceived
+ * \a true if the signal is expected to be an Rx signal and \a false if it should be
+ * a Tx signal.
+ */
+static unsigned int parseCanSignalInDb( unsigned int argC
+                                      , const char *argV[]
+                                      , bool isReceived
+                                      )
+{
+    const char *signalName;
+    unsigned int canId;
+    bool isExtId;
+    if(parseCanSignal(&signalName, &canId, &isExtId, argC, argV))
+        return identifySignalInDb(canId, isExtId, signalName, isReceived);
+    else
+        return UINT_MAX;
+
+} /* End of parseCanSignalInDb */
+                          
+                          
+                          
 /**
  * Check if a given signal is already in the list of signals to listen to. If not, find out
  * where to possibly put it.
@@ -259,159 +489,147 @@ static bool searchSignalToListenTo( unsigned int *pIdxInList
 
 
 /**
- * Add or remove a signal to/freom the list of those, the application is listening to. The
+ * Add or remove a signal to/from the list of those, the application is listening to. The
  * totla number of such signals is tightly restricted (the console would otherwise be
  * flooded with output) and if it is full then the new signal will replace to most recently
  * added.
- *   @return
- * \a true, if the referenced signal was identified in the CAN database and could be added
- * or removed, else \a false. Appropriate user feedback has written to the serial output in
- * case of \a false.
- *   @param canId
- * The CAN ID of the message, \a signalName belongs to. May be UINT_MAX if the signal
- * shopuld be searched across all messages in the database.
- *   @param isExtId
- * \a true, if \a canId designates an extended CAN ID, \a false for a standard 11 Bit ID.
- *   @param signalName
- * The CAN database is serached for this signal. The name matching is done case
- * insensitive.
+ *   @param idxSignalInCanDb
+ * The affected CAN signal, represented by the index into the global table \a cde_canSignalAry.
  *   @param add
  * \a true if the signal should be added to the listener and \a false if it should be
  * removed.
  */
-static bool addSignalToListener( unsigned int canId
-                               , bool isExtId
-                               , const char *signalName
-                               , bool add
-                               )
+static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
 {
-    const bool doCompareCanId = canId != UINT_MAX;
+    assert(idxSignalInCanDb < sizeOfAry(cde_canSignalAry));
+    const cde_canSignal_t * const pSignal = &cde_canSignalAry[idxSignalInCanDb];
+    assert(pSignal->idxFrame < sizeOfAry(cde_canRxFrameAry));
+    const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSignal->idxFrame];
     
-    /* This is just sample code. We don't spent effort on optimized search/hash algorithms.
-       Just iterate all signals and compare. */
-    unsigned int noMatches = 0
-               , idxSignalInGlobalTable = 0
-               , idxSig;
-    for(idxSig=0; idxSig<CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS; ++idxSig)
-    {
-        const cde_canSignal_t *pSig = &cde_canSignalAry[idxSig];
-        
-        if(pSig->isReceived
-           && (!doCompareCanId
-               ||  cde_canRxFrameAry[pSig->idxFrame].canId == canId
-                   &&  cde_canRxFrameAry[pSig->idxFrame].isExtId == isExtId
-              )
-           &&  stricmp(signalName, pSig->name) == 0
-          )
-        {
-            /* Match! */
-            ++ noMatches;
-            idxSignalInGlobalTable = idxSig;
-        }
-    } /* End for(All known signals) */
-                
-    bool signalIsInList = false;
-    if(noMatches == 1)
-    {
-        assert(idxSignalInGlobalTable < sizeOfAry(cde_canSignalAry));
-        const cde_canSignal_t * const pSig = &cde_canSignalAry[idxSignalInGlobalTable];
-        assert(pSig->idxFrame < sizeOfAry(cde_canRxFrameAry));
-        const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSig->idxFrame];
-        
-        /* Look for an existing entry of the same signal first to avoid double entries.
-             idxInList: Index if found signal or index to use for next added signal
-           otherwise. */
-        unsigned int idxInList;
-        signalIsInList = searchSignalToListenTo(&idxInList, idxSignalInGlobalTable);
-        
-        if(add)
-        {
-            /* Add signal to listener. */
+    /* Look for an existing entry of the same signal first to avoid double entries.
+         idxInList: Index of found signal or index to use for next added signal
+       if not found. */
+    unsigned int idxInList;
+    const bool signalIsInList = searchSignalToListenTo(&idxInList, idxSignalInCanDb);
 
-            if(signalIsInList)
-            {
-                iprintf( "Signal %s (%s, %lu) had already been added to the listener. No is"
-                         " action taken\r\n"
-                       , signalName
-                       , pFrame->name
-                       , pFrame->canId
-                       );
-            }
-            else
-            {
-                assert(idxInList < sizeOfAry(_listenerSignalAry));
-                const unsigned int idxSignalBefore = _listenerSignalAry[idxInList].idxSignal;
-                _listenerSignalAry[idxInList] = (listenerSigDesc_t)      
-                                                { .idxSignal = idxSignalInGlobalTable,
-                                                  .tiAdded = _tiListenerAdd++,
-                                                };
-                if(idxSignalBefore < sizeOfAry(cde_canSignalAry))
-                {
-                    const cde_canSignal_t * const pSig = &cde_canSignalAry[idxSignalBefore];
-                    assert(pSig->idxFrame < sizeOfAry(cde_canRxFrameAry));
-                    const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSig->idxFrame];
-                    iprintf( "Signal %s (%s, %lu) has been removed from the listener\r\n"
-                           , pSig->name
-                           , pFrame->name
-                           , pFrame->canId
-                           );
-                }
-                iprintf( "Signal %s (%s, %lu) is added to the listener\r\n"
-                       , signalName
-                       , pFrame->name
-                       , pFrame->canId
-                       );
-            }
+    if(add)
+    {
+        /* Add signal to listener. */
+
+        if(signalIsInList)
+        {
+            iprintf( "Signal %s (%s, %lu) had already been added to the listener. No is"
+                     " action taken\r\n"
+                   , pSignal->name
+                   , pFrame->name
+                   , pFrame->canId
+                   );
         }
         else
         {
-            /* Remove signal from listener. */
-            
-            if(signalIsInList)
+            assert(idxInList < sizeOfAry(_listenerSignalAry));
+            const unsigned int idxSignalInCanDbBefore = _listenerSignalAry[idxInList]
+                                                        .idxSignal;
+            _listenerSignalAry[idxInList] = (listenerSigDesc_t)      
+                                            { .idxSignal = idxSignalInCanDb,
+                                              .tiAdded = _tiListenerAdd++,
+                                            };
+            if(idxSignalInCanDbBefore < sizeOfAry(cde_canSignalAry))
             {
-                assert(idxInList < sizeOfAry(_listenerSignalAry));
-                _listenerSignalAry[idxInList].idxSignal = UINT_MAX;
+                const cde_canSignal_t * const pSigBefore =
+                                                    &cde_canSignalAry[idxSignalInCanDbBefore];
+                assert(pSigBefore->idxFrame < sizeOfAry(cde_canRxFrameAry));
+                const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSigBefore->idxFrame];
                 iprintf( "Signal %s (%s, %lu) has been removed from the listener\r\n"
-                       , signalName
+                       , pSigBefore->name
                        , pFrame->name
                        , pFrame->canId
                        );
             }
-            else
-            {
-                iprintf( "Signal %s (%s, %lu) had not been added to the listener before."
-                         " No is action taken\r\n"
-                       , signalName
-                       , pFrame->name
-                       , pFrame->canId
-                       );
-            }
+            iprintf( "Signal %s (%s, %lu) is added to the listener\r\n"
+                   , pSignal->name
+                   , pFrame->name
+                   , pFrame->canId
+                   );
         }
-    }
-    else if(noMatches == 0)
-    {
-        iprintf( "No signal %s found in the CAN database. No such signal is %s"
-                 " the listener\r\n"
-               , signalName
-               , add? "added to": "removed from"
-               );
     }
     else
     {
-        iprintf( "Signal name %s is ambiguous in the CAN database. Got %u matches. No such"
-                 " signal is %s the listener.\r\n"
-                 "Consider using the CAN ID for disambiguation."
-                 " Type `help' to get more information about command %s\r\n"
-               , signalName
-               , noMatches
-               , add? "added to": "removed from"
-               , add? "listen": "unlisten"
-               );
-    }
-   
-    return signalIsInList;
+        /* Remove signal from listener. */
+        
+        if(signalIsInList)
+        {
+            assert(idxInList < sizeOfAry(_listenerSignalAry));
+            _listenerSignalAry[idxInList].idxSignal = UINT_MAX;
+            iprintf( "Signal %s (%s, %lu) has been removed from the listener\r\n"
+                   , pSignal->name
+                   , pFrame->name
+                   , pFrame->canId
+                   );
+        }
+        else
+        {
+            iprintf( "Signal %s (%s, %lu) had not been added to the listener before."
+                     " No is action taken\r\n"
+                   , pSignal->name
+                   , pFrame->name
+                   , pFrame->canId
+                   );
+        }
+    } /* End if(Signal to add or to remove?) */
 
 } /* End of addSignalToListener */
+
+
+
+
+/**
+ * Set the value of a signal in the CAN API. If the signal belongs to an event based
+ * message then the trigger is set so that it is transmitted immediately.\n
+ *   The action is combined with appropriate user feedback via serial out.
+ *   @return
+ * \a true, if function succeeded, else \a false.
+ *   @param idxSignalInCanDb
+ * The affected CAN signal, represented by the index into the global table \a cde_canSignalAry.
+ */
+static void setSignalValue(unsigned int idxSignalInCanDb, float value)
+{
+    assert(idxSignalInCanDb < sizeOfAry(cde_canSignalAry));
+    const cde_canSignal_t * const pSignal = &cde_canSignalAry[idxSignalInCanDb];
+    assert(pSignal->idxFrame < sizeOfAry(cde_canRxFrameAry));
+    const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSignal->idxFrame];
+    
+    /* Use range information to prperly saturate the set value. */
+    bool needSaturation = false;
+    if(value > pSignal->max)
+    {
+        value = pSignal->max;
+        needSaturation = true;
+    }
+    else if(value < pSignal->min)
+    {
+        value = pSignal->min;
+        needSaturation = true;
+    }
+
+    float oldValue = pSignal->getter();
+    pSignal->setter(value);
+    printf( "Signal %s (%s, %lu) has been changed from %f %s to new %svalue %f %s\r\n"
+          , pSignal->name
+          , pFrame->name
+          , pFrame->canId
+          , f2d(oldValue)
+          , pSignal->unit
+          , needSaturation? "(saturated) ": ""
+          , f2d(value)
+          , pSignal->unit
+          );
+    
+    /* Trigger sending of event messages. For ordinary regular messages, the statement is
+       harm- and useless. */
+    pFrame->pInfoTransmission->isEvent = true;
+    
+} /* End of setSignalValue */
 
 
 
@@ -433,82 +651,26 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
     if(argC == 0)    
         return false;
 
-    const char *pCmd = argV[0];
-    bool cmdListen;
-    if((cmdListen=stricmp(pCmd, "listen") == 0)  ||  stricmp(pCmd, "unlisten") == 0)
+    const char *cmd = argV[0];
+    bool isCmdListen;
+    if((isCmdListen=stricmp(cmd, "listen") == 0)  ||  stricmp(cmd, "unlisten") == 0)
     {
-        /* (Un)Listen requires at least 1 argument, the name of a signal. */
-        if(checkNoArgs(pCmd, argC-1, 1, 2))
+        unsigned int idxSignalInCanDb = parseCanSignalInDb(argC, argV, /* isReceived */ true);
+        if(idxSignalInCanDb < sizeOfAry(cde_canSignalAry))
         {
-            bool cmdOk = false;
-            
-            /* A CAN ID 0xffffffff, which doesn't exist, indicates that the user has not
-               specified a particular ID. */
-            unsigned int canId = UINT_MAX;
-            bool isExtId = false;
-            
-            const char *signalName = NULL;
-            
-            if(argC == 3)
-            {
-                /* The first argument is the decimal CAN ID for disambiguation of the
-                   signal name. A leading x indicates an extended ID. */
-                const char *canIdStr = argV[1];
-                unsigned int noChars = strlen(canIdStr);
-                assert(noChars > 0);
-                
-                isExtId = (toupper((int)*canIdStr) == 'X');
-                if(isExtId)
-                {
-                    ++ canIdStr;
-                    -- noChars;
-                }
-                
-                if(noChars > 0  && isdigit((int)*canIdStr))
-                    canId = (unsigned)atoi(canIdStr);
-                    
-                /* Check range of received CAN ID. If we didn't get any then the check
-                   fails, too, due to the chosen default value for canId. */
-                if((canId & ~0x1fffffffu) != 0
-                   ||  !isExtId &&  (canId & ~0x7ffu) != 0
-                  )
-                {
-                    iprintf( "Bad 1st argument received for command %s; is not a valid CAN"
-                             " ID."
-                             " Type `help' to get more information about command %s\r\n"
-                           , pCmd
-                           , pCmd
-                           );
-                }
-                else
-                    cmdOk = true;
-                    
-                /* The second argument is the name of the signal to listen to. */
-                signalName =  argV[2];   
-            }
-            else
-            {
-                /* The first and only argument is the name of the signal to listen to. */
-                signalName =  argV[1];   
-                cmdOk = true;
-            }
-            
-            /* Command line has been parsed, trigger the action if no error had been
-               found. */ 
-            if(cmdOk)
-            {
-                addSignalToListener(canId, isExtId, signalName, cmdListen);
-            }
+            /* Command line has been parsed, signal has been identified in the CAN DB,
+               now trigger the action. */
+            addSignalToListener(idxSignalInCanDb, /* add */ isCmdListen);
             
         } /* End if(Correct number of arguments received?) */
         
         /* Command "listen" or "unlisten" has been consumed. */
         return true;
     }
-    else if(stricmp(pCmd, "clearlisten") == 0)
+    else if(stricmp(cmd, "clearlisten") == 0)
     {
         /* "clearlisten" has no arguments. */
-        if(checkNoArgs(pCmd, argC-1, 0, 0))
+        if(checkNoArgs(cmd, argC-1, 0, 0))
         {
             unsigned int idxInList;
             for(idxInList=0; idxInList<sizeOfAry(_listenerSignalAry); ++idxInList)
@@ -520,8 +682,24 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
         /* Command "clearlisten" has been consumed. */
         return true;
     }
-    else if(stricmp(pCmd, "set") == 0)
+    else if(stricmp(cmd, "set") == 0)
     {
+        /* "set" has 1..2 arguments to specify a signal and the value of it. */
+        if(checkNoArgs(cmd, argC-1, 2, 3))
+        {
+            unsigned int idxSignalInCanDb = parseCanSignalInDb( argC-1
+                                                              , argV
+                                                              , /* isReceived */ false
+                                                              );
+            if(idxSignalInCanDb < sizeOfAry(cde_canSignalAry))
+            {
+                /* Command line has been parsed, signal has been identified in the CAN DB,
+                   now trigger the action. */
+                float sigVal = atoff(argV[argC-1]);
+                setSignalValue(idxSignalInCanDb, sigVal);
+            }
+        }
+        
         /* Command "set" has been consumed. */
         return true;
     }

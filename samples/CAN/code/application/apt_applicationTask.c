@@ -72,7 +72,7 @@
  */
 
 /** Software version */
-#define VERSION "0.2.0"
+#define VERSION "0.3.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -299,13 +299,14 @@ static void help()
     "Type:\r\n"
     "help: Get this help text\r\n"
     "show c, show w: Show details of software license\r\n"
-    "listen [ID] signalName: Report changes of Rx signal. ID is a decimal CAN ID, for"
-    " disambiguation of signal name. Maybe preceeded by x to specify an extended CAN ID\r\n"
-    "unlisten [ID] signalName: No longer report changes of Rx signal\r\n"
+    "version: Print software version designation\r\n"
+    "listen [ID] signal: Report changes of Rx signal. ID is a decimal CAN ID, for"
+    " disambiguation of signal name. Maybe preceeded by `x' to specify an extended CAN ID\r\n"
+    "unlisten [ID] signal: No longer report changes of Rx signal\r\n"
     "clearlisten: No longer report any Rx signal change\r\n"
+    "set [ID] signal value: Specify new value of Tx signal for transmission\r\n"
     "time: Print current time\r\n"
-    "time hh mm [ss]: Set current time\r\n"
-    "version: Print software version designation\r\n";
+    "time hour min [sec]: Set current time\r\n";
 
     puts(help);
 
@@ -412,17 +413,14 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
             /* Try interpret the input as supported CAN command. */
             if(cmd_parseCanCommand(argC, argV))
             {
-                /* The parser function has taken all required action, nothing to do here. */
+                /* The parse function has taken all required actions, nothing to do here. */
             }
-            else if(strcmp(argV[0], "show") == 0)
+            else if(strcmp(argV[0], "show") == 0  &&  argC >= 2)
             {
-                if(argC >= 2)
-                {
-                    if(strcmp(argV[1], "c") == 0)
-                        showC();
-                    else if(strcmp(argV[1], "w") == 0)
-                        showW();
-                }
+                if(strcmp(argV[1], "c") == 0)
+                    showC();
+                else if(strcmp(argV[1], "w") == 0)
+                    showW();
             }
             else if(strcmp(argV[0], "help") == 0)
                 help();
@@ -590,20 +588,20 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
 //          , f2d(pSpeedOfRotation->getter())
 //          , pSpeedOfRotation->unit
 //          );
-
-    /* CAN ID 1536, Tx signal "power": Change value visibly. */
-    const cde_canSignal_t *pPower = &cde_canSignalAry[14];
-    assert(!pPower->isReceived
-           &&  pPower->idxFrame < sizeOfAry(cde_canTxFrameAry)
-          );
-    const float range = pPower->max - pPower->min
-              , delta = range/15.0f;
-    float newValue;
-    newValue = pPower->getter() + delta;
-    if(newValue > pPower->max)
-        newValue -= range;
-    assert(newValue >= pPower->min  &&  newValue <= pPower->max);
-    pPower->setter(newValue);
+//
+//    /* CAN ID 1536, Tx signal "power": Change value visibly. */
+//    const cde_canSignal_t *pPower = &cde_canSignalAry[14];
+//    assert(!pPower->isReceived
+//           &&  pPower->idxFrame < sizeOfAry(cde_canTxFrameAry)
+//          );
+//    const float range = pPower->max - pPower->min
+//              , delta = range/15.0f;
+//    float newValue;
+//    newValue = pPower->getter() + delta;
+//    if(newValue > pPower->max)
+//        newValue -= range;
+//    assert(newValue >= pPower->min  &&  newValue <= pPower->max);
+//    pPower->setter(newValue);
 
     return 0;
 
