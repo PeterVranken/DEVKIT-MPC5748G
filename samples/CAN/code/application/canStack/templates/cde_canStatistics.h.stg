@@ -5,7 +5,7 @@
 // The templates describe the generation of the set of defines, which make some total
 // numbers publically available, like number of CAN frames.
 //
-// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -163,8 +163,9 @@ countBusObjects(frame) ::= <<
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.noFramesOutRegularOfBus_add_1><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.noFramesOutEventOfBus_add_1><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.noFramesOutMixedOfBus_add_1><\\>
-<else><info.error.({Unexpected transmission direction})><\\>
+<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
+<else><info.error.({Unexpected transmission direction})><\\>
 <endif>
 <endif>
 >>

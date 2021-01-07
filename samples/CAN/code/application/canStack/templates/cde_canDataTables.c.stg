@@ -291,7 +291,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
 >>
 
 
-// This project makes use of hand-written event handler for the processing of the frames.
+// This project makes use of hand-written event handlers for the processing of the frames.
 // Usually, the handlers differ for in- and outbound frames and for the different
 // transmission pattern. The implementation partly requires local data, like tick counters to
 // implement the timing. To support the implementation of such a handler, we add an group
@@ -311,8 +311,9 @@ idxHandlerContextData(pdu) ::= <<
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataOutRegular><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataOutEvent><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataOutMixed><\\>
-<else><info.error.({Unexpected transmission direction})><\\>
+<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
+<else><info.error.({Unexpected transmission direction})><\\>
 <endif>
 >>
 

@@ -6,7 +6,7 @@
 // contain the unpacked signals. The Embedded Coder generated code will access the CAN in-
 // and output in this data oriented API.
 //
-// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
