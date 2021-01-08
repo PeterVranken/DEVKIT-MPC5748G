@@ -48,10 +48,91 @@ features of the driver:
   initializer expressions, the readability and maintainability of the
   configuration file is pretty good
 
-== How to use the driver
+The sample application integrates the CAN driver with safe-RTOS and
+https://vranken@svn.code.sf.net/p/comframe/code[comFramework^]. The
+integration with safe-RTOS has been done in a way a true Basic Software
+(BSW) would look like. The CAN driver is not directly visible by the
+Application Software (APSW) but only through an API, which offers the
+driver's functionality in a user process related way. The APSW has
+restricted access, can't reconfigure or distort the driver but has the
+capability to register, receive and transmit its own set of messages.
+Another user process -- typically applied for safety supervision -- can
+access its own, dedicated messages and full separation ("Freedom from
+interference") is granted for the two processes.
 
-Explanation on how to use the driver can be found in it's https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/readMe.adoc[readme^] file and
-in
+== Behavior of the sample application
+
+This is the behavior of the sample application: All CAN communication is
+done via the only CAN transceiver of the evaluation board. The CAN bus is
+configured to run at 500 kBd. 
+
+The messages from the
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/application/canStack/dbcFiles/sampleCanBus.dbc[CAN database^]
+(a *.dbc file) are registered at the BSW. Periodic Tx messages are
+sent with the signal default values and Rx messages are received and
+the signal values are internally stored.
+
+The application has a user interface based on serial I/O. You need to open
+a terminal application on your development host machine, which the
+evaluation board is connected to via USB. The NXP software implements a
+virtual COM device on the host machine; open this COM channel with 115200
+Bd, 8 Bit, no parity bit, 1 stop bit. Type *help* to begin. A usage
+message is printed with the available commands.
+
+The two principal commands are:
+
+* *listen:* A signal from one of the Rx messages in the CAN database is
+named. On every future reception of the message, which contains this
+signal, the newly received signal value will be printed into your console
+
+* *set:* A signal is named together with a numeric value. The internally
+held signal value is changed accordingly. For regular messages it means
+that the new value will be considered at the next due time of the message.
+For event messages, the command is at the same time the triggering event
+and the message is sent immediately with the new value
+
+Some additional commands are available, too.
+
+== Safety features
+
+As of writing, Jan 2021, the safety concept of the driver is not
+demonstrated by the sample application yet. There's no second user process
+yet. This is the intention, once the sample is finalized:
+
+A sub-set of messages (could be a dedicated second *.dbc file or a
+particular sub-set of CAN IDs) is dedicated to the safety process. Since
+many requirement specifications for safety software disapprove the use of
+interrupts, we will implement these messages with the polling API of the
+CAN driver. A regular safety task will check the mailboxes for reception
+and do some observable data processing. Internally it does, what a safety
+process is supposed to do; it'll supervise the ASPW, look for exceptions,
+stack overflow, runtime violations, etc.
+
+Some event, e.g. triggered by a CAN message or on button-press or by a
+random generator, will inject severe random errors in the APSW user process.
+These errors may crash the process and the probability that the CAN
+communication breaks down is significant. Regardless, the safety process
+will continue to run and process the safety related CAN messages. After a
+while (in order to make this externally observable) it would re-initialize
+the crashed APSW process and demonstrate how full CAN communication can
+recover.
+
+== How to run the sample with another DBC file
+
+TODOC:
+
+* File name in command script
+* Name of network node is element of command line of code generator
+* Names of attributes and named values of enumerations in conjunction with
+  the supported transmission modes
+** attibutes.c.stg and #define's in hand-coded file can_canRuntime.h
+
+== How to use the CAN driver in general
+
+Explanation on how to use the driver (i.e. aside from this ready-to-use
+sample application) can be found in it's
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/readMe.adoc[readme^]
+file and in
 https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/cdr_canDriverAPI.h[cdr_canDriverAPI.h^],
 which is the principal header file for client code of the driver.
 
@@ -71,10 +152,10 @@ configuration file^]. Any client application of the driver will copy this
 file to a local folder, where it is renamed to _cdr_canDriver.config.inc_
 and then modified to match the needs of the particular application.
 
-Rational of holding the driver configuration in a separate, dedicated
+Rationale of holding the driver configuration in a separate, dedicated
 file, which can be kept apart from the driver implementation is the
 possible re-use of the same source code in different scenarios. Mainly,
-this addresses having several test applications, which can all be build in
+this addresses having several test applications, which can all be built in
 the same environment and which may all use different driver
 configurations.
 
