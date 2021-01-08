@@ -1,6 +1,6 @@
 /**
  * @file cmd_canCommand.c
- * This module implements a simple command interpreter for the CAN realted commands, the
+ * This module implements a simple command interpreter for the CAN related commands, the
  * application understands.
  *
  * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -632,7 +632,7 @@ static void setSignalValue(unsigned int idxSignalInCanDb, float value)
     assert(pSignal->idxFrame < sizeOfAry(cde_canTxFrameAry));
     const cde_canFrame_t * const pFrame = &cde_canTxFrameAry[pSignal->idxFrame];
     
-    /* Use range information to prperly saturate the set value. */
+    /* Use range information to properly saturate the set value. */
     bool needSaturation = false;
     if(value > pSignal->max)
     {

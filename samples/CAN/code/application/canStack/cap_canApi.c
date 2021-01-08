@@ -1499,7 +1499,7 @@ float get_PT_1538_belowMinSpeedOfRotation(void)
  * This value is written into the global API.
  */
 void set_PT_1538_belowMinSpeedOfRotation(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinSpeedOfRotation) = (boolean_t)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinSpeedOfRotation) = (boolean_t)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal aboveMaxSpeedOfRotation of outbound PDU LimitsPowerDisplay
@@ -1517,7 +1517,7 @@ float get_PT_1538_aboveMaxSpeedOfRotation(void)
  * This value is written into the global API.
  */
 void set_PT_1538_aboveMaxSpeedOfRotation(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxSpeedOfRotation) = (boolean_t)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxSpeedOfRotation) = (boolean_t)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal belowMinPower of outbound PDU LimitsPowerDisplay
@@ -1535,7 +1535,7 @@ float get_PT_1538_belowMinPower(void)
  * This value is written into the global API.
  */
 void set_PT_1538_belowMinPower(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinPower) = (boolean_t)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinPower) = (boolean_t)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal aboveMaxPower of outbound PDU LimitsPowerDisplay
@@ -1553,5 +1553,5 @@ float get_PT_1538_aboveMaxPower(void)
  * This value is written into the global API.
  */
 void set_PT_1538_aboveMaxPower(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxPower) = (boolean_t)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxPower) = (boolean_t)(int)(newValue + 0.5f); }
 

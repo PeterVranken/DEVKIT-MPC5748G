@@ -500,6 +500,12 @@ return <define.signalBinToDbl>(<define.referenceSignalOfStructFrame>(<symbol.sig
 <else><\\>
 return (float)<define.referenceSignalOfStructFrame>(<symbol.signal>);<endif> }
 
+<! Preparation of setter: C99 introduces a true Boolean type and this makes the type cast
+   from float differ from integer types. For integers we can simply cast but for Booleans
+   we need to make a comparison or do a two-step cast, from float to init to _Bool. The
+   data model (version 1.10) doesn't have something like "isBoolean" and we need to compare
+   the width of the signal with 1 Bit. This requires an operation with the calc object. !>
+<info.calc.({signalLength_set_<signal.length>})><\\>
 /**
  * Set the value of signal <symbol.signal> of <direction(pdu)> PDU <pdu.name>
  * (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name> in the global API.
@@ -509,7 +515,7 @@ return (float)<define.referenceSignalOfStructFrame>(<symbol.signal>);<endif> }
 void <symbol.signalSetter>(float newValue)
     { <define.referenceSignalOfStructFrame>(<symbol.signal>) = <if(!signal.isVoidScaling)><\\>
 <define.signalDblToBin>(newValue);<\\>
-<else>(<bt(signal.type)>)(newValue + 0.5f);<endif> }<\n>
+<else>(<bt(signal.type)>)<if(info.calc.signalLength_isE_1)>(int)<endif>(newValue + 0.5f);<endif> }<\n>
 
 >>
 
