@@ -9,7 +9,7 @@
 * Operating system: `Windows_NT`
 * USER: `vranken`
 * Cluster name: `DEVKIT-MPC5775G`
-* Node name, which code is generated for: `ECU`
+* Node name, which code is generated for: `PowerDisplay`
 
 == Files
 === Generated report file
@@ -121,7 +121,7 @@
 [frame="none",width="90%",options="header"]
 |=======
 |ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
-|1|checksum|uint8_t|8|0|false|0.0|255.0|1.0|0.0||1|true||0
+|1|checksum|uint8_t|8|0|false|0.0|255.0|1.0|0.0||0|false||0
 |2|sequenceCounter|uint8_t|4|8|false|1.0|15.0|1.0|0.0||1|true||0
 |3|torque|int16_t|11|22|true|-500.0|500.0|0.5|0.0|Nm|1|true||0
 |=======

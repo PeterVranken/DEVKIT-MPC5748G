@@ -795,7 +795,7 @@ typedef struct cap_PT_StateEcu01_1024_t
 typedef struct cap_PT_StateEcu02_1040_t
 {
     /** Signal checksum. */
-    uint8_t checksum;
+    uint8_t checksum; /* Signal is not used by node PowerDisplay. */
 
     /** Signal sequenceCounter. */
     uint8_t sequenceCounter;
@@ -1206,13 +1206,6 @@ float get_PT_1024_sequenceCounter(void);
 
 /** Set the value of frame StateEcu01 (1024), signal sequenceCounter. */
 void set_PT_1024_sequenceCounter(float newValue);
-
-/** Get the current value of frame StateEcu02 (1040), signal checksum
-    as float. */
-float get_PT_1040_checksum(void);
-
-/** Set the value of frame StateEcu02 (1040), signal checksum. */
-void set_PT_1040_checksum(float newValue);
 
 /** Get the current value of frame StateEcu02 (1040), signal sequenceCounter
     as float. */

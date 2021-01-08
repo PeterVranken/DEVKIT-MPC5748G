@@ -5,14 +5,13 @@ set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\comFramework\codeGenerator
 set PATH=%PATH%;%COMFRAMEWORK_CODEGENERATOR_HOME%\dist
 call codeGenerator ^
   --cluster-name DEVKIT-MPC5775G ^
-  --node-name ECU ^
+  --node-name PowerDisplay ^
   -op suppressUnaffectedSignals -ov true ^
   -op setUnusedPayloadBitsToOne -ov true ^
-  -s checksum -re "(?i)^(checksum|.*(chk|crc)).*" ^
-  -s SQC -re "(?i).*(aliv|sequence).*" ^
+  -s checksum -re "(?i)^(checksum|chk|crc).*" ^
+  -s SQC -re "(?i).*^(aliv|sequence).*" ^
   --template-wrap-column 70 ^
   --bus-name PT ^
-    --node-name PowerDisplay ^
     -dbc dbcFiles/sampleCanBus.dbc ^
   --output-file-name cde_canStatistics.h ^
     --template-file-name cde_canStatistics.h.stg ^

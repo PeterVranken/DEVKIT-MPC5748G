@@ -95,7 +95,7 @@
 
 /** We have a global array of all sent and received signals, cde_canSignalAry, which is not
     structured according to buses and fames. Here's the count of all contained signals. */
-#define CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS 26u
+#define CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS 25u
 
 
 /*

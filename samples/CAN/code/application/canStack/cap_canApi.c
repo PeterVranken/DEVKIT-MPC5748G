@@ -453,8 +453,6 @@ void cap_unpack_PT_StateEcu02
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->checksum =
-        (uint8_t)((uint8_t)m[0]);
     pFrameStruct->sequenceCounter =
         (uint8_t)((uint8_t)(m[1] & 0x0f));
     pFrameStruct->torque =
@@ -1140,24 +1138,6 @@ float get_PT_1024_sequenceCounter(void)
  */
 void set_PT_1024_sequenceCounter(float newValue)
     { cap_getSignal_PT_StateEcu01_1024(sequenceCounter) = (uint8_t)(newValue + 0.5f); }
-
-/**
- * Get the value of signal checksum of inbound PDU StateEcu02
- * (1040, 0x410) on bus PT.
- *   @return
- * Get the current value form the global API.
- */
-float get_PT_1040_checksum(void)
-    { return (float)cap_getSignal_PT_StateEcu02_1040(checksum); }
-
-/**
- * Set the value of signal checksum of inbound PDU StateEcu02
- * (1040, 0x410) on bus PT in the global API.
- *   @param newValue
- * This value is written into the global API.
- */
-void set_PT_1040_checksum(float newValue)
-    { cap_getSignal_PT_StateEcu02_1040(checksum) = (uint8_t)(newValue + 0.5f); }
 
 /**
  * Get the value of signal sequenceCounter of inbound PDU StateEcu02

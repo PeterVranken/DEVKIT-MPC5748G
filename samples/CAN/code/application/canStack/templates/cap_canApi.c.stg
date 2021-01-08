@@ -65,7 +65,7 @@ canApiDef(cluster, info) ::= <<
 <modC(["\n", moduleDescription()])>
 <! The list of functions is put after the file frame shaped by modC !>
 <iteratePdusOfCluster(cluster,"both","packUnpackFct")>
-<iterateSignalsOfCluster(cluster,"all","all","setterGetterSignal")>
+<iterateSignalsOfCluster(cluster,"all","both","setterGetterSignal")>
 >>
 
 // This is the other root template; the complete C header file is rendered.
@@ -164,7 +164,7 @@ typedef enum <symbol.enumSendMode_t>
 // prototypes of the pack and unpack functions.
 @modH.prototypes() ::= <<
 <iteratePdusOfCluster(cluster,"both","packFctDecl")>
-<iterateSignalsOfCluster(cluster,"all","all","setterGetterSignalDecl")>
+<iterateSignalsOfCluster(cluster,"all","both","setterGetterSignalDecl")>
 
 >>
 

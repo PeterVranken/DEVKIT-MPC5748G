@@ -210,16 +210,6 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .unit = ""
         },
     [3] =
-        { .name = "checksum"
-        , .idxFrame = 1
-        , .isReceived = true
-        , .getter = get_PT_1040_checksum
-        , .setter = set_PT_1040_checksum
-        , .min = 0.0
-        , .max = 255.0
-        , .unit = ""
-        },
-    [4] =
         { .name = "sequenceCounter"
         , .idxFrame = 1
         , .isReceived = true
@@ -229,7 +219,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 15.0
         , .unit = ""
         },
-    [5] =
+    [4] =
         { .name = "torque"
         , .idxFrame = 1
         , .isReceived = true
@@ -239,7 +229,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 500.0
         , .unit = "Nm"
         },
-    [6] =
+    [5] =
         { .name = "sequenceCounter"
         , .idxFrame = 2
         , .isReceived = true
@@ -249,7 +239,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 14.0
         , .unit = ""
         },
-    [7] =
+    [6] =
         { .name = "minSpeedOfRotation"
         , .idxFrame = 2
         , .isReceived = true
@@ -259,7 +249,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 6500.0
         , .unit = "rpm"
         },
-    [8] =
+    [7] =
         { .name = "maxSpeedOfRotation"
         , .idxFrame = 2
         , .isReceived = true
@@ -269,7 +259,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 6500.0
         , .unit = "rpm"
         },
-    [9] =
+    [8] =
         { .name = "checksum"
         , .idxFrame = 2
         , .isReceived = true
@@ -279,7 +269,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 255.0
         , .unit = ""
         },
-    [10] =
+    [9] =
         { .name = "minPower"
         , .idxFrame = 2
         , .isReceived = true
@@ -289,7 +279,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 240.0
         , .unit = "KW"
         },
-    [11] =
+    [10] =
         { .name = "maxPower"
         , .idxFrame = 2
         , .isReceived = true
@@ -300,7 +290,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .unit = "KW"
         },
 
-    [12] =
+    [11] =
         { .name = "checksum"
         , .idxFrame = 0
         , .isReceived = false
@@ -310,7 +300,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 255.0
         , .unit = ""
         },
-    [13] =
+    [12] =
         { .name = "sequenceCounter"
         , .idxFrame = 0
         , .isReceived = false
@@ -320,7 +310,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 14.0
         , .unit = ""
         },
-    [14] =
+    [13] =
         { .name = "power"
         , .idxFrame = 0
         , .isReceived = false
@@ -330,7 +320,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 500000.0
         , .unit = "W"
         },
-    [15] =
+    [14] =
         { .name = "state"
         , .idxFrame = 0
         , .isReceived = false
@@ -340,7 +330,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 2.0
         , .unit = ""
         },
-    [16] =
+    [15] =
         { .name = "noDlcErrors"
         , .idxFrame = 1
         , .isReceived = false
@@ -350,7 +340,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 2047.0
         , .unit = ""
         },
-    [17] =
+    [16] =
         { .name = "noCheckSumErrors"
         , .idxFrame = 1
         , .isReceived = false
@@ -360,7 +350,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 2047.0
         , .unit = ""
         },
-    [18] =
+    [17] =
         { .name = "noSqcErrors"
         , .idxFrame = 1
         , .isReceived = false
@@ -370,7 +360,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 2047.0
         , .unit = ""
         },
-    [19] =
+    [18] =
         { .name = "sequenceCounter"
         , .idxFrame = 1
         , .isReceived = false
@@ -380,7 +370,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 126.0
         , .unit = ""
         },
-    [20] =
+    [19] =
         { .name = "checksum"
         , .idxFrame = 1
         , .isReceived = false
@@ -390,7 +380,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 255.0
         , .unit = ""
         },
-    [21] =
+    [20] =
         { .name = "sequenceCounter"
         , .idxFrame = 2
         , .isReceived = false
@@ -400,7 +390,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 6.0
         , .unit = ""
         },
-    [22] =
+    [21] =
         { .name = "belowMinSpeedOfRotation"
         , .idxFrame = 2
         , .isReceived = false
@@ -410,7 +400,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 1.0
         , .unit = ""
         },
-    [23] =
+    [22] =
         { .name = "aboveMaxSpeedOfRotation"
         , .idxFrame = 2
         , .isReceived = false
@@ -420,7 +410,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 1.0
         , .unit = ""
         },
-    [24] =
+    [23] =
         { .name = "belowMinPower"
         , .idxFrame = 2
         , .isReceived = false
@@ -430,7 +420,7 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .max = 1.0
         , .unit = ""
         },
-    [25] =
+    [24] =
         { .name = "aboveMaxPower"
         , .idxFrame = 2
         , .isReceived = false

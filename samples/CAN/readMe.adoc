@@ -136,7 +136,7 @@ file and in
 https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/system/drivers/CAN/cdr_canDriverAPI.h[cdr_canDriverAPI.h^],
 which is the principal header file for client code of the driver.
 
-== Concept
+== Concept of CAN driver
 
 === Configuration
 

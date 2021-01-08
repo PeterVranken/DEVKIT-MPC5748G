@@ -355,7 +355,7 @@ canFrameAryEntry(pdu) ::= <<
 
 
 canSignalAryFrameEntry(pdu) ::= <<
-<iterateSignalsOfPdu(pdu,"all","all","canSignalAryEntry")><\\>
+<iterateSignalsOfPdu(pdu,"all","both","canSignalAryEntry")><\\>
 <info.calc.idxCdtCanFrameAryEntry_add_1>
 >>
 
