@@ -1,6 +1,6 @@
 /**
  * @file can_canRuntime.c
- * The hand-made, not generated source file contains the implementaion of the callbacks
+ * The hand-made, not generated source file contains the implementation of the callbacks
  * from the CAN interface engine. These callbacks don't depend on the CAN database (*.dbc)
  * and don't need to be generated from the database. It is set up once for the project. The
  * implementation is widely based on sample
@@ -8,9 +8,9 @@
  * revision 315.\n
  *   Note, in a certain sense, the implementation of this file does well depend on the CAN
  * database. The implementation of the callbacks determines, which send and receive
- * patterns are supported. For example, regualar transmission versus event-based
+ * patterns are supported. For example, regular transmission versus event-based
  * transmission. Or simply the definition, what event-based transmission actually means. Or
- * the way how to protect or cryptify the message payloads. All of the imaginable options
+ * the way how to protect or encrypt the message payloads. All of the imaginable options
  * may by selected under control of attributes in the CAN database and this file would need
  * to implement all options, which are available for a given database. The provided
  * implementation only supports a few, basic patterns in order to be compatible with most

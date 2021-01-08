@@ -38,16 +38,10 @@ databaseList := $(wildcard $(genDir)dbcFiles/*.dbc)
 #$(info List of StringTemplate V4 templates: $(templateList), DBC files: $(databaseList))
 generateCanInterface: $(genDir)makeTag_generateCode
 
-# Caution, the recipe of this rule highly depends on the makefile configuration setting
-# .ONESHELL (see globalVariables.mk). It needs to be given. This allows to first change
-# directory then define subsequent steps relative to that directory.
-#   Unfortunately, the Windows shell cmd concatenates the lines cd and next one so that
-# both lines result in one invalid command. It's unclear if this is a problem in make or in
-# the shell itself. The explicit $(EOL) is a workaround to separate the lines.
 $(genDir)makeTag_generateCode: $(templateList) $(databaseList) $(genDir)generateCode.cmd
-	cd $(call u2w,$(dir $@)) & call generateCode.cmd -v WARN $(EOL)
-	echo Make tag for rule generateCanInterface. Do not delete this file > $(notdir $@)
-    
+	cd $(call u2w,$(dir $@)) & call generateCode.cmd -v WARN
+	echo Make tag for rule generateCanInterface. Do not delete this file > $@
+
 # clean: We can't delete all produced file as they are output of the external shell script
 # and not known to this makefile. However, deleting the tag file forces at least the
 # re-generation of the files, which is mostly the intention of a clean.

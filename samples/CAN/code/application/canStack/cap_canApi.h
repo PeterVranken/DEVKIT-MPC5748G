@@ -8,7 +8,7 @@
  * This file has been created with comFramework - codeGenerator version 1.10.4,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -142,11 +142,11 @@
 
 /** The minmum value of the sequence counter of frame StateEcu02 (1040, 0x410)
     on bus PT. */
-#define CAP_PT_STATEECU02_1040_SQC_FROM	15
+#define CAP_PT_STATEECU02_1040_SQC_FROM	1
 
 /** The maximum value of the sequence counter of frame StateEcu02 (1040, 0x410)
     on bus PT. */
-#define CAP_PT_STATEECU02_1040_SQC_TO	1
+#define CAP_PT_STATEECU02_1040_SQC_TO	15
 
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame UserLimits (2032, 0x7f0) on bus PT with the
@@ -387,11 +387,11 @@
 
 /** The minimum of the world value of signal sequenceCounter of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_SEQUENCECOUNTER_MIN	(15)
+#define CAP_PT_1040_SEQUENCECOUNTER_MIN	(1)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_SEQUENCECOUNTER_MAX	(1)
+#define CAP_PT_1040_SEQUENCECOUNTER_MAX	(15)
 
 
 /** Convert the binary value of signal torque of frame

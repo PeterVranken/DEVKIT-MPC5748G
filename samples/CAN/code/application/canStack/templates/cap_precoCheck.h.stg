@@ -4,6 +4,9 @@
 // A header file is generated, which contains a number of compile time checks of static
 // elements of the network database, which need to be fulfilled for successful compilation
 // and execution of the generated code.\n
+//   Some consistency tests can be done already at code generation time. In this case the
+// code generation process is aborted with error message and the build will immediately
+// fail.\n
 //   See template moduleDescription for more details.
 //
 // Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)

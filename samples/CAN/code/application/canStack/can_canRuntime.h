@@ -43,7 +43,7 @@
       Here is how the transmission mode of ordinary, regular frames is named. */
 #define CAN_ENUM_SEND_MODE_REGULAR cap_enumSendMode_0_cyclic
 #define CAN_ENUM_SEND_MODE_EVENT cap_enumSendMode_1_event /// Send mode event triggered
-#define CAN_ENUM_SEND_MODE_MIXED cap_enumSendMode_2_cyclicOrEvent /// Send mode event+cyclic
+#define CAN_ENUM_SEND_MODE_MIXED cap_enumSendMode_2_cyclicOrEvent /// Send mode event plus cyclic
 
 /** The size of the heap memory, which is statically allocated for the CAN interface. The
     value should be set as little as possible; if set too little then the application will

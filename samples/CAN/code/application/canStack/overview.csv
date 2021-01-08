@@ -3,7 +3,7 @@ PT;StateEcu01;1024;0x400;ECU;checksum;PowerDisplay;true;Motorola;uint8_t;8;7;0.0
 PT;StateEcu01;1024;0x400;ECU;speedOfRotation;PowerDisplay;true;Motorola;uint16_t;16;11;0.0;6500.0;0.1;0.0;rpm
 PT;StateEcu01;1024;0x400;ECU;sequenceCounter;PowerDisplay;true;Intel;uint8_t;4;12;0.0;14.0;1.0;0.0;
 PT;StateEcu02;1040;0x410;ECU;checksum;PowerDisplay;true;Intel;uint8_t;8;0;0.0;255.0;1.0;0.0;
-PT;StateEcu02;1040;0x410;ECU;sequenceCounter;PowerDisplay;true;Intel;uint8_t;4;8;15.0;1.0;1.0;0.0;
+PT;StateEcu02;1040;0x410;ECU;sequenceCounter;PowerDisplay;true;Intel;uint8_t;4;8;1.0;15.0;1.0;0.0;
 PT;StateEcu02;1040;0x410;ECU;torque;PowerDisplay;true;Motorola;int16_t;11;22;-500.0;500.0;0.5;0.0;Nm
 PT;UserLimits;2032;0x7f0;ECU;sequenceCounter;PowerDisplay;true;Intel;uint8_t;4;2;1.0;14.0;1.0;0.0;
 PT;UserLimits;2032;0x7f0;ECU;minSpeedOfRotation;PowerDisplay;true;Intel;uint16_t;12;6;0.0;6500.0;1.6;0.0;rpm

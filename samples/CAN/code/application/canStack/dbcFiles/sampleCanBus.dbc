@@ -44,7 +44,7 @@ BO_ 1024 StateEcu01: 4 ECU
 BO_ 1040 StateEcu02: 4 ECU
  SG_ torque : 22|11@0- (0.5,0) [-500|500] "Nm"  PowerDisplay
  SG_ checksum : 0|8@1+ (1,0) [0|255] ""  PowerDisplay
- SG_ sequenceCounter : 8|4@1+ (1,0) [15|1] ""  PowerDisplay
+ SG_ sequenceCounter : 8|4@1+ (1,0) [1|15] ""  PowerDisplay
 
 BO_ 2032 UserLimits: 8 ECU
  SG_ sequenceCounter : 2|4@1+ (1,0) [1|14] ""  PowerDisplay
@@ -85,7 +85,7 @@ CM_ SG_ 1024 sequenceCounter "Sequence counter of message origin. Each update of
 CM_ BO_ 1040 "A (hypothetic) ECU provided message we can read the current engine torque from";
 CM_ SG_ 1040 torque "Current engine torque as estimated by the ECU";
 CM_ SG_ 1040 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
-CM_ SG_ 1040 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 15";
+CM_ SG_ 1040 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 15 to 1";
 CM_ BO_ 2032 "User command: New limits have been set for supervision of speed of rotation and power. This is a purely data change driven frame, it is not sent until the user changes a least one of the limits";
 CM_ SG_ 2032 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around from 14 to 1";
 CM_ SG_ 2032 minSpeedOfRotation "User set minimum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the speed falls below this limit";
@@ -107,7 +107,7 @@ CM_ SG_ 1537 noSqcErrors "Number of recognized sequence errors in CAN input";
 CM_ SG_ 1537 sequenceCounter "Sequence counter of message. The counter is incremented prior to sending the frame. The counter wraps around from 126 to 1. 0 and 127 are invalid values";
 CM_ SG_ 1537 checksum "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff";
 CM_ BO_ 1538 "If a user set limit for speed of rotation or power is crossed (in either direction) then a related status bit is updated and sending this frame is triggered. This is a purely data change driven frame, it is not sent if no data change appears";
-CM_ SG_ 1538 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 6";
+CM_ SG_ 1538 sequenceCounter "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 6 to 1";
 CM_ SG_ 1538 belowMinSpeedOfRotation "Boolean: True if and only if the speed of rotation is currently below the user set minimum";
 CM_ SG_ 1538 aboveMaxSpeedOfRotation "Boolean: True if and only if the speed of rotation is currently above the user set maximum";
 CM_ SG_ 1538 belowMinPower "Boolean: True if and only if the engine power is currently below the user set minimum";

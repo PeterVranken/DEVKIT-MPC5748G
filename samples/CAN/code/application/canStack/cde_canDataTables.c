@@ -9,7 +9,7 @@
  * This file has been created with comFramework - codeGenerator version 1.10.4,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -225,8 +225,8 @@ const cde_canSignal_t cde_canSignalAry[CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS] =
         , .isReceived = true
         , .getter = get_PT_1040_sequenceCounter
         , .setter = set_PT_1040_sequenceCounter
-        , .min = 15.0
-        , .max = 1.0
+        , .min = 1.0
+        , .max = 15.0
         , .unit = ""
         },
     [5] =

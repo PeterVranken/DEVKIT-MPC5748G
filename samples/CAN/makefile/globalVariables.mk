@@ -65,6 +65,12 @@ endif
 # If .ONESHELL is mentioned as a target, then, when a target is built, all lines of the
 # recipe will be given to a single invocation of the shell rather than each line being
 # invoked separately.
+#   Caution, a typical use case of .ONESHELL is a recipe, which changes the working
+# directory with cd in its first line and then defines subsequent steps relative to the
+# chosen directory. Unfortunately, the Windows shell cmd seems to concatenate the lines cd
+# and next one so that both lines result in one invalid command. It's unclear if this is a
+# problem in make or in the shell itself. An explicit $(EOL) behind the cd command is a
+# workaround to separate the lines.
 #.ONESHELL:
 
 # Where to place all generated products?
