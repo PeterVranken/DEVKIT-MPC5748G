@@ -322,9 +322,8 @@ typedef struct cdr_mailboxAccessConfig_t
         user-polling-enabled mailboxes of all enbaled CAN devices needs to form a
         contiguous series of integers, starting with zero. Moreover, the highest
         specified index needs to be #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES - 1.\n
-          User code access enabled Tx mailboxes doesn't require an API buffer. Instead
-        of a valid index, the special value #CDR_API_BUF_IDX_INVALID needs to be
-        configured.\n
+          User code access enabled Tx mailboxes don't require an API buffer and the
+        configured value needs to be zero.\n
           These strict consistency constraints are double-checked at driver startup
         time by cdr_checkDriverConfiguration(), so that configuration errors can't do
         any harm. */

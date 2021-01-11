@@ -363,8 +363,10 @@ bool cdr_checkDriverConfiguration(void)
                indexes, which point into the FIFO memory area. */
             ASSERT(idxMB >= idxFirstNormalMailbox  &&  idxMB < pDevCfg->noMailboxes
                    ||  configMB.minPIDToAccess == 0 &&  configMB.idxAPIBuffer == 0 
+                       &&  !configMB.useAsRxMailbox
                   );
 
+#if CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0
             /* If polling is enabled then a unique, in-range index of an API buffer needs
                to be specified. */
             if(configMB.minPIDToAccess > 0  && configMB.useAsRxMailbox)
@@ -387,6 +389,10 @@ bool cdr_checkDriverConfiguration(void)
                    access. It doesn't have an associated API buffer. */
                 ASSERT(configMB.idxAPIBuffer == 0);
             }
+#else
+            /* No Rx operation possible at all if no API buffers are declared. */
+            ASSERT(configMB.idxAPIBuffer == 0  &&  !configMB.useAsRxMailbox);
+#endif
         }
     } /* End for(All enabled CAN devices) */
 

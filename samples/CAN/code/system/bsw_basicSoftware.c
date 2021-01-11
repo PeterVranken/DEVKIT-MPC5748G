@@ -198,9 +198,6 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* All clocks run at full speed, including all peripheral clocks. */
     ccl_configureClocks();
 
-    /* Interrupts become usable and configurable by SW. */
-    rtos_osInitINTCInterruptController();
-
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -215,7 +212,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* The core is now running in the desired state. I/O driver initialization follows to
        the extend required by this simple sample. */
 
-    /* Start the system timers for execution time measurement.
+    /* The interrupt controller is configured. This is the first driver initialization
+       call: Many of the others will register their individual ISRs and this must not be
+       done prior to initialization of the interrupt controller. */
+    rtos_osInitINTCInterruptController();
+
+    /* Start the system timers STM for execution time measurement.
          Caution: On the MPC5748G, this is not an opton but an essential prerequisite for
        running safe-RTOS. The MPC5748G has a simplified z4 core without the timebase
        feature. The system timer is used as substitute. The driver needs to be started and

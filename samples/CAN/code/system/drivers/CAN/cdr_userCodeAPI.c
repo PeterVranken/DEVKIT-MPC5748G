@@ -74,11 +74,13 @@
 static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
                                                 [CDR_NO_RX_USER_CODE_POLLING_MAILBOXES] = 
     { 
+#if CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0
         [1 ... CDR_NO_RX_USER_CODE_POLLING_MAILBOXES-1] =
         {
           .DLC = 0,
           .payload_u64 = 0llu,
         },
+#endif
     };
 
 
@@ -288,6 +290,7 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
 
 
 
+#if CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0
 /**
  * Get a reference to the API buffer for a particular Rx mailbox, which is used by polling
  * from a user task.\n
@@ -357,10 +360,10 @@ const cdr_apiBufferRxPolling_t *cdr_getRxPollingAPIBuffer( unsigned int idxCanDe
     return pAPIBuffer;
 
 } /* End of cdr_getRxPollingAPIBuffer. */
+#endif
 
 
-
-
+/// @todo Need to become conditional on CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0
 /** 
  * System call handler for reading from the message API of the CAN driver. A particular CAN
  * mailbox is checked for newly received input and the received data is copied into the

@@ -776,7 +776,18 @@ static void initCanDevice(unsigned int idxCanDevice)
                      ;
 
     } /* End for(All normal MBs) */
+    
+    /* All supported MCUs specify the size of the mailbox RAM as 384 32 Bit words in the
+       specific derivative header files (see CAN_RAMn_COUNT), although this size fits only
+       to the 96 mailboxes of the MPC5748G. The MPC5775B/E should only have 256 words of
+       RAM. It's not clear if this is an error in the header file or if the additional RAM
+       is reserved for other purposes. Anyhow, the next self-text depends on this issue. */
+#if defined(MCU_MPC5748G)
     assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
+#else /* MCU_MPC5775B or MCU_MPC5775E */
+    /// @todo Sort out, which RAM size the devices have
+    assert((void*)pMB <= (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
+#endif
 
     /* Install required interrupt handlers. By default, we have the three FIFO related
        IRQs. Later, at registration time of mailboxes, there may come many more. */
@@ -816,9 +827,11 @@ void cdr_osInitCanDriver(void)
            &&  (uintptr_t)getFIFOFilterEntry(CAN_7, 71) == 0xfbecc0e0u + 71*4
           );
 #else
-    assert((uintptr_t)getFIFOFilterEntry(CAN_0, 0) == 0xfu
-           &&  (uintptr_t)getFIFOFilterEntry(CAN_0, 71) == 0xf + 71*4
-           &&  (uintptr_t)getFIFOFilterEntry(CAN_3, 71) == 0xfbu + 71*4
+    assert((uintptr_t)getFIFOFilterEntry(CAN_0, 0) == 0xfffc00e0u
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_0, 71) == 0xfffc00e0u + 71*4
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_1, 35) == 0xfffc40e0u + 35*4
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_2, 71) == 0xc3e600e0u + 71*4
+           &&  (uintptr_t)getFIFOFilterEntry(CAN_3, 71) == 0xc3e640e0u + 71*4
           );
 #endif
     unsigned int idxCanDev;
