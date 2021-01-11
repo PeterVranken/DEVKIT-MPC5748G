@@ -55,6 +55,9 @@
 #define CDR_ENABLE_USE_OF_CAN_6     0 /** MPC5748G only: Compile code for CAN device CAN_6? */
 #define CDR_ENABLE_USE_OF_CAN_7     0 /** MPC5748G only: Compile code for CAN device CAN_7? */
 
+/** The core, which serves the CAN interrupts. In this particular sample, all interrupts in
+    use are served by one core. It can be selected here. */
+#define CDR_CAN_IRQ_SERVICING_CORE  RTOS_CORE_Z4A
 
 /** The Rx polling API for user code requires some attention drawn to memory allocation.
     The API implementation wants to allocate memory for all Rx mailboxes, which are enabled
@@ -195,7 +198,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             ERRINT_FAST. */
         .irqGroupError =
         {
-            .idxTargetCore     = RTOS_CORE_Z4A,
+            .idxTargetCore     = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio           = 0,
             .osCallbackOnError = NULL,
             .osCallbackOnTx    = NULL,   /* Not applicable, needs to be NULL. */
@@ -204,7 +207,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration for bus off etc. IRQs */
         .irqGroupBusOff =
         {
-            .idxTargetCore      = RTOS_CORE_Z4A,
+            .idxTargetCore      = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio            = 0,
             .osCallbackOnBusOff = NULL,
             .osCallbackOnTx     = NULL,   /* Not applicable, needs to be NULL. */
@@ -213,7 +216,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** Here, we have the interrupt configuration for the group of FIFO interrupts. */
         .irqGroupFIFO =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = CDR_IRQ_PRIO_CAN_RX,
             .osCallbackOnRx = &bsw_osCbOnCANRx,
             .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
@@ -225,7 +228,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             (CTRL2_RFFN = 8). */
         .irqGroupMB0_3 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -236,7 +239,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             (CTRL2_RFFN = 8). */
         .irqGroupMB4_7 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -247,7 +250,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             (CTRL2_RFFN = 8). */
         .irqGroupMB8_11 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -258,7 +261,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             (CTRL2_RFFN = 8). */
         .irqGroupMB12_15 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -268,7 +271,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 0. */
         .irqMB0 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -277,7 +280,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 1. */
         .irqMB1 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -286,7 +289,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 2. */
         .irqMB2 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -295,7 +298,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 3. */
         .irqMB3 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -304,7 +307,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 4. */
         .irqMB4 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -313,7 +316,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 5. */
         .irqMB5 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -322,7 +325,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 6. */
         .irqMB6 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -331,7 +334,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 7. */
         .irqMB7 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -340,7 +343,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 8. */
         .irqMB8 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -349,7 +352,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 9. */
         .irqMB9 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -358,7 +361,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 10. */
         .irqMB10 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -367,7 +370,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 11. */
         .irqMB11 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -376,7 +379,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 12. */
         .irqMB12 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -385,7 +388,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 13. */
         .irqMB13 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -394,7 +397,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 14. */
         .irqMB14 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -403,7 +406,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQ of mailbox 15. */
         .irqMB15 =
         {
-            .idxTargetCore  = RTOS_CORE_Z7_0,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -413,7 +416,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQs of mailboxes 16..31. */
         .irqGroupMB16_31 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -422,7 +425,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQs of mailboxes 32..63. */
         .irqGroupMB32_63 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -432,7 +435,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** IRQ configuration, IRQs of mailboxes 64..95. */
         .irqGroupMB64_95 =
         {
-            .idxTargetCore  = RTOS_CORE_Z4A,
+            .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = 0,
             .osCallbackOnRx = NULL,
             .osCallbackOnTx = NULL,
@@ -497,6 +500,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             [/*hMB=109*/ 61] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=110*/ 62] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=111*/ 63] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+#if defined(MCU_MPC5748G)
             [/*hMB=112*/ 64] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=113*/ 65] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=114*/ 66] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
@@ -529,7 +533,6 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             [/*hMB=141*/ 93] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=142*/ 94] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=143*/ 95] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
-#if defined(MCU_MPC5748G)
 #endif
         },
     },
