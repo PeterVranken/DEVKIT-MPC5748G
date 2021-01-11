@@ -18,10 +18,13 @@
  * this module.\n
  *   Note, formatted input is not possible through C standard functions.
  * 
+ * @todo Access from both cores is not implemented yet! For now, only the the RTOS running
+ * core may use the serial input functions.
+ *
  * @todo Doc allocated devices: LINFLex, SIUL, DMA, DMAMUX, PBridge, PIT, input interrupt
  * on which core
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -104,7 +107,7 @@
     that makes use of the input related API functions of this module. */
 #define INTC_PRIO_IRQ_UART_FOR_SERIAL_INPUT     5u
 
-/** In principal, all cores can serve the on-character-received interrupt. Here, we chose,
+/** In principle, all cores can serve the on-character-received interrupt. Here, we chose,
     which one is in charge. The range is 0 (Z4A), 1 (Z4B) or 2 (Z2). */
 #define INTC_IRQ_TARGET_CORE    0
 
@@ -188,6 +191,8 @@
  * Data definitions
  */
  
+/// @todo Revise use of volatile. Maybe adequate for input with ISR but likely not for output
+
 /** This development support variable counts the number of DMA transfers intiated since
     power-up, to do the serial output */
 volatile unsigned long SBSS_OS(sio_serialOutNoDMATransfers) = 0;
@@ -239,7 +244,7 @@ static volatile uint8_t BSS_OS(_serialInRingBuf)[SERIAL_INPUT_RING_BUFFER_SIZE];
     the cyclic pointer update.
       @remark Note, the pointer points to the last byte in the buffer, not to the first
     address beyond as usually done. */
-static volatile const uint8_t * _pEndSerialInRingBuf =
+static volatile const uint8_t * SDATA_OS(_pEndSerialInRingBuf) =
                                     &_serialInRingBuf[SERIAL_INPUT_RING_BUFFER_SIZE-1];
 
 /** The pointer to the next write position in the ring buffer used for serial input. */
@@ -884,6 +889,10 @@ void sio_osInitSerialInterface(unsigned int baudRate)
  *   @remark
  * This function must never be called directly. The function is only made for placing it in
  * the global system call table.
+ *   @todo
+ * Double-check if this system call needs to be a full handler. It branches immediately
+ * into sio_osWriteSerial(), which is executed mostly as a single critical section. So we
+ * could directly say simple handler. 
  */
 unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
                                      , const char *msg
@@ -909,6 +918,7 @@ unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
         
 
         
+        
 /** 
  * Principal API function for data output. A byte string is sent through the serial
  * interface. Actually, the bytes are queued for sending and the function is
@@ -923,7 +933,7 @@ unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
  * \a noBytes.
  *   @param msg
  * The byte sequence to send. Note, this may be but is not necessarily a C string with zero
- * terminations. Zero bytes can be send, too.
+ * terminations. Zero bytes can be sent, too.
  *   @param noBytes
  * The number of bytes to send. For a C string, this will mostly be \a strlen(msg).
  *   @remark
@@ -1009,7 +1019,10 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
     /* Always copy the first part of the message to the current end of the linear
        buffer. The serial buffer, shared between all accessing cores and DMA, is located in
        uncached memory so that the writes go into main memory, where it can be accessed by
-       DMA. */
+       DMA.
+         Note, memcpy belongs to the basically untrusted C library, which is loaded into
+       the RAM of process P1. We can still use it here, as it doesn't require static RAM
+       (which could then be damaged by P1 code). */
     uint8_t * const pDest = &_serialOutRingBuf[MODULO(_serialOutRingBufIdxWrM)];
     assert(pDest + noBytesAtEnd <= &_serialOutRingBuf[SERIAL_OUTPUT_RING_BUFFER_SIZE]);
     memcpy(pDest, msg, noBytesAtEnd);
@@ -1064,16 +1077,16 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
  * Application API function to read a single character from serial input or EOF if there's
  * no such character received meanwhile.\n
  *   The function is not inter-core safe and must be called solely from execution contexts
- * running on core #INTC_IRQ_TARGET_CORE. It must not be called untill function
- * sio_initSerialInterface() has completed.
+ * running on core #INTC_IRQ_TARGET_CORE. It must not be called until function
+ * sio_osInitSerialInterface() has completed.
  *   @return
  * The function is non-blocking. If the receive buffer currently contains no character it
  * returns EOF (-1). Otherwise it returns the earliest received character, which is still
  * in the buffer.
  *   @remark
  * The return of EOF does not mean that the stream has been closed. It's just a matter of
- * having no input data temporarily. On reception of the more characters the function will
- * continue to return them.
+ * having no input data temporarily. After reception of more characters the function will
+ * continue returning them.
  *   @remark
  * This function must be called by trusted code in supervisor mode only. It belongs to the
  * sphere of trusted code itself.
@@ -1181,8 +1194,8 @@ uint32_t sio_scSmplHdlr_getLine( uint32_t PID, char str[], unsigned int sizeOfSt
  * these two can or cannot be part of the copied line of text, see
  * #SERIAL_INPUT_FILTERED_CHAR. This, too, is a matter of compile time configuration.\n
  *   The function is not inter-core safe and must be called solely from execution contexts
- * running on core #INTC_IRQ_TARGET_CORE. It must not be called untill function
- * sio_initSerialInterface() has completed.
+ * running on core #INTC_IRQ_TARGET_CORE. It must not be called until function
+ * sio_osInitSerialInterface() has completed.
  *   @return
  * This function returns \a str on success, and NULL on error or if not enough characters
  * have been received meanwhile to form a complete line of text.\n
