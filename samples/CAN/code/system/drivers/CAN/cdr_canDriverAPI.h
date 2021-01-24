@@ -38,14 +38,14 @@
  * Don't include it, don't compile it. Indirectly, your application will read its header
  * file contents (#define's) through this header, cdr_canDriverAPI.h. Those parts of
  * cdr_canDriver.config.inc, which are actually C source code -- concretely, the definition
- * of the constant configuration data object --, will be complied from the CAN driver's
+ * of the constant configuration data object --, will be compiled from the CAN driver's
  * main implementation file, namely cdr_canDriver.c, by way of including it.
  *   @remark
  * The CAN driver is compilable with the renamed but not altered template configuration
  * file. However, no CAN device will then be enabled and the compiler will issue several
- * warning because of zero-sized arrays and data structures.
+ * warnings because of zero-sized arrays and data structures.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
