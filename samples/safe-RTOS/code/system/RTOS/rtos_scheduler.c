@@ -1,7 +1,7 @@
 /**
  * @file rtos_scheduler.c
  * This file implements a simple yet "safe" Real Time Operating System (RTOS) for the
- * MPC5643L.\n
+ * MPC5748G.\n
  *   The RTOS offers a strictly priority controlled scheduler. The user code is organized
  * in processes and tasks. Any task belongs to one of the processes. Different processes
  * have different privileges. The concept is to use the process with highest privileges for
@@ -82,7 +82,7 @@
  * safety concept
  *
  * Safety:\n
- *   The RTOS is based on the "unsafe" counterpart published at
+ *   The RTOS is based on its "unsafe" counterpart published at
  * https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/RTOS-VLE. Most
  * explanations given there still hold. There are two major differences:\n
  *   In this project, we have replaced the hardware scheduler with a scheduler implemented
@@ -263,6 +263,8 @@ static const unsigned int rtos_idxRtosTimerAry[RTOS_NO_CORES] =
  *   @return
  * Get the event object by reference.
  *   @param idEvent
+ * The linear index of the event as used at the API.
+ *   @remark
  * The mapping is not essential for the kernel. It implies avoidable run-time effort. The
  * only reason for having the mapping is a user friendly configuration API. If we had a
  * configuration tool (similar to OSEK OIL tool) or if we would put some documented
@@ -349,7 +351,7 @@ static ALWAYS_INLINE rtos_eventDesc_t *getEventByIdx(unsigned int idxEvent)
  * #RTOS_TI_DEADLINE_MAX_IN_US Microseconds.\n
  *   A value of zero means that deadline monitoring is disabled for the task.\n
  *   There's no deadline monitoring for OS tasks. If \a PID is zero then \a
- * tiTaskMaxInUS meeds to be zero, too.
+ * tiTaskMaxInUS needs to be zero, too.
  *   @remark
  * Never call this function after the call of rtos_osInitKernel()!
  *   @remark

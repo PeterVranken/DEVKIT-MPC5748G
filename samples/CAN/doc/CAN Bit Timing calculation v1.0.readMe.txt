@@ -1,0 +1,4 @@
+This is a small tool form NXP to calculate the appropriate setting of the
+affected CAN timing registers given some desired CAN parameters, like Baud
+rate.
+  Downloaded from https://community.nxp.com/t5/MPC5xxx-Knowledge-Base/MPC5xxx-S32Kxx-CAN-CAN-FD-bit-timing-calculation/ta-p/1119319 on Jan 29, 2021.
