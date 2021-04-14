@@ -210,17 +210,17 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
              "    OS: %u Byte\r\n"
              "    PID 1: %u Byte\r\n"
              "  Task counts (lost triggers):\r\n"
-             "    OS, 1ms: %lu (%u)\n\r"
-             "    user, 1ms: %lu\n\r"
-             "    idle: %lu\n\r"
-             "  Process errors:\n\r"
+             "    OS, 1ms: %lu (%u)\r\n"
+             "    user, 1ms: %lu\r\n"
+             "    idle: %lu\r\n"
+             "  Process errors:\r\n"
              "    Total PID 1: %u\r\n"
              "CPU " CORE_BARE_METAL " (bare metal):\r\n"
              "  ISR load: %u.%u%%\r\n"
              "  Stack reserve:\r\n"
              "    core: %u Byte\r\n"
              "  Cycle counts on core " CORE_BARE_METAL ":\r\n"
-             "    main: %lu\n\r"
+             "    main: %lu\r\n"
            , cpuLoadSecondCore/10, cpuLoadSecondCore%10
            , msc_stackReserveOS
            , msc_stackReserveP1
