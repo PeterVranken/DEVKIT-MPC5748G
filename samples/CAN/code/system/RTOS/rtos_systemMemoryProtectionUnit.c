@@ -196,7 +196,7 @@ void rtos_osInitMPU(void)
                                   | (((idxPattern)&0x3u)<<(5*2))    \
                                  )
 
-    /* Macro to form the WORD 3 of a regaion descriptor from the up to three access
+    /* Macro to form the WORD 3 of a region descriptor from the up to three access
        patterns. Note, cache inhibit must not be used because we have overlapping regions
        defined. See 21.3.10. */
     #define RGD_WRD3(accset1, accset2, accset3, cacheInhibit)                               \
@@ -294,17 +294,6 @@ void rtos_osInitMPU(void)
          We use linker defined symbols to find the boundaries of the region. In the linker
        script, they need to be aligned compatible with the constraints of the MPU. This is
        checked by assertion. */
-#if 0
-    extern uint8_t ld_ramStart[0], ld_ramEnd[0];
-    assert(((uintptr_t)ld_ramStart & 0xf) == 0  &&  ((uintptr_t)ld_ramEnd & 0xf) == 0);
-    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_ramStart;  /* Start address of region. */
-    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_ramEnd-1;  /* End address of region, including. */
-    SMPU_1->RGD[r].WORD2 = WORD2_ALL_RAM;
-    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM;
-    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
-    ++ r;
-#else
     extern uint8_t ld_cachedRamStart[0], ld_cachedRamEnd[0];
     assert(((uintptr_t)ld_cachedRamStart & 0xf) == 0
            &&  ((uintptr_t)ld_cachedRamEnd & 0xf) == 0
@@ -327,7 +316,6 @@ void rtos_osInitMPU(void)
     SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
     SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
     ++ r;
-#endif
 
     /* It would be very easy to offer a compile time switch to select a hierarchical memory
        access model, where process with ID i has write access to the memory of process with
@@ -352,15 +340,15 @@ void rtos_osInitMPU(void)
     ++ r;
 #else
     /* RAM access for process i. */
-#define CONFIG_REGIONS_PROC_RAM(pid)                                \
-        {                                                           \
-            CONFIG_REGION_DESC_PROC_RAM(pid, /* section */ data)    \
-            CONFIG_REGION_DESC_PROC_RAM(pid, /* section */ sda)     \
-            CONFIG_REGION_DESC_PROC_RAM(pid, /* section */ sda2)    \
+#define CONFIG_REGIONS_PROC_RAM(pid)                                                \
+        {                                                                           \
+            CONFIG_REGION_DESC_PROC_RAM(pid, /* section */ data, /* CI? (no) */)    \
+            CONFIG_REGION_DESC_PROC_RAM(pid, /* section */ sda , /* CI? (no) */)    \
+            CONFIG_REGION_DESC_PROC_RAM(pid, /* section */ sda2, /* CI? */ _CI)     \
         }
 
 /// @todo Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2
-#define CONFIG_REGION_DESC_PROC_RAM(pid, section)                                           \
+#define CONFIG_REGION_DESC_PROC_RAM(pid, section, CI)                                       \
         {                                                                                   \
             extern uint8_t ld_##section##P##pid##Start[0], ld_##section##P##pid##End[0];    \
             assert(((uintptr_t)ld_##section##P##pid##Start & 0xf) == 0                      \
@@ -369,7 +357,7 @@ void rtos_osInitMPU(void)
             SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_##section##P##pid##Start;/* from */        \
             SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_##section##P##pid##End-1;/* to, incl. */   \
             SMPU_1->RGD[r].WORD2 = WORD2_PROCESS_RAM;                                       \
-            SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM;                                    \
+            SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM##CI;                                \
             SMPU_1->RGD[r].WORD4 = WORD4_PIT_AWARE(pid);                                    \
             SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */ \
             ++ r;                                                                           \
@@ -391,7 +379,7 @@ void rtos_osInitMPU(void)
     SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_dataSharedStart;   /* Start address data + bss */
     SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_dataSharedEnd-1;   /* End address, including. */
     SMPU_1->RGD[r].WORD2 = WORD2_SHARED_RAM;
-    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM;
+    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM_CI;
     SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
     SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;           /* Enable region descriptor. */
     ++ r;
