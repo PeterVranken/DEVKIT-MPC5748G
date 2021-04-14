@@ -36,7 +36,7 @@ specific solutions. This project focuses on a single such configuration
 and offers a clean, professional level solution for that one. It might be
 possible or not possible, more or less difficult or more or less effortful
 to migrate this solution to other revisions or ports of GCC or other
-derivates from the microcontroller family but this is considered your
+derivatives from the microcontroller family but this is considered your
 responsibility and out of scope of this project.
 
 An important exception is the choice of the host machine. We don't expect
