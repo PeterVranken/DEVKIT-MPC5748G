@@ -123,7 +123,7 @@ static const icn_configuration_t icn_configuration =
             .noTriggeredEvents = 1,
 
             /* Here, we have an array of #ICN_MAX_NO_TRIGGERED_EVENTS possibly triggered
-               events. The first #ICN_MAX_NO_TRIGGERED_EVENTS elements of the array refer
+               events. The first .noTriggeredEvents elements of the array refer
                to actually triggered events and they hold an event ID each (see
                rtos_osCreateEvent()). The other elements of the array don't care.
                  All tasks, which are activated because of one of the triggered events,

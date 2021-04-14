@@ -53,10 +53,10 @@
  */
  
 /** Size of listener: This is the maximum number of signals to listen to. The number should
-    be kept little in order to flood the console with output about received signals. */
+    be kept little in order to not flood the console with output about received signals. */
 #define MAX_NO_SIGNALS_TO_LISTEN_TO 10u
 
-/** Unfortunately, our C library doesn't support case insenistive string compare. Here's a
+/** Unfortunately, our C library doesn't support case insensitive string compare. Here's a
     preliminary work around. */
 #define stricmp(a,b)    (strcmp(a,b))
  
@@ -551,8 +551,8 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
 
         if(signalIsInList)
         {
-            iprintf( "Signal %s (%s, %lu) had already been added to the listener. No is"
-                     " action taken\r\n"
+            iprintf( "Signal %s (%s, %lu) had already been added to the listener. No"
+                     " action is taken\r\n"
                    , pSignal->name
                    , pFrame->name
                    , pFrame->canId
@@ -603,7 +603,7 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
         else
         {
             iprintf( "Signal %s (%s, %lu) had not been added to the listener before."
-                     " No is action taken\r\n"
+                     " No action is taken\r\n"
                    , pSignal->name
                    , pFrame->name
                    , pFrame->canId
@@ -672,7 +672,7 @@ static void setSignalValue(unsigned int idxSignalInCanDb, float value)
  * understood CAN related commands. If so, the user demanded actions are performed.
  *   @return
  * \a true, if the user input could be consumed, else \a false. \a true doesn't necessarily
- * mean that the comand was correct and could be executed. (If not, appropriate user
+ * mean that the command was correct and could be executed. (If not, appropriate user
  * feedback has been written to serial output.)
  *   @param argC
  * The number of white space separated words of received user input.
