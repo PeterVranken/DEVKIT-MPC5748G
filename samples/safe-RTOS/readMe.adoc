@@ -11,11 +11,6 @@
 :tip-caption:       :bulb:
 :warning-caption:   :warning:
 
-CAUTION: This readme file basically is a copy from the ancestor project,
-which had been published for the MPC5643L. The text has not been fully
-revised for the new context yet. It may still contain some references to
-the single core solution for the MPC5643L.
-
 == About this DEVKIT-MPC5748G sample
 
 This DEVKIT-MPC5748G sample implements an easy to reuse RTOS
@@ -418,19 +413,21 @@ Once everything is prepared, the S32 Design Studio will never be started
 other than by clicking the script `S32DS-IDE.ps1` or its equivalent on
 non-Windows hosts.
 
-See https://github.com/PeterVranken/TRK-USB-MPC5643L[project overview^] and
+See https://github.com/PeterVranken/DEVKIT-MPC5748G#Introduction[project
+overview^] and the
 https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[GitHub
-Wiki^] for more details about downloading and installing the required
-tools.
+Wiki^] of the similar MPC5643L project for more details about downloading
+and installing the required tools.
 
 === Compiler and makefile
 
 Compilation and linkage are makefile controlled. The compiler is GCC
 (MinGW-powerpc-eabivle-4.9.4). The compiler is part of the S32 Design
 Studio installation and can be used independently from the Studio. The
-makefile is made generic and can be reused for true, large projects that
-want to make use of safe-RTOS. It supports a number of options (targets);
-get an overview by typing:
+makefile is made generic and not restricted to the use with this tiny
+sample. It can be reused for true, large projects that want to make use of
+safe-RTOS. It supports a number of options (targets); get an overview by
+typing:
  
     cd <projectRoot>/samples/safe-RTOS
     mingw32-make help
@@ -506,7 +503,7 @@ exception and some execution timing operations are dependent on the macro,
 too.
 
 To switch between linkage in ROM or RAM, open file `GNUmakefile` in a text
-editor and look for the definition of variable `defineList`. The left hand
+editor and look for the definition of variable `defineList`. The right hand
 side expression is a blank-separated list of symbols, which are passed to
 the compiler and linker as preprocessor #define. Add `LINK_IN_RAM` if
 you want to run your code in RAM.
