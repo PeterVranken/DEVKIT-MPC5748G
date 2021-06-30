@@ -18,7 +18,7 @@
  * channels. This driver configures only these few settings but doesn't care about the
  * channel configuration. It offers a simple resource management for the channels. The
  * clients of the DMA driver, mainly other I/O drivers, can make reservations for specific
- * chanels or can release them. This way, channels can be temporarily used or permanently
+ * channels or can release them. This way, channels can be temporarily used or permanently
  * allocated by other I/O drivers.\n
  *   The few global configuration settings need to be done with the perspective on the
  * complete system. It's mainly about channel priority when several DMA channels want to
@@ -32,6 +32,11 @@
  *   The use of the DMA controller is futhermore supported by offering a few APIs, which
  * hide some standard operations on DMA channels, like setting the transfer addresses or
  * enabling IRQs.
+ *
+ * @note References "RM48" in this module refer to "MPC5748G Reference Manual", document
+ * number: MPC5748GRM, Rev. 6, 10/2017.
+ *   References "RM75" in this module refer to "MPC5775E/MPC5775B Reference Manual",
+ * document number: MPC5775E, Rev. 1, 05/2018.
  *
  * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -52,8 +57,13 @@
  *   dma_osInitDMADriver
  *   dma_osAcquireDMAChannel
  *   dma_osReleaseDMAChannel
- *   dma_osGetDMAChannel
+ *   dma_osSetDMAChannelSourceAddress
+ *   dma_osSetDMAChannelDestinationAddress
+ *   dma_osEnableDMAChannelTriggerFromIODevice
+ *   dma_getTransferControlDescriptor (inline)
  * Local functions
+ *   getDMADevice
+ *   getDMAChannel
  *   configDMA
  */
 
@@ -119,6 +129,58 @@ static uint32_t DATA_OS(_dmaChannelAllocationAry)[(DMA_INSTANCE_COUNT*DMA_TCD_CO
 /*
  * Function implementation
  */
+
+/**
+ * Get a DMA device by index.
+ *   @return
+ * The DMA device is returned as pointer to the register file in the peripheral address
+ * space.
+ *   @param idxDMADevice
+ * The request relates to one particular DMA device. The devices, which are available on
+ * the given derivative are addressed to by zero based index. The range is
+ * 0..#DMA_INSTANCE_COUNT. Violations are caught by assertion.
+ */
+static inline DMA_Type *getDMADevice(unsigned int idxDMADevice)
+{
+    assert(idxDMADevice < sizeOfAry(_dmaDeviceAry));
+    return _dmaDeviceAry[idxDMADevice];
+    
+} /* End of getDMADevice */
+
+
+
+
+
+/**
+ * Get access to a DMA channel.\n
+ *   The channel must have been acquired before, see dma_osAcquireDMAChannel().
+ *   @return
+ * The channel is returned as pointer to the register file in the peripheral address space.
+ * The pointer is modelled as a struct, which is identical to the definition in the NXP
+ * derivative header. The same names and support macros can be used to access the registers
+ * and their fields.
+ *   @param idxDMADevice
+ * The requested channel belongs to one particular DMA device. The devices, which are
+ * available on the given derivative are addressed to by zero based index. The range is
+ * 0..#DMA_INSTANCE_COUNT. Violations are caught by assertion.
+ *   @param idxChannel
+ * The requested channel is addressed to by zero based index. The range is
+ * 0..#DMA_TCD_COUNT. Violations or the attempt to access a non allocated channel are
+ * caught by assertion and the function returns NULL in PRODUCTION compilation.
+ */
+static inline dma_dmaTransferCtrlDesc_t *getDMAChannel( unsigned int idxDMADevice
+                                                      , unsigned int idxChannel
+                                                      )
+{
+    DMA_Type * const pDMA = getDMADevice(idxDMADevice);
+    
+    assert(idxChannel < DMA_TCD_COUNT);
+    return (dma_dmaTransferCtrlDesc_t*)&pDMA->TCD[idxChannel];
+    
+} /* End of getDMAChannel */
+
+
+
 
 /**
  * Initialization of a single DMA device at system startup.
@@ -187,6 +249,23 @@ static void configDMA(DMA_Type * const pDMA)
                                | DMA_DCHPRI_DPA(0u)
                                | DMA_DCHPRI_CHPRI(idxChn);
     }
+    
+    /* RM75, 16.4.12 Clear Enable Request Register (DMA_CERQ). Disable requests for any DMA
+       channel from the connected I/O devices. */
+    pDMA->CERQ = DMA_CERQ_NOP(0u) | DMA_CERQ_CAER(1u) | DMA_CERQ_CERQ(0u);
+
+    /* RM75, 16.4.14 Clear Enable Error Interrupt Register (DMA_CEEI). All error interrupts
+       are disabled. */
+    pDMA->CEEI = DMA_CEEI_NOP(0u) | DMA_CEEI_CAEE(1u) | DMA_CEEI_CEEI(0u);
+
+    /* RM75, 16.4.15 Clear Interrupt Request Register (DMA_CINT). All possibly pending IRQs
+       are cleared. */
+    pDMA->CINT = DMA_CINT_NOP(0u) | DMA_CINT_CAIR(1u) | DMA_CINT_CINT(0u);
+
+    /* RM75, 16.4.16 Clear Error Register (DMA_CERR). All error bits (or pending error
+       interrupts) are reset. */
+    pDMA->CERR = DMA_CERR_NOP(0u) | DMA_CERR_CAEI(1u) | DMA_CERR_CERR(0u);
+    
 } /* configDMA */
 
 
@@ -224,6 +303,12 @@ void dma_osInitDMADriver(void)
  *   @return
  * \a true, if function succeeded, else \a false. The channel may be used only if the
  * function returned \a true!
+ *   @param pHDMAChn
+ * If the function succeeds then it has filled * \a pHDMAChn with a handle for the requested
+ * DMA channel. The handle is used by the other API functions. The handle * \a pHDMAChn is
+ * set to invalid if the function returns \a false.\n
+ *   The caller is in charge of allocating memory space for the handle object. It is not
+ * allowed to pass NULL.
  *   @param idxDMADevice
  * The channel is requested from one particular DMA device. The devices, which are
  * available on the given derivative are addressed to by zero based index. The range is
@@ -233,6 +318,20 @@ void dma_osInitDMADriver(void)
  * The requested channel is addressed to by zero based index. The range is
  * 0..#DMA_TCD_COUNT. Violations are caught by assertion and the function returns \a false
  * in PRODUCTION compilation.
+ *   @param pChnCfg
+ * Optionally, an initial configuration of the aquired channel can be passed in. (Or NULL
+ * if not needed.) The specified register contents are written binary one to one into the
+ * register file of the channel device.\n
+ *   No such configuration is done, if the function fails to reserve the channel for the
+ * client code.
+ *   @param reset
+ * If \a reset is \ true then some channel related status is reset prior to returning the
+ * channel object. This includes DMA requests and error and interrupt (enable) bits. (RM75
+ * 16.4.12 Clear Enable Request Register (DMA_CERQ), 16.4.14 Clear
+ * Enable Error Interrupt Register (DMA_CEEI), 16.4.15 Clear Interrupt Request Register
+ * (DMA_CINT) and 16.4.16 Clear Error Register (DMA_CERR).)\n
+ *   No such configuration is done, if the function fails to reserve the channel for the
+ * client code.
  *   @remark
  * The function can be called from all OS contexts on a single core. All other cores in the
  * system must not invoke this function simultaneously. Mutual exclusion of cores needs to
@@ -240,14 +339,21 @@ void dma_osInitDMADriver(void)
  * both getting access to the same channel!
  *   @see dma_osReleaseDMAChannel()
  *   @todo
- * Some cmmonly used channel feature could be configured in this function, e.g. use of IRQ on
- * transfer done, etc.
+ * Some commonly used channel features could be configured in this function, e.g. use of
+ * IRQ on transfer done, etc.
  */
-bool dma_osAcquireDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
+bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
+                            , unsigned int idxDMADevice
+                            , unsigned int idxChannel
+                            , const dma_dmaTransferCtrlDesc_t *pChnCfg
+                            , bool reset
+                            )
 {
     /* In all supported derivatives, all DMA devices have the same number of channels. */
     if(idxDMADevice > DMA_INSTANCE_COUNT  ||  idxChannel > DMA_TCD_COUNT)
     {
+        assert(pHDMAChn != NULL);
+        *pHDMAChn = (dma_dmaChannel_t){.pDMA = NULL, .idxChn = 0, .pTCD = NULL};
         assert(false);
         return false;
     }
@@ -259,6 +365,9 @@ bool dma_osAcquireDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
     // exclusion. Unfortunately, the offered cross-core communication mechanisms differ for
     // the derivatives, which are supported here and - for now - we need to limit the use
     // of this API to a single core.
+    /* We don't have a multi-core concept for this driver yet. For now, we restrict the use
+       of this function to the boot core. */
+    assert(rtos_osGetIdxCore() == 0);
     const uint32_t stateOnEntry = rtos_osEnterCriticalSection();
     
     #define WORD_SIZE   (sizeof(_dmaChannelAllocationAry[0])*8u)
@@ -283,10 +392,42 @@ bool dma_osAcquireDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
     
     rtos_osLeaveCriticalSection(stateOnEntry);
     
-    /// @todo Put some common, basic channel configuration here:
-    // - Reset of pending error and IRQ bits
-    // - Adresses to zero
-    // - stuff requested by additional function arguments (see TODO above)
+    if(success)
+    {
+        /* Our handle is a shortcut to the register files of entire DMA device and the
+           requested channel only. */
+        pHDMAChn->pDMA = getDMADevice(idxDMADevice);
+        pHDMAChn->idxChn = idxChannel;
+        pHDMAChn->pTCD = getDMAChannel(idxDMADevice, idxChannel);
+        assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+
+        /* A (preliminary) channel configuration can be writen into the device if
+           appropriate. */
+        if(pChnCfg != NULL)
+            *pHDMAChn->pTCD = *pChnCfg;
+
+        /* Some volatile status bits related to the channel can be cleared. */
+        if(reset)
+        {
+            DMA_Type * const pDMA = pHDMAChn->pDMA;
+
+            /* RM75, 16.4.12 Clear Enable Request Register (DMA_CERQ). Disable the requests
+               for this DMA channel. */
+            pDMA->CERQ = DMA_CERQ_CERQ(idxChannel);
+
+            /* RM75, 16.4.14 Clear Enable Error Interrupt Register (DMA_CEEI) for the given
+               channel. */
+            pDMA->CEEI = DMA_CEEI_CEEI(idxChannel);
+
+            /* RM75, 16.4.15 Clear Interrupt Request Register (DMA_CINT). A possibly
+               pending IRQ is cleared. */
+            pDMA->CINT = DMA_CINT_CINT(idxChannel);
+
+            /* RM75, 16.4.16 Clear Error Register (DMA_CERR). The error bit related to the
+               requested channel is reset. */
+            pDMA->CERR = DMA_CERR_CERR(idxChannel);
+        }
+    } /* if(Success? Will we do some first channel configuration?) */
 
     return success;
     
@@ -298,14 +439,8 @@ bool dma_osAcquireDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
 /**
  * Return a channel from a DMA device after use so that it can be acquired and used by
  * other clients. Counterpart of dma_osAcquireDMAChannel().\n
- *   @param idxDMADevice
- * The channel belongs to one particular DMA device. The devices, which are available on
- * the given derivative are addressed to by zero based index. The range is
- * 0..#DMA_INSTANCE_COUNT. Violations are caught by assertion.
- *   @param idxChannel
- * The requested channel is addressed to by zero based index. The range is
- * 0..#DMA_TCD_COUNT. Violations or the attempt to release a non allocated channel are
- * caught by assertion.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference. The function invalidates the handle.
  *   @remark
  * The function can be called from all OS contexts on a single core. All other cores in the
  * system must not invoke this function simultaneously. Mutual exclusion of cores needs to
@@ -317,14 +452,25 @@ bool dma_osAcquireDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
  * this can't be checked by the function! Careful use is a must.
  *   @see dma_osAcquireDMAChannel()
  */
-void dma_osReleaseDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
+void dma_osReleaseDMAChannel(dma_dmaChannel_t * const pHDMAChn)
 {
-    /* In all supported derivatives, all DMA devices have the same number of channels. */
-    if(idxDMADevice > DMA_INSTANCE_COUNT  ||  idxChannel > DMA_TCD_COUNT)
-    {
-        assert(false);
-    }
-     
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    /* The identification of the DMA device by index would theoretically require a search
+       in the array of all of them - the inverse operation to what is done in the channel
+       acquisition. However, we know the characteristics of the (few) supported devices and
+       a shortcut is possible. */
+#if defined(MCU_MPC5748G)
+    assert(pHDMAChn->pDMA == DMA);
+    const unsigned int idxDMADevice = 0u;
+#elif defined(MCU_MPC5775B)
+    assert(pHDMAChn->pDMA == DMA_0  ||  pHDMAChn->pDMA == DMA_1);
+    const unsigned int idxDMADevice = pHDMAChn->pDMA == DMA_0? 0u: 1u;
+#else
+# error Bad target board selection
+#endif
+
     /// @todo Put some channel de-configuration code here, e.g.
     // - Disabling of all IRQs
     // - Reset of all pending IRQ and error bits
@@ -337,10 +483,13 @@ void dma_osReleaseDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
     // exclusion. Unfortunately, the offered cross-core communication mechanisms differ for
     // the derivatives, which are supported here and - for now - we need to limit the use
     // of this API to a single core.
+    /* We don't have a multi-core concept for this driver yet. For now, we restrict the use
+       of this function to the boot core. */
+    assert(rtos_osGetIdxCore() == 0);
     const uint32_t stateOnEntry = rtos_osEnterCriticalSection();
     
     #define WORD_SIZE   (sizeof(_dmaChannelAllocationAry[0])*8u)
-    const unsigned int idxLockBit = idxDMADevice*DMA_TCD_COUNT + idxChannel
+    const unsigned int idxLockBit = idxDMADevice*DMA_TCD_COUNT + pHDMAChn->idxChn
                      , idxWord = idxLockBit/WORD_SIZE
                      , maskForBit = 1u << (idxLockBit - idxWord*WORD_SIZE);
     const uint32_t allocVec = _dmaChannelAllocationAry[idxWord];
@@ -352,34 +501,96 @@ void dma_osReleaseDMAChannel(unsigned int idxDMADevice, unsigned int idxChannel)
 
     rtos_osLeaveCriticalSection(stateOnEntry);
     
+    /* Inavlidate the handle in order to make unwanted use more unlikely. */
+    *pHDMAChn = (dma_dmaChannel_t){.pDMA = NULL, .idxChn = 0, .pTCD = NULL};
+    
 } /* End of dma_osReleaseDMAChannel */
 
 
 
 
 /**
- * Get access to a DMA channel.\n
- *   The channel must have been acquired before, see dma_osAcquireDMAChannel().
- *   @return
- * The channel is returned as pointer to the register file in the peripheral address space.
- * The pointer is modelled as a struct, whichis identical to the definition in the NXP
- * derivative header. The same names and support macros can be used to access the registers
- * and their fields.
- *   @param idxDMADevice
- * The requested channel belongs to one particular DMA device. The devices, which are
- * available on the given derivative are addressed to by zero based index. The range is
- * 0..#DMA_INSTANCE_COUNT. Violations are caught by assertion and the function returns NULL
- * in PRODUCTION compilation.
- *   @param idxChannel
- * The requested channel is addressed to by zero based index. The range is
- * 0..#DMA_TCD_COUNT. Violations or the attempt to access a non allocated channel are
- * caught by assertion and the function returns NULL in PRODUCTION compilation.
+ * Set the source address of an upcoming DMA transfer.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference.
+ *   @param pSourceOfTransfer
+ * The later DMA transfer using this channel will start with reading * \a
+ * pTransferDestination.
  */
-dma_dmaTransferCtrlDesc_t *dma_osGetDMAChannel( unsigned int idxDMADevice
-                                              , unsigned int idxChannel
+void dma_osSetDMAChannelSourceAddress( const dma_dmaChannel_t * const pHDMAChn
+                                     , const void *pSourceOfTransfer
+                                     )
+{
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    /* See RM75 16.4.27, TCD Source Address (DMA_TCDn_SADDR), p.674. */
+    pHDMAChn->pTCD->SADDR = DMA_TCD_SADDR_SADDR((__IO uint32_t)pSourceOfTransfer);
+
+} /* End of dma_osSetDMAChannelSourceAddress */
+
+
+
+
+/**
+ * Set the destination address of an upcoming DMA transfer.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference.
+ *   @param pTransferDestination
+ * The later DMA transfer using this channel will start writing to * \a
+ * pTransferDestination.
+ */
+void dma_osSetDMAChannelDestinationAddress( const dma_dmaChannel_t * const pHDMAChn
+                                          , void *pTransferDestination
+                                          )
+{
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    /* See RM75 16.4.34, p.679. */
+    pHDMAChn->pTCD->DADDR = DMA_TCD_DADDR_DADDR((__IO uint32_t)pTransferDestination);
+    
+} /* End of dma_osSetDMAChannelDestinationAddress */
+
+
+
+
+/**
+ * Enable or disable the triggers of a DAM channel from an I/O device.\n
+ *   In most applications of a DMA channel, the data is transfered from or to another I/O
+ * device. In this case, the real-time contsraints of that device will control the speed of
+ * the data transfer; the device will trigger the DMA to read or write another word if the
+ * device has produced one or requires one for processing. This trigger is an internally
+ * connected wire in the MCU and the DMA channel has a gate function to either accept the
+ * triggers or to ignore them. This function opens or closes this gate.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference.
+ *   @param enable
+ * \a true will open the gate such that the triggers reach the DMA channel and continuous
+ * data transfer from/to the I/O device becomes possible.\n
+ *   \a false will close the gate such that the triggers can't reach the DMA channel. No
+ * further data transfer from/to the I/O device will occur.\n
+ *   @note
+ * Just controlling the trigger gate of the DMA channel is normally not sufficient to
+ * control the data flow. Some related setting changes of the connected I/O device may be
+ * needed in a coherent way. See RM48 - in particular RM48, 70.5.8.1f - and RM75 for
+ * details of the particular I/O device. 
+ */
+void dma_osEnableDMAChannelTriggerFromIODevice( const dma_dmaChannel_t * const pHDMAChn
+                                              , bool enable
                                               )
 {
-    assert(idxDMADevice < sizeOfAry(_dmaDeviceAry)  &&  idxChannel < DMA_TCD_COUNT);
-    return (dma_dmaTransferCtrlDesc_t*)&_dmaDeviceAry[idxDMADevice]->TCD[idxChannel];
-
-} /* End of dma_osGetDMAChannel */
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    if(enable)
+    {
+        /** See RM48, 70.3.9 Set Enable Request Register (DMA_SERQ), p.3504. */
+        pHDMAChn->pDMA->SERQ = DMA_SERQ_SERQ(pHDMAChn->idxChn);
+    }
+    else
+    {
+        /** See RM48, 70.3.10 Clear Enable Request Register (DMA_CERQ), p.3505. */
+        pHDMAChn->pDMA->CERQ = DMA_CERQ_CERQ(pHDMAChn->idxChn);
+    }    
+} /* End of dma_osEnableDMAChannelTriggerFromIODevice */
