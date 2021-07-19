@@ -117,9 +117,6 @@ _Static_assert( sizeof(dma_dmaTransferCtrlDesc_t) == sizeof(((const DMA_Type*)NU
  * Data definitions
  */
  
-/** A map, which relates a DMA device by index to the pointer to its register file. */
-static DMA_Type * const RODATA(_dmaDeviceAry)[DMA_INSTANCE_COUNT] = DMA_BASE_PTRS;
-
 /** A bit vector with one bit per DMA channel. A set bit means that the channel is
     allocated by some (unknown, unidentified) client code. */
 static uint32_t DATA_OS(_dmaChannelAllocationAry)[(DMA_INSTANCE_COUNT*DMA_TCD_COUNT+31u)/32u] =
@@ -142,8 +139,11 @@ static uint32_t DATA_OS(_dmaChannelAllocationAry)[(DMA_INSTANCE_COUNT*DMA_TCD_CO
  */
 static inline DMA_Type *getDMADevice(unsigned int idxDMADevice)
 {
-    assert(idxDMADevice < sizeOfAry(_dmaDeviceAry));
-    return _dmaDeviceAry[idxDMADevice];
+    /** A map, which relates a DMA device by index to the pointer to its register file. */
+    static DMA_Type * const RODATA(dmaDeviceAry_)[DMA_INSTANCE_COUNT] = DMA_BASE_PTRS;
+
+    assert(idxDMADevice < sizeOfAry(dmaDeviceAry_));
+    return dmaDeviceAry_[idxDMADevice];
     
 } /* End of getDMADevice */
 
