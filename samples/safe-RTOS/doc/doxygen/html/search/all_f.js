@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['rodata',['RODATA',['../typ__types_8h.html#a587e4f86f9f8a684a1e2df4c3c8ebbac',1,'typ_types.h']]],
   ['rtos_2eh',['rtos.h',['../rtos_8h.html',1,'']]],
   ['rtos_5fcheckusercodereadptr',['rtos_checkUserCodeReadPtr',['../rtos_8h.html#aac7a5ed04ef56818262cd5288d327648',1,'rtos.h']]],
   ['rtos_5fcheckusercodewriteptr',['rtos_checkUserCodeWritePtr',['../rtos_8h.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f',1,'rtos_checkUserCodeWritePtr(unsigned int PID, const void *address, size_t noBytes):&#160;rtos_systemMemoryProtectionUnit.c'],['../rtos__system_memory_protection_unit_8c.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f',1,'rtos_checkUserCodeWritePtr(unsigned int PID, const void *address, size_t noBytes):&#160;rtos_systemMemoryProtectionUnit.c'],['../rtos__system_memory_protection_unit_8h.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f',1,'rtos_checkUserCodeWritePtr(unsigned int PID, const void *address, size_t noBytes):&#160;rtos_systemMemoryProtectionUnit.c']]],
@@ -45,6 +46,8 @@ var searchData=
   ['rtos_5feventdesc_5ft',['rtos_eventDesc_t',['../structrtos__event_desc__t.html',1,'rtos_eventDesc_t'],['../rtos__scheduler_8h.html#a33633faf5c804dc89a8dd4060940a354',1,'rtos_eventDesc_t():&#160;rtos_scheduler.h']]],
   ['rtos_5fexternalinterrupt_2ec',['rtos_externalInterrupt.c',['../rtos__external_interrupt_8c.html',1,'']]],
   ['rtos_5fexternalinterrupt_2eh',['rtos_externalInterrupt.h',['../rtos__external_interrupt_8h.html',1,'']]],
+  ['rtos_5fgetcorestatusregister',['rtos_getCoreStatusRegister',['../rtos_8h.html#a93a57e66b8655815f7eb6d05e30c4766',1,'rtos.h']]],
+  ['rtos_5fgetidxcore',['rtos_getIdxCore',['../rtos_8h.html#a966523717fe21b4addf50dc0fd42bd61',1,'rtos.h']]],
   ['rtos_5fgetinstanceptr',['rtos_getInstancePtr',['../rtos__kernel_instance_data_8h.html#a7168820daa38757f5651cc18cd285d40',1,'rtos_kernelInstanceData.h']]],
   ['rtos_5fgetnoactivationloss',['rtos_getNoActivationLoss',['../rtos_8h.html#a5f63a85fcf6b79022d8039ae974aba96',1,'rtos_getNoActivationLoss(unsigned int idEvent):&#160;rtos_scheduler.c'],['../rtos__scheduler_8c.html#a5f63a85fcf6b79022d8039ae974aba96',1,'rtos_getNoActivationLoss(unsigned int idEvent):&#160;rtos_scheduler.c'],['../rtos__scheduler_8h.html#af741852d8d40bcd61fc141fc96c0523b',1,'rtos_getNoActivationLoss(unsigned int idTask):&#160;rtos_scheduler.c']]],
   ['rtos_5fgetnotaskfailure',['rtos_getNoTaskFailure',['../rtos_8h.html#abb25bad5cf1976808e7acb79c30290bd',1,'rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr):&#160;rtos_process.c'],['../rtos__process_8c.html#abb25bad5cf1976808e7acb79c30290bd',1,'rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr):&#160;rtos_process.c'],['../rtos__process_8h.html#abb25bad5cf1976808e7acb79c30290bd',1,'rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr):&#160;rtos_process.c']]],

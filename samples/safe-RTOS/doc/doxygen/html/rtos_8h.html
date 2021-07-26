@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -289,6 +289,10 @@ Functions</h2></td></tr>
 <tr class="separator:aeddb4b88dd8c1052eb41763e7164e7fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63296923146f8dff5b8754ca1c6003dc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a63296923146f8dff5b8754ca1c6003dc">rtos_isProcessSuspended</a> (uint32_t PID)</td></tr>
 <tr class="separator:a63296923146f8dff5b8754ca1c6003dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a966523717fe21b4addf50dc0fd42bd61"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a966523717fe21b4addf50dc0fd42bd61">rtos_getIdxCore</a> (void)</td></tr>
+<tr class="separator:a966523717fe21b4addf50dc0fd42bd61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93a57e66b8655815f7eb6d05e30c4766"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a93a57e66b8655815f7eb6d05e30c4766">rtos_getCoreStatusRegister</a> (void)</td></tr>
+<tr class="separator:a93a57e66b8655815f7eb6d05e30c4766"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6621923bed2b7ca031f158a305704048"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a6621923bed2b7ca031f158a305704048">rtos_osGetIdxCore</a> (void)</td></tr>
 <tr class="separator:a6621923bed2b7ca031f158a305704048"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a585062ee728ec5d30b078964aa1f0862"><td class="memItemLeft" align="right" valign="top">static int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a585062ee728ec5d30b078964aa1f0862">rtos_osRunTask</a> (const <a class="el" href="structrtos__task_desc__t.html">rtos_taskDesc_t</a> *pUserTaskConfig, uintptr_t taskParam)</td></tr>
@@ -315,7 +319,20 @@ Functions</h2></td></tr>
 <tr class="separator:a50d3acde6c733f5dcf8decab6299e3ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Definition of global interface of module rtos.c</p>
+<div class="textblock"><p>Public interface of safe-RTOS. The functions, which are published here as prototypes or which are implemented here as inline functions, are intended for use. Most typical, an operating system (sometimes called Basic Software) will be built on this interface.</p>
+<p>safe-RTOS application interface:</p>
+<p>System configuration and initialization:</p>
+<p>rtos_osCreateEvent rtos_osRegisterInitTask rtos_osRegisterUserTask rtos_osRegisterOSTask rtos_osInitINTCInterruptController rtos_osRegisterInterruptHandler rtos_osGrantPermissionRunTask rtos_osGrantPermissionSuspendProcess rtos_osInitKernel</p>
+<p>Control tasks and processes:</p>
+<p>rtos_osTriggerEvent rtos_triggerEvent (inline) rtos_osRunTask (inline) rtos_runTask (inline) rtos_terminateTask (inline) rtos_osSuspendProcess rtos_suspendProcess (inline)</p>
+<p>Critical sections:</p>
+<p>rtos_osSuspendAllInterrupts (inline) rtos_osResumeAllInterrupts (inline) rtos_osEnterCriticalSection (inline) rtos_osLeaveCriticalSection (inline) rtos_osSuspendAllTasksByPriority rtos_osResumeAllTasksByPriority rtos_suspendAllTasksByPriority rtos_resumeAllTasksByPriority</p>
+<p>System call interface:</p>
+<p>rtos_systemCall rtos_osSystemCallBadArgument rtos_checkUserCodeReadPtr (inline) rtos_checkUserCodeWritePtr</p>
+<p>Query system state:</p>
+<p>rtos_osGetIdxCore (inline) rtos_getIdxCore rtos_getCoreStatusRegister rtos_osGetAllInterruptsSuspended (inline) rtos_isProcessSuspended</p>
+<p>Diagnostic interface:</p>
+<p>rtos_getNoActivationLoss rtos_getNoTotalTaskFailure rtos_getNoTaskFailure rtos_getStackReserve</p>
 <p>Copyright (C) 2017-2020 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span style="display: none;">.nosp@m.</span>_Vra<span style="display: none;">.nosp@m.</span>nken@<span style="display: none;">.nosp@m.</span>Yaho<span style="display: none;">.nosp@m.</span>o.de</a>)</p>
 <p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
@@ -1291,7 +1308,7 @@ This function must be called from the OS context only. It may be called from an 
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enter critcal section; partially suspend task scheduling.</p>
+<p>Enter critical section; partially suspend task scheduling.</p>
 <p>Priority ceiling protocol (PCP), partial scheduler lock: All tasks up to the specified task priority level won't be handled by the CPU any more. This function is intended for implementing mutual exclusion of sub-sets of tasks.<br />
  Note, the use of the other function pairs<br />
 </p><ul>
@@ -1713,6 +1730,42 @@ This function must be called from the OS context only. Any attempt to use it in 
 
 </div>
 </div>
+<a class="anchor" id="a966523717fe21b4addf50dc0fd42bd61"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int rtos_getIdxCore </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>rtos_getIdxCore This function returns the contents of CPU read-only register PIR. </p><dl class="section return"><dt>Returns</dt><dd>Get the index of the core the calling code is running on. The range is 0..2, meaning Z4A, Z4B, Z2, respectively. (The convenience macros <a class="el" href="rtos_8h.html#a83cb2901c9810c8c160a1b0d8cf7fa2b">RTOS_CORE_Z4A</a>, <a class="el" href="rtos_8h.html#a7728701da34558de9c44cad1f8ff7bda">RTOS_CORE_Z4B</a> and <a class="el" href="rtos_8h.html#a4bdfa60bad6565f0e56183f260550e60">RTOS_CORE_Z2</a> can be used.) </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This function may be called from all contexts. However, OS contexts shouldn't because of the performance penalty. They should only use the intrinsic <a class="el" href="rtos_8h.html#a6621923bed2b7ca031f158a305704048">rtos_osGetIdxCore()</a> instead. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a93a57e66b8655815f7eb6d05e30c4766"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t rtos_getCoreStatusRegister </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>rtos_getCoreStatusRegister Get the value of the msr. This is an entry point to C code, which can be called from supervisor and user mode. </p><dl class="section return"><dt>Returns</dt><dd>Get the current contents of CPU register MSR on the code executing core. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This function can be called from OS and user code. OS code should however better use an intrinsic to read the MSR and in order to save the function call overhead. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a6621923bed2b7ca031f158a305704048"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1915,7 +1968,9 @@ This function must be called from the OS context only. Any attempt to use it in 
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Enable all External Interrupts. This is done unconditionally, there's no nesting counter. </p><dl class="section remark"><dt>Remarks</dt><dd>This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd></dl>
+<p>Enable all External Interrupts. This is done unconditionally, there's no nesting counter. </p><dl class="section remark"><dt>Remarks</dt><dd>This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd>
+<dd>
+This function can be called even from non safe-RTOS applications if they run in supervisor mode. </dd></dl>
 
 </div>
 </div>
@@ -1941,7 +1996,9 @@ This function must be called from the OS context only. Any attempt to use it in 
 </table>
 </div><div class="memdoc">
 <p>Get the current state of the MSR[EE] status bit. </p><dl class="section return"><dt>Returns</dt><dd>Get <em>true</em> if the processing of External Interrupts is currently enabled and <em>false</em> otherwise. </dd></dl>
-<dl class="section remark"><dt>Remarks</dt><dd>This function must be used from OS tasks and ISRs only. Calling it from a user task will cause a privileged instruction exception and an error is counted for the process. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This function must be used from OS tasks and ISRs only. Calling it from a user task will cause a privileged instruction exception and an error is counted for the process. </dd>
+<dd>
+This function can be called even from non safe-RTOS applications if they run in supervisor mode. </dd></dl>
 
 </div>
 </div>
@@ -1970,7 +2027,9 @@ This function must be called from the OS context only. Any attempt to use it in 
  The critical section is implemented by globally disabling all interrupts. </p><dl class="section return"><dt>Returns</dt><dd>The machine status register content of before disabling the interrupts is returned. The caller will safe it and pass it back to <a class="el" href="rtos_8h.html#ae6935dc959dd97bcbe04070a477c2ac3">rtos_osLeaveCriticalSection()</a> at the end of the critical section. This way the nestability is implemented. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>The main difference of this function in comparison to <a class="el" href="rtos_8h.html#ab154b2923ad0d102fa1515e89d42c898">rtos_osSuspendAllInterrupts()</a> is the possibility to nest the calls at different hierarchical code sub-function levels. </dd>
 <dd>
-This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd></dl>
+This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd>
+<dd>
+This function can be called even from non safe-RTOS applications if they run in supervisor mode. </dd></dl>
 
 </div>
 </div>
@@ -2002,7 +2061,9 @@ This function must be called from the OS context only. Any attempt to use it in 
   </table>
   </dd>
 </dl>
-<dl class="section remark"><dt>Remarks</dt><dd>This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd>
+<dd>
+This function can be called even from non safe-RTOS applications if they run in supervisor mode. </dd></dl>
 
 </div>
 </div>

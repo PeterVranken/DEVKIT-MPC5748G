@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -181,7 +181,7 @@ Variables</h2></td></tr>
 <tr class="separator:ac65d5369b0c6512dc46693ed73edad4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This file implements a simple yet "safe" Real Time Operating System (RTOS) for the MPC5643L.<br />
+<div class="textblock"><p>This file implements a simple yet "safe" Real Time Operating System (RTOS) for the MPC5748G.<br />
  The RTOS offers a strictly priority controlled scheduler. The user code is organized in processes and tasks. Any task belongs to one of the processes. Different processes have different privileges. The concept is to use the process with highest privileges for the safety tasks.<br />
  A task is activated by an event; an application will repeatedly use the API <a class="el" href="rtos__scheduler_8c.html#a3b8a72b75ad042fe88206066a4c05869">rtos_osCreateEvent()</a> to define the conditions or points in time, when the tasks have to become due.<br />
  Prior to the start of the scheduler (and thus prior to the beginning of the pseudo-parallel, concurrent execution of the tasks) all later used tasks are registered at the scheduler; an application will repeatedly use the APIs <a class="el" href="rtos__scheduler_8c.html#abdaa15ddea40aae60f473669d870652b">rtos_osRegisterUserTask()</a> and <a class="el" href="rtos__scheduler_8c.html#ae6cf0f2018f4c72466f2a206d59d4475">rtos_osRegisterOSTask()</a>.<br />
@@ -203,7 +203,7 @@ Basic conformance class means that a task cannot suspend intentionally and ahead
 <li>An ISR may use rtos_osRunTask to implement a callback into another process. The callback is run under the constraints of the target process and can therefore be implemented as part of the application(s) in that process and still without breaking the safety concept</li>
 </ul>
 <p>Safety:<br />
- The RTOS is based on the "unsafe" counterpart published at <a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/RTOS-VLE">https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/RTOS-VLE</a>. Most explanations given there still hold. There are two major differences:<br />
+ The RTOS is based on its "unsafe" counterpart published at <a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/RTOS-VLE">https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/RTOS-VLE</a>. Most explanations given there still hold. There are two major differences:<br />
  In this project, we have replaced the hardware scheduler with a scheduler implemented in software. The behavior is nearly identical and the performance penalty is little in comparison to the advantage of now having an unlimited number of events, priorities and tasks.<br />
  The second modification is the added safety concept. Such a concept starts with a specification of what we expect from a "safe" RTOS:<br />
  "If the implementation of a task, which is meant the supervisory or safety task, is itself free of faults then the RTOS shall guarantee that this task is correctly and timely executed regardless of whatever imaginable failures are made by any other process."\n
@@ -292,11 +292,13 @@ Basic conformance class means that a task cannot suspend intentionally and ahead
 <p>Helper: Resolve the linear event index used at the API into the actual object. The mapping is not trivial since the events are internally ordered by priority. </p><dl class="section return"><dt>Returns</dt><dd>Get the event object by reference. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">idEvent</td><td>The mapping is not essential for the kernel. It implies avoidable run-time effort. The only reason for having the mapping is a user friendly configuration API. If we had a configuration tool (similar to OSEK OIL tool) or if we would put some documented restrictions on the configuration API then we could have a implicit one-by-one mapping without any loss of functionality. </td></tr>
+    <tr><td class="paramname">idEvent</td><td>The linear index of the event as used at the API. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section remark"><dt>Remarks</dt><dd>This function must be called from a supervisor context only. It makes use of priviledged instructions. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>The mapping is not essential for the kernel. It implies avoidable run-time effort. The only reason for having the mapping is a user friendly configuration API. If we had a configuration tool (similar to OSEK OIL tool) or if we would put some documented restrictions on the configuration API then we could have a implicit one-by-one mapping without any loss of functionality. </dd>
+<dd>
+This function must be called from a supervisor context only. It makes use of priviledged instructions. </dd></dl>
 
 </div>
 </div>

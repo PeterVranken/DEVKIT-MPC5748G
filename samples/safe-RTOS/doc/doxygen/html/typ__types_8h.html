@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -125,6 +125,8 @@ Macros</h2></td></tr>
 <tr class="separator:ab5ce7bd7fe4169a9f709815f03f9870b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1dec568e79152c892dcf63f445cbd7a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="typ__types_8h.html#aa1dec568e79152c892dcf63f445cbd7a">ALWAYS_INLINE</a>&#160;&#160;&#160;inline __attribute__((always_inline))</td></tr>
 <tr class="separator:aa1dec568e79152c892dcf63f445cbd7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a587e4f86f9f8a684a1e2df4c3c8ebbac"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="typ__types_8h.html#a587e4f86f9f8a684a1e2df4c3c8ebbac">RODATA</a>(var)&#160;&#160;&#160;SECTION(.rodata.var) var</td></tr>
+<tr class="separator:a587e4f86f9f8a684a1e2df4c3c8ebbac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45569d2ba8b10d783f1fac72f25c801b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="typ__types_8h.html#a45569d2ba8b10d783f1fac72f25c801b">BSS_OS</a>(var)&#160;&#160;&#160;SECTION(.bss.OS.var) var</td></tr>
 <tr class="separator:a45569d2ba8b10d783f1fac72f25c801b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abdd7482984a69c82a2b3d4c5b9c6ceac"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="typ__types_8h.html#abdd7482984a69c82a2b3d4c5b9c6ceac">SBSS_OS</a>(var)&#160;&#160;&#160;SECTION(.sbss.OS.var) var</td></tr>
@@ -245,6 +247,26 @@ Typedefs</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Some function may better be inlined even if the optimizer rates code size higher and wouldn't therefore inline it. </p>
+
+</div>
+</div>
+<a class="anchor" id="a587e4f86f9f8a684a1e2df4c3c8ebbac"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RODATA</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">var</td><td>)</td>
+          <td>&#160;&#160;&#160;SECTION(.rodata.var) var</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Helper for definition of simple constant data objects.<br />
+ CAUTION: This section defining macro needs to be applied to all data objects, which are declared "static const" (no matter whether compilation unit or function scope). The default behavior of the compiler is to place such objects (except they are too large) in the SDA2 section in RAM. In RAM, the default placing is the area of process P1. Without explicit placing, this would mean that they go into some RAM, which process P1 has write access to. Any constant object, owned by a process other than P1, which would be default-located by the compiler in P1 RAM is vulnerable and will potentially break the safety concept. </p><dl class="section remark"><dt>Remarks</dt><dd>safe-RTOS doesn't have an access control concept for constant data objects; they are generally readable by all processes. Therefore we don't offer specific macros for OS or user processes. </dd>
+<dd>
+See <a class="el" href="typ__types_8h.html#a45569d2ba8b10d783f1fac72f25c801b">BSS_OS</a> for further details. </dd></dl>
 
 </div>
 </div>

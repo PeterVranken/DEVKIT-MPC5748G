@@ -4,6 +4,7 @@ var typ__types_8h =
     [ "ATTRIB_DBG_ONLY", "typ__types_8h.html#ad31010df31fe7452775431030bfcae24", null ],
     [ "NO_INLINE", "typ__types_8h.html#ab5ce7bd7fe4169a9f709815f03f9870b", null ],
     [ "ALWAYS_INLINE", "typ__types_8h.html#aa1dec568e79152c892dcf63f445cbd7a", null ],
+    [ "RODATA", "typ__types_8h.html#a587e4f86f9f8a684a1e2df4c3c8ebbac", null ],
     [ "BSS_OS", "typ__types_8h.html#a45569d2ba8b10d783f1fac72f25c801b", null ],
     [ "SBSS_OS", "typ__types_8h.html#abdd7482984a69c82a2b3d4c5b9c6ceac", null ],
     [ "UNCACHED_OS", "typ__types_8h.html#a73f102ee950fef9eca4f5182edd56819", null ],

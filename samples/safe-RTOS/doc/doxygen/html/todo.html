@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -116,8 +116,7 @@ $(document).ready(function(){initNavTree('todo.html','');});
 <dt><a class="anchor" id="_todo000009"></a>Global <a class="el" href="rtos__external_interrupt_8h.html#a88a271864adecb3d629668674fa0815a">rtos_osInitINTCInterruptController</a>  (void)</dt>
 <dd>This can become a sub-routine, which can then be applied in registerService to check user input  </dd>
 <dt><a class="anchor" id="_todo000017"></a>Global <a class="el" href="rtos__system_memory_protection_unit_8h.html#a237ec8ef4e592440f07488b7a97f27a1">rtos_osInitMPU</a>  (void)</dt>
-<dd><p class="startdd">See <a class="el" href="rtos_8h.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f">rtos_checkUserCodeWritePtr()</a> in this module and <a class="el" href="rtos_8h.html#aac7a5ed04ef56818262cd5288d327648">rtos_checkUserCodeReadPtr()</a> in <a class="el" href="rtos_8h.html">rtos.h</a>, too </p>
-<p>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </p>
+<dd><p class="startdd">TBC: Does DMA use SV rights? Otherwise don't handle all masters same </p>
 <p class="enddd">Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2  </p>
 </dd>
 <dt><a class="anchor" id="_todo000010"></a>Global <a class="el" href="rtos__external_interrupt_8c.html#a10a6460ff9e902f2d0ac42394e0e4fea">rtos_osRegisterInterruptHandler</a>  (const rtos_interruptServiceRoutine_t pInterruptHandler, unsigned int processorID, unsigned int vectorNum, unsigned int psrPriority, bool isPreemptable)</dt>

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['safe_2drtos_20_28vle_29_20_2d_20a_20simple_20rtos_20with_20safety_20support_20for_20mpc5643l',['safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L',['../index.html',1,'']]],
+  ['safe_2drtos_20_2d_20a_20simple_20rtos_20with_20safety_20support_20for_20mpc5748g',['safe-RTOS - A simple RTOS with safety support for MPC5748G',['../index.html',1,'']]],
   ['sbss_5fos',['SBSS_OS',['../typ__types_8h.html#abdd7482984a69c82a2b3d4c5b9c6ceac',1,'typ_types.h']]],
   ['sbss_5fp1',['SBSS_P1',['../typ__types_8h.html#a02bb2f74e57ec2bcb77bb7979d8a5af2',1,'typ_types.h']]],
   ['sbss_5fp2',['SBSS_P2',['../typ__types_8h.html#a656ff394e214e309e6217ade0f640d69',1,'typ_types.h']]],

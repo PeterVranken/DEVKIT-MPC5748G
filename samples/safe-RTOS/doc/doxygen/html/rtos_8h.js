@@ -76,6 +76,8 @@ var rtos_8h =
     [ "rtos_getStackReserve", "rtos_8h.html#a240a9b010103563bb950b8d69017703b", null ],
     [ "rtos_osSuspendProcess", "rtos_8h.html#aeddb4b88dd8c1052eb41763e7164e7fa", null ],
     [ "rtos_isProcessSuspended", "rtos_8h.html#a63296923146f8dff5b8754ca1c6003dc", null ],
+    [ "rtos_getIdxCore", "rtos_8h.html#a966523717fe21b4addf50dc0fd42bd61", null ],
+    [ "rtos_getCoreStatusRegister", "rtos_8h.html#a93a57e66b8655815f7eb6d05e30c4766", null ],
     [ "rtos_osGetIdxCore", "rtos_8h.html#a6621923bed2b7ca031f158a305704048", null ],
     [ "rtos_osRunTask", "rtos_8h.html#a585062ee728ec5d30b078964aa1f0862", null ],
     [ "rtos_runTask", "rtos_8h.html#ae1f6778a3742632e1d754dc916a1aeff", null ],

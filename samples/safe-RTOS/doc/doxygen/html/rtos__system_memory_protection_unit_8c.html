@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -166,8 +166,8 @@ Macros</h2></td></tr>
 <tr class="separator:a1b8c92d1da134eaee6b90bd3a6d12c79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48449e3c7f5a302914fa2359b0f1d499"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>CONFIG_REGIONS_PROC_RAM</b>(pid)</td></tr>
 <tr class="separator:a48449e3c7f5a302914fa2359b0f1d499"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c5e58bf25d236ebe88fc4ffc8204836"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>CONFIG_REGION_DESC_PROC_RAM</b>(pid, section)</td></tr>
-<tr class="separator:a4c5e58bf25d236ebe88fc4ffc8204836"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22f18df80ca97d1ee72313364f55ffa0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>CONFIG_REGION_DESC_PROC_RAM</b>(pid, section, CI)</td></tr>
+<tr class="separator:a22f18df80ca97d1ee72313364f55ffa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ea2cafb6afb46293c8aecba2e261973"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4ea2cafb6afb46293c8aecba2e261973"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>from</b>&#160;&#160;&#160;0</td></tr>
 <tr class="separator:a4ea2cafb6afb46293c8aecba2e261973"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -314,15 +314,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">{                                                           \</div>
-<div class="line">            CONFIG_REGION_DESC_PROC_RAM(pid, <span class="comment">/* section */</span> data)    \</div>
-<div class="line">            CONFIG_REGION_DESC_PROC_RAM(pid, <span class="comment">/* section */</span> sda)     \</div>
-<div class="line">            CONFIG_REGION_DESC_PROC_RAM(pid, <span class="comment">/* section */</span> sda2)    \</div>
+<b>Value:</b><div class="fragment"><div class="line">{                                                                           \</div>
+<div class="line">            CONFIG_REGION_DESC_PROC_RAM(pid, <span class="comment">/* section */</span> data, <span class="comment">/* CI? (no) */</span>)    \</div>
+<div class="line">            CONFIG_REGION_DESC_PROC_RAM(pid, <span class="comment">/* section */</span> sda , <span class="comment">/* CI? (no) */</span>)    \</div>
+<div class="line">            CONFIG_REGION_DESC_PROC_RAM(pid, <span class="comment">/* section */</span> sda2, <span class="comment">/* CI? */</span> _CI)     \</div>
 <div class="line">        }</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a4c5e58bf25d236ebe88fc4ffc8204836"></a>
+<a class="anchor" id="a22f18df80ca97d1ee72313364f55ffa0"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -336,7 +336,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">section&#160;</td>
+          <td class="paramname">section, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">CI&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -353,7 +359,7 @@ Functions</h2></td></tr>
 <div class="line">            SMPU_1-&gt;RGD[r].WORD0 = (uintptr_t)ld_##section##P##pid##Start;<span class="comment">/* from */</span>        \</div>
 <div class="line">            SMPU_1-&gt;RGD[r].WORD1 = (uintptr_t)ld_##section##P##pid##End-1;<span class="comment">/* to, incl. */</span>   \</div>
 <div class="line">            SMPU_1-&gt;RGD[r].WORD2 = WORD2_PROCESS_RAM;                                       \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD3 = WORD3_ACCESS_SET_RAM;                                    \</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD3 = WORD3_ACCESS_SET_RAM##CI;                                \</div>
 <div class="line">            SMPU_1-&gt;RGD[r].WORD4 = WORD4_PIT_AWARE(pid);                                    \</div>
 <div class="line">            SMPU_1-&gt;RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   <span class="comment">/* Enable region descriptor. */</span> \</div>
 <div class="line">            ++ r;                                                                           \</div>
@@ -375,11 +381,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Configure and initialize the memory protection unit MPU. The configuration is static; a set of regions suitable for the RTOS (and its project dependent configuration) is defined and then the unit is enabled.<br />
+<p>Configure and initialize the memory protection units SMPU_0 and SMPU_1. The configuration is static; a set of regions suitable for the RTOS (and its project dependent configuration) is defined and then the unit is enabled.<br />
  See module description for more details. </p><dl class="section remark"><dt>Remarks</dt><dd>The processes are shared between the cores and, as a consequence, one static MPU configuration is used to control the behavior of all three cores. Regardless, how many cores are run, this function must be called only once and it must be called when the first of the three cores starts up. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000017">Todo:</a></b></dt><dd>See <a class="el" href="rtos__system_memory_protection_unit_8c.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f">rtos_checkUserCodeWritePtr()</a> in this module and <a class="el" href="rtos_8h.html#aac7a5ed04ef56818262cd5288d327648">rtos_checkUserCodeReadPtr()</a> in <a class="el" href="rtos_8h.html">rtos.h</a>, too </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000018">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000019">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000017">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000018">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
 
 </div>
 </div>

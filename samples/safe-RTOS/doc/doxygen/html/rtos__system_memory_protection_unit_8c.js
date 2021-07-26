@@ -16,7 +16,7 @@ var rtos__system_memory_protection_unit_8c =
     [ "WORD4_NO_PID_COMPARISON", "rtos__system_memory_protection_unit_8c.html#a3330522e342654622808f51ae37d420a", null ],
     [ "WORD5_LOCK_AND_ENABLE", "rtos__system_memory_protection_unit_8c.html#a1b8c92d1da134eaee6b90bd3a6d12c79", null ],
     [ "CONFIG_REGIONS_PROC_RAM", "rtos__system_memory_protection_unit_8c.html#a48449e3c7f5a302914fa2359b0f1d499", null ],
-    [ "CONFIG_REGION_DESC_PROC_RAM", "rtos__system_memory_protection_unit_8c.html#a4c5e58bf25d236ebe88fc4ffc8204836", null ],
+    [ "CONFIG_REGION_DESC_PROC_RAM", "rtos__system_memory_protection_unit_8c.html#a22f18df80ca97d1ee72313364f55ffa0", null ],
     [ "from", "rtos__system_memory_protection_unit_8c.html#a4ea2cafb6afb46293c8aecba2e261973", null ],
     [ "to", "rtos__system_memory_protection_unit_8c.html#af6c611b6312d83f13b18d70d156aab8f", null ],
     [ "SDA", "rtos__system_memory_protection_unit_8c.html#a6890442e1cc24a0d61597a13576b8727", null ],

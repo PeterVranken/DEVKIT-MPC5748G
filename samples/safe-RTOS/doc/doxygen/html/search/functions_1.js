@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['del_5fdelaymicroseconds',['del_delayMicroseconds',['../del__delay_8h.html#adde78a9a929e9ab2600534a056680224',1,'del_delay.h']]],
-  ['dummyfcttocheckstaticassertions',['dummyFctToCheckStaticAssertions',['../rtos__kernel_instance_data_8c.html#a9f1a3a25e2a206453d88bba53d438bb7',1,'rtos_kernelInstanceData.c']]]
+  ['checkeventdue',['checkEventDue',['../rtos__scheduler_8c.html#a8df7dcfd985b3ab2261eb3d506b1d7dd',1,'rtos_scheduler.c']]]
 ];

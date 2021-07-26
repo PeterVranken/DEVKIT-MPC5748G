@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -140,99 +140,101 @@ $(document).ready(function(){initNavTree('typ__types_8h_source.html','');});
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor"># define SECTION(sectionName)  __attribute__((section (#sectionName)))</span></div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a45569d2ba8b10d783f1fac72f25c801b">   68</a></span>&#160;<span class="preprocessor"># define BSS_OS(var)     SECTION(.bss.OS.var) var</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor"># define DATA_OS(var)    SECTION(.data.OS.var) var</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00076"></a><span class="lineno"><a class="line" href="typ__types_8h.html#abdd7482984a69c82a2b3d4c5b9c6ceac">   76</a></span>&#160;<span class="preprocessor"># define SBSS_OS(var)    SECTION(.sbss.OS.var) var</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="preprocessor"># define SDATA_OS(var)   SECTION(.sdata.OS.var) var</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a73f102ee950fef9eca4f5182edd56819">   86</a></span>&#160;<span class="preprocessor"># define UNCACHED_OS(var) SECTION(.uncached.OS.var) var</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00090"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a33627f649efa1b7dfd877fd3d3d88c80">   90</a></span>&#160;<span class="preprocessor"># define BSS_P1(var)     SECTION(.bss.P1.var) var</span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
-<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a68090943ec8fcf153518afacd2b4b5c0">   94</a></span>&#160;<span class="preprocessor"># define DATA_P1(var)    SECTION(.data.P1.var) var</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div>
-<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a02bb2f74e57ec2bcb77bb7979d8a5af2">   98</a></span>&#160;<span class="preprocessor"># define SBSS_P1(var)    SECTION(.sbss.P1.var) var</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
-<div class="line"><a name="l00102"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ad7893044524ae2e92c9dbb252e44b0e2">  102</a></span>&#160;<span class="preprocessor"># define SDATA_P1(var)   SECTION(.sdata.P1.var) var</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a9a6bd02b0747ac857c83cc975ffd3fad">  108</a></span>&#160;<span class="preprocessor"># define UNCACHED_P1(var) SECTION(.uncached.P1.var) var</span></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00112"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a39719f6ee3362b475af5038123ac614c">  112</a></span>&#160;<span class="preprocessor"># define BSS_P2(var)     SECTION(.bss.P2.var) var</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno"><a class="line" href="typ__types_8h.html#aacabdf6b1d42c179bbabf6e1b5571610">  116</a></span>&#160;<span class="preprocessor"># define DATA_P2(var)    SECTION(.data.P2.var) var</span></div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a656ff394e214e309e6217ade0f640d69">  120</a></span>&#160;<span class="preprocessor"># define SBSS_P2(var)    SECTION(.sbss.P2.var) var</span></div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
-<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a1ee54c7864c9d5a63cface3ed2c18bf1">  124</a></span>&#160;<span class="preprocessor"># define SDATA_P2(var)   SECTION(.sdata.P2.var) var</span></div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
-<div class="line"><a name="l00130"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a7b1bf9028a9e4b1c333c049f457abfc2">  130</a></span>&#160;<span class="preprocessor"># define UNCACHED_P2(var) SECTION(.uncached.P2.var) var</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;</div>
-<div class="line"><a name="l00134"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a79bfd8dd502295f662aafc9633be9f4d">  134</a></span>&#160;<span class="preprocessor"># define BSS_P3(var)     SECTION(.bss.P3.var) var</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;</div>
-<div class="line"><a name="l00138"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a73c50b793fc29886820cb512d33fab88">  138</a></span>&#160;<span class="preprocessor"># define DATA_P3(var)    SECTION(.data.P3.var) var</span></div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;</div>
-<div class="line"><a name="l00142"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ab7d526831940760c4c631b9b4870bd1c">  142</a></span>&#160;<span class="preprocessor"># define SBSS_P3(var)    SECTION(.sbss.P3.var) var</span></div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;</div>
-<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a51f8f1b7a6b9b0418c9428fe59c71ee1">  146</a></span>&#160;<span class="preprocessor"># define SDATA_P3(var)   SECTION(.sdata.P3.var) var</span></div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;</div>
-<div class="line"><a name="l00152"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a104232642176d586294496dbf52b125f">  152</a></span>&#160;<span class="preprocessor"># define UNCACHED_P3(var) SECTION(.uncached.P3.var) var</span></div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;</div>
-<div class="line"><a name="l00156"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ab5d01dc860fcd84d7ca8690b2863f53b">  156</a></span>&#160;<span class="preprocessor"># define BSS_P4(var)     SECTION(.bss.P4.var) var</span></div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;</div>
-<div class="line"><a name="l00160"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a8eb514c6734e867639dc33c9ab22688a">  160</a></span>&#160;<span class="preprocessor"># define DATA_P4(var)    SECTION(.data.P4.var) var</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;</div>
-<div class="line"><a name="l00164"></a><span class="lineno"><a class="line" href="typ__types_8h.html#aa40986051d937647d435fe2fb090e50d">  164</a></span>&#160;<span class="preprocessor"># define SBSS_P4(var)    SECTION(.sbss.P4.var) var</span></div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;</div>
-<div class="line"><a name="l00168"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a1461b5205d88ab5366bad76338b0dacc">  168</a></span>&#160;<span class="preprocessor"># define SDATA_P4(var)   SECTION(.sdata.P4.var) var</span></div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;</div>
-<div class="line"><a name="l00174"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a79efe754edde357b267b8b9fb9ba2056">  174</a></span>&#160;<span class="preprocessor"># define UNCACHED_P4(var) SECTION(.uncached.P4.var) var</span></div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;</div>
-<div class="line"><a name="l00179"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ae0effaf5c70922c76785e25fc60b25d5">  179</a></span>&#160;<span class="preprocessor"># define SHARED(var) SECTION(.shared.var) var</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a587e4f86f9f8a684a1e2df4c3c8ebbac">   75</a></span>&#160;<span class="preprocessor"># define RODATA(var) SECTION(.rodata.var) var</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a45569d2ba8b10d783f1fac72f25c801b">   83</a></span>&#160;<span class="preprocessor"># define BSS_OS(var)     SECTION(.bss.OS.var) var</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor"># define DATA_OS(var)    SECTION(.data.OS.var) var</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="typ__types_8h.html#abdd7482984a69c82a2b3d4c5b9c6ceac">   91</a></span>&#160;<span class="preprocessor"># define SBSS_OS(var)    SECTION(.sbss.OS.var) var</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor"># define SDATA_OS(var)   SECTION(.sdata.OS.var) var</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a73f102ee950fef9eca4f5182edd56819">  101</a></span>&#160;<span class="preprocessor"># define UNCACHED_OS(var) SECTION(.uncached.OS.var) var</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
+<div class="line"><a name="l00105"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a33627f649efa1b7dfd877fd3d3d88c80">  105</a></span>&#160;<span class="preprocessor"># define BSS_P1(var)     SECTION(.bss.P1.var) var</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a68090943ec8fcf153518afacd2b4b5c0">  109</a></span>&#160;<span class="preprocessor"># define DATA_P1(var)    SECTION(.data.P1.var) var</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
+<div class="line"><a name="l00113"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a02bb2f74e57ec2bcb77bb7979d8a5af2">  113</a></span>&#160;<span class="preprocessor"># define SBSS_P1(var)    SECTION(.sbss.P1.var) var</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
+<div class="line"><a name="l00117"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ad7893044524ae2e92c9dbb252e44b0e2">  117</a></span>&#160;<span class="preprocessor"># define SDATA_P1(var)   SECTION(.sdata.P1.var) var</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
+<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a9a6bd02b0747ac857c83cc975ffd3fad">  123</a></span>&#160;<span class="preprocessor"># define UNCACHED_P1(var) SECTION(.uncached.P1.var) var</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00127"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a39719f6ee3362b475af5038123ac614c">  127</a></span>&#160;<span class="preprocessor"># define BSS_P2(var)     SECTION(.bss.P2.var) var</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;</div>
+<div class="line"><a name="l00131"></a><span class="lineno"><a class="line" href="typ__types_8h.html#aacabdf6b1d42c179bbabf6e1b5571610">  131</a></span>&#160;<span class="preprocessor"># define DATA_P2(var)    SECTION(.data.P2.var) var</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;</div>
+<div class="line"><a name="l00135"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a656ff394e214e309e6217ade0f640d69">  135</a></span>&#160;<span class="preprocessor"># define SBSS_P2(var)    SECTION(.sbss.P2.var) var</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;</div>
+<div class="line"><a name="l00139"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a1ee54c7864c9d5a63cface3ed2c18bf1">  139</a></span>&#160;<span class="preprocessor"># define SDATA_P2(var)   SECTION(.sdata.P2.var) var</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;</div>
+<div class="line"><a name="l00145"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a7b1bf9028a9e4b1c333c049f457abfc2">  145</a></span>&#160;<span class="preprocessor"># define UNCACHED_P2(var) SECTION(.uncached.P2.var) var</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;</div>
+<div class="line"><a name="l00149"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a79bfd8dd502295f662aafc9633be9f4d">  149</a></span>&#160;<span class="preprocessor"># define BSS_P3(var)     SECTION(.bss.P3.var) var</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;</div>
+<div class="line"><a name="l00153"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a73c50b793fc29886820cb512d33fab88">  153</a></span>&#160;<span class="preprocessor"># define DATA_P3(var)    SECTION(.data.P3.var) var</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;</div>
+<div class="line"><a name="l00157"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ab7d526831940760c4c631b9b4870bd1c">  157</a></span>&#160;<span class="preprocessor"># define SBSS_P3(var)    SECTION(.sbss.P3.var) var</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;</div>
+<div class="line"><a name="l00161"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a51f8f1b7a6b9b0418c9428fe59c71ee1">  161</a></span>&#160;<span class="preprocessor"># define SDATA_P3(var)   SECTION(.sdata.P3.var) var</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;</div>
+<div class="line"><a name="l00167"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a104232642176d586294496dbf52b125f">  167</a></span>&#160;<span class="preprocessor"># define UNCACHED_P3(var) SECTION(.uncached.P3.var) var</span></div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;</div>
+<div class="line"><a name="l00171"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ab5d01dc860fcd84d7ca8690b2863f53b">  171</a></span>&#160;<span class="preprocessor"># define BSS_P4(var)     SECTION(.bss.P4.var) var</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;</div>
+<div class="line"><a name="l00175"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a8eb514c6734e867639dc33c9ab22688a">  175</a></span>&#160;<span class="preprocessor"># define DATA_P4(var)    SECTION(.data.P4.var) var</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;</div>
+<div class="line"><a name="l00179"></a><span class="lineno"><a class="line" href="typ__types_8h.html#aa40986051d937647d435fe2fb090e50d">  179</a></span>&#160;<span class="preprocessor"># define SBSS_P4(var)    SECTION(.sbss.P4.var) var</span></div>
 <div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="preprocessor"># error Configuration is required for your compiler</span></div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;</div>
-<div class="line"><a name="l00187"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a50c28e23c3930259953bf78ba200c87d">  187</a></span>&#160;<span class="preprocessor">#define sizeOfAry(a)    (sizeof(a)/sizeof(a[0]))</span></div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="preprocessor">#define sizeoffield(type, fieldName) (sizeof(((type*)0)-&gt;fieldName))</span></div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;</div>
-<div class="line"><a name="l00194"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a2d069e3f476dfa726365914d7045dbf9">  194</a></span>&#160;<span class="preprocessor">#define UINT_T_MAX(var) ((uint32_t)((1ull&lt;&lt;(sizeof(var)*8u))-1ull))</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a1461b5205d88ab5366bad76338b0dacc">  183</a></span>&#160;<span class="preprocessor"># define SDATA_P4(var)   SECTION(.sdata.P4.var) var</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;</div>
+<div class="line"><a name="l00189"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a79efe754edde357b267b8b9fb9ba2056">  189</a></span>&#160;<span class="preprocessor"># define UNCACHED_P4(var) SECTION(.uncached.P4.var) var</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;</div>
+<div class="line"><a name="l00194"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ae0effaf5c70922c76785e25fc60b25d5">  194</a></span>&#160;<span class="preprocessor"># define SHARED(var) SECTION(.shared.var) var</span></div>
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;</div>
-<div class="line"><a name="l00198"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a6cfe01e7fe8992f216423fabb793599d">  198</a></span>&#160;<span class="preprocessor">#define INT_T_MAX(var)  ((int32_t)((1ul&lt;&lt;((sizeof(var)*8u)-1u))-1ul))</span></div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;</div>
-<div class="line"><a name="l00202"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a1c182c09d0b3c8d940589c82c0e85030">  202</a></span>&#160;<span class="preprocessor">#define INT_T_MIN(var)  ((int32_t)(1ul&lt;&lt;((sizeof(var)*8u)-1u)))</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="preprocessor"># error Configuration is required for your compiler</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;</div>
+<div class="line"><a name="l00202"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a50c28e23c3930259953bf78ba200c87d">  202</a></span>&#160;<span class="preprocessor">#define sizeOfAry(a)    (sizeof(a)/sizeof(a[0]))</span></div>
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment"> * Global type definitions</span></div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">/* Some more basic types are defined using the naming scheme of stdint.h. */</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="preprocessor">#define sizeoffield(type, fieldName) (sizeof(((type*)0)-&gt;fieldName))</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;</div>
+<div class="line"><a name="l00209"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a2d069e3f476dfa726365914d7045dbf9">  209</a></span>&#160;<span class="preprocessor">#define UINT_T_MAX(var) ((uint32_t)((1ull&lt;&lt;(sizeof(var)*8u))-1ull))</span></div>
 <div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;</div>
-<div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a4611b605e45ab401f02cab15c5e38715">  212</a></span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">float</span> <a class="code" href="typ__types_8h.html#a4611b605e45ab401f02cab15c5e38715">float32_t</a>;</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;</div>
-<div class="line"><a name="l00215"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ac55f3ae81b5bc9053760baacf57e47f4">  215</a></span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">double</span> <a class="code" href="typ__types_8h.html#ac55f3ae81b5bc9053760baacf57e47f4">float64_t</a>;</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment"> * Global data declarations</span></div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment"> * Global prototypes</span></div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;</div>
+<div class="line"><a name="l00213"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a6cfe01e7fe8992f216423fabb793599d">  213</a></span>&#160;<span class="preprocessor">#define INT_T_MAX(var)  ((int32_t)((1ul&lt;&lt;((sizeof(var)*8u)-1u))-1ul))</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;</div>
+<div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a1c182c09d0b3c8d940589c82c0e85030">  217</a></span>&#160;<span class="preprocessor">#define INT_T_MIN(var)  ((int32_t)(1ul&lt;&lt;((sizeof(var)*8u)-1u)))</span></div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="comment"> * Global type definitions</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment">/* Some more basic types are defined using the naming scheme of stdint.h. */</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;</div>
+<div class="line"><a name="l00227"></a><span class="lineno"><a class="line" href="typ__types_8h.html#a4611b605e45ab401f02cab15c5e38715">  227</a></span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">float</span> <a class="code" href="typ__types_8h.html#a4611b605e45ab401f02cab15c5e38715">float32_t</a>;</div>
 <div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">/* TYP_TYPES_INCLUDED */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="typ__types_8h_html_ac55f3ae81b5bc9053760baacf57e47f4"><div class="ttname"><a href="typ__types_8h.html#ac55f3ae81b5bc9053760baacf57e47f4">float64_t</a></div><div class="ttdeci">double float64_t</div><div class="ttdef"><b>Definition:</b> typ_types.h:215</div></div>
-<div class="ttc" id="typ__types_8h_html_a4611b605e45ab401f02cab15c5e38715"><div class="ttname"><a href="typ__types_8h.html#a4611b605e45ab401f02cab15c5e38715">float32_t</a></div><div class="ttdeci">float float32_t</div><div class="ttdef"><b>Definition:</b> typ_types.h:212</div></div>
+<div class="line"><a name="l00230"></a><span class="lineno"><a class="line" href="typ__types_8h.html#ac55f3ae81b5bc9053760baacf57e47f4">  230</a></span>&#160;<span class="keyword">typedef</span> <span class="keywordtype">double</span> <a class="code" href="typ__types_8h.html#ac55f3ae81b5bc9053760baacf57e47f4">float64_t</a>;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment"> * Global data declarations</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;<span class="comment"> * Global prototypes</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">/* TYP_TYPES_INCLUDED */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="typ__types_8h_html_ac55f3ae81b5bc9053760baacf57e47f4"><div class="ttname"><a href="typ__types_8h.html#ac55f3ae81b5bc9053760baacf57e47f4">float64_t</a></div><div class="ttdeci">double float64_t</div><div class="ttdef"><b>Definition:</b> typ_types.h:230</div></div>
+<div class="ttc" id="typ__types_8h_html_a4611b605e45ab401f02cab15c5e38715"><div class="ttname"><a href="typ__types_8h.html#a4611b605e45ab401f02cab15c5e38715">float32_t</a></div><div class="ttdeci">float float32_t</div><div class="ttdef"><b>Definition:</b> typ_types.h:227</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

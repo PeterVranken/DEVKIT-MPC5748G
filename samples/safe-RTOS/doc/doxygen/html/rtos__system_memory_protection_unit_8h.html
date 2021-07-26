@@ -32,7 +32,7 @@
    <div id="projectname">safe-RTOS (VLE)
    &#160;<span id="projectnumber">1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L</div>
+   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -140,11 +140,10 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Configure and initialize the memory protection unit, MPU.</p>
-<p>Configure and initialize the memory protection unit MPU. The configuration is static; a set of regions suitable for the RTOS (and its project dependent configuration) is defined and then the unit is enabled.<br />
+<p>Configure and initialize the memory protection units SMPU_0 and SMPU_1. The configuration is static; a set of regions suitable for the RTOS (and its project dependent configuration) is defined and then the unit is enabled.<br />
  See module description for more details. </p><dl class="section remark"><dt>Remarks</dt><dd>The processes are shared between the cores and, as a consequence, one static MPU configuration is used to control the behavior of all three cores. Regardless, how many cores are run, this function must be called only once and it must be called when the first of the three cores starts up. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000017">Todo:</a></b></dt><dd>See <a class="el" href="rtos__system_memory_protection_unit_8c.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f">rtos_checkUserCodeWritePtr()</a> in this module and <a class="el" href="rtos_8h.html#aac7a5ed04ef56818262cd5288d327648">rtos_checkUserCodeReadPtr()</a> in <a class="el" href="rtos_8h.html">rtos.h</a>, too </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000018">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000019">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000017">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000018">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
 
 </div>
 </div>

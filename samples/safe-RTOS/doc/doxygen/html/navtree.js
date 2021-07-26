@@ -1,7 +1,7 @@
 var NAVTREE =
 [
   [ "safe-RTOS (VLE)", "index.html", [
-    [ "safe-RTOS (VLE) - A simple RTOS with safety support for MPC5643L", "index.html", [
+    [ "safe-RTOS - A simple RTOS with safety support for MPC5748G", "index.html", [
       [ "Introduction", "index.html#secIntro", null ]
     ] ],
     [ "Todo List", "todo.html", null ],
@@ -32,7 +32,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"rtos__run_task__def_sys_calls_8h.html#ad7d023820a2c871149b7d18870d59cc3"
+"rtos__run_task_8h.html#aeaae84408e099b28495d703994100c16"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

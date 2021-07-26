@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['rodata',['RODATA',['../typ__types_8h.html#a587e4f86f9f8a684a1e2df4c3c8ebbac',1,'typ_types.h']]],
   ['rtos_5fcore_5fz2',['RTOS_CORE_Z2',['../rtos_8h.html#a4bdfa60bad6565f0e56183f260550e60',1,'rtos.h']]],
   ['rtos_5fcore_5fz4a',['RTOS_CORE_Z4A',['../rtos_8h.html#a83cb2901c9810c8c160a1b0d8cf7fa2b',1,'rtos.h']]],
   ['rtos_5fcore_5fz4b',['RTOS_CORE_Z4B',['../rtos_8h.html#a7728701da34558de9c44cad1f8ff7bda',1,'rtos.h']]],
