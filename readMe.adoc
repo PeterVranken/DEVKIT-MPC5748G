@@ -77,7 +77,7 @@ in this project. While it is not of any use as such it does contain a lot
 of reusable stuff for real development: As there is the toolchain setup
 (compiler, linker, flash tool, debugger), a powerful, generic, fully
 reusable makefile and a clean piece of startup code, which will suffice
-for most applications. Remove the demo code from the three core's main
+for most applications. Remove the demo code from the three cores' main
 functions and start writing your application but don't loose time with
 setting up your development environment.
 
@@ -144,7 +144,7 @@ https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/Tools-and-Installation[Too
 and Installation].
 Much of what is said there still holds for this GitHub project. As long as
 we've not migrated the Wiki page to this project yet, we
-recommend consulting the MPC5643L page. These are the major difference to
+recommend consulting the MPC5643L page. These are the major differences to
 consider:
 
 * The download links to the tools need to be taken from the table above
