@@ -55,7 +55,7 @@ The RTOS itself is not a runnable piece of software. It requires some
 application code. The folder `code\application` contains several sample
 applications for the RTOS. The build scripts take the name of a sample
 application as an argument and link the selected application with the
-RTOS into a flushable, runnable and debugable binary file.
+RTOS into a flashable, runnable and debugable binary file.
 
 To see how the samples work you need to open a terminal software on your
 host machine. Look e.g. for a setup of "Putty" in the internet.
@@ -116,9 +116,9 @@ API to halt the execution of a process. Permission to use this API is
 granted only to what is considered the safety process or task.
 
 Many more details can be found in the manual, which is available
-https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/safe-RTOS/doc/manual/readMe.adoc[online^]
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/manual/readMe.adoc[online^]
 in GitHub or as
-https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/samples/safe-RTOS/doc/manual/manual.pdf[printable^]
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/manual/manual.pdf[printable^]
 document. The API is described in the online https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/DEVKIT-MPC5748G/samples/safe-RTOS/doc/doxygen/html/globals_func.html[Doxygen help], too.
 
 The architecture of the RTOS is very simple and resembles its ancestors,
