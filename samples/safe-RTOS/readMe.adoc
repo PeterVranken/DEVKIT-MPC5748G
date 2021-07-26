@@ -1,5 +1,5 @@
 = image:doc/manual/theme/iconSafeRTOS-asColoredIcon.jpg[width="3%", pdfwidth="5%"] safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G
-:Author:            Peter Vranken 
+:Author:            Peter Vranken
 :Email:             mailto:Peter_Vranken@Yahoo.de
 :toc:               left
 :xrefstyle:         short
@@ -119,7 +119,7 @@ Many more details can be found in the manual, which is available
 https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/manual/readMe.adoc[online^]
 in GitHub or as
 https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/manual/manual.pdf[printable^]
-document. The API is described in the online https://htmlpreview.github.io/?https://raw.githubusercontent.com/PeterVranken/DEVKIT-MPC5748G/samples/safe-RTOS/doc/doxygen/html/globals_func.html[Doxygen help], too.
+document. The API is described in the online https://htmlpreview.github.io/?https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/doxygen/html/globals_func.html[Doxygen help], too.
 
 The architecture of the RTOS is very simple and resembles its ancestors,
 which were the simple RTOS without safety concept and safe-RTOS-VLE with
@@ -369,7 +369,7 @@ for software safety.
 The makefiles and related scripts require a few settings of the
 environment in the host machine. In particular, the location of the GNU
 compiler installation needs to be known and the PATH variable needs to
-contain the paths to the required tools. 
+contain the paths to the required tools.
 
 For Windows users there is a shortcut to PowerShell in the root of this
 GitHub project, which opens the shell with the prepared environment.
@@ -428,7 +428,7 @@ makefile is made generic and not restricted to the use with this tiny
 sample. It can be reused for true, large projects that want to make use of
 safe-RTOS. It supports a number of options (targets); get an overview by
 typing:
- 
+
     cd <projectRoot>/samples/safe-RTOS
     mingw32-make help
 
