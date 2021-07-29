@@ -447,7 +447,7 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
        empty. */
     #define GREETING "Hello World\r\n"
     sio_osWriteSerial(GREETING, /* noBytes */ sizeof(GREETING)-1);
-    puts("puts saying " GREETING);
+    fputs("fputs saying " GREETING, stdout);
     printf("printf saying %s", GREETING);
     #undef GREETING
 #endif    

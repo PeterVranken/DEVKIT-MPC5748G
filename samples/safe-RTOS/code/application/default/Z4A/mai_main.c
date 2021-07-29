@@ -48,7 +48,7 @@
  * spheres of a) an operating system, b) the functional application code and c) some
  * supervisory safety code.
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -106,6 +106,7 @@
 #include "xbs_crossbarSwitch.h"
 
 #include "lbd_ledAndButtonDriver.h"
+#include "dma_dmaDriver.h"
 #include "sio_serialIO.h"
 #include "rtos.h"
 #include "del_delay.h"
@@ -1126,6 +1127,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
+    
+    /* Initialize the DMA driver. This driver needs to be initialized prior to any other
+       I/O driver, which makes use of a DMA channel. */
+    dma_osInitDMADriver();
     
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ onButtonChangeCallback

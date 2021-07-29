@@ -36,6 +36,10 @@
  * Defines
  */
 
+/** Initializer expression for new, empty, uninitialized, unusable DMA channel handle of
+    type dma_dmaChannel_t. */
+#define DMA_DMA_CHANNEL_UNINITIALIZED_OBJ   {.pDMA = NULL, .idxChn = 0, .pTCD = NULL,}
+
 
 /*
  * Global type definitions
@@ -75,10 +79,10 @@ typedef struct dma_dmaTransferCtrlDesc_t
 /** The representation of a DMA channel is used by the API of the DMA driver. */
 typedef struct dma_dmaChannel_t
 {
-    /** The DAM device, pointer to the register file. */
+    /** The DMA device, pointer to the register file. */
     DMA_Type *pDMA;
     
-    /** The index of the DMA channel in the DMA device.
+    /** The index of the DMA channel in the DMA device.\n
           Note, pTCD == &pDMA->TCD[idxChn] is an invariant. */
     unsigned int idxChn;
     
@@ -105,7 +109,7 @@ void dma_osInitDMADriver(void);
 bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
                             , unsigned int idxDMADevice
                             , unsigned int idxChannel
-                            , const dma_dmaTransferCtrlDesc_t *pChnCfg
+                            , const dma_dmaTransferCtrlDesc_t * const pChnCfg
                             , bool reset
                             );
 
@@ -122,11 +126,24 @@ void dma_osSetDMAChannelDestinationAddress( const dma_dmaChannel_t * const pHDMA
                                           , void *pTransferDestination
                                           );
 
-/** Enable or disable the triggers of a DAM channel from an I/O device. */
+/** Set the number of major iterations of an upcoming DMA transfer. */
+void dma_osSetDMAChannelNoMajorIterations( const dma_dmaChannel_t * const pHDMAChn
+                                         , unsigned int noMajorIterations
+                                         );
+
+/** Enable or disable the triggers of a DMA channel from an I/O device. */
 void dma_osEnableDMAChannelTriggerFromIODevice( const dma_dmaChannel_t * const pHDMAChn
                                               , bool enable
                                               );
-                                            
+
+/** Get the current status of the gate in the request line between an I/O device and the
+    DMA channel. */
+bool dma_osGetDMAChannelEnableTriggerFromIODevice(const dma_dmaChannel_t * const pHDMAChn);
+
+/** Get the current status of a possibly pending transfer request from the connected I/O
+    device. */
+bool dma_osGetDMAChannelPendingTriggerFromIODevice(const dma_dmaChannel_t * const pHDMAChn);
+
 
 /*
  * Global inline functions

@@ -11,7 +11,7 @@
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
  * parity, 1 stop bit.
  *
- * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -52,6 +52,7 @@
 
 #include "rtos.h"
 #include "gsl_systemLoad.h"
+#include "dma_dmaDriver.h"
 #include "lbd_ledAndButtonDriver.h"
 #include "sio_serialIO.h"
 #include "del_delay.h"
@@ -430,6 +431,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        side-effects on the kernel! */
     stm_osInitSystemTimers();
     
+    /* Initialize the DMA driver. This driver needs to be initialized prior to any otehr
+       I/O driver, which makes use of a DMA channel. */
+    dma_osInitDMADriver();
+    
     /* Initialize the button and LED driver for the eval board. Shape access to the eight
        user LEDs and two user buttons. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ onButtonChangeCallback
@@ -486,7 +491,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        empty. */
     #define GREETING "Hello World\r\n"
     sio_osWriteSerial(GREETING, /* noBytes */ sizeof(GREETING)-1);
-    puts("puts saying " GREETING);
+    fputs("fputs saying " GREETING, stdout);
     printf("printf saying %s", GREETING);
     #undef GREETING
     

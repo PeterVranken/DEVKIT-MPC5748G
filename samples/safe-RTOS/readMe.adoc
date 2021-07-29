@@ -272,9 +272,9 @@ concept of the system; in a safe system, there will always be an external
 the software running on the CPU and this device will ensure the transition
 of the system into the safe state.
 
-Note, in contrast to faults caught in the user tasks this mechanism can
-not guarantee that the failure has not yet done some harm before being
-recognized.
+CAUTION: In contrast to faults caught in the user tasks the kernel
+self-diagnosis mechanisms can not guarantee that the failure has not yet
+done some harm before being recognized.
 
 === Kernel vs. Operating System
 

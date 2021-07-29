@@ -59,6 +59,7 @@
  *   dma_osReleaseDMAChannel
  *   dma_osSetDMAChannelSourceAddress
  *   dma_osSetDMAChannelDestinationAddress
+ *   dma_osSetDMAChannelNoMajorIterations
  *   dma_osEnableDMAChannelTriggerFromIODevice
  *   dma_getTransferControlDescriptor (inline)
  * Local functions
@@ -345,7 +346,7 @@ void dma_osInitDMADriver(void)
 bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
                             , unsigned int idxDMADevice
                             , unsigned int idxChannel
-                            , const dma_dmaTransferCtrlDesc_t *pChnCfg
+                            , const dma_dmaTransferCtrlDesc_t * const pChnCfg
                             , bool reset
                             )
 {
@@ -556,6 +557,52 @@ void dma_osSetDMAChannelDestinationAddress( const dma_dmaChannel_t * const pHDMA
 
 
 /**
+ * Set the number of major iterations of an upcoming DMA transfer. Effectively, the DMA
+ * channel's register fields CITER and BITER are both set to the value \a
+ * noMajorIterations.\n
+ *   This function only supports the standard use case of not using channel linkage (see RM75
+ * 16.4.36, pp.680f for details). It assumes that this standard use case is configured for
+ * the given DMA channel, otherwise an assertion fires in DEBUG configuration.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference.
+ *   @param noMajorIterations
+ * The number of major iterations, i.e. the number of repetitions of the complete minor
+ * loop. After this number of major iterations, the DMA transfer has completed.\n
+ *   The range is 0 .. 0x7fff. In DEBUG compilation, this is checked by assertion.
+ */
+void dma_osSetDMAChannelNoMajorIterations( const dma_dmaChannel_t * const pHDMAChn
+                                         , unsigned int noMajorIterations
+                                         )
+{
+    /* The number of iterations is limited. We double-check by assertion. */
+    assert(noMajorIterations <= 0x7fffu);
+    
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    /* The register CITER is a union of two variants. This function supports the standard
+       use case. By assertzion, we double-check that this use case is really configured. */
+    assert((pHDMAChn->pTCD->CITER.ELINKNO & DMA_TCD_CITER_ELINKNO_ELINK_MASK) 
+           == DMA_TCD_CITER_ELINKNO_ELINK(0u)
+          );
+
+    /* Set the beginning and current major loop iteration counts. See RM75, 16.4.36,
+       pp.680f. */
+    const uint16_t xITER_ELINKNO = DMA_TCD_CITER_ELINKNO_ELINK(0u)
+                                   | DMA_TCD_CITER_ELINKNO_CITER(noMajorIterations);
+    pHDMAChn->pTCD->CITER.ELINKNO = xITER_ELINKNO;
+
+    
+    /* The counter reload value for the major loops needs to be initialized identical
+       to CITER to avoid a configuration error. See RM75, 16.4.40. */
+    pHDMAChn->pTCD->BITER.ELINKNO = xITER_ELINKNO;
+
+} /* End of dma_osSetDMAChannelNoMajorIterations */
+
+
+
+
+/**
  * Enable or disable the triggers of a DAM channel from an I/O device.\n
  *   In most applications of a DMA channel, the data is transfered from or to another I/O
  * device. In this case, the real-time contsraints of that device will control the speed of
@@ -574,7 +621,12 @@ void dma_osSetDMAChannelDestinationAddress( const dma_dmaChannel_t * const pHDMA
  * Just controlling the trigger gate of the DMA channel is normally not sufficient to
  * control the data flow. Some related setting changes of the connected I/O device may be
  * needed in a coherent way. See RM48 - in particular RM48, 70.5.8.1f - and RM75 for
- * details of the particular I/O device. 
+ * details of the particular I/O device.
+ *   @note
+ * The other function dma_osGetDMAChannelEnableTriggerFromIODevice() may be used to query
+ * the state of the gate, which is affected by this function. This may be useful as the
+ * state of the gate can be changed by hardware, i.e. even if not making use of this
+ * function.
  */
 void dma_osEnableDMAChannelTriggerFromIODevice( const dma_dmaChannel_t * const pHDMAChn
                                               , bool enable
@@ -594,3 +646,95 @@ void dma_osEnableDMAChannelTriggerFromIODevice( const dma_dmaChannel_t * const p
         pHDMAChn->pDMA->CERQ = DMA_CERQ_CERQ(pHDMAChn->idxChn);
     }    
 } /* End of dma_osEnableDMAChannelTriggerFromIODevice */
+
+
+
+
+/**
+ * Get the current status of the gate in the request line between an I/O device controlling
+ * the DMA channel and the DMA channel, i.e. the status of the line, which would request
+ * the next major loop iteration. Knowing the status of this gate (request currently
+ * processed by the DMA channel or not) is required for coherent starting and stopping of
+ * both, I/O device and DMA channel. See RM75, 16.6.8.2: Resume a previously stopped DMA
+ * channel, for more details.\n
+ *   Effectively, this function queries the appropriate ERQx register of the DMA device.\n
+ *   Effectively, this function reports the result of its counterpart
+ * dma_osEnableDMAChannelTriggerFromIODevice().
+ *   @return
+ * The function returns \a true if there is the transfer request output from the connected
+ * I/O device is currently connected to the DMA channel, i.e. if the DMA channel would
+ * currently serve upcoming transfer requests. Otherwise it returns \a false.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference.
+ */
+bool dma_osGetDMAChannelEnableTriggerFromIODevice(const dma_dmaChannel_t * const pHDMAChn)
+{
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    uint32_t ERQ;
+    unsigned int idxBit = pHDMAChn->idxChn;
+    
+#ifdef MCU_MPC5748G
+    assert(idxBit < 32u);
+    ERQ = pHDMAChn->pDMA->ERQ;
+#elif defined(MCU_MPC5775B)
+    if(idxBit < 32u)
+        ERQ = pHDMAChn->pDMA->ERQL;
+    else
+    {
+        idxBit -= 32u;
+        assert(idxBit < 32u);
+        ERQ = pHDMAChn->pDMA->ERQH;
+    }
+#endif    
+    
+    return ERQ & (1u<<idxBit) != 0u;
+    
+} /* dma_osGetDMAChannelEnableTriggerFromIODevice */
+
+
+
+/**
+ * Get the current status of the hardware connection between an I/O device controlling the
+ * DMA channel and the DMA channel, i.e. the status of the line, which would request the
+ * next major loop iteration. The status of this line (request pending yes or no) is
+ * required for coherent starting and stopping of both, I/O device and DMA channel. See
+ * RM75, 16.6.8.2: Resume a previously stopped DMA channel, for more details.\n
+ *   Effectively, this function queries the appropriate HRSx register of the DMA device.
+ *   @return
+ * The function returns \a true if there is a pending transfer request from the connected
+ * I/O device, i.e. if the channel's bit in register HRSx is asserted. Otherwise it returns
+ * \a false.
+ *   @param pHDMAChn
+ * The handle of the affected channel by reference.
+ */
+bool dma_osGetDMAChannelPendingTriggerFromIODevice(const dma_dmaChannel_t * const pHDMAChn)
+{
+    /* Consistency check of handle. */
+    assert((void*)pHDMAChn->pTCD == (void*)&pHDMAChn->pDMA->TCD[pHDMAChn->idxChn]);
+    
+    uint32_t HRS;
+    unsigned int idxBit = pHDMAChn->idxChn;
+
+#ifdef MCU_MPC5748G
+    assert(idxBit < 32u);
+    HRS = pHDMAChn->pDMA->HRS;
+#elif defined(MCU_MPC5775B)
+    if(idxBit < 32u)
+        HRS = pHDMAChn->pDMA->HRSL;
+    else
+    {
+        idxBit -= 32u;
+        assert(idxBit < 32u);
+        HRS = pHDMAChn->pDMA->HRSH;
+    }
+#endif    
+
+    return HRS & (1u<<idxBit) != 0u;
+    
+} /* dma_osGetDMAChannelPendingTriggerFromIODevice */
+
+
+
+
