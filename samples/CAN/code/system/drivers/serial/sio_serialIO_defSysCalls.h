@@ -71,7 +71,7 @@
 #  error Inconsistent definition of system call
 # endif
 
-/* The system call is not available only on the very core, which serves the serial input
+/* The system call is only available only on the very core, which serves the serial input
    interrupts. The others will be redirected to the illegal system call exception. */
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0021 \
                                         RTOS_SC_TABLE_ENTRY(sio_scSmplHdlr_getLine, SIMPLE)

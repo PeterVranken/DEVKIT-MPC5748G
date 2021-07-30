@@ -103,7 +103,7 @@ extern volatile unsigned long sio_serialInNoRxBytes;
  * Global prototypes
  */
 
-/** Module initialization. Configure the I/O devices for serial output. */
+/** Module initialization. Configure the I/O devices for serial in- and output. */
 void sio_osInitSerialInterface(unsigned int baudRate);
 
 /** Write a character string into the serial interface. Can be called from OS context. */

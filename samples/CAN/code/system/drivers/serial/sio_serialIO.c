@@ -18,7 +18,7 @@
  * this module.\n
  *   Note, formatted input is not possible through C standard functions.
  * 
- * @todo Access from both cores is not implemented yet! For now, only the the RTOS running
+ * @todo Access is not implemented from all cores yet! For now, only the the RTOS running
  * core may use the serial input functions.
  *
  * @todo Doc allocated devices: LINFLex, SIUL, DMA, DMAMUX, PBridge, PIT, input interrupt
@@ -71,6 +71,7 @@
 #include "MPC5748G.h"
 #include "typ_types.h"
 #include "rtos.h"
+#include "dma_dmaDriver.h"
 #include "sio_serialIO.h"
 #include "sio_serialIO_defSysCalls.h"
 #include "mtx_mutex.h"
@@ -268,7 +269,10 @@ volatile unsigned long SBSS_OS(sio_serialInLostBytes) = 0;
 volatile unsigned long SBSS_OS(sio_serialInNoRxBytes) = 0;
 #endif
 
- 
+/** The handle of the DMA channel, which serves the serial device. */
+static dma_dmaChannel_t DATA_OS(_hDMAChannel) = DMA_DMA_CHANNEL_UNINITIALIZED_OBJ;
+
+
 /*
  * Function implementation
  */
@@ -470,127 +474,95 @@ static void configDMA(void)
 
     /* Initialize write to ring buffer. */
     _serialOutRingBufIdxWrM = 0;
-    
-/// @todo Double check reset status and disable this code with same objective as for DCHPRI
-    /* GRP1PRI, GRP0PRI: Group priorities, needs to be 1 and 0 in choseable order. We don't
-       change the default after reset.
-         EMLM: We don't use address offsets after minor and between two major loops, 0 means
-       off.
-         ERGA: 1: Round robin for group arbitration, 0: Priority controlled
-         ERCA: 1: Round robin for channel arbitration, 0: Priority controlled
-         EDBG: 1: Halt DMA when entering the debugger. By experience, for debugging of this
-       multi-core this is rather counterproductive since mostly two cores are running while
-       only one is being debugged.
-         The other fields are zero after reset and we do neiter require nor change these
-       values.
-         Note, these settings affects all channels! */
-    DMA->CR = DMA_CR_GRP1PRI(1)
-              | DMA_CR_GRP0PRI(0)
-              | DMA_CR_EMLM(0)
-              | DMA_CR_ERGA(0)
-              | DMA_CR_ERCA(0)
-              | DMA_CR_EDBG(0);
 
-    /// @todo We chose a low-priority channel for DMA. We need to enable preemptability, too, in order to let this become effective
-#if 0
-    /* Channel n Priority Register (DMA_DCHPRIn), RM 70.3.20: We use priority controlled
-       channel arbitration. All active channels need to have different priorities. The
-       standard configuration is to set the priority to the channel number. This is the
-       reset default of the hardware and - in order to touch the global settings as little
-       as possible - we are not going to change it. The reset default disables
-       preemptability of all channels.
-         Note, this configuration affects all channels! */
-    unsigned int idxChn;
-    for(idxChn=0; idxChn<DMA_DCHPRI_COUNT; ++idxChn)
+    static const dma_dmaTransferCtrlDesc_t RODATA(dmaChnCfg) =
     {
-        /* ECP, 0x80: 1: Channel can be preempted, 0: cannot be preempted.
-             DPA, 0x40: 0: Channel can preempt, 1: cannot preempt others.
-             CHHPRI: Channel priority from 0..15. The macro DMA_DCHPRI_CHPRI filters the
-           MSB of the loop counter so that we get two groups with priority identical to
-           channel index in group. */
-        DMA->DCHPRI[idxChn] = DMA_DCHPRI_ECP(0) 
-                              | DMA_DCHPRI_DPA(0)
-                              | DMA_DCHPRI_CHPRI(idxChn);
-    }
+        /* Source address of data is set below; this requires a non-const expression. */
+        .SADDR = 0u,
+
+        /* SMOD: Source modulo feature is applied to implement the ring buffer.
+           SSIZE: Read 1 byte per transfer.
+           DMOD: Destination modulo feature is not used.
+           DSIZE: Write 1 byte per transfer. */
+        .ATTR = DMA_TCD_ATTR_SMOD(SERIAL_OUTPUT_RING_BUFFER_SIZE_PWR_OF_TWO)
+                | DMA_TCD_ATTR_SSIZE(0u /* 0..3, 5: 2^n Byte */)
+                | DMA_TCD_ATTR_DMOD(0u) /* 0: No modulo for destination */
+                | DMA_TCD_ATTR_DSIZE(0u /* 0..3, 5: 2^n Byte */),
+
+        /* After transfer, add 1 to the source address. */
+        .SOFF = DMA_TCD_SOFF_SOFF(1),
+
+        /* Transfer 1 byte per minor loop */
+        .NBYTES.MLNO = DMA_TCD_NBYTES_MLNO_NBYTES(1u),
+
+        /* After major loop, do not move the source pointer. Next transfer
+           will read from next cyclic address. */
+        .SLAST = DMA_TCD_SLAST_SLAST(0),
+
+        /* Load address of destination is fixed. It is the byte input of the UART's FIFO. */
+        .DADDR = DMA_TCD_DADDR_DADDR((__IO uint32_t)&LINFLEX->BDRL + 3u),
+
+        /* Initialize the beginning and current major loop iteration counts to zero. We
+           will set it in the next call of sio_osWriteSerial. */
+        .CITER.ELINKNO = DMA_TCD_CITER_ELINKNO_CITER(0u) | DMA_TCD_CITER_ELINKNO_ELINK(0u),
+
+        /* After transfer, do not alter the destination address. */
+        .DOFF = DMA_TCD_DOFF_DOFF(0),
+
+        /* After major loop, do not alter the destination address. */
+        .DLASTSGA = DMA_TCD_DLASTSGA_DLASTSGA(0),
+
+        /* The counter reload value for the major loops needs to be initialized identical
+           to CITER to avoid a configuration error. See RM 70.3.35. */
+        .BITER.ELINKNO = DMA_TCD_CITER_ELINKNO_CITER(0u) | DMA_TCD_CITER_ELINKNO_ELINK(0u),
+
+        /* TCD Control and Status (DMA_TCDn_CSR), see RM 70.3.36, p. 3538.
+             BWC: No stalling, 3: Stall for 8 cycles after each major cycle (i.e. after
+           each character); fast enough for serial com.
+             MAJORLINKCH: Index of other channel to start after major loop if channel
+           linking is enabled.
+             DONE: Will be set on completion and should be zero but we better clear it.
+             MAJORLINKCH: Index of other channel to start after major loop if channel
+           linking is enabled. It's a don't care as channel linking is off.
+             ESG: Enable scatter/gather mode, i.e. dynamic linkage of TCDs through memory
+           pointers. 0 is off.
+             DREQ: Do a single major transfer loop; don't repeat, don't link to other
+           channels. 1: Disable DMA transfer request at the end of the major loop. 0: Don't
+           disable it.
+             INTHALF: Generate interrrupt when major loop is half way done.
+             INTMAJOR: Generate interrrupt when major loop has completed.
+             Start: Initiate the DMA transfer specified by this TCD by SW. The flag is
+           reset by HW as soon as the trigger command has been accepted. */
+        .CSR = DMA_TCD_CSR_BWC(3)
+               | DMA_TCD_CSR_MAJORLINKCH(0u)
+               | DMA_TCD_CSR_DONE(0u)
+               | DMA_TCD_CSR_MAJORELINK(0u /* off */)
+               | DMA_TCD_CSR_ESG(0u)
+               | DMA_TCD_CSR_DREQ(1u)
+               | DMA_TCD_CSR_INTHALF(0u)
+               | DMA_TCD_CSR_INTMAJOR(0u)
+               | DMA_TCD_CSR_START(0u),
+    };
+    
+    /** Request our DMA channel from the DMA driver for exclusive use. */
+#ifdef DEBUG
+    const bool gotDMAChn =
 #endif
+    dma_osAcquireDMAChannel( &_hDMAChannel
+                           , /* idxDMADevice */ 0
+                           , DMA_CHN_FOR_SERIAL_OUTPUT
+                           , &dmaChnCfg
+                           , /* reset */ true
+                           );
+    /** If this assertion fires, then there is an error in the overall system design. More
+        than one client code location want to reserve one and the same DMA channel for
+        exclusive use. This error needs to be resolved before the system can startup. */
+    assert(gotDMAChn);
 
-#if 0
-    /* Channel n Master ID Register (DMA_DCHMIDn), RM 70.3.21: Not touched. Default value
-       after reset is to let the DMA engine use its own identity when accessing the buses.
-         EMI: By setting this bit in this register, we can make the DMA engine pretend
-       being the core that writes here into the register.
-         All other bits are read only. */
-    DMA->DCHMID[DMA_CHN_FOR_SERIAL_OUTPUT] = DMA_DCHMID_EMI(1);
-#endif
-
-    /* Initial load address of source data is the beginning of the ring buffer. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].SADDR = 
-            DMA_TCD_SADDR_SADDR((__IO uint32_t)&_serialOutRingBuf[_serialOutRingBufIdxWrM]);
-
-    /* SMOD: Source modulo feature is applied to implement the ring buffer.
-       SSIZE: Read 1 byte per transfer.
-       DMOD: Destination modulo feature is not used.
-       DSIZE: Write 1 byte per transfer. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].ATTR =
-                            DMA_TCD_ATTR_SMOD(SERIAL_OUTPUT_RING_BUFFER_SIZE_PWR_OF_TWO)
-                            | DMA_TCD_ATTR_SSIZE(0 /* 2^n Byte */)
-                            | DMA_TCD_ATTR_DMOD(0)
-                            | DMA_TCD_ATTR_DSIZE(0 /* 2^n Byte */);
-    
-    /* After transfer, add 1 to the source address. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].SOFF = DMA_TCD_SOFF_SOFF(1);
-    
-    /* Transfer 1 byte per minor loop */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].NBYTES.MLNO = DMA_TCD_NBYTES_MLNO_NBYTES(1);
-    
-    /* After major loop, do not move the source pointer. Next transfer will read from next
-       cyclic address. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].SLAST = DMA_TCD_SLAST_SLAST(0);
-
-    /* Load address of destination is fixed. It is the byte input of the UART's FIFO. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].DADDR =
-                                    DMA_TCD_DADDR_DADDR((__IO uint32_t)&LINFLEX->BDRL + 3);
-                                        
-    /* Initialize the beginning and current major loop iteration counts to zero. We will set
-       it in the next call of sio_osWriteSerial. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].CITER.ELINKNO = DMA_TCD_CITER_ELINKNO_CITER(0)
-                                                        | DMA_TCD_CITER_ELINKNO_ELINK(0);
-
-    /* After transfer, do not alter the destination address. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].DOFF = DMA_TCD_DOFF_DOFF(0);
-
-    /* After major loop, do not alter the destination address. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].DLASTSGA = DMA_TCD_DLASTSGA_DLASTSGA(0);
-    
-    /* The counter reload value for the major loops needs to be initialized identical to
-       CITER to avoid a configuration error. See RM 70.3.35. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].BITER.ELINKNO =
-                                            DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].CITER.ELINKNO;
-
-    /* TCD Control and Status (DMA_TCDn_CSR), see RM 70.3.36, p. 3538.
-         BWC: No stalling, 3: Stall for 8 cycles after each major cycle (i.e. after each
-       character); fast enough for serial com.
-         MAJORLINKCH: Index of other channel to start after major loop if channel linking
-       is enabled.
-         DONE: Will be set on completion and should be zero but we better clear it.
-         MAJORELINK: Enable channel linking.
-         ESG: Enable scatter/gather mode, i.e. dynamic linkage of TCDs through memory
-       pointers.
-         DREQ: Do a single transfer; don't repeat, don't link to other channels. 1: Do
-       once, 0: Continue by repeating all.
-         INTHALF: Generate interrrupt when major loop is half way done.
-         INTMAJOR: Generate interrrupt when major loop has completed.
-         Start: Initiate the DMA transfer specified by this TCD by SW. The flag is reset by
-       HW as soon as the trigger command has been accepted. */
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].CSR = DMA_TCD_CSR_BWC(3)
-                                              | DMA_TCD_CSR_MAJORLINKCH(0)
-                                              | DMA_TCD_CSR_DONE(0)
-                                              | DMA_TCD_CSR_MAJORELINK(0)
-                                              | DMA_TCD_CSR_ESG(0)
-                                              | DMA_TCD_CSR_DREQ(1)
-                                              | DMA_TCD_CSR_INTHALF(0)
-                                              | DMA_TCD_CSR_INTMAJOR(0)
-                                              | DMA_TCD_CSR_START(0);
+    /* Set the load address of source data initially to the beginning of the ring buffer. */
+    dma_osSetDMAChannelSourceAddress( &_hDMAChannel
+                                    , &_serialOutRingBuf[_serialOutRingBufIdxWrM]
+                                    );
 
     /* Direct Memory Access Multiplexer (DMAMUX), RM, section 71, p. 3563: The DMA is
        triggered to do a minor loop cycle by the data request of some I/O device.
@@ -617,12 +589,9 @@ static void configDMA(void)
                                 | DMAMUX_CHCFG_TRIG(1)
                                 | DMAMUX_CHCFG_SOURCE(63);
 
-    /* Reset all possibly pending error bits. */
-    DMA->CERR = DMA_CERR_CAEI(1);
-   
     /* Enable Request Register (DMA_ERQ), RM 70.3.7: Not touched yet, we don't enable the
        channel yet. This will be done in the next use of sio_osWriteSerial. */
-    //DMA->SERQ = DMA_SERQ_SERQ(DMA_CHN_FOR_SERIAL_OUTPUT);
+    //dma_osEnableDMAChannelTriggerFromIODevice(&_hDMAChannel, /* enable */ true);
 
 } /* End of configDMA */
 
@@ -825,6 +794,7 @@ static void registerInterrupts(void)
 
 
 
+
 /**
  * Initialize the I/O devices for serial output, in particular, these are the LINFlex
  * device plus a DMA channel to serve it. However, to regularly trigger the DMA we still
@@ -966,12 +936,13 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
     static mtx_intercoreCriticalSection_t DATA_OS(critSec) = MTX_INTERCORE_CRITICAL_SECTION;
     mtx_osEnterIntercoreCriticalSection(&critSec);
     
-    /* Stop the (possibly) running DMA channel.
+    /* Stop the (possibly) running DMA channel, then check the current status of a possibly
+       pending transfer request from the connected PIT timer device.
          RM 70.5.8.1: Coherently stop a DMA channel with the ability of resuming it later. */
     stopDMATrigger();
-    while((DMA->HRS & (0x1<<DMA_CHN_FOR_SERIAL_OUTPUT)) != 0)
+    while(dma_osGetDMAChannelPendingTriggerFromIODevice(&_hDMAChannel))
     {}
-    DMA->CERQ = DMA_CERQ_CERQ(DMA_CHN_FOR_SERIAL_OUTPUT);
+    dma_osEnableDMAChannelTriggerFromIODevice(&_hDMAChannel, /* enable */ false);
 
     /* Note, most buffer addresses or indexes in this section of the code are
        understood as cyclic, i.e. modulo the buffer size. This is indicated by an M as
@@ -979,10 +950,13 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
        comments. */
 #define MODULO(bufIdx)    ((bufIdx) & SERIAL_OUTPUT_RING_BUFFER_IDX_MASK)
 
+    /* Get the pointer to our DMA channel. */
+    dma_dmaTransferCtrlDesc_t * const pTCD = dma_getTransferControlDescriptor(&_hDMAChannel);
+
     /* The current, i.e. next, transfer address of the DMA is the first (cyclic)
        address, which we must not touch when filling the buffer. This is the (current)
        end of the free buffer area. */
-    const uint32_t idxEndOfFreeSpaceM = DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].SADDR;
+    const uint32_t idxEndOfFreeSpaceM = pTCD->SADDR;
 
     /* The cyclic character of the buffer can require one or two copy operations to
        place the message. We compute the concrete index ranges to copy.
@@ -1049,17 +1023,16 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
     
     /* Set the number of bytes to transfer to the UART by DMA. */
     assert((unsigned)noBytesPending <= SERIAL_OUTPUT_RING_BUFFER_SIZE-1);
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].CITER.ELINKNO =
-    DMA->TCD[DMA_CHN_FOR_SERIAL_OUTPUT].BITER.ELINKNO =
-                                            DMA_TCD_CITER_ELINKNO_CITER(noBytesPending)
-                                            | DMA_TCD_CITER_ELINKNO_ELINK(0);
+    pTCD->CITER.ELINKNO =
+    pTCD->BITER.ELINKNO = DMA_TCD_CITER_ELINKNO_CITER(noBytesPending)
+                          | DMA_TCD_CITER_ELINKNO_ELINK(0);
 
     /* Resume the DMA channel. Re-enabling the PIT timer, which requests the bytes from the
        DMA, ensures that we again see a full timer period before it triggers the DMA for the
        next character: The LINFlex may easily be still busy serializing the last character
        from the previous DMA transfer.
          RM 70.5.8.2: Resume a previously stopped DMA channel. */
-    DMA->SERQ = DMA_SERQ_SERQ(DMA_CHN_FOR_SERIAL_OUTPUT);
+    dma_osEnableDMAChannelTriggerFromIODevice(&_hDMAChannel, /* enable */ true);
     startDMATrigger();
     ++ sio_serialOutNoDMATransfers;
 
