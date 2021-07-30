@@ -4,7 +4,7 @@
  * @file sio_serialIO.h
  * Definition of global interface of module sio_serialIO.c
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -36,6 +36,9 @@
 
 /** Index of system call for writing into serial output. */
 #define SIO_SYSCALL_WRITE_SERIAL    20
+
+/** Index of system call for reading from serial output. */
+#define SIO_SYSCALL_GET_LINE        21
 
 /** A trivial helper for the use of sio_osWriteSerial() with literal strings: The typical
     double use of the string literal in the argument list of the function, once as such,
@@ -143,6 +146,44 @@ static inline unsigned int sio_writeSerial(const char *msg, unsigned int noBytes
     return rtos_systemCall(SIO_SYSCALL_WRITE_SERIAL, msg, noBytes);
 
 } /* End of sio_writeSerial */
+
+
+
+/** 
+ * Principal API function for data input. A line of input text is read from the internal
+ *  buffer.
+ *   @return
+ * This function returns \a str on success, and NULL on error or if not enough characters
+ * have been received meanwhile to form a complete line of text.\n
+ *   Note the special situation of a full receive buffer without having received any end of
+ * line character. The system would be stuck - later received end of line characters would
+ * be discarded because of the full buffer and this function could never again return a
+ * line of text. Therefore the function will return the complete buffer contents at once as
+ * a line of input.
+ *   @param str
+ * This is the pointer to an array of chars where the C string is stored. \a str is the
+ * empty string if the function returns NULL - and given that \a sizeOfStr is greater than
+ * zero.
+ *   @param sizeOfStr
+ * The capacity of \a str in Byte. The maximum message length is one less since a
+ * terminating zero character is always appended.\n
+ *   A value of zero is not allowed. The function will return NULL in case and \a str[] is
+ * undefined.\n
+ *   Note, if \a sizeOfStr is less than the line of text to be returned then the complete
+ * line of text will nonetheless be removed from the receive buffer. Some characters from
+ * the input stream would be lost.
+ *   @remark
+ * This function must be called from the user task context only. Any attempt to use it from 
+ * OS code will lead to undefined behavior.
+ *   @remark
+ * Several more remarks apply to the use of this function. Please refer to OS pendant
+ * sio_osGetLine() for details.
+ */
+static inline char *sio_getLine(char str[], unsigned int sizeOfStr)
+{
+    return (char*)rtos_systemCall(SIO_SYSCALL_GET_LINE, str, sizeOfStr);
+
+} /* End of sio_getLine */
 
 
 #endif  /* SIO_SERIALIO_INCLUDED */

@@ -206,7 +206,7 @@ static void version()
     #endif
     "\r\n";
 
-    puts(version);
+    fputs(version, stdout);
     
 } /* End of version */
 
@@ -237,7 +237,7 @@ static void showW()
     "THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME\r\n"
     "THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.\r\n";
 
-    puts(gplShowW);
+    fputs(gplShowW, stdout);
 
 } /* End of showW */
 
@@ -265,7 +265,7 @@ static void showC()
     "You should have received a copy of the GNU Lesser General Public License\r\n"
     "along with this program.  If not, see <https://www.gnu.org/licenses/>.\r\n";
 
-    puts(gplShowC);
+    fputs(gplShowC, stdout);
 
 } /* End of showC */
 
@@ -283,7 +283,7 @@ static void greeting()
     "This is free software, and you are welcome to redistribute it under certain\r\n"
     "conditions; type `show c' for details.\r\n";
 
-    puts(greeting);
+    fputs(greeting, stdout);
     
 } /* End of greeting */
 
@@ -308,7 +308,7 @@ static void help()
     "time: Print current time\r\n"
     "time hour min [sec]: Set current time\r\n";
 
-    puts(help);
+    fputs(help, stdout);
 
 } /* End of help */
 
@@ -501,15 +501,16 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
         if(didNotUnderstand)
         {
             /* Echo bad user input, which could not be consumed. */
-            puts("I couldn't understand you. You typed:");
+            fputs("I couldn't understand you. You typed:", stdout);
+            fflush(stdout);
 
             unsigned int u;
             for(u=0; u<argC; ++u)
             {
-                puts(" ");
-                puts(argV[u]);
+                fputs(" ", stdout);
+                fputs(argV[u], stdout);
             }
-            puts("\r\nTry `help'\r\n");
+            fputs("\r\nTry `help'\r\n", stdout);
         }
     }
     else
@@ -517,7 +518,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
         /* Offer help after 30s of no input. */
         if(++cntIdleLoops_ >= 3000)
         {
-            puts("Type `help' to get software usage information\r\n");
+            fputs("Type `help' to get software usage information\r\n", stdout);
             cntIdleLoops_ = 0;
         }
 

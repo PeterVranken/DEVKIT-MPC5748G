@@ -18,6 +18,9 @@
  * this module.\n
  *   Note, formatted input is not possible through C standard functions.
  * 
+ * @todo Access is not implemented from all cores yet! For now, only the the RTOS running
+ * core may use the serial input functions.
+ *
  * @todo Doc allocated devices: LINFLex, SIUL, DMA, DMAMUX, PBridge, PIT, input interrupt
  * on which core
  *
@@ -39,6 +42,7 @@
 /* Module interface
  *   sio_osInitSerialInterface
  *   sio_scFlHdlr_writeSerial
+ *   sio_scSmplHdlr_getLine
  *   sio_writeSerial (inline)
  *   sio_osWriteSerial
  *   sio_osGetChar
@@ -104,7 +108,7 @@
     that makes use of the input related API functions of this module. */
 #define INTC_PRIO_IRQ_UART_FOR_SERIAL_INPUT     5u
 
-/** In principal, all cores can serve the on-character-received interrupt. Here, we chose,
+/** In principle, all cores can serve the on-character-received interrupt. Here, we chose,
     which one is in charge. The range is 0 (Z4A), 1 (Z4B) or 2 (Z2). */
 #define INTC_IRQ_TARGET_CORE    0
 
@@ -188,6 +192,8 @@
  * Data definitions
  */
  
+/// @todo Revise use of volatile. Maybe adequate for input with ISR but likely not for output
+
 /** This development support variable counts the number of DMA transfers intiated since
     power-up, to do the serial output */
 volatile unsigned long SBSS_OS(sio_serialOutNoDMATransfers) = 0;
@@ -239,7 +245,7 @@ static volatile uint8_t BSS_OS(_serialInRingBuf)[SERIAL_INPUT_RING_BUFFER_SIZE];
     the cyclic pointer update.
       @remark Note, the pointer points to the last byte in the buffer, not to the first
     address beyond as usually done. */
-static volatile const uint8_t * _pEndSerialInRingBuf =
+static volatile const uint8_t * SDATA_OS(_pEndSerialInRingBuf) =
                                     &_serialInRingBuf[SERIAL_INPUT_RING_BUFFER_SIZE-1];
 
 /** The pointer to the next write position in the ring buffer used for serial input. */
@@ -853,6 +859,10 @@ void sio_osInitSerialInterface(unsigned int baudRate)
  *   @remark
  * This function must never be called directly. The function is only made for placing it in
  * the global system call table.
+ *   @todo
+ * Double-check if this system call needs to be a full handler. It branches immediately
+ * into sio_osWriteSerial(), which is executed mostly as a single critical section. So we
+ * could directly say simple handler. 
  */
 unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
                                      , const char *msg
@@ -876,8 +886,8 @@ unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
 
 } /* End of sio_scFlHdlr_writeSerial */
         
-        
 
+        
         
 /** 
  * Principal API function for data output. A byte string is sent through the serial
@@ -893,7 +903,7 @@ unsigned int sio_scFlHdlr_writeSerial( uint32_t PID ATTRIB_UNUSED
  * \a noBytes.
  *   @param msg
  * The byte sequence to send. Note, this may be but is not necessarily a C string with zero
- * terminations. Zero bytes can be send, too.
+ * terminations. Zero bytes can be sent, too.
  *   @param noBytes
  * The number of bytes to send. For a C string, this will mostly be \a strlen(msg).
  *   @remark
@@ -983,7 +993,10 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
     /* Always copy the first part of the message to the current end of the linear
        buffer. The serial buffer, shared between all accessing cores and DMA, is located in
        uncached memory so that the writes go into main memory, where it can be accessed by
-       DMA. */
+       DMA.
+         Note, memcpy belongs to the basically untrusted C library, which is loaded into
+       the RAM of process P1. We can still use it here, as it doesn't require static RAM
+       (which could then be damaged by P1 code). */
     uint8_t * const pDest = &_serialOutRingBuf[MODULO(_serialOutRingBufIdxWrM)];
     assert(pDest + noBytesAtEnd <= &_serialOutRingBuf[SERIAL_OUTPUT_RING_BUFFER_SIZE]);
     memcpy(pDest, msg, noBytesAtEnd);
@@ -1037,16 +1050,16 @@ unsigned int sio_osWriteSerial(const char *msg, unsigned int noBytes)
  * Application API function to read a single character from serial input or EOF if there's
  * no such character received meanwhile.\n
  *   The function is not inter-core safe and must be called solely from execution contexts
- * running on core #INTC_IRQ_TARGET_CORE. It must not be called untill function
- * sio_initSerialInterface() has completed.
+ * running on core #INTC_IRQ_TARGET_CORE. It must not be called until function
+ * sio_osInitSerialInterface() has completed.
  *   @return
  * The function is non-blocking. If the receive buffer currently contains no character it
  * returns EOF (-1). Otherwise it returns the earliest received character, which is still
  * in the buffer.
  *   @remark
  * The return of EOF does not mean that the stream has been closed. It's just a matter of
- * having no input data temporarily. On reception of the more characters the function will
- * continue to return them.
+ * having no input data temporarily. After reception of more characters the function will
+ * continue returning them.
  *   @remark
  * This function must be called by trusted code in supervisor mode only. It belongs to the
  * sphere of trusted code itself.
@@ -1093,6 +1106,53 @@ signed int sio_osGetChar(void)
 
 
 
+/** 
+ * System call handler for entry into data input sio_osGetLine(); a function, which is
+ * otherwise available only to OS code. The input buffer is checked for a complete new line
+ * of input. See sio_osGetLine() for details.
+ *   @return
+ * NULL if no input is avaliable yet, otherwise \a str. See sio_osGetLine() for details.
+ *   @param PID
+ * The process ID of the calling task.
+ *   @param str
+ * If input is avaliable then it is copied to \a str[]. All bytes str[0] till and including
+ * str[sizeOfStr-1] need to be owned by process \a PID. See sio_osGetLine() for details.
+ *   @param sizeOfStr
+ * The capacity of \a str[]. See sio_osGetLine() for details.
+ *   @remark
+ * This function must never be called directly. The function is only made for placing it in
+ * the global system call table.
+ */
+uint32_t sio_scSmplHdlr_getLine( uint32_t PID, char str[], unsigned int sizeOfStr)
+{
+    /* Note, the function is implemented as a simple handler. This has been decided because
+       the code in the implementation of the OS variant anyway forms a single large chunk
+       of critical section code. Does the time span consumed by the wrapper (mainly
+       checkUserCodeWritePtr) justify this? */
+    /// @todo Compare with write, consistency of design: Here the wrapper does less, the OS
+    // function forms a critical section, too, but the hnadler is still a full handler.
+
+    /* The system call handler gets a pointer to the memory location, where to place the
+       received input. We need to validate that this pointer, coming from the untrusted
+       user code doesn't break our safety concept. All bytes accessible through the pointer
+       need to be owned by the caling process. */
+    if(!rtos_checkUserCodeWritePtr(PID, str, sizeOfStr))
+    {
+        /* The user specified memory region is not entirely inside the permitted,
+           accessible range. This is a severe user code error, which is handeld with an
+           exception, task abort and counted error. */
+        rtos_osSystemCallBadArgument();
+    }
+    
+    /* After checking the potentially bad user input we may delegate it to the "normal"
+       function implementation. */
+    return (uint32_t)sio_osGetLine(str, sizeOfStr);
+
+} /* End of sio_scSmplHdlr_getLine */
+
+
+
+
 /**
  * The function reads a line of text from serial in and stores it into the string pointed
  * to by \a str. It stops when the end of line character is read and returns an
@@ -1107,7 +1167,7 @@ signed int sio_osGetChar(void)
  * these two can or cannot be part of the copied line of text, see
  * #SERIAL_INPUT_FILTERED_CHAR. This, too, is a matter of compile time configuration.\n
  *   The function is not inter-core safe and must be called solely from execution contexts
- * running on core #INTC_IRQ_TARGET_CORE. It must not be called untill function
+ * running on core #INTC_IRQ_TARGET_CORE. It must not be called until function
  * sio_osInitSerialInterface() has completed.
  *   @return
  * This function returns \a str on success, and NULL on error or if not enough characters
@@ -1119,10 +1179,13 @@ signed int sio_osGetChar(void)
  * a line of input.
  *   @param str
  * This is the pointer to an array of chars where the C string is stored. \a str is the
- * empty string if the function returns NULL.
+ * empty string if the function returns NULL - and given that \a sizeOfStr is greater than
+ * zero.
  *   @param sizeOfStr
  * The capacity of \a str in Byte. The maximum message length is one less since a
- * terminating zero character is always appended. A value of zero is caught by assertion.\n
+ * terminating zero character is always appended.\n
+ *   A value of zero is not allowed. The function will return NULL in case and \a str[] is
+ * undefined.\n
  *   Note, if \a sizeOfStr is less than the line of text to be returned then the complete
  * line of text will nonetheless be removed from the receive buffer. Some characters from
  * the input stream would be lost.
@@ -1144,7 +1207,7 @@ signed int sio_osGetChar(void)
  * will be silently concatenated with its successor. You may consider observing the global
  * variable \a sio_serialInLostBytes to recognize this situation. Note, because of the race
  * conditions between serial I/O interrupt and application software you can not clearly
- * relate a change of these variables to a particular message you get from this function.
+ * relate a change of this variable to a particular message you get from this function.
  * In particular, you must not try to reset the counter prior to a read operation in order
  * to establish such a relation. Your application will just know that there is some garbled
  * input.
@@ -1154,9 +1217,11 @@ signed int sio_osGetChar(void)
  */
 char *sio_osGetLine(char str[], unsigned int sizeOfStr)
 {
+    /* This function is callable only from one dedicated core. */
+    assert(rtos_osGetIdxCore() == INTC_IRQ_TARGET_CORE);
+    
     if(sizeOfStr == 0)
     {
-        assert(false);
         return NULL;
     }
     else
