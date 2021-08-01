@@ -74,9 +74,10 @@
 
 #include <assert.h>
 
+#include "dma_dmaDriver.h"
 #include "typ_types.h"
 #include "rtos.h"
-#include "dma_dmaDriver.h"
+#include "mtx_mutex.h"
 
 #if defined(MCU_MPC5748G)  &&  defined(MCU_MPC5775B) \
     ||  !defined(MCU_MPC5748G)  &&  !defined(MCU_MPC5775B)
@@ -334,10 +335,11 @@ void dma_osInitDMADriver(void)
  *   No such configuration is done, if the function fails to reserve the channel for the
  * client code.
  *   @remark
- * The function can be called from all OS contexts on a single core. All other cores in the
- * system must not invoke this function simultaneously. Mutual exclusion of cores needs to
- * be implemented by the calling code. Disregarding this rule can result in two clients
- * both getting access to the same channel!
+ * On the MPC5748G, the function can be called from any OS context on any core at any time.
+ *   @warning
+ * On the MPC5775B/E, the function must be called from the boot core only, i.e.
+ * rtos_osGetIdxCore() == 0. Any OS context on the boot core may call this function at any
+ * time.
  *   @see dma_osReleaseDMAChannel()
  *   @todo
  * Some commonly used channel features could be configured in this function, e.g. use of
@@ -362,14 +364,15 @@ bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
     /* This function needs to be thread-safe, even if it'll likely be called only during
        system start up, when there aren't competing contexts. Unfortunately, this is not
        guaranteed. */
-    /// @todo All cores should have access, so we would need a system-wide mutual
-    // exclusion. Unfortunately, the offered cross-core communication mechanisms differ for
-    // the derivatives, which are supported here and - for now - we need to limit the use
-    // of this API to a single core.
-    /* We don't have a multi-core concept for this driver yet. For now, we restrict the use
-       of this function to the boot core. */
+#if defined(MCU_MPC5748G)
+    static mtx_intercoreCriticalSection_t DATA_OS(critSec) = MTX_INTERCORE_CRITICAL_SECTION;
+    mtx_osEnterIntercoreCriticalSection(&critSec);
+#elif defined(MCU_MPC5775B)
+    /* On MCU_MPC5775B, we don't have a multi-core concept for this driver yet. For now, we
+       restrict the use of this function to the boot core. */
     assert(rtos_osGetIdxCore() == 0);
     const uint32_t stateOnEntry = rtos_osEnterCriticalSection();
+#endif
     
     #define WORD_SIZE   (sizeof(_dmaChannelAllocationAry[0])*8u)
     const unsigned int idxLockBit = idxDMADevice*DMA_TCD_COUNT + idxChannel
@@ -391,7 +394,11 @@ bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
     }
     #undef WORD_SIZE
     
+#if defined(MCU_MPC5748G)
+    mtx_osLeaveIntercoreCriticalSection(&critSec);
+#elif defined(MCU_MPC5775B)
     rtos_osLeaveCriticalSection(stateOnEntry);
+#endif
     
     if(success)
     {
@@ -443,14 +450,15 @@ bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
  *   @param pHDMAChn
  * The handle of the affected channel by reference. The function invalidates the handle.
  *   @remark
- * The function can be called from all OS contexts on a single core. All other cores in the
- * system must not invoke this function simultaneously. Mutual exclusion of cores needs to
- * be implemented by the calling code. Disregarding this rule can result in two clients
- * both getting access to the same channel!
- *   @remark
  * The function doesn't keep tack who had allocated a channel and who returns it. Proper
  * use of the function is a prerequisite of conflict free operation of DMA channels but
  * this can't be checked by the function! Careful use is a must.
+ *   @remark
+ * On the MPC5748G, the function can be called from any OS context on any core at any time.
+ *   @warning
+ * On the MPC5775B/E, the function must be called from the boot core only, i.e.
+ * rtos_osGetIdxCore() == 0. Any OS context on the boot core may call this function at any
+ * time.
  *   @see dma_osAcquireDMAChannel()
  */
 void dma_osReleaseDMAChannel(dma_dmaChannel_t * const pHDMAChn)
@@ -480,14 +488,15 @@ void dma_osReleaseDMAChannel(dma_dmaChannel_t * const pHDMAChn)
     /* This function needs to be thread-safe, even if it'll likely be called only during
        system start up, when there aren't competing contexts. Unfortunately, this is not
        guaranteed. */
-    /// @todo All cores should have access, so we would need a system-wide mutual
-    // exclusion. Unfortunately, the offered cross-core communication mechanisms differ for
-    // the derivatives, which are supported here and - for now - we need to limit the use
-    // of this API to a single core.
-    /* We don't have a multi-core concept for this driver yet. For now, we restrict the use
-       of this function to the boot core. */
+#if defined(MCU_MPC5748G)
+    static mtx_intercoreCriticalSection_t DATA_OS(critSec) = MTX_INTERCORE_CRITICAL_SECTION;
+    mtx_osEnterIntercoreCriticalSection(&critSec);
+#elif defined(MCU_MPC5775B)
+    /* On MCU_MPC5775B, we don't have a multi-core concept for this driver yet. For now, we
+       restrict the use of this function to the boot core. */
     assert(rtos_osGetIdxCore() == 0);
     const uint32_t stateOnEntry = rtos_osEnterCriticalSection();
+#endif
     
     #define WORD_SIZE   (sizeof(_dmaChannelAllocationAry[0])*8u)
     const unsigned int idxLockBit = idxDMADevice*DMA_TCD_COUNT + pHDMAChn->idxChn
@@ -500,7 +509,11 @@ void dma_osReleaseDMAChannel(dma_dmaChannel_t * const pHDMAChn)
     _dmaChannelAllocationAry[idxWord] = allocVec & ~maskForBit;
     #undef WORD_SIZE
 
+#if defined(MCU_MPC5748G)
+    mtx_osLeaveIntercoreCriticalSection(&critSec);
+#elif defined(MCU_MPC5775B)
     rtos_osLeaveCriticalSection(stateOnEntry);
+#endif
     
     /* Inavlidate the handle in order to make unwanted use more unlikely. */
     *pHDMAChn = (dma_dmaChannel_t){.pDMA = NULL, .idxChn = 0, .pTCD = NULL};

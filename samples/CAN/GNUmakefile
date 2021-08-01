@@ -91,7 +91,7 @@ incDirList := code/application/ code/application/Z4A/
 # flash, which reduces the turnaround time and which saves flash programming cycles.
 defineList := USE_NEWLIB \
               OSE_CAN_BUS_PT=0 \
-		      CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
+              CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
               CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
               #LINK_IN_RAM
 
