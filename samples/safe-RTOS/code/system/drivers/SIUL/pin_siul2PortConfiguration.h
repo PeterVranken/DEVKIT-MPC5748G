@@ -5,10 +5,10 @@
  * Definition of global interface of the I/O port driver pin_siuPortConfiguration.c.\n
  *   Note, the port driver supports the two MCUs MPC5748G and MPC5775B/E. Two similar but
  * not identical header files are provided with the driver and your application code will
- * only include the suiting one: This one, pin_siuPortConfiguration.h, if the MCU
- * MPC5775B/E is used and the other one, pin_siul2PortConfiguration.h, for the MPC5748G.\n
+ * only include the suiting one: This one, pin_siul2PortConfiguration.h, if the MCU
+ * MPC5748G is used and the other one, pin_siuPortConfiguration.h, for the MPC5775B/E.\n
  *   The configuration of in- and output pins is documented in the Excel workbook
- * MPC5775B_MPC5775E_System_IO_Definition.xlsx; which is embedded into the MCU
+ * IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx, which is embedded into the MCU
  * reference manual PDF file. In Acrobat Reader, click View/Show/Hide/Navigation
  * Panes/Attachments to find the Excel workbook.\n
  *   In the Excel workbook, on worksheet "IO Signal Table", each line refers to one of
@@ -33,6 +33,13 @@
  * worksheet look for the wanted device (column B, "Instance") and/or for the wanted
  * signal (column H, "Source Signal"). Columns D, E and F provide the needed three
  * pieces of information for the multiplexer configuration.
+ *
+ * @note References "RM48" (reference manual) in this module refer to "MPC5748G Reference
+ * Manual", document number: MPC5748GRM, Rev. 6, 10/2017.
+ *
+ * @note References "PM48" (pin mapping) in this module refer to file
+ * "IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx", which is an attachment of
+ * RM48.
  *
  * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -66,24 +73,22 @@
  * Global type definitions
  */
 
-/** Settings of a port, which is configured as output. Most of the settings relate to RM,
-    8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff. */
+/** Settings of a port, which is configured as output. Most of the settings relate to RM48,
+    15.2.11 SIUL2 Multiplexed Signal Configuration Register (SIUL2_MSCRn), pp.388ff. */
 typedef struct pin_portOutCfg_t
 {
-    /** The index of the port as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-        worksheet "IO Signal Table", column B. */
-    uint16_t idxPort_PCR;
+    /** The index of the port as used in
+        IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx worksheet "IO Signal
+        Table", column C. */
+    uint16_t idxPort_MSCR;
     
-    /** Source selection as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-        worksheet "IO Signal Table", column C. */
-    uint8_t idxPortSource_PA;
+    /** Source selection as used in IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx,
+        worksheet "IO Signal Table", column D. */
+    uint8_t idxPortSource_SSS;
     
     /** A port uses either open drain (\a true) or it actively drives both logical states
         (\a false). */
     bool enableOpenDrain_ODE;
-    
-    /** Drive strength from min to max. Range is 0..3. */
-    uint8_t driveStrength_DSC;
     
     /** The maximum slew rate can be limited. Range is 0..3. 3 means maximum slew rate, or
         no limitation. */
@@ -92,19 +97,22 @@ typedef struct pin_portOutCfg_t
 } pin_portOutCfg_t;
 
 
-/** Settings of a port, which is configured as input. Most of the settings relate to RM,
-    8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff and the multiplxer
-    configuration, RM, sections 8.2.66ff Input Multiplexing RegisterN (SIU_IMUXN),
-    pp.373ff. */ 
+
+/** Settings of a port, which is configured as input. Most of the settings relate to RM48,
+    15.2.11 SIUL2 Multiplexed Signal Configuration Register (SIUL2_MSCRn), pp.388ff, and
+    the input multiplxer configuration, 15.2.12 SIUL2 Input Multiplexed Signal
+    Configuration Register (SIUL2_IMCRn), pp.391f. */
 typedef struct pin_portInCfg_t
 {
-    /** The index of the port as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-        worksheet "IO Signal Table", column B. */
-    uint16_t idxPort_PCR;
+    /** The index of the port as used in
+        IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx, worksheet "IO Signal
+        Table", column C. */
+    uint16_t idxPort_MSCR;
     
-    /** Source selection as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-        worksheet "IO Signal Table", column C. */
-    uint8_t idxPortSource_PA;
+    /** Source selection as used in IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx,
+        worksheet "IO Signal Table", column D, and at the same time same file, worksheet
+        "Input Muxing", column F. */
+    uint8_t idxPortSource_SSS;
     
     /** The input can be used with hysteresis for better stability of input values. */
     bool enableHysteresis_HYS;
@@ -118,32 +126,18 @@ typedef struct pin_portInCfg_t
         
     } pullUpDownCfg;
     
-    /** Zero based index of the related input multiplexer register. The index is at the same
-        time the number N in its name. See RM, sections 8.2.66ff Input Multiplexing RegisterN
-        (SIU_IMUXN), pp.373ff. Range is [0..5, 7, 10, 12].\n
-          Note, some inputs are hardwired with a specific port. In which case no related
-        multiplexer can be configured. You need to specify the invalid index
-        UINT_T_MAX(uint8_t) for such a signal. */
-    uint8_t idxMultiplexerRegister;
-    
-    /** Each multiplexer register contains up to 16 2-Bit multiplexers. This is the zero
-        based index of the multiplxer inside the selected register. The index is at the same
-        time the number N in the name of the multiplexer.\n
-          The range is basically 0..15 but depends on the selected multiplexer register.
-        Most of the registers do not support all 16 multiplexers. Please consult RM,
-        sections 8.2.66ff, pp.373ff.\n
-          The value doesn't care, if \a idxMultiplexerRegister is set to
-        UINT_T_MAX(uint8_t). */
-    uint8_t idxMultiplexer;
+    /** Zero based index of the related input multiplexer register IMCR. This index is
+        found in worksheet "Input Muxing", column D. It can be identified in worksheet "IO
+        Signal Table", column C, too, but careful, then you need to subtract the constant
+        512 from the index specified there. */
+    uint16_t idxMultiplexerRegister;
     
     /** The signal selection for the selected multiplexer. The required value is found in
-        MPC5775B_MPC5775E_System_IO_Definition.xlsx, worksheet "Input Muxing", column F.
-        Moreover, the possible choices are documented in the description of the selected
-        multiplexer register, RM, sections 8.2.66ff, pp.373ff.\n 
-          Range is basically 0..3 but not all of the values are supported by all of the
-        inputs.\n
-          The value doesn't care, if \a idxMultiplexerRegister is set to
-        UINT_T_MAX(uint8_t). */
+        IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx, worksheet "Input Muxing",
+        column F. It can be identified in worksheet "IO
+        Signal Table", column D, too.
+          Range is basically 0..15 but not all of the values are supported by all of the
+        inputs and values greater than 7 seem to be not used at all. */
     uint8_t idxInputSource_MUXSELVALUE;
 
 } pin_portInCfg_t;
