@@ -209,7 +209,7 @@ static inline void lbd_osSetLED(lbd_led_t led, bool isOn)
          Unfortunately the MCU header only models the 32 Bit access, which involves four
        port bits at once. We need to recompute the register address so that we can
        apply a single Byte access. */
-    siu_setGPIO(/* idxPort */ (unsigned)led, isOn? false: true);
+    siu_osSetGPIO(/* idxPort */ (unsigned)led, isOn? false: true);
 
 } /* End of lbd_osSetLED */
 

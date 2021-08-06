@@ -38,9 +38,10 @@
  *   siu_osInitPortDriver
  *   siu_osAcquirePort
  *   siu_osReleasePort
- *   siu_siuConfigureOutput
- *   siu_siuConfigureInput
- *   siu_getGPIO (inline)
+ *   siu_osConfigureOutput
+ *   siu_osConfigureInput
+ *   siu_osGetGPIO (inline)
+ *   siu_osSetGPIO (inline)
  * Local functions
  */
 
@@ -304,7 +305,7 @@ void siu_osReleasePort(unsigned int idxPort)
  *   @param pPortCfg
  * The desired port configuration by reference.
  */
-void siu_siuConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCfg)
+void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCfg)
 {
     /* The next assertion incorporates an index check for idxPort. */
     assert(!siu_osIsPortAvailable(idxPort));
@@ -345,7 +346,7 @@ void siu_siuConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortC
         | SIU_PCR_WPS(pPortCfg->pullUpDownCfg == siu_pullRes_pullUp? 1u: 0u) /* Up or down? */
         ;
 #endif
-} /* siu_siuConfigureOutput */
+} /* siu_osConfigureOutput */
 
 
 
@@ -358,7 +359,7 @@ void siu_siuConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortC
  *   @param pPortCfg
  * The desired port configuration by reference.
  */
-void siu_siuConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg)
+void siu_osConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg)
 {
     /* The next assertion incorporates an index check for idxPort. */
     assert(!siu_osIsPortAvailable(idxPort));
@@ -445,5 +446,5 @@ void siu_siuConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg
            Muxing". */
     }
 #endif
-} /* siu_siuConfigureInput */
+} /* siu_osConfigureInput */
 

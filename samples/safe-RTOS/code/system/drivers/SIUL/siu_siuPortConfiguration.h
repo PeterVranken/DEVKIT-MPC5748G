@@ -77,6 +77,18 @@
  * Global type definitions
  */
 
+/** A pull up or pull down resistor can be enabled for in- and outputs. Principal use case
+    is a pull-up in combination with an open drain output. All possible configurations are
+    enumerated here. */
+typedef enum siu_portInPullResistor_t 
+{
+    siu_pullRes_none,
+    siu_pullRes_pullUp,
+    siu_pullRes_pullDown,
+
+} siu_portInPullResistor_t;
+
+
 /** Settings of a port, which is configured as output. Most of the settings relate to RM,
     8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff. */
 typedef struct siu_portOutCfg_t
@@ -92,6 +104,10 @@ typedef struct siu_portOutCfg_t
     /** A port uses either open drain (\a true) or it actively drives both logical states
         (\a false). */
     bool enableOpenDrain_ODE;
+    
+    /** A pull up or pull down resistor can be enabled for the output. Principal use case
+        is a pull-up in combination with an open drain output. */
+    siu_portInPullResistor_t pullUpDownCfg;
     
     /** Drive strength from min to max. Range is 0..3. */
     uint8_t driveStrength_DSC;
@@ -117,14 +133,8 @@ typedef struct siu_portInCfg_t
     bool enableHysteresis_HYS;
     
     /** A pull up or pull down resistor can be enabled for the input. */
-    enum siu_portInPullResistor_t 
-    {
-        siu_pullRes_none,
-        siu_pullRes_pullUp,
-        siu_pullRes_pullDown,
-        
-    } pullUpDownCfg;
-    
+    siu_portInPullResistor_t pullUpDownCfg;
+
     /** Zero based index of the related input multiplexer register. The index is at the same
         time the number N in its name. See RM, sections 8.2.66ff Input Multiplexing RegisterN
         (SIU_IMUXN), pp.373ff. Range is [0..5, 7, 10, 12].\n

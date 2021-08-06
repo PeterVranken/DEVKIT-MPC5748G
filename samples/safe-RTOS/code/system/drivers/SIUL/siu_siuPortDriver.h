@@ -93,10 +93,10 @@ bool siu_osIsPortAvailable(unsigned int idxPort);
 void siu_osReleasePort(unsigned int idxPort);
 
 /** Configure a port as output. */
-void siu_siuConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCfg);
+void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCfg);
 
 /** Configure a port as input. */
-void siu_siuConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg);
+void siu_osConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg);
 
 
 /*
@@ -114,7 +114,7 @@ void siu_siuConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg
  * register array MSCR (MPC5748G) or PCR (MPC5775B/E). Pass the index of the returned port.
  * The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion.
  */
-static inline bool siu_getGPIO(unsigned int idxPort)
+static inline bool siu_osGetGPIO(unsigned int idxPort)
 {
     assert(idxPort < SIU_NO_MCU_PORTS);
     
@@ -129,7 +129,7 @@ static inline bool siu_getGPIO(unsigned int idxPort)
     /* See RM75, 8.2.65 GPIO Pin Data Input Register (SIU_GPDIn), pp.372f. */
     return SIU->GPDI[idxPort] != 0;
 #endif
-} /* siu_getGPIO */
+} /* siu_osGetGPIO */
 
 
 
@@ -143,7 +143,7 @@ static inline bool siu_getGPIO(unsigned int idxPort)
  * Pass \a true if the port should output a high voltage level. Pass \a false for output of
  * a low voltage level.
  */
-static inline void siu_setGPIO(unsigned int idxPort, bool highLevel)
+static inline void siu_osSetGPIO(unsigned int idxPort, bool highLevel)
 {
     assert(idxPort < SIU_NO_MCU_PORTS);
     
@@ -158,6 +158,6 @@ static inline void siu_setGPIO(unsigned int idxPort, bool highLevel)
     /** See RM75, 8.2.14 GPIO Pin Data Output Register (SIU_GPDOn), pp.244f. */
     SIU->GPDO[idxPort] = highLevel? 1u: 0u;
 #endif
-} /* siu_setGPIO */
+} /* siu_osSetGPIO */
 
 #endif  /* SIU_SIUPORTDRIVER_INCLUDED */

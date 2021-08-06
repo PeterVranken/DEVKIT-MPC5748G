@@ -176,7 +176,7 @@ static bool osGetButton(stateButton_t * const pCoreInstanceData)
     /* The contribution to the debouncing depends on the current 0/1 reading of the GPIO
        input buffer. */
     const signed int actState =
-                siu_getGPIO(/* idxPort */ (unsigned)pCoreInstanceData->button)!=0? 1: -1;
+                siu_osGetGPIO(/* idxPort */ (unsigned)pCoreInstanceData->button)!=0? 1: -1;
 
     pCoreInstanceData->cntDebounce += actState;
     if(pCoreInstanceData->cntDebounce >= MAX_CNT_BTN_DEBOUNCE)
@@ -312,9 +312,9 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
             lbd_osSetLED(lbd_led_##designation, /* isOn */ false);                          \
                                                                                             \
             /* Configure the port as output. */                                             \
-            siu_siuConfigureOutput( /* idxPort */ lbd_led_##designation                     \
-                                  , &stdOutpCfg                                             \
-                                  );                                                        \
+            siu_osConfigureOutput( /* idxPort */ lbd_led_##designation                      \
+                                 , &stdOutpCfg                                              \
+                                 );                                                         \
         } /* End of macro INIT_LED() */
 
     /* Enable all LEDs accordingly. */
@@ -372,9 +372,9 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
             /* Configure the port as input. A pull-up resistor is on the PCB and */         \
             /* is not required by port configuration. The GPIO function doesn't */          \
             /* require the configuration of an input multiplexer. */                        \
-            siu_siuConfigureInput( /* idxPort */ lbd_bt_button_##designation                \
-                                 , &stdInpCfg                                               \
-                                 );                                                         \
+            siu_osConfigureInput( /* idxPort */ lbd_bt_button_##designation                 \
+                                , &stdInpCfg                                                \
+                                );                                                          \
         } /* End of macro INIT_SW() */
 
     /* Enable all buttons accordingly. */
