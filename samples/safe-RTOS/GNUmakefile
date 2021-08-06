@@ -79,7 +79,7 @@ srcDirList := code/system/
 # Exclusion list: Edit the list of excluded files. A blank separated list of source files
 # (with extension but without path) is expected, which are excluded from the compilation of
 # all *.c, *.cpp and *.S.
-cFileListExcl := pin_siuPortConfiguration.c
+cFileListExcl :=
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).

@@ -409,6 +409,11 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        side-effects on the kernel! */
     stm_osInitSystemTimers();
 
+    /* Initialize the port driver. This should come early; most typical, many other I/O
+       drivers will make use of pins and ports and therefore depend on the the port
+       driver. */
+    siu_osInitPortDriver();
+    
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();

@@ -1,12 +1,12 @@
-#ifndef PIN_SIUPORTCONFIGURATION_INCLUDED
-#define PIN_SIUPORTCONFIGURATION_INCLUDED
+#ifndef SIU_SIUPORTCONFIGURATION_INCLUDED
+#define SIU_SIUPORTCONFIGURATION_INCLUDED
 /**
- * @file pin_siuPortConfiguration.h
- * Definition of global interface of the I/O port driver pin_siuPortConfiguration.c.\n
+ * @file siu_siuPortConfiguration.h
+ * Definition of global interface of the I/O port driver siu_siuPortConfiguration.c.\n
  *   Note, the port driver supports the two MCUs MPC5748G and MPC5775B/E. Two similar but
  * not identical header files are provided with the driver and your application code will
- * only include the suiting one: This one, pin_siuPortConfiguration.h, if the MCU
- * MPC5775B/E is used and the other one, pin_siul2PortConfiguration.h, for the MPC5748G.\n
+ * only include the suiting one: This one, siu_siuPortConfiguration.h, if the MCU
+ * MPC5775B/E is used and the other one, siu_siul2PortConfiguration.h, for the MPC5748G.\n
  *   The configuration of in- and output pins is documented in the Excel workbook
  * MPC5775B_MPC5775E_System_IO_Definition.xlsx; which is embedded into the MCU
  * reference manual PDF file. In Acrobat Reader, click View/Show/Hide/Navigation
@@ -27,12 +27,18 @@
  * There are nine such registers and they contain a varying number of multiplexers
  * each. You need to know, which multiplexer register to use and which multiplxer
  * inside the register and which value to configure for this multiplexer. All of this
- * is found either in the description of the registers (RM, sections 8.2.66ff,
+ * is found either in the description of the registers (RM75, sections 8.2.66ff,
  * pp.374ff) or by name of the signal in the Excel workbook
  * MPC5775B_MPC5775E_System_IO_Definition.xlsx, worksheet "Input Muxing". In the Excel
  * worksheet look for the wanted device (column B, "Instance") and/or for the wanted
  * signal (column H, "Source Signal"). Columns D, E and F provide the needed three
  * pieces of information for the multiplexer configuration.
+ *
+ * @note References "RM75" in this module refer to "MPC5775E/MPC5775B Reference Manual",
+ * document number: MPC5775E, Rev. 1, 05/2018.
+ *
+ * @note References "PM75" in this module refer to file
+ * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", which is an attachment of RM75.
  *
  * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -61,6 +67,11 @@
  * Defines
  */
 
+/** The invalid selection of an input multiplexer. To be used for configuration field \a
+    idxMultiplexerRegister, if an input is not routed to an I/O device but used as
+    simple GPIO. */
+#define SIU_INPUT_MULTIPLEXER_UNUSED    (UINT_T_MAX(uint8_t))
+
 
 /*
  * Global type definitions
@@ -68,15 +79,15 @@
 
 /** Settings of a port, which is configured as output. Most of the settings relate to RM,
     8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff. */
-typedef struct pin_portOutCfg_t
+typedef struct siu_portOutCfg_t
 {
-    /** The index of the port as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-        worksheet "IO Signal Table", column B. */
-    uint16_t idxPort_PCR;
-    
     /** Source selection as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
         worksheet "IO Signal Table", column C. */
     uint8_t idxPortSource_PA;
+    
+    /** An output can be input at the same time: The SW can read back the driven output
+        value. This is particularly useful with open drain outputs. */
+    bool enableReadBack;
     
     /** A port uses either open drain (\a true) or it actively drives both logical states
         (\a false). */
@@ -89,19 +100,15 @@ typedef struct pin_portOutCfg_t
         no limitation. */
     uint8_t maxSlewRate_SRC;
     
-} pin_portOutCfg_t;
+} siu_portOutCfg_t;
 
 
 /** Settings of a port, which is configured as input. Most of the settings relate to RM,
     8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff and the multiplxer
     configuration, RM, sections 8.2.66ff Input Multiplexing RegisterN (SIU_IMUXN),
     pp.373ff. */ 
-typedef struct pin_portInCfg_t
+typedef struct siu_portInCfg_t
 {
-    /** The index of the port as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-        worksheet "IO Signal Table", column B. */
-    uint16_t idxPort_PCR;
-    
     /** Source selection as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
         worksheet "IO Signal Table", column C. */
     uint8_t idxPortSource_PA;
@@ -110,11 +117,11 @@ typedef struct pin_portInCfg_t
     bool enableHysteresis_HYS;
     
     /** A pull up or pull down resistor can be enabled for the input. */
-    enum pin_portInPullResistor_t 
+    enum siu_portInPullResistor_t 
     {
-        pin_pullRes_none,
-        pin_pullRes_pullUp,
-        pin_pullRes_pullDown,
+        siu_pullRes_none,
+        siu_pullRes_pullUp,
+        siu_pullRes_pullDown,
         
     } pullUpDownCfg;
     
@@ -123,7 +130,7 @@ typedef struct pin_portInCfg_t
         (SIU_IMUXN), pp.373ff. Range is [0..5, 7, 10, 12].\n
           Note, some inputs are hardwired with a specific port. In which case no related
         multiplexer can be configured. You need to specify the invalid index
-        UINT_T_MAX(uint8_t) for such a signal. */
+        #SIU_INPUT_MULTIPLEXER_UNUSED for such a signal. */
     uint8_t idxMultiplexerRegister;
     
     /** Each multiplexer register contains up to 16 2-Bit multiplexers. This is the zero
@@ -133,7 +140,7 @@ typedef struct pin_portInCfg_t
         Most of the registers do not support all 16 multiplexers. Please consult RM,
         sections 8.2.66ff, pp.373ff.\n
           The value doesn't care, if \a idxMultiplexerRegister is set to
-        UINT_T_MAX(uint8_t). */
+        #SIU_INPUT_MULTIPLEXER_UNUSED. */
     uint8_t idxMultiplexer;
     
     /** The signal selection for the selected multiplexer. The required value is found in
@@ -143,10 +150,10 @@ typedef struct pin_portInCfg_t
           Range is basically 0..3 but not all of the values are supported by all of the
         inputs.\n
           The value doesn't care, if \a idxMultiplexerRegister is set to
-        UINT_T_MAX(uint8_t). */
+        #SIU_INPUT_MULTIPLEXER_UNUSED. */
     uint8_t idxInputSource_MUXSELVALUE;
 
-} pin_portInCfg_t;
+} siu_portInCfg_t;
 
 
 /*
@@ -158,11 +165,6 @@ typedef struct pin_portInCfg_t
  * Global prototypes
  */
 
-/** Configure an output port. */
-void pin_siuConfigureOutput(const pin_portOutCfg_t *pPortCfg);
-
-/** Configure an input port. */
-void pin_siuConfigureInput(const pin_portInCfg_t *pPortCfg);
 
 
 /*
@@ -170,4 +172,4 @@ void pin_siuConfigureInput(const pin_portInCfg_t *pPortCfg);
  */
 
 
-#endif  /* PIN_SIUPORTCONFIGURATION_INCLUDED */
+#endif  /* SIU_SIUPORTCONFIGURATION_INCLUDED */

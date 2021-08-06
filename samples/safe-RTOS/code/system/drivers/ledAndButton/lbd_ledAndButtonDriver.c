@@ -1,6 +1,6 @@
 /**
  * @file lbd_ledAndButtonDriver.c
- * 
+ *
  *
  * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -40,31 +40,32 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "lbd_ledAndButtonDriver.h"
 #include "typ_types.h"
 #include "rtos.config.h"
 #include "rtos_ivorHandler.h"
+#include "siu_siuPortDriver.h"
 #include "lbd_ledAndButtonDriver_defSysCalls.h"
-#include "lbd_ledAndButtonDriver.h"
 
 
 /*
  * Defines
  */
- 
+
 
 /*
  * Local type definitions
  */
- 
+
 /** The state information needed to debounce a single button. */
 typedef struct stateButton_t
 {
-    /** The GPIO index of the digital input the button is connected to. */ 
+    /** The GPIO index of the digital input the button is connected to. */
     lbd_button_t button;
 
     /** The counter value of the debouncer. */
     int8_t cntDebounce;
-    
+
     /** The current debounced state of the button. \a true means pressed. */
     bool buttonState;
 
@@ -75,16 +76,20 @@ typedef struct stateButton_t
     must influence one another. Therefore we have the state information core dependent. */
 typedef struct stateDriver_t
 {
+#if LBD_ENABLE_BUTTON_SW1 == 1
     /** The debounce counter for button SW1. */
     stateButton_t stateSW1;
-    
+#endif
+
+#if LBD_ENABLE_BUTTON_SW2 == 1
     /** The debounce counter for button SW2. */
     stateButton_t stateSW2;
-    
+#endif
+
     /** The last recent value of the vector of all button states. Used in the driver's main
         function to detect button change events. */
     uint8_t lastStateButtons;
-    
+
     /** The specification of a notification callback in case the button state changes. */
     rtos_taskDesc_t onButtonChangeCallback;
 
@@ -94,12 +99,13 @@ typedef struct stateDriver_t
 /*
  * Local prototypes
  */
- 
- 
+
+
 /*
  * Data definitions
  */
 
+#if LBD_NO_ENABLED_BUTTONS > 0
 /** The state information to debounce the buttons on the different cores.
       @remark We make the definition for all cores independent from the configuration
     macros #RTOS_RUN_SAFE_RTOS_ON_CORE_0 (1, 2): The driver's OS API is not RTOS dependent
@@ -112,24 +118,30 @@ typedef struct stateDriver_t
 static stateDriver_t DATA_OS(_coreInstanceDataAry)[RTOS_NO_CORES] =
     {
         [0 ... (RTOS_NO_CORES-1)] =
-            { .stateSW1 =
+            {
+#if LBD_ENABLE_BUTTON_SW1 == 1
+              .stateSW1 =
                 { .button = lbd_bt_button_SW1
                 , .cntDebounce = 0
                 , .buttonState = false
-                }
-            , .stateSW2 =
+                },
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+              .stateSW2 =
                 { .button = lbd_bt_button_SW2
                 , .cntDebounce = 0
                 , .buttonState = false
-                }
-            , .lastStateButtons = 0
-            , .onButtonChangeCallback =
+                },
+#endif
+              .lastStateButtons = 0,
+              .onButtonChangeCallback =
                 { .addrTaskFct = 0
                 , .PID = 0
                 , .tiTaskMax = RTOS_TI_US2TICKS(1000)
-                }
-            }       
+                },
+            }
     };
+#endif /* #if At least one button is in use */
 
 
 /*
@@ -158,13 +170,13 @@ static bool osGetButton(stateButton_t * const pCoreInstanceData)
                   );
 
     /* The debounce time of the read process of the button states is determined by this
-       counter maximum. */  
+       counter maximum. */
     #define MAX_CNT_BTN_DEBOUNCE    ((LBD_DEBOUNCE_TIME_BUTTONS)/2)
 
     /* The contribution to the debouncing depends on the current 0/1 reading of the GPIO
        input buffer. */
     const signed int actState =
-        *(((__IO uint8_t*)&SIUL2->GPDI[0])+((unsigned)pCoreInstanceData->button)) != 0? 1: -1;
+                siu_getGPIO(/* idxPort */ (unsigned)pCoreInstanceData->button)!=0? 1: -1;
 
     pCoreInstanceData->cntDebounce += actState;
     if(pCoreInstanceData->cntDebounce >= MAX_CNT_BTN_DEBOUNCE)
@@ -219,7 +231,7 @@ static bool osGetButton(stateButton_t * const pCoreInstanceData)
  * A value of 0 disables the deadline monitoring for the callback execution. The maximum
  * permited value is #RTOS_TI_DEADLINE_MAX_IN_US.
  *   @remark
- * This function must be called from the OS context only. Any attempt to use it in user 
+ * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
  *   @remark
  * In a multi-core implementation, this function is called only once from the boot core and
@@ -241,6 +253,7 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
                                  , unsigned int tiMaxTimeInUs
                                  )
 {
+#if LBD_NO_ENABLED_BUTTONS > 0
     /* Reset driver's state information. */
     _Static_assert( sizeOfAry(_coreInstanceDataAry) == 3
                   , "Code needs adaptation after change of HW configuration"
@@ -248,86 +261,129 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
     _coreInstanceDataAry[0] =
     _coreInstanceDataAry[1] =
     _coreInstanceDataAry[2] =
-        (stateDriver_t){ .stateSW1 =
+        (stateDriver_t){
+#if LBD_ENABLE_BUTTON_SW1 == 1
+                         .stateSW1 =
                             { .button = lbd_bt_button_SW1
                             , .cntDebounce = 0
                             , .buttonState = false
-                            }
-                        , .stateSW2 =
+                            },
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+                         .stateSW2 =
                             { .button = lbd_bt_button_SW2
                             , .cntDebounce = 0
                             , .buttonState = false
-                            }
-                       , .lastStateButtons = 0
-                       , .onButtonChangeCallback =
+                            },
+#endif
+                         .lastStateButtons = 0,
+                         .onButtonChangeCallback =
                             { .addrTaskFct = 0
                             , .PID = 0
                             , .tiTaskMax = RTOS_TI_US2TICKS(1000)
-                            }
+                            },
                        };
-        
-    /* LEDs are initially off. */
-    lbd_osSetLED(lbd_led_0_DS11, /* isOn */ false);
-    lbd_osSetLED(lbd_led_1_DS10, /* isOn */ false);
-    lbd_osSetLED(lbd_led_2_DS9, /* isOn */ false);
-    lbd_osSetLED(lbd_led_3_DS8, /* isOn */ false);
-    lbd_osSetLED(lbd_led_4_DS7, /* isOn */ false);
-    lbd_osSetLED(lbd_led_5_DS6, /* isOn */ false);
-    lbd_osSetLED(lbd_led_6_DS5, /* isOn */ false);
-    lbd_osSetLED(lbd_led_7_DS4, /* isOn */ false);
-    
-    /* Enable access to a user LED on the evalution board (see
-       DEVKIT-MPC5748G-Schematics.pdf). The reference from a port designation like PA4 to
-       the related pin configuration register MSCR is found in the attachment
-       IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx of the MCU reference
-       manual. In this file, go to tab "IO Signal Table", row 36, for PA4. Column C gives
-       us the index of the MSCR. Column D gives us 0 as "Source Signal Select" for function
-       GPIO. */
-#define INIT_LED(led)                                                                        \
-    SIUL2->MSCR[led] =                                                                       \
-            SIUL2_MSCR_SSS(0 /* GPIO */)                                                     \
-            | SIUL2_MSCR_SRC(0) /* Slew rate: slowest possible */                            \
-            | SIUL2_MSCR_OBE(1) /* Enable output buffer */                                   \
-            | SIUL2_MSCR_ODE(1) /* Enable open drain: LED connected to +3.3V */              \
-            | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */                               \
-            | SIUL2_MSCR_APC(0) /* No analog I/O */                                          \
-            | SIUL2_MSCR_IBE(0) /* Disable input buffer */                                   \
-            | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */                              \
-            | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */                               \
-            | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */                 \
-            ;
+#endif /* #if At least one button is in use */
+
+#if LBD_NO_ENABLED_BUTTONS > 0
+
+    const siu_portOutCfg_t stdOutpCfg =
+        {
+#if defined(MCU_MPC5748G)
+          .idxPortSource_SSS = 0u, /* GPIO is 0 */
+#elif defined(MCU_MPC5775B)
+          .idxPortSource_PA = 0u, /* GPIO is 0 */
+          .driveStrength_DSC = 2u, /* Drive strength: medium */
+#endif
+          .enableReadBack = false,
+          .enableOpenDrain_ODE = true,
+          .maxSlewRate_SRC = 0u, /* Slew rate: slowest */
+        };
+
+    #define INIT_LED(designation)                                                           \
+        {                                                                                   \
+            /* Get access to the port, the LED is connected to. */                          \
+            bool success ATTRIB_DBG_ONLY =                                                  \
+            siu_osAcquirePort(/* idxPort */ lbd_led_##designation);                         \
+            assert(success);                                                                \
+                                                                                            \
+            /* LEDs are initially off. We set the data register prior to port */            \
+            /* configuration in order to avoid a short glitch. */                           \
+            lbd_osSetLED(lbd_led_##designation, /* isOn */ false);                          \
+                                                                                            \
+            /* Configure the port as output. */                                             \
+            siu_siuConfigureOutput( /* idxPort */ lbd_led_##designation                     \
+                                  , &stdOutpCfg                                             \
+                                  );                                                        \
+        } /* End of macro INIT_LED() */
 
     /* Enable all LEDs accordingly. */
-    INIT_LED(lbd_led_0_DS11)
-    INIT_LED(lbd_led_1_DS10)
-    INIT_LED(lbd_led_2_DS9)
-    INIT_LED(lbd_led_3_DS8)
-    INIT_LED(lbd_led_4_DS7)
-    INIT_LED(lbd_led_5_DS6)
-    INIT_LED(lbd_led_6_DS5)
-    INIT_LED(lbd_led_7_DS4)
+#if LBD_ENABLE_LED_0_DS11 == 1
+    INIT_LED(0_DS11)
+#endif
+#if LBD_ENABLE_LED_1_DS10 == 1
+    INIT_LED(1_DS10)
+#endif
+#if LBD_ENABLE_LED_2_DS9 == 1
+    INIT_LED(2_DS9)
+#endif
+#if LBD_ENABLE_LED_3_DS8 == 1
+    INIT_LED(3_DS8)
+#endif
+#if LBD_ENABLE_LED_4_DS7 == 1
+    INIT_LED(4_DS7)
+#endif
+#if LBD_ENABLE_LED_5_DS6 == 1
+    INIT_LED(5_DS6)
+#endif
+#if LBD_ENABLE_LED_6_DS5 == 1
+    INIT_LED(6_DS5)
+#endif
+#if LBD_ENABLE_LED_7_DS4 == 1
+    INIT_LED(7_DS4)
+#endif
 
-#undef INIT_LED
-   
+    #undef INIT_LED
+
+#endif /* #if At least one button is in use */
+
+#if LBD_NO_ENABLED_BUTTONS > 0
+
+    const siu_portInCfg_t stdInpCfg =
+        { .enableHysteresis_HYS = true,
+          .pullUpDownCfg = siu_pullRes_none,
+          .idxMultiplexerRegister = SIU_INPUT_MULTIPLEXER_UNUSED,
+          .idxInputSource_MUXSELVALUE = 0u,
+#if defined(MCU_MPC5775B)
+          .idxPortSource_PA = 0u,
+          .idxMultiplexer = 0u,
+#endif
+        };
+
     /// @todo Check if the buttons are connected to ports, which are interrupt enabled. If
     // we are likely better off not to use polling but use an interrupt service.
-#define INIT_SW(sw)                                                                          \
-    SIUL2->MSCR[sw] =                                                                        \
-            SIUL2_MSCR_SSS(0 /* GPIO */)                                                     \
-            | SIUL2_MSCR_SRC(0) /* Slew rate: slowest possible */                            \
-            | SIUL2_MSCR_OBE(0) /* Disable output buffer */                                  \
-            | SIUL2_MSCR_ODE(0) /* Irrelevant: Enable open drain: LED connected to +3.3V */  \
-            | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */                               \
-            | SIUL2_MSCR_APC(0) /* No analog I/O */                                          \
-            | SIUL2_MSCR_IBE(1) /* Enable input buffer */                                    \
-            | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */                              \
-            | SIUL2_MSCR_PUE(0) /* Pull up/down: Off, we have a pulldown on the PCB */       \
-            | SIUL2_MSCR_PUS(0) /* If enabled, we would need 0=pull down */                  \
-            ;
+    #define INIT_SW(designation)                                                            \
+        {                                                                                   \
+            /* Get access to the port, the button is connected to. */                       \
+            bool success ATTRIB_DBG_ONLY =                                                  \
+            siu_osAcquirePort(/* idxPort */ lbd_bt_button_##designation);                   \
+            assert(success);                                                                \
+                                                                                            \
+            /* Configure the port as input. A pull-up resistor is on the PCB and */         \
+            /* is not required by port configuration. The GPIO function doesn't */          \
+            /* require the configuration of an input multiplexer. */                        \
+            siu_siuConfigureInput( /* idxPort */ lbd_bt_button_##designation                \
+                                 , &stdInpCfg                                               \
+                                 );                                                         \
+        } /* End of macro INIT_SW() */
 
     /* Enable all buttons accordingly. */
-    INIT_SW(lbd_bt_button_SW1)
-    INIT_SW(lbd_bt_button_SW2)
+#if LBD_ENABLE_BUTTON_SW1 == 1
+    INIT_SW(SW1)
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+    INIT_SW(SW2)
+#endif
 
     /* Save optional callbacks in global driver data. */
     if(onButtonChangeCallback_core0 != NULL)
@@ -337,7 +393,7 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
         assert(PID_core0 > 0  &&  PID_core0 < RTOS_NO_PROCESSES
                &&  tiMaxTimeInUs < RTOS_TI_DEADLINE_MAX_IN_US
               );
-        
+
         _coreInstanceDataAry[0].onButtonChangeCallback.PID = PID_core0;
         _coreInstanceDataAry[0].onButtonChangeCallback.addrTaskFct =
                                                     (uintptr_t)onButtonChangeCallback_core0;
@@ -351,7 +407,7 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
         assert(PID_core1 > 0  &&  PID_core1 < RTOS_NO_PROCESSES
                &&  tiMaxTimeInUs < RTOS_TI_DEADLINE_MAX_IN_US
               );
-        
+
         _coreInstanceDataAry[1].onButtonChangeCallback.PID = PID_core1;
         _coreInstanceDataAry[1].onButtonChangeCallback.addrTaskFct =
                                                     (uintptr_t)onButtonChangeCallback_core1;
@@ -365,17 +421,19 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
         assert(PID_core2 > 0  &&  PID_core2 < RTOS_NO_PROCESSES
                &&  tiMaxTimeInUs < RTOS_TI_DEADLINE_MAX_IN_US
               );
-        
+
         _coreInstanceDataAry[2].onButtonChangeCallback.PID = PID_core2;
         _coreInstanceDataAry[2].onButtonChangeCallback.addrTaskFct =
                                                     (uintptr_t)onButtonChangeCallback_core2;
         _coreInstanceDataAry[2].onButtonChangeCallback.tiTaskMax =
                                                     RTOS_TI_US2TICKS(tiMaxTimeInUs);
     }
+#endif /* #if At least one button is in use */
 } /* End of lbd_osInitLEDAndButtonDriver */
 
 
 
+#if LBD_NO_ENABLED_LEDS > 0
 /**
  * Sample implementation of a system call of conformance class "simple". Such a
  * system call can already be implemented in C but it needs to be run with all interrupts
@@ -396,43 +454,75 @@ uint32_t lbd_scSmplHdlr_setLED( uint32_t pidOfCallingTask ATTRIB_UNUSED
                               , bool isOn
                               )
 {
-    /* A safe, "trusted" implementation needs to double check the selected LED in order to
-       avoid undesired access to I/O ports other than the true LED ports.
-         We apply a hard-coded binary search. */
+    /* A safe, "trusted" implementation needs to double check the index of the
+       selected LED in order to avoid undesired access to I/O ports other than the
+       true LED ports. We apply a hard-coded binary search. */
     const unsigned int iLed = (unsigned)led;
-    bool isOk;
-    if(iLed < 36)
+    bool isOk = false;
+    if(iLed < 36u)
     {
-        if(iLed < 7)
+        if(iLed < 7u)
         {
-            if(iLed < 4)
-                isOk = iLed == 0;
+            if(iLed < 4u)
+            {
+                #if LBD_ENABLE_LED_1_DS10 == 1
+                isOk = iLed == 0u;
+                #endif
+            }
             else
-                isOk = iLed == 4;
+            {
+                #if LBD_ENABLE_LED_0_DS11 == 1
+                isOk = iLed == 4u;
+                #endif
+            }
         }
         else
         {
-            if(iLed < 10)
-                isOk = iLed == 7;
+            if(iLed < 10u)
+            {
+                #if LBD_ENABLE_LED_6_DS5 == 1
+                isOk = iLed == 7u;
+                #endif
+            }
             else
+            {
+                #if LBD_ENABLE_LED_7_DS4 == 1
                 isOk = iLed == 10;
+                #endif
+            }
         }
     }
     else
     {
-        if(iLed < 125)
+        if(iLed < 125u)
         {
-            if(iLed < 117)
-                isOk = iLed == 36;
+            if(iLed < 117u)
+            {
+                #if LBD_ENABLE_LED_4_DS7 == 1
+                isOk = iLed == 36u;
+                #endif
+            }
             else
-                isOk = iLed == 117;
+            {
+                #if LBD_ENABLE_LED_3_DS8 == 1
+                isOk = iLed == 117u;
+                #endif
+            }
         }
         else
         {
-            if(iLed < 148)
-                isOk = iLed == 125;
+            if(iLed < 148u)
+            {
+                #if LBD_ENABLE_LED_5_DS6 == 1
+                isOk = iLed == 125u;
+                #endif
+            }
             else
-                isOk = iLed == 148;
+            {
+                #if LBD_ENABLE_LED_2_DS9 == 1
+                isOk = iLed == 148u;
+                #endif
+            }
         }
     }
 
@@ -441,19 +531,21 @@ uint32_t lbd_scSmplHdlr_setLED( uint32_t pidOfCallingTask ATTRIB_UNUSED
         /* Abort this system call and the calling user task and count this event as an
            error in the process the failing task belongs to. */
         rtos_osSystemCallBadArgument();
-        
+
         /* rtos_osSystemCallBadArgument() doesn't return. We never get here. */
     }
 
     lbd_osSetLED(led, isOn);
     return isOn;
-    
+
 } /* End of lbd_scSmplHdlr_setLED */
+#endif /* #if At least one LED is in use */
 
 
 
 
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
+#if LBD_NO_ENABLED_BUTTONS > 0
+# if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
 /**
  * Sample implementation of a system call of conformance class "simple". Such a system call
  * can already be implemented in C but it needs to be run with all interrupts suspended. It
@@ -473,27 +565,31 @@ uint32_t lbd_scSmplHdlr_getButton_core0( uint32_t pidOfCallingTask ATTRIB_UNUSED
                                        , lbd_button_t button
                                        )
 {
+    assert(rtos_osGetIdxCore() == 0);
+
     /* A safe, "trusted" implementation needs to double check the selected button in order to
        avoid undesired access to I/O ports other than the two true button ports on the eval
        board. */
-    assert(rtos_osGetIdxCore() == 0);
+#if LBD_ENABLE_BUTTON_SW1 == 1
     if(button == lbd_bt_button_SW1)
         return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 0].stateSW1);
-    else if(button == lbd_bt_button_SW2)
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+    if(button == lbd_bt_button_SW2)
         return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 0].stateSW2);
-    else
-    {
-        /* Abort this system call and the calling user task and count this event as an
-           error in the process the failing task belongs to. */
-        rtos_osSystemCallBadArgument();
-    }
-} /* End of lbd_scSmplHdlr_getButton_core0 */
 #endif
 
+    /* Abort this system call and the calling user task and count this event as an
+       error in the process the failing task belongs to. */
+    rtos_osSystemCallBadArgument();
+
+} /* End of lbd_scSmplHdlr_getButton_core0 */
+# endif
 
 
 
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
+
+# if RTOS_RUN_SAFE_RTOS_ON_CORE_1 == 1
 /**
  * Sample implementation of a system call of conformance class "simple". Such a system call
  * can already be implemented in C but it needs to be run with all interrupts suspended. It
@@ -513,27 +609,30 @@ uint32_t lbd_scSmplHdlr_getButton_core1( uint32_t pidOfCallingTask ATTRIB_UNUSED
                                        , lbd_button_t button
                                        )
 {
+    assert(rtos_osGetIdxCore() == 1);
+
     /* A safe, "trusted" implementation needs to double check the selected button in order to
        avoid undesired access to I/O ports other than the two true button ports on the eval
        board. */
-    assert(rtos_osGetIdxCore() == 1);
+#if LBD_ENABLE_BUTTON_SW1 == 1
     if(button == lbd_bt_button_SW1)
         return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 1].stateSW1);
-    else if(button == lbd_bt_button_SW2)
-        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 1].stateSW2);
-    else
-    {
-        /* Abort this system call and the calling user task and count this event as an
-           error in the process the failing task belongs to. */
-        rtos_osSystemCallBadArgument();
-    }
-} /* End of lbd_scSmplHdlr_getButton_core1 */
 #endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+    if(button == lbd_bt_button_SW2)
+        return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 1].stateSW2);
+#endif
+    /* Abort this system call and the calling user task and count this event as an
+       error in the process the failing task belongs to. */
+    rtos_osSystemCallBadArgument();
+
+} /* End of lbd_scSmplHdlr_getButton_core1 */
+# endif
 
 
 
 
-#if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
+# if RTOS_RUN_SAFE_RTOS_ON_CORE_2 == 1
 /**
  * Sample implementation of a system call of conformance class "simple". Such a system call
  * can already be implemented in C but it needs to be run with all interrupts suspended. It
@@ -553,26 +652,32 @@ uint32_t lbd_scSmplHdlr_getButton_core2( uint32_t pidOfCallingTask ATTRIB_UNUSED
                                        , lbd_button_t button
                                        )
 {
+    assert(rtos_osGetIdxCore() == 2);
+
     /* A safe, "trusted" implementation needs to double check the selected button in order to
        avoid undesired access to I/O ports other than the two true button ports on the eval
        board. */
-    assert(rtos_osGetIdxCore() == 2);
+#if LBD_ENABLE_BUTTON_SW1 == 1
     if(button == lbd_bt_button_SW1)
         return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 2].stateSW1);
-    else if(button == lbd_bt_button_SW2)
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+    if(button == lbd_bt_button_SW2)
         return (uint32_t)osGetButton(&_coreInstanceDataAry[/* idxCore */ 2].stateSW2);
-    else
-    {
-        /* Abort this system call and the calling user task and count this event as an
-           error in the process the failing task belongs to. */
-        rtos_osSystemCallBadArgument();
-    }
-} /* End of lbd_scSmplHdlr_getButton_core2 */
 #endif
 
+    /* Abort this system call and the calling user task and count this event as an
+       error in the process the failing task belongs to. */
+    rtos_osSystemCallBadArgument();
+
+} /* End of lbd_scSmplHdlr_getButton_core2 */
+# endif
+#endif /* #if At least one button is in use */
 
 
 
+
+#if LBD_ENABLE_BUTTON_SW1 == 1
 /**
  * Get the current status of button SW1. This is the switch, which is labeled both on the
  * PCB, "SW1_PA3" and "SW4". This makes it potentially dangerous to mix up the switch with
@@ -589,12 +694,13 @@ bool lbd_osGetButtonSw1(void)
 {
     assert(rtos_osGetIdxCore() < sizeOfAry(_coreInstanceDataAry));
     return osGetButton(&_coreInstanceDataAry[rtos_osGetIdxCore()].stateSW1);
-    
+
 } /* End of lbd_osGetButtonSw1 */
+#endif
 
 
 
-
+#if LBD_ENABLE_BUTTON_SW2 == 1
 /**
  * Get the current status of button SW2.
  *   @return
@@ -611,10 +717,11 @@ bool lbd_osGetButtonSw2(void)
     return osGetButton(&_coreInstanceDataAry[rtos_osGetIdxCore()].stateSW2);
 
 } /* End of lbd_osGetButtonSw2 */
+#endif
 
 
 
-
+#if LBD_NO_ENABLED_BUTTONS > 0
 /**
  * Regularly called step function of the I/O driver. This function needs to be called from
  * a regular 1ms operating system task. The button states are read and a callback is
@@ -629,15 +736,20 @@ void lbd_osTask1ms(void)
         notifications. */
     assert(rtos_osGetIdxCore() < sizeOfAry(_coreInstanceDataAry));
     stateDriver_t * const pCoreInstanceData = &_coreInstanceDataAry[rtos_osGetIdxCore()];
-    
+
     const uint8_t lastStateButtons = pCoreInstanceData->lastStateButtons;
 
     /* Polling the buttons is useless if we have no notification callback. */
     if(pCoreInstanceData->onButtonChangeCallback.addrTaskFct != 0)
     {
         /* Read the current button status. */
-        const uint8_t stateButtons = (lbd_osGetButtonSw1()? 0x01: 0x0)
+        const uint8_t stateButtons = 0x00u
+#if LBD_ENABLE_BUTTON_SW1 == 1
+                                     | (lbd_osGetButtonSw1()? 0x01: 0x0)
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
                                      | (lbd_osGetButtonSw2()? 0x10: 0x0)
+#endif
                                      ;
 
         if(stateButtons != lastStateButtons)
@@ -650,5 +762,6 @@ void lbd_osTask1ms(void)
             rtos_osRunTask(&pCoreInstanceData->onButtonChangeCallback, /* taskParam */ comp);
             pCoreInstanceData->lastStateButtons = stateButtons;
         }
-    } /* End if(Callback demanded by system configuration?) */    
+    } /* End if(Callback demanded by system configuration?) */
 } /* End of lbd_osTask1ms */
+#endif /* #if At least one button is in use */

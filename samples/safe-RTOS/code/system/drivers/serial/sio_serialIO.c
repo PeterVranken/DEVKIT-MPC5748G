@@ -321,9 +321,9 @@ static void configSIULForUseWithOpenSDA(void)
          The port has a fixed, hardwired, however chip-housing dependent one-by-one
        relation with a pin. This relation is found in columns O, P and Q.
          The source selection relates to the connection from an I/O device to the output
-       buffer of the port. To connect an input of an I/O device with a port, a second
-       source selection needs to be made, usually a port/pin but in a few cases is an
-       alternate, internal device a possible source, too. (See RM 15.2.11, p. 388 and
+       buffer of the port. To connect the input of an I/O device with a port, a second
+       source selection needs to be made, usually a port/pin but in a few cases an
+       alternate, internal device is a possible source, too. (See RM 15.2.11, p. 388 and
        figure 15-2 on next page.) This requires the setting of field "IMCR SSS" in the
        other register array IMCR[]. The index into IMCR[] is found by search in the other
        worksheet "Input Muxing". Look for the port in question in column H or for the
@@ -332,36 +332,39 @@ static void configSIULForUseWithOpenSDA(void)
        is made by index of IMCR, too. In worksheet "IO Signal Table", in the sub-ordinated
        lines inside the area of the given port, column C, there is a second index stated
        for the input functions of a port. This index can be found in worksheet "Input
-       Muxing" in column E in the line, we are looking for. For unclear reasons, this index
-       plus 512 seems to be the index into the IMCR[] register array, too. For inputs, if
-       we take worksheet "IO Signal Table", columns C and D, we could program IMCR.SSS
-       without refering to the other worksheet. */
+       Muxing" in column E in the line, we are looking for. This index plus 512 is the
+       index into the IMCR[] register array, too. For inputs, if we take worksheet "IO
+       Signal Table", columns C and D, we could program IMCR.SSS without refering to the
+       other worksheet. (The "512" results from the offsets of the MSCR and the IMCR
+       registers. The two register arrays have an address offset of 2k or 512 32 Bit words.
+       Indexing MSCR with the value found in column C of worksheet "IO Signal Table" is
+       identical to writing to the right IMCR, identified on worksheet "Input Muxing".) */
     SIUL2->MSCR[40 /* PC8 */] =
-                SIUL2_MSCR_SSS(1)   /* Source signal is LIN2TX */
-                | SIUL2_MSCR_SRC(3) /* Slew rate: Full drive without SR control */
-                | SIUL2_MSCR_OBE(1) /* Enable output buffer */
-                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0) /* No analog I/O */
-                | SIUL2_MSCR_IBE(0) /* Disable input buffer */
-                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
+                SIUL2_MSCR_SSS(1u)   /* Source signal is LIN2TX */
+                | SIUL2_MSCR_SRC(3u) /* Slew rate: Full drive without SR control */
+                | SIUL2_MSCR_OBE(1u) /* Enable output buffer */
+                | SIUL2_MSCR_ODE(0u) /* Disable open drain, drive both edges */
+                | SIUL2_MSCR_SMC(1u) /* Safe mode as after reset */
+                | SIUL2_MSCR_APC(0u) /* No analog I/O */
+                | SIUL2_MSCR_IBE(0u) /* Disable input buffer */
+                | SIUL2_MSCR_HYS(1u) /* Hysteresis as after reset */
+                | SIUL2_MSCR_PUE(0u) /* Pull up/down is disabled */
+                | SIUL2_MSCR_PUS(0u) /* Pull up/down doesn't care, is disabled */
                 ;
     SIUL2->MSCR[41 /* PC9 */] =
-                SIUL2_MSCR_SSS(0)   /* Source signal for (disabled) ouput is default */
-                | SIUL2_MSCR_SRC(0) /* Slew rate: Irrelevant for input */
-                | SIUL2_MSCR_OBE(0) /* Enable output buffer */
-                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0) /* No analog I/O */
-                | SIUL2_MSCR_IBE(1) /* Enable input buffer */
-                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
+                SIUL2_MSCR_SSS(0u)   /* Source signal for (disabled) ouput is default */
+                | SIUL2_MSCR_SRC(0u) /* Slew rate: Irrelevant for input */
+                | SIUL2_MSCR_OBE(0u) /* Disable output buffer */
+                | SIUL2_MSCR_ODE(0u) /* Disable open drain, drive both edges */
+                | SIUL2_MSCR_SMC(1u) /* Safe mode as after reset */
+                | SIUL2_MSCR_APC(0u) /* No analog I/O */
+                | SIUL2_MSCR_IBE(1u) /* Enable input buffer */
+                | SIUL2_MSCR_HYS(1u) /* Hysteresis as after reset */
+                | SIUL2_MSCR_PUE(0u) /* Pull up/down is disabled */
+                | SIUL2_MSCR_PUS(0u) /* Pull up/down doesn't care, is disabled */
                 ;
-   /* Conenct the LINFlexD_2 device with the input buffer of port PC9. */
-   SIUL2->IMCR[202 /* LIN2RX */] = SIUL2_IMCR_SSS(2);/* 2: IO_PAD PC9 */
+   /* Connect the LINFlexD_2 device with the input buffer of port PC9. */
+   SIUL2->IMCR[202 /* LIN2RX */] = SIUL2_IMCR_SSS(2u);/* 2: IO_PAD PC9 */
 
 } /* End of configSIULForUseWithOpenSDA */
 

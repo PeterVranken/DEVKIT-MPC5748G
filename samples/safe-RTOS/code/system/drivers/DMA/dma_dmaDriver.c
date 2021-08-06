@@ -446,11 +446,11 @@ bool dma_osAcquireDMAChannel( dma_dmaChannel_t * const pHDMAChn
 
 /**
  * Return a channel from a DMA device after use so that it can be acquired and used by
- * other clients. Counterpart of dma_osAcquireDMAChannel().\n
+ * other clients. Counterpart of dma_osAcquireDMAChannel().
  *   @param pHDMAChn
  * The handle of the affected channel by reference. The function invalidates the handle.
  *   @remark
- * The function doesn't keep tack who had allocated a channel and who returns it. Proper
+ * The function doesn't keep track who had allocated a channel and who returns it. Proper
  * use of the function is a prerequisite of conflict free operation of DMA channels but
  * this can't be checked by the function! Careful use is a must.
  *   @remark
@@ -468,8 +468,8 @@ void dma_osReleaseDMAChannel(dma_dmaChannel_t * const pHDMAChn)
     
     /* The identification of the DMA device by index would theoretically require a search
        in the array of all of them - the inverse operation to what is done in the channel
-       acquisition. However, we know the characteristics of the (few) supported devices and
-       a shortcut is possible. */
+       acquisition. However, we know the characteristics of the (few) supported derivatives
+       and a shortcut is possible. */
 #if defined(MCU_MPC5748G)
     assert(pHDMAChn->pDMA == DMA);
     const unsigned int idxDMADevice = 0u;
