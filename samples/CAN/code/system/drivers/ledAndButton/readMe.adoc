@@ -1,0 +1,38 @@
+= LED and Button I/O Driver
+:Author:            Peter Vranken
+:Email:             mailto:Peter_Vranken@Yahoo.de[P. Vranken]
+:Revision:          1
+//:doctype:           book
+:title-page:
+//:table-caption:     Tabelle // TODO Extract all german label settings into new template
+:toc:               left
+//:toc-title:         Inhaltsverzeichnis
+//:toc:
+:toclevels:         3
+//:numbered:
+:xrefstyle:         short
+//:sectanchors:       // Have URLs for chapters (http://.../#section-name
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+// https://asciidoctor.org/docs/user-manual/
+
+This folder contains the implementation of an I/O driver, which gives
+access to the software accessible LEDs and buttons on the evaluation board
+DEVKIT-MPC5748G. The microcontroller related aspects of the driver are
+most simple -- it just about configuring and reading and writing a few
+binary GPIO channels. This simplicity makes it perfectly suited for a
+sample implementation of a multi-core driver: The needed structural
+elements of such a driver for safe-RTOS are not obscured by complex MPC
+specific code.
+
+You may consider the implementation of this drive a useful starting point
+for developing your own multi-core I/O drivers for safe-RTOS.
+
+
+:Local Variables:
+:coding:    utf-8
+:End:

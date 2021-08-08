@@ -7,8 +7,7 @@
  * not identical header files are provided with the driver and your application code will
  * only include the suiting one: This one, siu_siul2PortConfiguration.h, if the MCU
  * MPC5748G is used and the other one, siu_siuPortConfiguration.h, for the MPC5775B/E.\n
- 
- * The configuration of in- and output pins is documented in the Excel workbook
+ *   The configuration of in- and output pins is documented in the Excel workbook
  * IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx, which is embedded into the
  * MCU reference manual PDF file. In Acrobat Reader, click View/Show/Hide/Navigation
  * Panes/Attachments to find the Excel workbook.\n

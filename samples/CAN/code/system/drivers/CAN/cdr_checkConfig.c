@@ -362,7 +362,7 @@ bool cdr_checkDriverConfiguration(void)
             /* We don't want to see polling enabled mailboxes out of range or with mailbox
                indexes, which point into the FIFO memory area. */
             ASSERT(idxMB >= idxFirstNormalMailbox  &&  idxMB < pDevCfg->noMailboxes
-                   ||  configMB.minPIDToAccess == 0 &&  configMB.idxAPIBuffer == 0 
+                   ||  configMB.minPIDToAccess == 0 &&  configMB.idxAPIBuffer == 0
                        &&  !configMB.useAsRxMailbox
                   );
 

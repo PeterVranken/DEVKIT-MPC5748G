@@ -4,7 +4,11 @@
  * It instantiates the constant configuration data object, initializes the driver according
  * to the configuration settings and offer the global API functions.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * @remark The CAN driver has been developed for the MPC5748G but it can be used with the
+ * MPC5775B/E, too, which have a very similar CAN device. The references to the MCU's
+ * Reference Manual made below relate to the reference manual of the MPC5748G.
+ *
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -34,7 +38,7 @@
  * Local functions
  *   getFIFOFilterEntry
  *   configSIULForUseWithDEVKIT_MPC5748G
- *   configSIULForUseWithMPC5775BE_416DS
+ *   configSIUForUseWithMPC5775BE_416DS
  *   getBaudRateSettings
  *   osPrepareSendMessage
  */
@@ -48,14 +52,15 @@
 #include <limits.h>
 #include <assert.h>
 
+#include "cdr_canDriver.h"
 #include "cde_canDriver.config.MCUDerivative.h"
 #include "typ_types.h"
+#include "siu_siuPortDriver.h"
 #include "sio_serialIO.h"
 #include "ccl_configureClocks.h"
 #include "cdr_checkConfig.h"
 #include "cdr_interruptServiceHandlers.h"
 #include "cdr_canDriverAPI.h"
-#include "cdr_canDriver.h"
 
 
 /*
@@ -221,37 +226,69 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
     const unsigned int idxSIUL_PB0 = 16
                      , idxSIUL_PB1 = 17
                      , idxIMCR_PB1 = 188;
-    SIUL2->MSCR[idxSIUL_PB0] =
-                SIUL2_MSCR_SSS(1)   /* Source signal is CAN0_TX */
-                | SIUL2_MSCR_SRC(3) /* Slew rate: Full drive without SR control */
-                | SIUL2_MSCR_OBE(1) /* Enable output buffer */
-                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0) /* No analog I/O */
-                | SIUL2_MSCR_IBE(0) /* Disable input buffer */
-                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
-                ;
+//    SIUL2->MSCR[idxSIUL_PB0] =
+//                SIUL2_MSCR_SSS(1)   /* Source signal is CAN0_TX */
+//                | SIUL2_MSCR_SRC(3) /* Slew rate: Full drive without SR control */
+//                | SIUL2_MSCR_OBE(1) /* Enable output buffer */
+//                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
+//                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
+//                | SIUL2_MSCR_APC(0) /* No analog I/O */
+//                | SIUL2_MSCR_IBE(0) /* Disable input buffer */
+//                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
+//                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
+//                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
+//                ;
+    /* Configuration of Tx port. */
+    const siu_portOutCfg_t outputCfg =
+        {
+          .idxPortSource_SSS = 1u, /* Source signal is CAN0_TX */
+          .enableReadBack = false,
+          .enableOpenDrain_ODE = false, /* Disable open drain, drive both edges */
+          .maxSlewRate_SRC = 3u, /* Slew rate: Full drive without SR control */
+        };
 
-    /* Rx output of external transceiver chip is connected to pin PB1 of the MCU. Configure
-       this pin as input. */
-    SIUL2->MSCR[idxSIUL_PB1] =
-                SIUL2_MSCR_SSS(0)   /* Doesn't care for input */
-                | SIUL2_MSCR_SRC(0) /* Doesn't care for input */
-                | SIUL2_MSCR_OBE(0) /* Don't enable output buffer */
-                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0) /* No analog I/O */
-                | SIUL2_MSCR_IBE(1) /* Enable input buffer */
-                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
-                ;
+    /* Acquire Tx port for exclusive use with this driver. */
+    bool gotIt ATTRIB_DBG_ONLY = siu_osAcquirePort(idxSIUL_PB0);
+    assert(gotIt);
 
-    /* RM 15.2.12, p. 391, input multiplexer: Rx output of external transceiver chip is
-       connected to pin PB1 of the MCU. Route PB1 to the Rx input of CAN device CAN_0. */
-    SIUL2->IMCR[idxIMCR_PB1] = SIUL2_IMCR_SSS(2);
+    /* Configure Tx port. */
+    siu_osConfigureOutput(idxSIUL_PB0, &outputCfg);
+    
+
+//    /* Rx output of external transceiver chip is connected to pin PB1 of the MCU. Configure
+//       this pin as input. */
+//    SIUL2->MSCR[idxSIUL_PB1] =
+//                SIUL2_MSCR_SSS(0)   /* Doesn't care for input */
+//                | SIUL2_MSCR_SRC(0) /* Doesn't care for input */
+//                | SIUL2_MSCR_OBE(0) /* Don't enable output buffer */
+//                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
+//                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
+//                | SIUL2_MSCR_APC(0) /* No analog I/O */
+//                | SIUL2_MSCR_IBE(1) /* Enable input buffer */
+//                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
+//                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
+//                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
+//                ;
+//
+//    /* RM 15.2.12, p. 391, input multiplexer: Rx output of external transceiver chip is
+//       connected to pin PB1 of the MCU. Route PB1 to the Rx input of CAN device CAN_0. */
+//    SIUL2->IMCR[idxIMCR_PB1] = SIUL2_IMCR_SSS(2);
+
+    /* The Rx output of external transceiver chip is connected to pin PB1 of the MCU.
+       Configure this pin as input.*/
+    const siu_portInCfg_t inputCfg =
+        { .enableHysteresis_HYS = true,
+          .pullUpDownCfg = siu_pullRes_none,
+          .idxMultiplexerRegister = idxIMCR_PB1,    /* Connect CAN0_RX with ... */
+          .idxInputSource_MUXSELVALUE = 2u,         /* ... IO_PAD PB1 */
+        };
+
+    /* Acquire Rx port for exclusive use with this driver. */
+    gotIt = siu_osAcquirePort(idxSIUL_PB1);
+    assert(gotIt);
+
+    /* Configure Rx port. */
+    siu_osConfigureInput(idxSIUL_PB1, &inputCfg);
 
 } /* End of configSIULForUseWithDEVKIT_MPC5748G */
 
@@ -262,7 +299,7 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
  * the CAN transceiver, which is mounted on the evaluation board MPC5775BE_416DS.\n
  *   The code in this function is not generally usable.
  */
-static void configSIULForUseWithMPC5775BE_416DS(void)
+static void configSIUForUseWithMPC5775BE_416DS(void)
 {
     /* Enable the the MCU pins, which are connected to the CAN transceiver mounted on the
        evaluation board (see schematics of MPC5775BE-416DS, SPF-32229.pdf, p. 5).
@@ -297,29 +334,46 @@ static void configSIULForUseWithMPC5775BE_416DS(void)
        row 663, for port CNTXA. Column B gives us the index of the PCR. Column C gives us
        as "Source Signal Select" for function CAN Tx of device 0 (aka A).
          SIU->PCR: See RM, 8.2.13 Pad Configuration Register (SIU_PCRn), p. 241ff. */
-    SIU->PCR[83 /* CNTXA */] =
-                    SIU_PCR_PA(1)    /* Source 1: FlexCAN A Transmit */
-                    | SIU_PCR_OBE(1) /* Enable output buffer */
-                    | SIU_PCR_IBE(0) /* Disable input buffer */
-                    | SIU_PCR_DSC(3) /* 0..3: Drive strength from min to max */
-                    | SIU_PCR_ODE(0) /* Disable open drain, drive both edges */
-                    | SIU_PCR_HYS(0) /* Hysteresis as after reset */
-                    | SIU_PCR_SRC(3) /* Slew rate: Full drive without SR control */
-                    | SIU_PCR_WPE(0) /* Pull up/down is disabled */
-                    | SIU_PCR_WPS(0) /* Pull up/down doesn't care, is disabled */
-                    ;
+//    SIU->PCR[83 /* CNTXA */] =
+//                    SIU_PCR_PA(1)    /* Source 1: FlexCAN A Transmit */
+//                    | SIU_PCR_OBE(1) /* Enable output buffer */
+//                    | SIU_PCR_IBE(0) /* Disable input buffer */
+//                    | SIU_PCR_DSC(3) /* 0..3: Drive strength from min to max */
+//                    | SIU_PCR_ODE(0) /* Disable open drain, drive both edges */
+//                    | SIU_PCR_HYS(0) /* Hysteresis as after reset */
+//                    | SIU_PCR_SRC(3) /* Slew rate: Full drive without SR control */
+//                    | SIU_PCR_WPE(0) /* Pull up/down is disabled */
+//                    | SIU_PCR_WPS(0) /* Pull up/down doesn't care, is disabled */
+//                    ;
                     
-    SIU->PCR[84 /* CNRXA */] =
-                    SIU_PCR_PA(1)    /* Source 1: FlexCAN A Receive */
-                    | SIU_PCR_OBE(0) /* Enable output buffer */
-                    | SIU_PCR_IBE(1) /* Enable input buffer */
-                    | SIU_PCR_DSC(0) /* 0..3: Drive strength from min to max */
-                    | SIU_PCR_ODE(0) /* Disable open drain: Irrelevant for input */
-                    | SIU_PCR_HYS(1) /* Hysteresis on */
-                    | SIU_PCR_SRC(0) /* Slew rate: Irrelevant for input */
-                    | SIU_PCR_WPE(0) /* Pull up/down is disabled */
-                    | SIU_PCR_WPS(0) /* Pull up/down doesn't care, is disabled */
-                    ;
+    /* Configuration of Tx port. */
+    const siu_portOutCfg_t outputCfg =
+        {
+          .idxPortSource_PA = 1u, /* Source signal is FlexCAN A Transmit */
+          .enableReadBack = false,
+          .enableOpenDrain_ODE = false, /* Disable open drain, drive both edges */
+          .driveStrength_DSC = 3u, /* 0..3: Drive strength from min to max */
+          .maxSlewRate_SRC = 3u, /* Slew rate: Full drive without SR control */
+        };
+
+    /* Acquire Tx port for exclusive use with this driver. */
+    bool gotIt ATTRIB_DBG_ONLY = siu_osAcquirePort(/* idxPort */ 83 /* CNTXA */);
+    assert(gotIt);
+
+    /* Configure Tx port. */
+    siu_osConfigureOutput(/* idxPort */ 83 /* CNTXA */, &outputCfg);
+    
+//    SIU->PCR[84 /* CNRXA */] =
+//                    SIU_PCR_PA(1)    /* Source 1: FlexCAN A Receive */
+//                    | SIU_PCR_OBE(0) /* Enable output buffer */
+//                    | SIU_PCR_IBE(1) /* Enable input buffer */
+//                    | SIU_PCR_DSC(0) /* 0..3: Drive strength from min to max */
+//                    | SIU_PCR_ODE(0) /* Disable open drain: Irrelevant for input */
+//                    | SIU_PCR_HYS(1) /* Hysteresis on */
+//                    | SIU_PCR_SRC(0) /* Slew rate: Irrelevant for input */
+//                    | SIU_PCR_WPE(0) /* Pull up/down is disabled */
+//                    | SIU_PCR_WPS(0) /* Pull up/down doesn't care, is disabled */
+//                    ;
                     
     /* CAN Rx: See file MPC5775B_MPC5775E_System_IO_Definition.xlsx, tab "Input Muxing",
        row 33, for port CNRXA. We find multiplexer register no 1, MUXSEL=0, MUXSEL
@@ -327,11 +381,30 @@ static void configSIULForUseWithMPC5775BE_416DS(void)
          See 8.2.67 Input Multiplexing Register1 (SIU_IMUX1), p. 375f, for setting of the
        multiplexer. The register description confirms the right understanding of the Excel
        table. */
-    SIU->IMUX1 = SIU->IMUX1
-                 & ~SIU_IMUX1_MUXSEL0_MASK
-                 | SIU_IMUX1_MUXSEL0(1)
-                 ;
-} /* End of configSIULForUseWithMPC5775BE_416DS */
+//    SIU->IMUX1 = SIU->IMUX1
+//                 & ~SIU_IMUX1_MUXSEL0_MASK
+//                 | SIU_IMUX1_MUXSEL0(1)
+//                 ;
+
+    /* The Rx output of external transceiver chip is connected to pin PB1 of the MCU.
+       Configure this pin as input.*/
+    const siu_portInCfg_t inputCfg =
+        { .idxPortSource_PA = 1u,           /* Source 1: FlexCAN A Receive */
+          .enableHysteresis_HYS = true,
+          .pullUpDownCfg = siu_pullRes_none,
+          .idxMultiplexerRegister = 1u,     /* Use IMUX1, to ... */
+          .idxMultiplexer = 0u,             /* ... connect CNRXA with ... */
+          .idxInputSource_MUXSELVALUE = 1u, /* ... IO_PAD 84 */
+        };
+
+    /* Acquire Rx port for exclusive use with this driver. */
+    gotIt = siu_osAcquirePort(/* idxPort */ 84 /* CNRXA */);
+    assert(gotIt);
+
+    /* Configure Rx port. */
+    siu_osConfigureInput(/* idxPort */ 84 /* CNRXA */, &inputCfg);
+
+} /* End of configSIUForUseWithMPC5775BE_416DS */
 
 # endif /* Which MCU derivative */
 #endif /* CDR_ENABLE_USE_OF_CAN_0 == 1 */
@@ -844,7 +917,7 @@ void cdr_osInitCanDriver(void)
 # if defined(MCU_MPC5748G)
     configSIULForUseWithDEVKIT_MPC5748G();
 # else
-    configSIULForUseWithMPC5775BE_416DS();
+    configSIUForUseWithMPC5775BE_416DS();
 # endif
 #endif
 } /* End of cdr_osInitCanDriver */

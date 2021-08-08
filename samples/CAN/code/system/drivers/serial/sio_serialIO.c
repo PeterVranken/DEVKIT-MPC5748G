@@ -69,10 +69,12 @@
 #include <assert.h>
 
 #include "MPC5748G.h"
+
+#include "sio_serialIO.h"
 #include "typ_types.h"
 #include "rtos.h"
 #include "dma_dmaDriver.h"
-#include "sio_serialIO.h"
+#include "siu_siuPortDriver.h"
 #include "sio_serialIO_defSysCalls.h"
 #include "mtx_mutex.h"
 
@@ -321,9 +323,9 @@ static void configSIULForUseWithOpenSDA(void)
          The port has a fixed, hardwired, however chip-housing dependent one-by-one
        relation with a pin. This relation is found in columns O, P and Q.
          The source selection relates to the connection from an I/O device to the output
-       buffer of the port. To connect an input of an I/O device with a port, a second
-       source selection needs to be made, usually a port/pin but in a few cases is an
-       alternate, internal device a possible source, too. (See RM 15.2.11, p. 388 and
+       buffer of the port. To connect the input of an I/O device with a port, a second
+       source selection needs to be made, usually a port/pin but in a few cases an
+       alternate, internal device is a possible source, too. (See RM 15.2.11, p. 388 and
        figure 15-2 on next page.) This requires the setting of field "IMCR SSS" in the
        other register array IMCR[]. The index into IMCR[] is found by search in the other
        worksheet "Input Muxing". Look for the port in question in column H or for the
@@ -332,37 +334,45 @@ static void configSIULForUseWithOpenSDA(void)
        is made by index of IMCR, too. In worksheet "IO Signal Table", in the sub-ordinated
        lines inside the area of the given port, column C, there is a second index stated
        for the input functions of a port. This index can be found in worksheet "Input
-       Muxing" in column E in the line, we are looking for. For unclear reasons, this index
-       plus 512 seems to be the index into the IMCR[] register array, too. For inputs, if
-       we take worksheet "IO Signal Table", columns C and D, we could program IMCR.SSS
-       without refering to the other worksheet. */
-    SIUL2->MSCR[40 /* PC8 */] =
-                SIUL2_MSCR_SSS(1)   /* Source signal is LIN2TX */
-                | SIUL2_MSCR_SRC(3) /* Slew rate: Full drive without SR control */
-                | SIUL2_MSCR_OBE(1) /* Enable output buffer */
-                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0) /* No analog I/O */
-                | SIUL2_MSCR_IBE(0) /* Disable input buffer */
-                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
-                ;
-    SIUL2->MSCR[41 /* PC9 */] =
-                SIUL2_MSCR_SSS(0)   /* Source signal for (disabled) ouput is default */
-                | SIUL2_MSCR_SRC(0) /* Slew rate: Irrelevant for input */
-                | SIUL2_MSCR_OBE(0) /* Enable output buffer */
-                | SIUL2_MSCR_ODE(0) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0) /* No analog I/O */
-                | SIUL2_MSCR_IBE(1) /* Enable input buffer */
-                | SIUL2_MSCR_HYS(1) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0) /* Pull up/down doesn't care, is disabled */
-                ;
-   /* Conenct the LINFlexD_2 device with the input buffer of port PC9. */
-   SIUL2->IMCR[202 /* LIN2RX */] = SIUL2_IMCR_SSS(2);/* 2: IO_PAD PC9 */
+       Muxing" in column E in the line, we are looking for. This index plus 512 is the
+       index into the IMCR[] register array, too. For inputs, if we take worksheet "IO
+       Signal Table", columns C and D, we could program IMCR.SSS without refering to the
+       other worksheet. (The "512" results from the offsets of the MSCR and the IMCR
+       registers. The two register arrays have an address offset of 2k or 512 32 Bit words.
+       Indexing MSCR with the value found in column C of worksheet "IO Signal Table" is
+       identical to writing to the right IMCR, identified on worksheet "Input Muxing".) */
 
+    /* Configuration of Tx port. */
+    const siu_portOutCfg_t outputCfg =
+        {
+          .idxPortSource_SSS = 1u, /* Source signal is LIN2TX */
+          .enableReadBack = false,
+          .enableOpenDrain_ODE = false, /* Disable open drain, drive both edges */
+          .maxSlewRate_SRC = 3u, /* Slew rate: Full drive without SR control */
+        };
+
+    /* Acquire Tx port for exclusive use with this driver. */
+    bool gotIt ATTRIB_DBG_ONLY = siu_osAcquirePort(/* idxPort */ 40 /* PC8 */);
+    assert(gotIt);
+
+    /* Configure Tx port. */
+    siu_osConfigureOutput(/* idxPort */ 40 /* PC8 */, &outputCfg);
+    
+    /* Configuration of Rx port. */
+    const siu_portInCfg_t inputCfg =
+        { .enableHysteresis_HYS = true,
+          .pullUpDownCfg = siu_pullRes_none,
+          .idxMultiplexerRegister = 202u,   /* Connect LIN2RX with ... */
+          .idxInputSource_MUXSELVALUE = 2u, /* ... IO_PAD PC9 */
+        };
+
+    /* Acquire Rx port for exclusive use with this driver. */
+    gotIt = siu_osAcquirePort(/* idxPort */ 41 /* PC9 */);
+    assert(gotIt);
+
+    /* Configure Rx port. */
+    siu_osConfigureInput(/* idxPort */ 41 /* PC9 */, &inputCfg);
+    
 } /* End of configSIULForUseWithOpenSDA */
 
 

@@ -69,10 +69,12 @@
 #include <assert.h>
 
 #include "MPC5748G.h"
+
+#include "sio_serialIO.h"
 #include "typ_types.h"
 #include "rtos.h"
 #include "dma_dmaDriver.h"
-#include "sio_serialIO.h"
+#include "siu_siuPortDriver.h"
 #include "sio_serialIO_defSysCalls.h"
 #include "mtx_mutex.h"
 
@@ -339,33 +341,38 @@ static void configSIULForUseWithOpenSDA(void)
        registers. The two register arrays have an address offset of 2k or 512 32 Bit words.
        Indexing MSCR with the value found in column C of worksheet "IO Signal Table" is
        identical to writing to the right IMCR, identified on worksheet "Input Muxing".) */
-    SIUL2->MSCR[40 /* PC8 */] =
-                SIUL2_MSCR_SSS(1u)   /* Source signal is LIN2TX */
-                | SIUL2_MSCR_SRC(3u) /* Slew rate: Full drive without SR control */
-                | SIUL2_MSCR_OBE(1u) /* Enable output buffer */
-                | SIUL2_MSCR_ODE(0u) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1u) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0u) /* No analog I/O */
-                | SIUL2_MSCR_IBE(0u) /* Disable input buffer */
-                | SIUL2_MSCR_HYS(1u) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0u) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0u) /* Pull up/down doesn't care, is disabled */
-                ;
-    SIUL2->MSCR[41 /* PC9 */] =
-                SIUL2_MSCR_SSS(0u)   /* Source signal for (disabled) ouput is default */
-                | SIUL2_MSCR_SRC(0u) /* Slew rate: Irrelevant for input */
-                | SIUL2_MSCR_OBE(0u) /* Disable output buffer */
-                | SIUL2_MSCR_ODE(0u) /* Disable open drain, drive both edges */
-                | SIUL2_MSCR_SMC(1u) /* Safe mode as after reset */
-                | SIUL2_MSCR_APC(0u) /* No analog I/O */
-                | SIUL2_MSCR_IBE(1u) /* Enable input buffer */
-                | SIUL2_MSCR_HYS(1u) /* Hysteresis as after reset */
-                | SIUL2_MSCR_PUE(0u) /* Pull up/down is disabled */
-                | SIUL2_MSCR_PUS(0u) /* Pull up/down doesn't care, is disabled */
-                ;
-   /* Connect the LINFlexD_2 device with the input buffer of port PC9. */
-   SIUL2->IMCR[202 /* LIN2RX */] = SIUL2_IMCR_SSS(2u);/* 2: IO_PAD PC9 */
 
+    /* Configuration of Tx port. */
+    const siu_portOutCfg_t outputCfg =
+        {
+          .idxPortSource_SSS = 1u, /* Source signal is LIN2TX */
+          .enableReadBack = false,
+          .enableOpenDrain_ODE = false, /* Disable open drain, drive both edges */
+          .maxSlewRate_SRC = 3u, /* Slew rate: Full drive without SR control */
+        };
+
+    /* Acquire Tx port for exclusive use with this driver. */
+    bool gotIt ATTRIB_DBG_ONLY = siu_osAcquirePort(/* idxPort */ 40 /* PC8 */);
+    assert(gotIt);
+
+    /* Configure Tx port. */
+    siu_osConfigureOutput(/* idxPort */ 40 /* PC8 */, &outputCfg);
+    
+    /* Configuration of Rx port. */
+    const siu_portInCfg_t inputCfg =
+        { .enableHysteresis_HYS = true,
+          .pullUpDownCfg = siu_pullRes_none,
+          .idxMultiplexerRegister = 202u,   /* Connect LIN2RX with ... */
+          .idxInputSource_MUXSELVALUE = 2u, /* ... IO_PAD PC9 */
+        };
+
+    /* Acquire Rx port for exclusive use with this driver. */
+    gotIt = siu_osAcquirePort(/* idxPort */ 41 /* PC9 */);
+    assert(gotIt);
+
+    /* Configure Rx port. */
+    siu_osConfigureInput(/* idxPort */ 41 /* PC9 */, &inputCfg);
+    
 } /* End of configSIULForUseWithOpenSDA */
 
 

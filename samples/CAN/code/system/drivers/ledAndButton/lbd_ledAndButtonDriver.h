@@ -5,7 +5,7 @@
  * Definition of global interface of module lbd_ledAndButtonDriver.\n
  *   Simple hardware driver for the LEDs and buttons on the eval board DEVKIT-MPC5748G.
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -33,6 +33,7 @@
 #include "MPC5748G.h"
 #include "typ_types.h"
 #include "rtos.h"
+#include "siu_siuPortDriver.h"
 
 
 /*
@@ -41,35 +42,95 @@
 
 /** The debounce time of the read process of the button states in ticks, where one tick is
     the time between two invokations of interface function lbd_osGetButton.
-      The range is 2 .. 100. */
+      The range is 2 .. 100. Note, the value is a signed despite of the positive range. */
 #define LBD_DEBOUNCE_TIME_BUTTONS   4
 
 /** Index of implemented system call for switching an LED on or off. */
-#define LBD_SYSCALL_SET_LED         25
+#define LBD_SYSCALL_SET_LED         25u
 
 /** Index of system call for getting the button state, lbd_scSmplHdlr_getButton(). */
-#define LBD_SYSCALL_GET_BUTTON      26
+#define LBD_SYSCALL_GET_BUTTON      26u
+
+/** These defines allow to enable the compilation of the LED API for any of the LEDs on the
+    PCB. If the according port clashes with the application software running on the board
+    then the LED should be disabled by setting the macro to 0 and the LED won't be
+    accessible through this driver. Here for LED 0. */
+#define LBD_ENABLE_LED_0_DS11       1
+#define LBD_ENABLE_LED_1_DS10       1   /** Enable the use of LED 1. */
+#define LBD_ENABLE_LED_2_DS9        1   /** Enable the use of LED 2. */
+#define LBD_ENABLE_LED_3_DS8        1   /** Enable the use of LED 3. */
+#define LBD_ENABLE_LED_4_DS7        1   /** Enable the use of LED 4. */
+#define LBD_ENABLE_LED_5_DS6        1   /** Enable the use of LED 5. */
+#define LBD_ENABLE_LED_6_DS5        1   /** Enable the use of LED 6. */
+#define LBD_ENABLE_LED_7_DS4        1   /** Enable the use of LED 7. */
+
+/** These defines allow to enable the compilation of the button API for any of the user
+    buttons on the PCB. If the according port clashes with the application software running
+    on the board then the button should be disabled by setting the macro to 0 and it won't
+    be accessible through this driver. Here for button SW1. */
+#define LBD_ENABLE_BUTTON_SW1       1
+#define LBD_ENABLE_BUTTON_SW2       1   /** Here for button SW2. */
+
+
+/** The number of LEDs, which have been enabled at compile-time for SW use. */
+#define LBD_NO_ENABLED_LEDS                                                         \
+            (LBD_ENABLE_LED_0_DS11 + LBD_ENABLE_LED_1_DS10 + LBD_ENABLE_LED_2_DS9   \
+             + LBD_ENABLE_LED_3_DS8 + LBD_ENABLE_LED_4_DS7 + LBD_ENABLE_LED_5_DS6   \
+             + LBD_ENABLE_LED_6_DS5 + LBD_ENABLE_LED_7_DS4)
+
+/** The number of user buttons, which have been enabled at compile-time for SW use. */
+#define LBD_NO_ENABLED_BUTTONS      (LBD_ENABLE_BUTTON_SW1 + LBD_ENABLE_BUTTON_SW2)
+
 
 /*
  * Global type definitions
  */
 
+#if LBD_NO_ENABLED_LEDS > 0
+
 /** The list of available LEDs. */
 typedef enum lbd_led_t
-    { lbd_led_0_DS11 = 4    /// The value is the SIUL2 index of the bottom most LED, DS11, PA4
-    , lbd_led_1_DS10 = 0    /// The value is the SIUL2 index of the second LED, DS10, PA0
-    , lbd_led_2_DS9  = 148  /// The value is the SIUL2 index of DS9 at PJ4
-    , lbd_led_3_DS8  = 117  /// The value is the SIUL2 index of DS8 at PH5
-    , lbd_led_4_DS7  = 36   /// The value is the SIUL2 index of DS at PC4
-    , lbd_led_5_DS6  = 125  /// The value is the SIUL2 index of DS at PH13
-    , lbd_led_6_DS5  = 7    /// The value is the SIUL2 index of DS at PA7
-    , lbd_led_7_DS4  = 10   /// The value is the SIUL2 index of DS at PA10
+    {
+#if LBD_ENABLE_LED_0_DS11 == 1
+        lbd_led_0_DS11 = 4,  /// The value is the SIUL2 index of the bottom most LED, DS11, PA4
+#endif
+#if LBD_ENABLE_LED_1_DS10 == 1
+        lbd_led_1_DS10 = 0,  /// The value is the SIUL2 index of the second LED, DS10, PA0
+#endif
+#if LBD_ENABLE_LED_2_DS9 == 1
+        lbd_led_2_DS9  = 148,/// The value is the SIUL2 index of DS9 at PJ4
+#endif
+#if LBD_ENABLE_LED_3_DS8 == 1
+        lbd_led_3_DS8  = 117,/// The value is the SIUL2 index of DS8 at PH5
+#endif
+#if LBD_ENABLE_LED_4_DS7 == 1
+        lbd_led_4_DS7  = 36, /// The value is the SIUL2 index of DS at PC4
+#endif
+#if LBD_ENABLE_LED_5_DS6 == 1
+        lbd_led_5_DS6  = 125,/// The value is the SIUL2 index of DS at PH13
+#endif
+#if LBD_ENABLE_LED_6_DS5 == 1
+        lbd_led_6_DS5  = 7,  /// The value is the SIUL2 index of DS at PA7
+#endif
+#if LBD_ENABLE_LED_7_DS4 == 1
+        lbd_led_7_DS4  = 10, /// The value is the SIUL2 index of DS at PA10
+#endif
     } lbd_led_t;
+
+#endif /* #if At least one LED is in use */
+
+
+#if LBD_NO_ENABLED_BUTTONS > 0
 
 /** The list of available buttons. */
 typedef enum lbd_button_t
-    { lbd_bt_button_SW1 = 3 	/// The value is the SIUL2 index of button SW1, port PA3
-    , lbd_bt_button_SW2 = 76  	/// The value is the SIUL2 index of button SW2, port PE12
+    {
+#if LBD_ENABLE_BUTTON_SW1 == 1
+        lbd_bt_button_SW1 = 3,  /// The value is the SIUL2 index of button SW1, port PA3
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+        lbd_bt_button_SW2 = 76, /// The value is the SIUL2 index of button SW2, port PE12
+#endif
     } lbd_button_t;
 
 
@@ -77,16 +138,18 @@ typedef enum lbd_button_t
     \a lbd_onButtonChangeCallback_t. */
 typedef enum lbd_buttonStateMask_t
 {
-    lbd_btStMask_btnSw1_isOn = 0x01         /** Current state of button SW1. */
-    , lbd_btStMask_btnSw1_changed = 0x02    /** Button SW1 went either on or off. */
-    , lbd_btStMask_btnSw1_down = 0x04       /** Button SW1 went on. */
-    , lbd_btStMask_btnSw1_released = 0x08   /** Button SW1 went off. */
-
-    , lbd_btStMask_btnSw2_isOn = 0x10       /** Current state of button SW2. */
-    , lbd_btStMask_btnSw2_changed = 0x20    /** Button SW2 went either on or off. */
-    , lbd_btStMask_btnSw2_down = 0x40       /** Button SW2 went on. */
-    , lbd_btStMask_btnSw2_released = 0x80   /** Button SW2 went off. */
-
+#if LBD_ENABLE_BUTTON_SW1 == 1
+    lbd_btStMask_btnSw1_isOn = 0x01u,       /** Current state of button SW1. */
+    lbd_btStMask_btnSw1_changed = 0x02u,    /** Button SW1 went either on or off. */
+    lbd_btStMask_btnSw1_down = 0x04u,       /** Button SW1 went on. */
+    lbd_btStMask_btnSw1_released = 0x08u,   /** Button SW1 went off. */
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+    lbd_btStMask_btnSw2_isOn = 0x10u,       /** Current state of button SW2. */
+    lbd_btStMask_btnSw2_changed = 0x20u,    /** Button SW2 went either on or off. */
+    lbd_btStMask_btnSw2_down = 0x40u,       /** Button SW2 went on. */
+    lbd_btStMask_btnSw2_released = 0x80u,   /** Button SW2 went off. */
+#endif
 } lbd_buttonStateMask_t;
 
 
@@ -111,6 +174,9 @@ typedef int32_t (*lbd_onButtonChangeCallback_t)( uint32_t PID
                                                , uint8_t buttonState
                                                );
 
+#endif /* #if At least one button is in use */
+
+
 /*
  * Global data declarations
  */
@@ -118,6 +184,8 @@ typedef int32_t (*lbd_onButtonChangeCallback_t)( uint32_t PID
 /*
  * Global inline functions
  */
+
+#if LBD_NO_ENABLED_LEDS > 0
 
 /**
  * Switch a single LED on or off.
@@ -136,12 +204,10 @@ typedef int32_t (*lbd_onButtonChangeCallback_t)( uint32_t PID
  */
 static inline void lbd_osSetLED(lbd_led_t led, bool isOn)
 {
-    /* Toggle the LED state.
-       Unfortunately the MCU header only models the 32 Bit access, which involves four
-       port bits at once. We need to recompute the register address so that we can
-       apply a single Byte access. */
-    *(((__IO uint8_t*)&SIUL2->GPDO[0])+((unsigned)led)) = isOn? 0: 1;
-    
+    /* Toggle the LED state. The GPIO pin requires inversion, the LED is cnnected from port
+       to Vcc. */
+    siu_osSetGPIO(/* idxPort */ (unsigned)led, isOn? false: true);
+
 } /* End of lbd_osSetLED */
 
 
@@ -167,7 +233,10 @@ static inline void lbd_setLED(lbd_led_t led, bool isOn)
 
 } /* End of lbd_setLED */
 
+#endif /* #if At least one LED is in use */
 
+
+#if LBD_NO_ENABLED_BUTTONS > 0
 
 /**
  * Get the current status of a button.
@@ -183,17 +252,24 @@ static inline void lbd_setLED(lbd_led_t led, bool isOn)
  */
 static inline bool lbd_osGetButton(lbd_button_t button)
 {
+    bool isPressed = false;
+#if LBD_ENABLE_BUTTON_SW1 == 1
     if(button == lbd_bt_button_SW1)
     {
         extern bool lbd_osGetButtonSw1(void);
-        return lbd_osGetButtonSw1();
+        isPressed = lbd_osGetButtonSw1();
     }
-    else
+#endif
+#if LBD_ENABLE_BUTTON_SW2 == 1
+    if(button == lbd_bt_button_SW2)
     {
-        assert(button == lbd_bt_button_SW2);
         extern bool lbd_osGetButtonSw2(void);
-        return lbd_osGetButtonSw2();
+        isPressed = lbd_osGetButtonSw2();
     }
+#endif
+
+    return isPressed;
+    
 } /* End of lbd_osGetButton */
 
 
@@ -220,6 +296,7 @@ static inline bool lbd_getButton(lbd_button_t button)
 
 } /* End of lbd_getButton */
 
+#endif /* #if At least one button is in use */
 
 
 /*
@@ -236,13 +313,19 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
                                  , unsigned int tiMaxTimeInUs
                                  );
 
+#if LBD_NO_ENABLED_BUTTONS > 0
 /** Regularly called step function of the I/O driver. */
 void lbd_osTask1ms(void);
+#endif /* #if At least one button is in use */
 
+#if LBD_ENABLE_BUTTON_SW1 == 1
 /** Get the status of button SW1_PA3. */
 bool lbd_osGetButtonSw1(void);
+#endif
 
+#if LBD_ENABLE_BUTTON_SW2 == 1
 /** Get the status of button SW2_PE12. */
 bool lbd_osGetButtonSw2(void);
+#endif
 
 #endif  /* LBD_LEDANDBUTTONDRIVER_INCLUDED */
