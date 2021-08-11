@@ -34,11 +34,26 @@
  * Defines
  */
 
-/** Select the MCU derivtive, the CAN driver is compiled for. Supported are:\n
+/** Select the MCU derivative, the CAN driver is compiled for. Supported are:\n
       - MCU_MPC5748G\n
       - MCU_MPC5775B\n
       - MCU_MPC5775E */
 #define MCU_MPC5748G
+
+
+/** All supported MCUs specify the size of the mailbox RAM as 384 32 Bit words in the
+    specific derivative header files (see CAN_RAMn_COUNT), although this size fits only
+    to the 96 mailboxes of the MPC5748G. (RM75, 37.1.1 FlexCAN RAM, p.1667, even says it
+    were 6 kByte.) Actually, the MPC5775B/E have only 256 words of
+    RAM and an attempt to access RAM beyond the 1 kByte is punished with a machine check
+    exception.\n
+      We provide an additional macro rather than fixing the wrong header. It despigantes
+    the number of physically available 32 Bit RAM words. */
+#if defined(MCU_MPC5748G)
+# define CAN_PHYSICAL_RAMn_COUNT    (CAN_RAMn_COUNT)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
+# define CAN_PHYSICAL_RAMn_COUNT    (256u)
+#endif    
 
 
 /*

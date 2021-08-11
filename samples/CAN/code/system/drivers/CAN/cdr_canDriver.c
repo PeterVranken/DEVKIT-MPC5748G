@@ -588,6 +588,60 @@ static void initCanDevice(unsigned int idxCanDevice)
                , PSEG2;
     getBaudRateSettings(&PRESDIV, &PROPSEG, &PSEG1, &PSEG2, pCanDevConfig->baudRate);
 
+    /* RM 43.4.8 Error Counter, p. 1725f, reset all error counters. */
+    pCanDevice->ECR = CAN_ECR_RXERRCNT(0)
+                      | CAN_ECR_TXERRCNT(0)
+#if defined(MCU_MPC5748G)
+                      | CAN_ECR_RXERRCNT_FAST(0)
+                      | CAN_ECR_TXERRCNT_FAST(0)
+#endif
+                      ;
+    /* The error/status word CAN_ESR1 contains some interrupt flag bits, which we reset by
+       w1c. We do this, before we enable the interrupts by setting CTRL1/2.*/
+    pCanDevice->ESR1 = 0
+#if defined(MCU_MPC5748G)
+                       | CAN_ESR1_ERROVR_MASK
+                       | CAN_ESR1_ERRINT_FAST_MASK
+                       | CAN_ESR1_BOFFDONEINT_MASK
+#endif
+                       | CAN_ESR1_TWRNINT_MASK
+                       | CAN_ESR1_RWRNINT_MASK
+                       | CAN_ESR1_BOFFINT_MASK
+                       | CAN_ESR1_ERRINT_MASK
+#if defined(MCU_MPC5748G)
+                       | CAN_ESR1_WAKINT_MASK
+#endif
+                       ;
+    //pCanDevice->ESR2 is a read-only status register. (RM 43.4.15, p. 1742f.)
+
+    unsigned int u;
+    
+#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
+    /* Initialize all device RAM by unconditional 32 Bit writes in order to avoid ECC
+       errors with uninitialized cells (and arbitrarily set parity bits). See RM75, 37.5.13
+       Detection and Correction of Memory Errors, pp.1756ff. */
+    pCanDevice->CTRL2 = pCanDevice->CTRL2
+                        | CAN_CTRL2_WRMFRZ(1); /* Device RAM writable in freeze mode? */
+    const uint32_t no32BitWords = CAN_PHYSICAL_RAMn_COUNT;
+    _Static_assert( sizeof(pCanDevice->RAMn[0u]) == 4u
+                  , "Implementation doesn't support RAM configuration of given CAN device"  
+                  );
+    volatile uint32_t *pRAM = &pCanDevice->RAMn[0u];
+    assert(((uintptr_t)pRAM & 0x00000003u) == 0);
+    for(u=0u; u<no32BitWords; ++u)
+        * pRAM++ = 0u;
+
+    /* Reset possibly pending ECC errors prior to enabling the related IRQ. See RM75,
+       37.4.27 Error Status Register (CAN_ERRSR), pp.1716f. */
+    pCanDevice->ERRSR = CAN_ERRSR_HANCEIF_MASK
+                        | CAN_ERRSR_FANCEIF_MASK
+                        | CAN_ERRSR_CEIF_MASK
+                        | CAN_ERRSR_HANCEIOF_MASK
+                        | CAN_ERRSR_FANCEIOF_MASK
+                        | CAN_ERRSR_CEIOF_MASK
+                        ;
+#endif /* ECC initialization for MCU_MPC5775B/E */
+
     /* The interrupt groups for CAN transmission errors (ERRINT and ERRINIT_FAST) and for the
        bus off related errors (bus off/on ad Rx/Tx warning) are enabled by configuration.
        If the priority is above zero, then they are enabled. */
@@ -664,32 +718,6 @@ static void initCanDevice(unsigned int idxCanDevice)
        because we set MCR[IRMQ] (see above). Each mailbox has its own mask, see RM
        43.4.22, p. 1749f, CAN_RXIMRn. */
 
-    /* RM 43.4.8 Error Counter, p. 1725f, reset all error counters. */
-    pCanDevice->ECR = CAN_ECR_RXERRCNT(0)
-                      | CAN_ECR_TXERRCNT(0)
-#if defined(MCU_MPC5748G)
-                      | CAN_ECR_RXERRCNT_FAST(0)
-                      | CAN_ECR_TXERRCNT_FAST(0)
-#endif
-                      ;
-    /* The error/status word CAN_ESR1 contains some interrupt flag bits, which we reset by
-       w1c. */
-    pCanDevice->ESR1 = 0
-#if defined(MCU_MPC5748G)
-                       | CAN_ESR1_ERROVR_MASK
-                       | CAN_ESR1_ERRINT_FAST_MASK
-                       | CAN_ESR1_BOFFDONEINT_MASK
-#endif
-                       | CAN_ESR1_TWRNINT_MASK
-                       | CAN_ESR1_RWRNINT_MASK
-                       | CAN_ESR1_BOFFINT_MASK
-                       | CAN_ESR1_ERRINT_MASK
-#if defined(MCU_MPC5748G)
-                       | CAN_ESR1_WAKINT_MASK
-#endif
-                       ;
-    //pCanDevice->ESR2 is a read-only status register. (RM 43.4.15, p. 1742f.)
-
     /* RM 43.4.17, CAN_RXFGMASK. The register is the acceptance mask, which selects the
        do-care bits from some of the individual FIFO acceptance filters. See RM, p. 1740
        for a table. For example, with CTRL2[RFFN]=8, we use this global mask for filters
@@ -729,7 +757,6 @@ static void initCanDevice(unsigned int idxCanDevice)
        mailboxes no sharing of mailboxes between several CAN IDs will ever be required and
        we set them all to "all CAN ID bits care". This makes using the CAN driver most
        simple. */
-    unsigned int u;
     for(u=0; u<CAN_RXIMR_COUNT; ++u)
         pCanDevice->RXIMR[u] = CAN_RXIMR_MI_MASK;
 
@@ -793,17 +820,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     } /* End for(All normal MBs) */
     
-    /* All supported MCUs specify the size of the mailbox RAM as 384 32 Bit words in the
-       specific derivative header files (see CAN_RAMn_COUNT), although this size fits only
-       to the 96 mailboxes of the MPC5748G. The MPC5775B/E should only have 256 words of
-       RAM. It's not clear if this is an error in the header file or if the additional RAM
-       is reserved for other purposes. Anyhow, the next self-text depends on this issue. */
-#if defined(MCU_MPC5748G)
-    assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
-#else /* MCU_MPC5775B or MCU_MPC5775E */
-    /// @todo Sort out, which RAM size the devices have
-    assert((void*)pMB <= (void*)&pCanDevice->RAMn[CAN_RAMn_COUNT]);
-#endif
+    assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_PHYSICAL_RAMn_COUNT]);
 
     /* Install required interrupt handlers. By default, we have the three FIFO related
        IRQs. Later, at registration time of mailboxes, there may come many more. */
