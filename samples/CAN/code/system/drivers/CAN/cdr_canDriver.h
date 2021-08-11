@@ -7,7 +7,7 @@
  * driver. The functions and data objects declared in this file must not be accessed by
  * driver client code.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -43,6 +43,21 @@
 /*
  * Global type definitions
  */
+
+/** Identification of a particular CAN device. The driver code normally uses a zero based
+    index of devices in use, which requires a mapping from this index to the particular,
+    configured device behind. The mapping yields this device ID. */
+typedef struct cdr_idCanDevice_t
+{
+    /** The index of the CAN I/O device in the array of devices implemented in the MCU.
+        Index zero relates to FlexCAN_A, one to FlexCAN_B, etc. */
+    unsigned int idxFlexCAN_x;
+    
+    /** The register file of the CAN I/O device in the MCU by reference. */
+    CAN_Type *pCanDevice;
+    
+} cdr_idCanDevice_t;
+
 
 /** Identification of a particular HW mailbox in terms of CAN device and index of the
     mailbox in the HW array. This way to address to a mailbox is used only internally. The
@@ -183,7 +198,7 @@ typedef cdr_canDeviceData_t cdr_canDriverData_t[CDR_NO_CAN_DEVICES_ENABLED];
 
 /** This is a lookup table, which maps a zero based CAN device index (enumeration
     cdr_enumCanDevice_t) to a CAN peripheral (according to MPC5748G.h) */
-extern CAN_Type * const RODATA(cdr_mapIdxToCanDevice)[CDR_NO_CAN_DEVICES_ENABLED];
+extern cdr_idCanDevice_t const RODATA(cdr_mapIdxToCanDevice)[CDR_NO_CAN_DEVICES_ENABLED];
 
 /** The run-time data of the CAN driver. */
 extern cdr_canDriverData_t cdr_canDriverData;
@@ -322,7 +337,7 @@ static inline bool cdr_mapMailboxHandleToId( cdr_idMailbox_t * const pIdMB
        device. */
     if(hMB >= noFIFOMsgs  &&  idxMB < pDeviceConfig->noMailboxes)
     {
-        pIdMB->pDevice = cdr_mapIdxToCanDevice[idxCanDevice];
+        pIdMB->pDevice = cdr_mapIdxToCanDevice[idxCanDevice].pCanDevice;
         pIdMB->pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
         pIdMB->idxMailbox = idxMB;
         return true;

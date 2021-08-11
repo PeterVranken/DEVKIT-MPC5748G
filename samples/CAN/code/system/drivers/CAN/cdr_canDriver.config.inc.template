@@ -5,12 +5,12 @@
  * This file actually is a hybrid from C header and source file. Therefore, it's is neither
  * named as those and got the extension *.inc. A copy of this template is what you will
  * edit in order to configure the CAN driver according to your application's needs. Please
- * find more details in cdr_canDriverAPI.h.\n
+ * find more details in cdr_canDriverAPI.h.
  *   @remark
  * Never include this file or your copy directly from your application and never try to
  * compile it.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -39,7 +39,8 @@
  * Defines
  */
 
-/** The MCU MPC5748G has eight CAN devices, MPC5775B/E has four. Each of them can be
+/** The MCU MPC5748G has eight FlexCAN devices, MPC5775B/E has four. (MPC5775B/E's
+    additional two MCAN devices are not supported by this driver.) Each of them can be
     enabled/disabled at compile-time. Here, enabling doesn't mean any execution of
     initialization code, it just relates to enabling the compilation of the code and data
     structures needed to support the given device.\n
@@ -438,7 +439,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
               Note, the index used here is the HW mailbox index not the user visible
             mailbox handle.\n
               Note, the total number of enabled Rx mailboxes in all enabled devices needs
-            to match #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES.
+            to match #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES.\n
               Note, the sort order of API buffers doesn't matter. Particularly, no run-time
             penalty is involved with having a zig-zag-pattern. */
         .userAccessMailboxAry = 

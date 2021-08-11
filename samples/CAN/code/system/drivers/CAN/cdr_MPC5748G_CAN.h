@@ -5,7 +5,7 @@
  *   The MCU derivative header file, MPC5748G.h, doesn't contain macros for accessing some
  * of the CAN device's registers. Here, we complete the set of definitions to the extend
  * required for the CAN I/O driver.
- 
+ *
  * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  * 
  * This program is free software: you can redistribute it and/or modify it

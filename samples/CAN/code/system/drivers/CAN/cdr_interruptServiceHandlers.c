@@ -762,28 +762,28 @@ static void isrGroupMB##idxFrom##_##idxTo##_##canDev(void)                      
 /* We need the ISRs for each device separately. This is done easiest by making the set of
    ISRs for a single device a define, which is then repeatedly applied. */
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 0)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 0)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_1 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 1)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 1)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_2 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 2)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 2)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_3 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 3)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 3)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_4 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 4)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 4)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_5 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 5)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 5)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_6 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 6)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 6)
 #endif
 #if CDR_ENABLE_USE_OF_CAN_7 == 1
-IMPLEMENTATION_OF_DEVICE_ISRS(/* idxCanDev */ 7)
+IMPLEMENTATION_OF_DEVICE_ISRS(/* idxFlexCAN_x */ 7)
 #endif
 
 #undef ISR_GROUP_RX_FIFO
@@ -804,6 +804,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
 {
     assert(idxCanDevice < sizeOfAry(cdr_canDriverConfig));
     const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
+    const unsigned int idxFlexCAN_x = cdr_mapIdxToCanDevice[idxCanDevice].idxFlexCAN_x;
 
     /** This is a table, which holds pointers to all required ISRs. It is just needed to have a
         function that registers these interrupts. The alternative would be a long list of
@@ -888,7 +889,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
     rtos_osRegisterInterruptHandler
             ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupError
             , /* processorID */   pDeviceConfig->irqGroupError.idxTargetCore
-            , /* vectorNum */     IDX_IRQ_CAN_ERROR(idxCanDevice)
+            , /* vectorNum */     IDX_IRQ_CAN_ERROR(idxFlexCAN_x)
             , /* psrPriority */   pDeviceConfig->irqGroupError.irqPrio
             , /* isPreemptable */ true
             );
@@ -899,7 +900,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
     rtos_osRegisterInterruptHandler
             ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupBusOff
             , /* processorID */   pDeviceConfig->irqGroupBusOff.idxTargetCore
-            , /* vectorNum */     IDX_IRQ_CAN_BOFF_OR_TX_WARN(idxCanDevice)
+            , /* vectorNum */     IDX_IRQ_CAN_BOFF_OR_TX_WARN(idxFlexCAN_x)
             , /* psrPriority */   pDeviceConfig->irqGroupBusOff.irqPrio
             , /* isPreemptable */ true
             );
@@ -912,7 +913,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
         rtos_osRegisterInterruptHandler
                 ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrGroupFIFO
                 , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
-                , /* vectorNum */     IDX_IRQ_CAN_FIFO(idxCanDevice)
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO(idxFlexCAN_x)
                 , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
                 , /* isPreemptable */ true
                 );
@@ -923,21 +924,21 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
         rtos_osRegisterInterruptHandler
                 ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrFIFORx
                 , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
-                , /* vectorNum */     IDX_IRQ_CAN_FIFO_RX(idxCanDevice)
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO_RX(idxFlexCAN_x)
                 , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
                 , /* isPreemptable */ true
                 );
         rtos_osRegisterInterruptHandler
                 ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrFIFOWarning
                 , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
-                , /* vectorNum */     IDX_IRQ_CAN_FIFO_WARN(idxCanDevice)
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO_WARN(idxFlexCAN_x)
                 , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
                 , /* isPreemptable */ true
                 );
         rtos_osRegisterInterruptHandler
                 ( /* ISR */           mapDevIdxToISRGroup_[idxCanDevice].isrFIFOOverflow
                 , /* processorID */   pDeviceConfig->irqGroupFIFO.idxTargetCore
-                , /* vectorNum */     IDX_IRQ_CAN_FIFO_FULL(idxCanDevice)
+                , /* vectorNum */     IDX_IRQ_CAN_FIFO_FULL(idxFlexCAN_x)
                 , /* psrPriority */   pDeviceConfig->irqGroupFIFO.irqPrio
                 , /* isPreemptable */ true
                 );
@@ -955,7 +956,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
         rtos_osRegisterInterruptHandler                                                     \
             ( /* ISR */ mapDevIdxToISRGroup_[idxCanDevice].isrGroupMB##idxFrom##_##idxTo    \
             , /* processorID */ pDeviceConfig->irqGroupMB##idxFrom##_##idxTo.idxTargetCore  \
-            , /* vectorNum */ IDX_IRQ_CAN_MB(idxCanDevice, /* idxMB */ (idxTo))             \
+            , /* vectorNum */ IDX_IRQ_CAN_MB(idxFlexCAN_x, /* idxMB */ (idxTo))             \
             , /* psrPriority */ pDeviceConfig->irqGroupMB##idxFrom##_##idxTo.irqPrio        \
             , /* isPreemptable */ true                                                      \
             );                                                                              \
@@ -967,7 +968,7 @@ void cdr_osRegisterInterrupts(unsigned int idxCanDevice)
         rtos_osRegisterInterruptHandler                                                     \
             ( /* ISR */ mapDevIdxToISRGroup_[idxCanDevice].isrMB##idxMB                     \
             , /* processorID */ pDeviceConfig->irqMB##idxMB.idxTargetCore                   \
-            , /* vectorNum */ IDX_IRQ_CAN_MB(idxCanDevice, (idxMB))                         \
+            , /* vectorNum */ IDX_IRQ_CAN_MB(idxFlexCAN_x, (idxMB))                         \
             , /* psrPriority */ pDeviceConfig->irqMB##idxMB.irqPrio                         \
             , /* isPreemptable */ true                                                      \
             );                                                                              \

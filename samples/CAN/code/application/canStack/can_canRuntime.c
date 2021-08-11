@@ -377,7 +377,7 @@ static void protectAndSendFrame(const unsigned int idxFrCde)
     /* Invoke the operating system API to submit the frame for sending.
          The OS handle of the frame is the index in the OSE owned configuration table. The
        mapping from CAN interface index to OS handle is a simple offset operation. This
-       is a simple and efficient descision, which has been taken in the call of the
+       is a simple and efficient decision, which has been taken in the call of the
        registration method. */
     assert(pFrDescCde->pInfoTransmission != NULL);
     if(cdr_sendMessage( /* idxCanDevice */ OSE_CAN_BUS_PT
