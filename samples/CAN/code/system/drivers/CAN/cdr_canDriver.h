@@ -152,6 +152,19 @@ typedef struct cdr_canDeviceData_t
         the same core. It can't be accessed at all from other cores. */
     unsigned int noErrEvents;
     
+#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
+    /** Global counter of error interrupts because of ECC errors in the CAN device RAM.
+        (ERRSR[xCEIF], RM75 37.4.27 Error Status Register (CAN_ERRSR), p. 1716f) since
+        software startup. The counter is saturated at its implementation maximum.
+          @remark The counter is maintained by the core, which serves the group of error
+        interrupts from the given CAN device (see configuration item
+        cdr_canDriverConfig[idxCanDev].irqGroupError) and can be read by other contexts on
+        the same core. It can't be accessed at all from other cores.
+          @remark This flag is not supported on the MPC5748G, which doesn't offer an IRQ
+        on ECC errors. */
+    unsigned int noEccErrEvents;
+#endif
+
     /** Last recently seen error in lower halfword of ESR1. */
     uint16_t lastErrEvent;
 

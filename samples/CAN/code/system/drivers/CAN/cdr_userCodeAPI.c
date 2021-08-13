@@ -5,7 +5,7 @@
  * calls. Additionally, some buffer management is required in order to not break the safety
  * concept (memory protection).
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -27,6 +27,7 @@
  *   cdr_getNoBusOffEvents
  *   cdr_getNoRxFifoEvents
  *   cdr_getNoErrorEvents
+ *   cdr_getNoEccErrorEvents (only MPC5775B/E)
  *   cdr_getLastTransmissionError
  * Local functions
  */
@@ -597,6 +598,46 @@ unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice)
     return cdr_canDriverData[idxCanDevice].noErrEvents;
     
 } /* End of cdr_getNoErrorEvents */
+
+
+
+
+#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
+/**
+ * Get the number of recorded ECC error events for the given CAN device. The device reports
+ * correctable and incorrectable errors when reading the device's own RAM (i.e. mailboxes
+ * and filters). The only way, these problems are reported is by incrementing this counter.
+ * See description of register ERRSR in the device reference manual RM75, 37.4.27 Error
+ * Status Register (CAN_ERRSR), p. 1716f.
+ *   @return
+ * The function returns the saturated number of errors, which had been reported by the CAN
+ * device since driver initialization.
+ *   @param idxCanDevice
+ * Error events are recorded independently for all enabled CAN devices. This parameter
+ * chooses the affected CAN device.\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion in DEBUG compilation.
+ *   @remark
+ * Interrupt group Error needs to be configured for servicing. Otherwise the result is
+ * undefined. See configuration item cdr_canDeviceConfig_t.irqGroupError.
+ *   @remark
+ * The function must be called solely from the core, which is configured to serve the
+ * interrupt group Error for the given CAN device. If this is not the calling core, too,
+ * then the result is undefined (due to cache coherence issues).\n
+ *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e. OS and user
+ * tasks or ISRs.
+ */
+unsigned int cdr_getNoEccErrorEvents(unsigned int idxCanDevice)
+{
+    assert(idxCanDevice < sizeOfAry(cdr_canDriverData));
+    assert(rtos_getIdxCore() == cdr_canDriverConfig[idxCanDevice].irqGroupError.idxTargetCore);
+
+    return cdr_canDriverData[idxCanDevice].noEccErrEvents;
+    
+} /* End of cdr_getNoEccErrorEvents */
+#endif
 
 
 

@@ -85,6 +85,9 @@
     [cdr_canDev_##canDev] =             \
     {                                   \
         .isBusOff = false,              \
+        .noBusOffEvents = 0,            \
+        .noErrEvents = 0,               \
+        .lastErrEvent = 0,              \
         .noRxFIFOOverflowEvents = 0,    \
         .noRxFIFOWarningEvents = 0,     \
         .noRxMsgsFIFO = 0,              \
@@ -94,6 +97,10 @@
 # define INIT_CAN_DEVICE_DATA(canDev)   \
     [cdr_canDev_##canDev] =             \
     {                                   \
+        .noBusOffEvents = 0,            \
+        .noErrEvents = 0,               \
+        .noEccErrEvents = 0,            \
+        .lastErrEvent = 0,              \
         .noRxFIFOOverflowEvents = 0,    \
         .noRxFIFOWarningEvents = 0,     \
         .noRxMsgsFIFO = 0,              \
@@ -254,7 +261,7 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
 
     /* Configure Tx port. */
     siu_osConfigureOutput(idxSIUL_PB0, &outputCfg);
-    
+
 
     /* The Rx output of external transceiver chip is connected to pin PB1 of the MCU.
        Configure this pin as input.*/
@@ -310,7 +317,7 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
        worksheet look for the wanted device (column B, "Instance") and/or for the wanted
        signal (column H, "Source Signal"). Columns D, E and F provide the needed three
        pieces of information for the multiplxer configuration. */
-       
+
     /* Configuration of CAN Tx port: See PM75, tab "IO Signal Table", row 663, for port
        CNTXA. Column B gives us the index of the PCR. Column C gives us as "Source Signal
        Select" for function CAN Tx of device 0 (aka A).
@@ -330,7 +337,7 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
 
     /* Configure Tx port. */
     siu_osConfigureOutput(/* idxPort */ 83 /* CNTXA */, &outputCfg);
-    
+
 
     /* CAN Rx: See file PM75, tab "Input Muxing", row 33, for port CNRXA. We find
        multiplexer register no 1, MUXSEL=0, MUXSEL Value=1.
@@ -624,7 +631,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     //pCanDevice->ESR2 is a read-only status register. (RM48 43.4.15, p. 1742f.)
 
     unsigned int u;
-    
+
     /* Initialize all device RAM by unconditional 32 Bit writes in order to avoid ECC
        errors with uninitialized cells (and arbitrarily set parity bits). See RM75, 37.5.13
        Detection and Correction of Memory Errors, pp.1756ff. */
@@ -634,7 +641,7 @@ static void initCanDevice(unsigned int idxCanDevice)
                         | CAN_CTRL2_WRMFRZ(1); /* Device RAM writable in freeze mode? */
     const uint32_t no32BitWords = CAN_PHYSICAL_RAMn_COUNT;
     _Static_assert( sizeof(pCanDevice->RAMn[0u]) == 4u
-                  , "Implementation doesn't support RAM configuration of given CAN device"  
+                  , "Implementation doesn't support RAM configuration of given CAN device"
                   );
     volatile uint32_t *pRAM = &pCanDevice->RAMn[0u];
     assert(((uintptr_t)pRAM & 0x00000003u) == 0);
@@ -643,6 +650,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     /* Reset possibly pending ECC errors prior to enabling the related IRQ. See RM75,
        37.4.27 Error Status Register (CAN_ERRSR), pp.1716f. */
+    /// @todo Explicitly configure the ECC error handling, even if POR default should be suitable
     pCanDevice->ERRSR = CAN_ERRSR_HANCEIF_MASK
                         | CAN_ERRSR_FANCEIF_MASK
                         | CAN_ERRSR_CEIF_MASK
@@ -829,7 +837,7 @@ static void initCanDevice(unsigned int idxCanDevice)
                      ;
 
     } /* End for(All normal MBs) */
-    
+
     assert((void*)pMB == (void*)&pCanDevice->RAMn[CAN_PHYSICAL_RAMn_COUNT]);
 
     /* Install required interrupt handlers. By default, we have the three FIFO related

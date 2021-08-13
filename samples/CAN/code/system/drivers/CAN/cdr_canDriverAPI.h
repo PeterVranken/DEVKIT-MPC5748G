@@ -263,6 +263,9 @@ unsigned int cdr_getNoRxFifoEvents( unsigned int idxCanDevice
 /** Get the number of recorded transmission errors for the given CAN device. */
 unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice);
 
+/** Get the number of recorded RAM ECC errors for the given CAN device. */
+unsigned int cdr_getNoEccErrorEvents(unsigned int idxCanDevice);
+
 /** Get the last recently reported CAN transmission error. */
 uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice);
 

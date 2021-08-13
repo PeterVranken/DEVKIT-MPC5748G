@@ -12,7 +12,7 @@
  * put them in the function section of this file, where they belong from the logical
  * aspect, rather than in the define section.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -146,35 +146,82 @@ static void isrError( CAN_Type * const pDevice
 
 
 
+/**
+ * The IRQ handler for error reporting differ significantly between the supported MCUs. The
+ * MPC5775B/E has an additional error flag register for ECC errors. Here we have a macro,
+ * which is inserted into the other macro ISR_GROUP_ERROR(), which generates all the needed
+ * error ISRs.
+ */
+#if defined(MCU_MPC5748G)
+# define ISR_GROUP_ERROR__HANDLERS_MPC5775BE(deviceData) /* Not applicable for MPC5748G */
+#elif defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+# define ISR_GROUP_ERROR__HANDLERS_MPC5775BE(deviceData)                                    \
+    else if((pDevice->ERRSR                                                                 \
+        & (CAN_ERRSR_HANCEIF_MASK                                                           \
+           | CAN_ERRSR_FANCEIF_MASK                                                         \
+           | CAN_ERRSR_CEIF_MASK                                                            \
+          )                                                                                 \
+       ) != 0                                                                               \
+      )                                                                                     \
+    {                                                                                       \
+        /* We record the situation in a global counter. */                                  \
+        const unsigned int noErr = deviceData.noEccErrEvents + 1;                           \
+        if(noErr != 0)                                                                      \
+            deviceData.noEccErrEvents = noErr;                                              \
+                                                                                            \
+        /* Reset interrupt and overflow flags (which don't cause an IRQ). */                \
+        pDevice->ERRSR = CAN_ERRSR_HANCEIF_MASK                                             \
+                         | CAN_ERRSR_FANCEIF_MASK                                           \
+                         | CAN_ERRSR_CEIF_MASK                                              \
+                         | CAN_ERRSR_HANCEIOF_MASK                                          \
+                         | CAN_ERRSR_FANCEIOF_MASK                                          \
+                         | CAN_ERRSR_CEIOF_MASK                                             \
+                         ;                                                                  \
+                                                                                            \
+        /* To stay consistent with the rest of the CAN driver, we should offer a */         \
+        /* configurable ECC error callback into the client code or we could extend */       \
+        /* the signature of the existing error callback, such that it covers the ECC */     \
+        /* errors, too. For now, and due to the little relevance, we remain with the */     \
+        /* global counter as only reporting. A safety supervisory task should check */      \
+        /* it regularly. */                                                                 \
+    }
+#endif /* End of macro ISR_GROUP_ERROR__HANDLERS_MPC5775BE */
 
-#define ISR_GROUP_ERROR(canDev)                                                            \
-/**                                                                                        \
- * Common ISR for the two Error interrupts (INTERR and INTERR_FAST). It looks for the      \
- * causing IRQ and branches in the dedicated handler. Interrupt acknowledge needs to be    \
- * done in the dedicated handler.                                                          \
- */                                                                                        \
-static void isrGroupError_##canDev(void)                                                   \
-{                                                                                          \
-    CAN_Type * const pDevice = (canDev);                                                   \
-                                                                                           \
-    /* Read the cause of the error. RM 43.4.9, p. 1727ff. Note, the error bits (not */     \
-    /* the interrupt flags and the over overflow bit) are reset by this read. */           \
-    const uint32_t ESR1 = pDevice->ESR1;                                                   \
-                                                                                           \
-    if((ESR1 & CAN_ESR1_ERRINT_MASK) != 0)                                                 \
-    {                                                                                      \
-        isrError( pDevice                                                                  \
-                , &cdr_canDriverData[cdr_canDev_##canDev]                                  \
-                , cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupError.osCallbackOnError \
-                , ESR1                                                                     \
-                );                                                                         \
-    }                                                                                      \
-    /* MPC5748G: FD not supported, ISR not implemented. MPC5775B/E: FD not available */    \
-    /* else if((ESR1 & CAN_ESR1_ERRINT_FAST_MASK) != 0) */                                 \
-    /*     assert(false);                               */                                 \
-    else                                                                                   \
-        assert(false);                                                                     \
-                                                                                           \
+
+#define ISR_GROUP_ERROR(canDev)                                                             \
+/**                                                                                         \
+ * Common ISR for the two Error interrupts (INTERR and INTERR_FAST). It looks for the       \
+ * causing IRQ and branches in the dedicated handler. Interrupt acknowledge needs to be     \
+ * done in the dedicated handler.                                                           \
+ */                                                                                         \
+static void isrGroupError_##canDev(void)                                                    \
+{                                                                                           \
+    CAN_Type * const pDevice = (canDev);                                                    \
+                                                                                            \
+    /* Read the cause of the error. RM 43.4.9, p. 1727ff. Note, the error bits (not */      \
+    /* the interrupt flags and the over overflow bit) are reset by this read. */            \
+    const uint32_t ESR1 = pDevice->ESR1;                                                    \
+                                                                                            \
+    if((ESR1 & CAN_ESR1_ERRINT_MASK) != 0)                                                  \
+    {                                                                                       \
+        isrError( pDevice                                                                   \
+                , &cdr_canDriverData[cdr_canDev_##canDev]                                   \
+                , cdr_canDriverConfig[cdr_canDev_##canDev].irqGroupError.osCallbackOnError  \
+                , ESR1                                                                      \
+                );                                                                          \
+    }                                                                                       \
+                                                                                            \
+    /* MPC5748G: FD not supported, ISR not implemented. MPC5775B/E: FD not available */     \
+    /* else if((ESR1 & CAN_ESR1_ERRINT_FAST_MASK) != 0) */                                  \
+    /*     assert(false);                               */                                  \
+                                                                                            \
+    /* Evaluation of MPC5775B/E specific IRQs */                                            \
+    /* else */ ISR_GROUP_ERROR__HANDLERS_MPC5775BE(cdr_canDriverData[cdr_canDev_##canDev])  \
+                                                                                            \
+    else                                                                                    \
+    {                                                                                       \
+        assert(false);                                                                      \
+    }                                                                                       \
 } /* End of isrGroupError_##canDev */
 
 
@@ -662,7 +709,7 @@ static void isrMailbox( CAN_Type * const pDevice
 
 
 
-#if defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
 # define ISR_MAILBOX(canDev, idxMB)                                                         \
 /**                                                                                         \
  * Common ISR for the mailbox interrupts of mailbox idxMB. It branches in the common        \
