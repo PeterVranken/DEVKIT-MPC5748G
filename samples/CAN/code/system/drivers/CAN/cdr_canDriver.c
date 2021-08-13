@@ -1,12 +1,24 @@
 /**
  * @file cdr_canDriver.c
- * CAN communication driver for DEVKIT-MPC5748G and safe-RTOS. Main file of implementation.
- * It instantiates the constant configuration data object, initializes the driver according
- * to the configuration settings and offer the global API functions.
+ * CAN communication driver for MPC5748G amd MPC5775B/E and safe-RTOS. Pin configuration
+ * and a sample configuration is provided for the evaluation board DEVKIT-MPC5748G, so that
+ * the driver can beused out of the box with this board.\n
+ *   This is the main file of the driver implementation. It instantiates the constant
+ * configuration data object, initializes the driver according to the configuration
+ * settings and offers the global API functions.\n
  *
- * @remark The CAN driver has been developed for the MPC5748G but it can be used with the
- * MPC5775B/E, too, which have a very similar CAN device. The references to the MCU's
- * Reference Manual made below relate to the reference manual of the MPC5748G.
+ * @note References "RM48" (reference manual) in this module refer to "MPC5748G Reference
+ * Manual", document number: MPC5748GRM, Rev. 6, 10/2017.
+ *
+ * @note References "PM48" (pin mapping) in this module refer to file
+ * "IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx", which is an attachment of
+ * RM48.
+ *
+ * @note References "RM75" in this module refer to "MPC5775E/MPC5775B Reference Manual",
+ * document number: MPC5775E, Rev. 1, 05/2018.
+ *
+ * @note References "PM75" in this module refer to file
+ * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", which is an attachment of RM75.
  *
  * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -178,7 +190,7 @@ cdr_canDriverData_t DATA_OS(cdr_canDriverData) =
 
 /**
  * Get an entry from the FIFO filter table. In our configuration, an entry is of type A
- * only. Effectively it is the CAN ID, which can be received through the FIFO. See RM
+ * only. Effectively it is the CAN ID, which can be received through the FIFO. See RM48
  * 43.4.43, Tables 43-17 and 43-18, on p. 1786 for details.
  *   @return
  * The pointer to the filter entry is returned. The result is undefined if the FIFO is not
@@ -189,7 +201,7 @@ cdr_canDriverData_t DATA_OS(cdr_canDriverData) =
  *   @param idxFilterEntry
  * The index of the filter entry.\n
  * The range is 0..max, which is checked by assertion. "max" depends on the FIFO
- * configuration. In our default configuration (CTRL2[RFFN]=8) it is 71. See RM 43.4.14, p.
+ * configuration. In our default configuration (CTRL2[RFFN]=8) it is 71. See RM48 43.4.14, p.
  * 1740.
  *   @remark
  * The current configuration of the device, e.g. FIFO enabled or not or the filter table
@@ -220,7 +232,7 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
  */
 static void configSIULForUseWithDEVKIT_MPC5748G(void)
 {
-    /* RM 15.2.11, Multiplexed Signal Configuration Register, p. 388ff: Route Tx output of
+    /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 388ff: Route Tx output of
        device CAN_0 to MCU pin PB0, which is connected to the Tx input of the external
        transceiver chip on the board DEVKIT-MPC5748G. */
     const unsigned int idxSIUL_PB0 = 16
@@ -274,7 +286,7 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
     /* Enable the the MCU pins, which are connected to the CAN transceiver mounted on the
        evaluation board (see schematics of MPC5775BE-416DS, SPF-32229.pdf, p. 5).
          The configuration of in- and output pins is documented in the Excel workbook
-       MPC5775B_MPC5775E_System_IO_Definition.xlsx; which is embedded into the MCU
+       MPC5775B_MPC5775E_System_IO_Definition.xlsx (PM75); which is embedded into the MCU
        reference manual PDF file. In Acrobat Reader, click View/Show/Hide/Navigation
        Panes/Attachments to find the Excel workbook.
          In the Excel workbook, on worksheet "IO Signal Table", each line refers to one of
@@ -293,18 +305,16 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
        There are nine such registers and they contain a varying number of multiplexers
        each. You need to know, which multiplexer register to use and which multiplxer
        inside the register and which value to configure for this multiplexer. All of this
-       is found either in the description of the registers (RM, sections 8.2.66ff) or by
-       name of the signal in the Excel workbook
-       MPC5775B_MPC5775E_System_IO_Definition.xlsx, worksheet "Input Muxing". In the Excel
+       is found either in the description of the registers (RM75, sections 8.2.66ff) or by
+       name of the signal in PM75, worksheet "Input Muxing". In the Excel
        worksheet look for the wanted device (column B, "Instance") and/or for the wanted
        signal (column H, "Source Signal"). Columns D, E and F provide the needed three
        pieces of information for the multiplxer configuration. */
        
-    /* Configuration of CAN Tx port: See file MPC5775B_MPC5775E_System_IO_Definition.xlsx,
-       tab "IO Signal Table", row 663, for port CNTXA. Column B gives us the index of the
-       PCR. Column C gives us as "Source Signal Select" for function CAN Tx of device 0
-       (aka A).
-         SIU->PCR: See RM, 8.2.13 Pad Configuration Register (SIU_PCRn), p. 241ff. */
+    /* Configuration of CAN Tx port: See PM75, tab "IO Signal Table", row 663, for port
+       CNTXA. Column B gives us the index of the PCR. Column C gives us as "Source Signal
+       Select" for function CAN Tx of device 0 (aka A).
+         SIU->PCR: See RM75, 8.2.13 Pad Configuration Register (SIU_PCRn), p. 241ff. */
     const siu_portOutCfg_t outputCfg =
         {
           .idxPortSource_PA = 1u, /* Source signal is FlexCAN A Transmit */
@@ -322,10 +332,9 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
     siu_osConfigureOutput(/* idxPort */ 83 /* CNTXA */, &outputCfg);
     
 
-    /* CAN Rx: See file MPC5775B_MPC5775E_System_IO_Definition.xlsx, tab "Input Muxing",
-       row 33, for port CNRXA. We find multiplexer register no 1, MUXSEL=0, MUXSEL
-       Value=1.
-         See 8.2.67 Input Multiplexing Register1 (SIU_IMUX1), p. 375f, for setting of the
+    /* CAN Rx: See file PM75, tab "Input Muxing", row 33, for port CNRXA. We find
+       multiplexer register no 1, MUXSEL=0, MUXSEL Value=1.
+         See 8.2.67 Input Multiplexing Register1 (SIU_IMUX1), pp.375f, for setting of the
        multiplexer. The register description confirms the right understanding of the Excel
        table. */
 
@@ -378,7 +387,7 @@ static void getBaudRateSettings( unsigned int * const pPRESDIV
                                , unsigned int baudRate
                                )
 {
-    /* Bit-Timing: See RM 43.5.9.7, p. 1823ff and in particular Figure 43-7, p. 1826.
+    /* Bit-Timing: See RM48 43.5.9.7, p. 1823ff and in particular Figure 43-7, p. 1826.
          A CAN bit is splitted into two halfs to set the 1 or 3 sample points somewhere in
        the middle. All units are the "time quantum", which is the "serial clock", the input
        clock diveded by (PRESDIV+1). We choose 5 MHz as serial clock or 200ns as time
@@ -477,7 +486,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     CAN_Type * const pCanDevice = cdr_mapIdxToCanDevice[idxCanDevice].pCanDevice;
     const cdr_canDeviceConfig_t * const pCanDevConfig = &cdr_canDriverConfig[idxCanDevice];
 
-    /* RM 43.6.1, initialization: First, we need to bring the device in disabled mode to
+    /* RM48 43.6.1, initialization: First, we need to bring the device in disabled mode to
        set the clock source. On leaving the disabled mode, the device automatically enters
        the freeze mode, which is a prerequisite for being able to write the majority of
        registers. After configuration of all needed registers, we leave the freeze mode and
@@ -494,7 +503,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     #undef STS_MASK_DISABLED
 
     /* Select the clock input. The device can be clocked either by the peripheral clock or
-       by the external crystal oscillator. The RM (43.5.9.7 Protocol timing, p. 1824)
+       by the external crystal oscillator. The RM48 (43.5.9.7 Protocol timing, p. 1824)
        recommends the crystal clock because of lower jitter. Note, this setting must not be
        changed without adapting dependent settings below; in particular the time quantum
        must not be altered - most other timing parameter refer to it as unit.
@@ -509,7 +518,7 @@ static void initCanDevice(unsigned int idxCanDevice)
         ;
     #undef STS_MASK_FROZEN
 
-    /* RM 43.4.12f and 43.4.21, Interrupt Flags 2/1/3 register (CAN_IFLAG2/1/3): We need to
+    /* RM48 43.4.12f and 43.4.21, Interrupt Flags 2/1/3 register (CAN_IFLAG2/1/3): We need to
        reset all interrupt flags prior to setting the number of mailboxes in use. */
     pCanDevice->IFLAG1 = CAN_IFLAG1_BUF31TO8I_MASK
                          | CAN_IFLAG1_BUF7I_MASK
@@ -555,7 +564,7 @@ static void initCanDevice(unsigned int idxCanDevice)
                       | CAN_MCR_SRXDIS(0)   /* Disable reception of Tx messages in other Rx
                                                mailbox? 0: No, Rx of own Tx is allowed */
                       | CAN_MCR_IRMQ(1)     /* Matching MB vs. FIFO: 1: Most natural
-                                               descisions. See RM, Table 43-22, p. 1798. */
+                                               descisions. See RM48, Table 43-22, p. 1798. */
 #if defined(MCU_MPC5748G)
                       | CAN_MCR_DMA(0)      /* DMA not compatible with FD */
                       | CAN_MCR_PNET_EN(0)  /* Pretended network functionality doesn't
@@ -588,7 +597,7 @@ static void initCanDevice(unsigned int idxCanDevice)
                , PSEG2;
     getBaudRateSettings(&PRESDIV, &PROPSEG, &PSEG1, &PSEG2, pCanDevConfig->baudRate);
 
-    /* RM 43.4.8 Error Counter, p. 1725f, reset all error counters. */
+    /* RM48 43.4.8 Error Counter, p. 1725f, reset all error counters. */
     pCanDevice->ECR = CAN_ECR_RXERRCNT(0)
                       | CAN_ECR_TXERRCNT(0)
 #if defined(MCU_MPC5748G)
@@ -612,14 +621,15 @@ static void initCanDevice(unsigned int idxCanDevice)
                        | CAN_ESR1_WAKINT_MASK
 #endif
                        ;
-    //pCanDevice->ESR2 is a read-only status register. (RM 43.4.15, p. 1742f.)
+    //pCanDevice->ESR2 is a read-only status register. (RM48 43.4.15, p. 1742f.)
 
     unsigned int u;
     
-#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /* Initialize all device RAM by unconditional 32 Bit writes in order to avoid ECC
        errors with uninitialized cells (and arbitrarily set parity bits). See RM75, 37.5.13
        Detection and Correction of Memory Errors, pp.1756ff. */
+    /// @todo Do we need this code for MPC5748G, too? How to make the RAM writable on MPC5748G?
+#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     pCanDevice->CTRL2 = pCanDevice->CTRL2
                         | CAN_CTRL2_WRMFRZ(1); /* Device RAM writable in freeze mode? */
     const uint32_t no32BitWords = CAN_PHYSICAL_RAMn_COUNT;
@@ -648,7 +658,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     const bool enableERRIrq = pCanDevConfig->irqGroupError.irqPrio > 0
              , enableBOffIrq = pCanDevConfig->irqGroupBusOff.irqPrio > 0;
 
-    /* RM 43.5.4, p. 1795ff, and in particular Table 43-22, p. 1798f, provide the best
+    /* RM48 43.5.4, p. 1795ff, and in particular Table 43-22, p. 1798f, provide the best
        explanation of the arbitration bits CTRL1[IRMQ] and CTRL2[MRP]. They control, which
        messages go into individual mailboxes and which go into the shared FIFO. Our
        strategy (IRMQ=1, MRP=1) give priority to the MBs. We can have a number of MBs for
@@ -686,7 +696,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     #undef PSEG1
     #undef PSEG2
 
-    /* RM 43.4.14, Control 2 register, p. 1739. */
+    /* RM48 43.4.14, Control 2 register, p. 1739. */
     pCanDevice->CTRL2 =
 #if defined(MCU_MPC5748G)
                         CAN_CTRL2_ERRMSK_FAST(0)    /* IRQ enable ERRINT */
@@ -705,7 +715,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 #if defined(MCU_MPC5748G)
                         | CAN_CTRL2_TIMER_SRC(0)/* 0: Don't occupy a PID for time stamps. */
                         | CAN_CTRL2_PREXCEN(0)  /* 0: No protocol exception */
-                        | CAN_CTRL2_ISOCANFDEN(1)   /* RM 43.5.9.1, p. 1813: Using ISO CAN
+                        | CAN_CTRL2_ISOCANFDEN(1)   /* RM48 43.5.9.1, p. 1813: Using ISO CAN
                                                        FD is strongly recommended. */
                         | CAN_CTRL2_EDFLTDIS(0) /* 0: Edge filter enabled, as out of reset */
 #endif
@@ -715,22 +725,22 @@ static void initCanDevice(unsigned int idxCanDevice)
     pCanDevice->TIMER = CAN_TIMER_TIMER(0);
 
     /* The global mask registers CAN_RXMGMASK, CAN_RX14MASK and CAN_RX15MASK have no effect
-       because we set MCR[IRMQ] (see above). Each mailbox has its own mask, see RM
+       because we set MCR[IRMQ] (see above). Each mailbox has its own mask, see RM48
        43.4.22, p. 1749f, CAN_RXIMRn. */
 
-    /* RM 43.4.17, CAN_RXFGMASK. The register is the acceptance mask, which selects the
-       do-care bits from some of the individual FIFO acceptance filters. See RM, p. 1740
+    /* RM48 43.4.17, CAN_RXFGMASK. The register is the acceptance mask, which selects the
+       do-care bits from some of the individual FIFO acceptance filters. See RM48, p. 1740
        for a table. For example, with CTRL2[RFFN]=8, we use this global mask for filters
-       24-71, whereas the first filters, 0-23, have individual acceptance masks (RM
+       24-71, whereas the first filters, 0-23, have individual acceptance masks (RM48
        43.4.22, CAN_RXIMRn, n=0..23).
          We use filters with all ID bits (CTRL1[IDAM]=0) and we assert all bits in the mask
        to force a match of the entire ID for messages going into the FIFO. */
     pCanDevice->RXFGMASK = CAN_RXFGMASK_FGM_MASK;
 
-    /* RM, 43.4.22, CAN_RXIMRn (Rx Individual Mask Registers): They are initialized
+    /* RM48, 43.4.22, CAN_RXIMRn (Rx Individual Mask Registers): They are initialized
        together with the mail boxes. Each mail box has its corresponding mask register. */
 
-    /* RM 43.4.19, CAN_CBT. This register would be used if CAN FD is enabled. It provides
+    /* RM48 43.4.19, CAN_CBT. This register would be used if CAN FD is enabled. It provides
        the same timing settings that we have already configured in CAN_CTRL1 (the clock
        divider and the segment lengths) but it spends broader ranges as needed for the CAN
        FD timing. Writing this register would internally overwrite the according settings
@@ -739,7 +749,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 
     /* The interrupts are initially disabled with the exception of the Rx FIFO interrupt.
        The mailbox related interrupts can be decided only later, when actual CAN messages
-       are registered for Tx or Rx. See RM 43.4.11/10/20.
+       are registered for Tx or Rx. See RM48 43.4.11/10/20.
          We enable all FIFO interrupts. */
     pCanDevice->IMASK1 = 0x000000e0; /* Why don't we have specific mask macros here? */
 #if defined(MCU_MPC5748G)
@@ -753,24 +763,24 @@ static void initCanDevice(unsigned int idxCanDevice)
        - CAN wake-up
        - CAN FD */
 
-    /* RM, 43.4.22, p. 1749: We set all mailbox mask registers. Because we have plenty of
+    /* RM48, 43.4.22, p. 1749: We set all mailbox mask registers. Because we have plenty of
        mailboxes no sharing of mailboxes between several CAN IDs will ever be required and
        we set them all to "all CAN ID bits care". This makes using the CAN driver most
        simple. */
     for(u=0; u<CAN_RXIMR_COUNT; ++u)
         pCanDevice->RXIMR[u] = CAN_RXIMR_MI_MASK;
 
-    /* RM, 43.5.8.2, p. 1812: Clear the FIFO. Before we need to clear all related three
-       interrupt flags. IFLAG1: See RM 43.4.13, p. 1736ff. */
+    /* RM48, 43.5.8.2, p. 1812: Clear the FIFO. Before we need to clear all related three
+       interrupt flags. IFLAG1: See RM48 43.4.13, p. 1736ff. */
     pCanDevice->IFLAG1 = CAN_IFLAG1_BUF7I_MASK
                          | CAN_IFLAG1_BUF6I_MASK
                          | CAN_IFLAG1_BUF5I_MASK
                          ;
     pCanDevice->IFLAG1 = CAN_IFLAG1_BUF0I_MASK; /* This initiates the clear. */
 
-    /* Initialize the FIFO filter table. See RM 43.4.43, p. 1785ff, for the binary
+    /* Initialize the FIFO filter table. See RM48 43.4.43, p. 1785ff, for the binary
        structure.
-         See RM 43.4.14, table on p. 1740, for the number of table entries depending on
+         See RM48 43.4.14, table on p. 1740, for the number of table entries depending on
        CTRL2[RFFN]. */
     const unsigned int noFilterTableEntries = cdr_getNoFIFOFilterEntries(pCanDevConfig);
     for(u=0; u<noFilterTableEntries; ++u)
@@ -794,7 +804,7 @@ static void initCanDevice(unsigned int idxCanDevice)
     } /* End for(All FIFO filter table entries) */
 
     /* Reset all normal mailboxes. Caution, this code depends on the FIFO enable and the
-       chosen size of the FIFO filter table, see RM 43.4.14, table on p. 1740. */
+       chosen size of the FIFO filter table, see RM48 43.4.14, table on p. 1740. */
     const unsigned int idxFirstMB = cdr_getIdxOfFirstNormalMailbox(pCanDevConfig);
     volatile cdr_mailbox_t *pMB = cdr_getMailboxByIdx(pCanDevice, idxFirstMB);
     assert(!pCanDevConfig->isFIFOEnabled
@@ -802,7 +812,7 @@ static void initCanDevice(unsigned int idxCanDevice)
           );
     for(u=idxFirstMB; u<CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE; ++u, ++pMB)
     {
-        /* See RM 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
+        /* See RM48 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
            1772ff, for the Rx mailbox status and command CODEs. */
         pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
                       | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
@@ -1116,8 +1126,8 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
         #undef CHECK_GROUP_IRQ
         #undef CHECK_IRQ
 
-        /* Clear a possibly pending interrupt bit (RM 43.4.12/13/21, p. 1735ff) and enable
-           the interrupt for the given mailbox (RM 43.4.11/10/20). */
+        /* Clear a possibly pending interrupt bit (RM48 43.4.12/13/21, p. 1735ff) and enable
+           the interrupt for the given mailbox (RM48 43.4.11/10/20). */
         if(idxMB < 32)
         {
             const uint32_t mask = 1u << idxMB;
@@ -1158,7 +1168,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
                                   : 8   /* 0, INACTIVE, makes it an empty, enable Tx mailbox */
                                   ;
 
-        /* See RM 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
+        /* See RM48 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
            1772ff, for the Rx mailbox status and command CODEs. */
         pMB->csWord = CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
                       | CAN_MBCS_BRS(0) /* Bit rate switch: Only for CAN FD */
@@ -1216,7 +1226,7 @@ static volatile cdr_mailbox_t *osPrepareSendMessage(const cdr_idMailbox_t * cons
         /* The MB is basically free. There's still an important consideration. Sending may
            be done with or without IRQ notification and in either case we need to
            acknowledge the interrupt from the preceeding Tx - otherwise the MB is blocked
-           (RM 43.5.1, p. 1789). If notification is enabled then there are possible race
+           (RM48 43.5.1, p. 1789). If notification is enabled then there are possible race
            conditions: Will the ISR or do we here reset the flag?
              The normal usecase of Tx notifications is virtualization of MBs by buffering:
            The application code interface "sends" the message by putting it in a SW buffer
@@ -1229,7 +1239,7 @@ static volatile cdr_mailbox_t *osPrepareSendMessage(const cdr_idMailbox_t * cons
            doesn't do any harm (if no Tx notification is configured and already negated the
            flag). */
 
-        /* Unconditionally clear a possibly pending interrupt bit (RM 43.4.12/13/21, p.
+        /* Unconditionally clear a possibly pending interrupt bit (RM48 43.4.12/13/21, p.
            1735ff) and thereby unlock the mailbox. */
         if(idxMB < 32)
         {
@@ -1301,7 +1311,7 @@ cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
         assert(DLC <= 8);
         memcpy((void*)&pTxMB->payload[0], payload, DLC);
 
-        /* Changeing the C/S word in the MB initiates the transmission. See RM, Table 43-9, p.
+        /* Changeing the C/S word in the MB initiates the transmission. See RM48, Table 43-9, p.
            1775, for the Tx mailbox status and command CODEs.
              A read-modify-write is required as we must not alter the bit IDE. */
         pTxMB->csWord = csWord | CAN_MBCS_CODE(12); /* CODE doesn't need masking: 8->12 */
@@ -1455,7 +1465,7 @@ cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
         assert(DLC <= 8);
         memcpy((void*)&pTxMB->payload[0], payload, DLC);
 
-        /* Changeing the C/S word in the MB initiates the transmission. See RM, Table 43-9, p.
+        /* Changeing the C/S word in the MB initiates the transmission. See RM48, Table 43-9, p.
            1775, for the Tx mailbox status and command CODEs. */
         pTxMB->csWord =
                 CAN_MBCS_EDL(0)   /* Ext. data length. Should be 0 for non-FD frames. */
@@ -1465,7 +1475,7 @@ cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
                 | CAN_MBCS_SRR(1) /* Needs to be 1 for Tx, doesn't care for Rx */
                 | CAN_MBCS_IDE(isExtId? 1: 0) /* 0: Std CAN ID, 1: ext. 29 Bit CAN ID */
                 | CAN_MBCS_RTR(0) /* Needed for Remote frames, 0 for normal data fr. */
-                | CAN_MBCS_DLC(DLC) /* no FD: n=no bytes, FD: see RM, Table 43-10, p. 1777. */
+                | CAN_MBCS_DLC(DLC) /* no FD: n=no bytes, FD: see RM48, Table 43-10, p. 1777. */
                 | CAN_MBCS_TIME_STAMP(0)  /* Value doesn't care if set on transmission */
                 ;
 
@@ -1525,7 +1535,7 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
     CAN_Type * const pDevice = pIdMB->pDevice;
     const unsigned int idxMB = pIdMB->idxMailbox;
 
-    /* Identify the interrupt bit that belongs to the given mailbox (RM 43.4.12/13/21, p.
+    /* Identify the interrupt bit that belongs to the given mailbox (RM48 43.4.12/13/21, p.
        1735ff). */
     uint32_t irqMask;
     volatile uint32_t *pIFLAG;
@@ -1599,7 +1609,7 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
             /* Acknowledge the IRQ. */
             *pIFLAG = irqMask; /* Clear bit by "w1c" */
 
-            /* RM 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
+            /* RM48 43.4.4, p. 1721f: Read the timer register to unlock the evaluated mailbox
                (side-effect of reading). See 43.5.7.3 Mailbox lock mechanism, p. 1808ff for
                more details. */
             (void)pDevice->TIMER;
@@ -1612,7 +1622,7 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
                                         );
             }
 
-            /* RM 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently
+            /* RM48 43.4.9, p. 1727: The error word CAN_ESR1 is related to the last recently
                received message but the bits are sticky. If the status is read by the CPU
                then they are reset otherwise they are held. So the CPU should read the word
                on each Rx event and relate the bits to the received message.
