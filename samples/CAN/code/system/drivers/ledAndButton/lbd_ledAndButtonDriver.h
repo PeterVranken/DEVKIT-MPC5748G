@@ -204,7 +204,7 @@ typedef int32_t (*lbd_onButtonChangeCallback_t)( uint32_t PID
  */
 static inline void lbd_osSetLED(lbd_led_t led, bool isOn)
 {
-    /* Toggle the LED state. The GPIO pin requires inversion, the LED is cnnected from port
+    /* Set the LED state. The GPIO pin requires inversion, the LED is connected from port
        to Vcc. */
     siu_osSetGPIO(/* idxPort */ (unsigned)led, isOn? false: true);
 
