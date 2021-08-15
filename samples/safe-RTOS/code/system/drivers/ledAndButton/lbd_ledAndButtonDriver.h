@@ -204,11 +204,8 @@ typedef int32_t (*lbd_onButtonChangeCallback_t)( uint32_t PID
  */
 static inline void lbd_osSetLED(lbd_led_t led, bool isOn)
 {
-    /* Toggle the LED state. The GPIO pin requires inversion, the LED is cnnected from port
-       to Vcc.
-         Unfortunately the MCU header only models the 32 Bit access, which involves four
-       port bits at once. We need to recompute the register address so that we can
-       apply a single Byte access. */
+    /* Set the LED state. The GPIO pin requires inversion, the LED is connected from port
+       to Vcc. */
     siu_osSetGPIO(/* idxPort */ (unsigned)led, isOn? false: true);
 
 } /* End of lbd_osSetLED */
