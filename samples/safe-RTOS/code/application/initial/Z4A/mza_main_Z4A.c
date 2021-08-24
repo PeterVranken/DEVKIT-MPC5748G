@@ -424,7 +424,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        the extend required by this simple sample. */
     
     /* Start the system timers for execution time measurement.
-         Caution: On the MPC5748G, this is not an opton but an essential prerequisite for
+         Caution: On the MPC5748G, this is not an option but an essential prerequisite for
        running safe-RTOS. The MPC5748G has a simplified z4 core without the timebase
        feature. The system timer is used as substitute. The driver needs to be started and
        it must be neither changed nor re-configured without carefully double-checking the
