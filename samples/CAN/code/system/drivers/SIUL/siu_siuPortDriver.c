@@ -102,7 +102,7 @@ void siu_osInitPortDriver(void)
     /* Mark all ports as currently unused. */
     unsigned int u;
     for(u=0u; u<sizeOfAry(_portAllocationAry); ++u)
-        _portAllocationAry[0u] = 0u;
+        _portAllocationAry[u] = 0u;
 
 } /* End of siu_osInitPortDriver */
 

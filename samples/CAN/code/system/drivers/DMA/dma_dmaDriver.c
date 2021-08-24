@@ -286,7 +286,7 @@ void dma_osInitDMADriver(void)
     /* Mark all channels as currently unused. */
     unsigned int u;
     for(u=0u; u<sizeOfAry(_dmaChannelAllocationAry); ++u)
-        _dmaChannelAllocationAry[0u] = 0u;
+        _dmaChannelAllocationAry[u] = 0u;
 
 #if defined(MCU_MPC5748G)
     configDMA(DMA);
