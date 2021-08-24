@@ -72,6 +72,7 @@
  * Include files
  */
 
+#include <limits.h>
 #include <assert.h>
 
 #include "dma_dmaDriver.h"
@@ -90,6 +91,10 @@
  * Defines
  */
  
+/** The number of 32 Bit words, which are required to spend one bit for each available
+    DMA channel. */ 
+#define SIZE_OF_CHN_ALLOCATION_ARY ((DMA_INSTANCE_COUNT*DMA_TCD_COUNT+31u)/32u)
+
 
 /*
  * Local type definitions
@@ -121,10 +126,9 @@ _Static_assert( sizeof(dma_dmaTransferCtrlDesc_t) == sizeof(((const DMA_Type*)NU
  
 /** A bit vector with one bit per DMA channel. A set bit means that the channel is
     allocated by some (unknown, unidentified) client code. */
-static uint32_t DATA_OS(_dmaChannelAllocationAry)[(DMA_INSTANCE_COUNT*DMA_TCD_COUNT+31u)/32u] =
-                                                                                  { [0] = 0 };
+static uint32_t DATA_OS(_dmaChannelAllocationAry)[SIZE_OF_CHN_ALLOCATION_ARY] =
+                                        { [0 ... (SIZE_OF_CHN_ALLOCATION_ARY-1u)] = UINT_MAX };
 
- 
 /*
  * Function implementation
  */

@@ -47,6 +47,8 @@
 #include "typ_types.h"
 #include "ccl_configureClocks.h"
 #include "xbs_crossbarSwitch.h"
+#include "sio_serialIO.h"
+#include "dma_dmaDriver.h"
 #include "rtos.h"
 #include "gsl_systemLoad.h"
 #include "lbd_ledAndButtonDriver.h"
@@ -302,13 +304,22 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     rtos_osInitINTCInterruptController();
 
     /* Start the system timers STM for execution time measurement.
-         Caution: On the MPC5748G, this is not an opton but an essential prerequisite for
+         Caution: On the MPC5748G, this is not an option but an essential prerequisite for
        running safe-RTOS. The MPC5748G has a simplified z4 core without the timebase
        feature. The system timer is used as substitute. The driver needs to be started and
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
 
+    /* Initialize the port driver. This should come early; most typical, many other I/O
+       drivers will make use of pins and ports and therefore depend on the the port
+       driver. */
+    siu_osInitPortDriver();
+    
+    /* Initialize the DMA driver. This driver needs to be initialized prior to any other
+       I/O driver, which makes use of a DMA channel. */
+    dma_osInitDMADriver();
+    
     /* Initialize the button and LED driver for the eval board. Shape access to the eight
        user LEDs and two user buttons. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL//onButtonChangeCallback

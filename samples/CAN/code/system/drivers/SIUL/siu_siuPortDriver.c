@@ -49,6 +49,7 @@
  * Include files
  */
 
+#include <limits.h>
 #include <assert.h>
 
 #include "siu_siuPortDriver.h"
@@ -84,7 +85,7 @@
       Note, the availability of the port acquistion and release API to all cores requires
     the use of unchached RAM for the data object. */
 static uint32_t UNCACHED_OS(_portAllocationAry)[SIZE_OF_PORT_ALLOCATION_ARY] =
-                                                {[0 ... (SIZE_OF_PORT_ALLOCATION_ARY-1u)] = 0};
+                                        {[0 ... (SIZE_OF_PORT_ALLOCATION_ARY-1u)] = UINT_MAX};
 
 
 /*
