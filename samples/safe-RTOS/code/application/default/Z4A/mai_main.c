@@ -106,6 +106,7 @@
 #include "xbs_crossbarSwitch.h"
 
 #include "lbd_ledAndButtonDriver.h"
+#include "siu_siuPortDriver.h"
 #include "dma_dmaDriver.h"
 #include "sio_serialIO.h"
 #include "rtos.h"
