@@ -145,7 +145,7 @@ canApiDecl(cluster, info) ::= <<
 /** The enumeration of supported message send patterns. */
 typedef enum <symbol.enumSendMode_t>
 {
-    <first(cluster.busAry).attribDefMap.(attribName.sendMode).enumValAry:{val|<symbol.enumSendMode>_<val.i0>_<val.name> = <val.i0>,<\n>}>
+    <first(cluster.busAry).attribDefMap.(attribName.sendMode).enumValAry:{val|<sendModeCEnumVal.(val.i0)> = <val.i0>,<\n>}>
 } <symbol.enumSendMode_t>;
 
 <typedefStsTransmission()>

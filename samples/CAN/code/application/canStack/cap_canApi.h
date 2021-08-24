@@ -694,12 +694,12 @@ typedef enum cap_enumSendMode_t
     cap_enumSendMode_0_cyclic = 0,
     cap_enumSendMode_1_event = 1,
     cap_enumSendMode_2_cyclicOrEvent = 2,
-    cap_enumSendMode_3_reserved = 3,
-    cap_enumSendMode_4_reserved = 4,
-    cap_enumSendMode_5_reserved = 5,
-    cap_enumSendMode_6_reserved = 6,
-    cap_enumSendMode_7_reserved = 7,
-    cap_enumSendMode_8_noMsgSendType = 8,
+    cap_enumSendMode_3_unsupported = 3,
+    cap_enumSendMode_4_unsupported = 4,
+    cap_enumSendMode_5_unsupported = 5,
+    cap_enumSendMode_6_unsupported = 6,
+    cap_enumSendMode_7_unsupported = 7,
+    cap_enumSendMode_8_unsupported = 8,
 
 } cap_enumSendMode_t;
 

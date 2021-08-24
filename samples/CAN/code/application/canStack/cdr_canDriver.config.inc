@@ -219,7 +219,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         {
             .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
             .irqPrio        = CDR_IRQ_PRIO_CAN_RX,
-            .osCallbackOnRx = &bsw_osCbOnCANRx,
+            .osCallbackOnRx = &bsw_osCbOnCANRx_CAN_0,
             .osCallbackOnTx = NULL,   /* Not applicable, needs to be NULL. */
         },
 

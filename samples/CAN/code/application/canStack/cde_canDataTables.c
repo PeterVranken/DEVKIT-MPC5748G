@@ -36,6 +36,7 @@
 
 #include "typ_types.h"
 #include "cap_canApi.h"
+#include "can_canRuntime.h"
 #include "cde_canStatistics.h"
 #include "cde_canDataTables.h"
 
@@ -66,7 +67,7 @@ const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
 {
     [0] =
         { .name = "StateEcu01"
-        , .idxCanBus = OSE_CAN_BUS_PT
+        , .idxCanBus = CAN_BUS_PT
         , .isExtId = false
         , .canId = 1024
         , .isReceived = true
@@ -81,7 +82,7 @@ const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
         },
     [1] =
         { .name = "StateEcu02"
-        , .idxCanBus = OSE_CAN_BUS_PT
+        , .idxCanBus = CAN_BUS_PT
         , .isExtId = false
         , .canId = 1040
         , .isReceived = true
@@ -96,7 +97,7 @@ const cde_canFrame_t cde_canRxFrameAry[CDE_NO_CAN_FRAMES_RECEIVED] =
         },
     [2] =
         { .name = "UserLimits"
-        , .idxCanBus = OSE_CAN_BUS_PT
+        , .idxCanBus = CAN_BUS_PT
         , .isExtId = false
         , .canId = 2032
         , .isReceived = true
@@ -118,7 +119,7 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
 {
     [0] =
         { .name = "InfoPowerDisplay"
-        , .idxCanBus = OSE_CAN_BUS_PT
+        , .idxCanBus = CAN_BUS_PT
         , .isExtId = false
         , .canId = 1536
         , .isReceived = false
@@ -133,7 +134,7 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
         },
     [1] =
         { .name = "StatusPowerDisplay"
-        , .idxCanBus = OSE_CAN_BUS_PT
+        , .idxCanBus = CAN_BUS_PT
         , .isExtId = false
         , .canId = 1537
         , .isReceived = false
@@ -148,7 +149,7 @@ const cde_canFrame_t cde_canTxFrameAry[CDE_NO_CAN_FRAMES_SENT] =
         },
     [2] =
         { .name = "LimitsPowerDisplay"
-        , .idxCanBus = OSE_CAN_BUS_PT
+        , .idxCanBus = CAN_BUS_PT
         , .isExtId = false
         , .canId = 1538
         , .isReceived = false

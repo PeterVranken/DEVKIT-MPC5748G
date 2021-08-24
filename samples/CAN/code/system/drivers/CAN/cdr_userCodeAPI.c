@@ -94,7 +94,7 @@ static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
  * System call handler for making an assocation of a particluar mailbox with a specific CAN
  * ID.\n
  *   Application dependent initialization of CAN communication: The driver will react only
- * on CAN message, it has agreed on with the application SW. This API is intended for
+ * on CAN messages, it has agreed on with the application SW. This API is intended for
  * making such an agreement. By calling this function, the application requests one
  * particular CAN mailbox in the hardware for a particular message, for either reception or
  * transmission.
@@ -123,14 +123,14 @@ static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
  * The driver has a fixed structure of mailboxes. (A structure, which is modifiable by
  * configuration only to little extend: FIFO on/off, size of FIFO filter table).
  * Consequently, all mailboxes have a fixed index and we use this index as a handle to
- * refer to a particular mailbox. Usually, a driver will deal out a handle. Our driver
+ * refer to a particular mailbox. Usually, a driver will deal out a handle. This driver
  * doesn't do but lets the client code choose the appropriate handle. The reason is that
  * the mailboxes have differing properties, which are known to the client code. By letting
  * it chosse the handle, hence the mailbox, it can decide, which mailbox suits best.
  * Relevant differences between mailboxes are:\n
  *   - The first n mailboxes belong to the Rx FIFO. They can't by used for transmission. n
  * depends on the configuration of the FIFO. The remaining, normal mailboxes are available
- * to Rx or Tx\n
+ * to Rx or Tx.\n
  *   - The normal mailboxes are organized in groups of 4, 16 or 32. Each of these groups
  * can have a different interrupts, depending on the driver configuration. Different
  * interrupts means different priority, processed on different cores and/or using
@@ -151,13 +151,14 @@ static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
  * transmission (\a false).
  *   @param TxDLC
  * The number of bytes of a Tx message in the range 0..8.\n
- *   The value doesn't care for Rx messages and it doesn't even care for Tx messages if
- * the send API cdr_osSendMessageEx() is exclusively used. The simple send API
- * cdr_osSendMessage(), however, will send the messages with this TxDLC. The range is 0..8.
+ *   The value doesn't care for Rx messages and it doesn't even care for Tx messages if the
+ * send API cdr_osSendMessageEx() is exclusively used. The simple send APIs
+ * cdr_osSendMessage() and cdr_sendMessage() for user code, however, will send the messages
+ * with this TxDLC. The range is 0..8.
  *   @param doNotify
  * The Boolean choice whether or not the completion of the mailbox activity will trigger an
  * interrupt. If set to \a true then an Rx mailbox will raise an interrupt if the reception
- * buffer has just been filled with a message from the bus and an Tx mailbox will raise the
+ * buffer has just been filled with a message from the bus and a Tx mailbox will raise the
  * interrupt when it has entirely serialized a message on the bus. By callback invokation,
  * the interrupt handler notifies the client code about the event and provides it the
  * required information (e.g. message payload for Rx mailboxes).\n

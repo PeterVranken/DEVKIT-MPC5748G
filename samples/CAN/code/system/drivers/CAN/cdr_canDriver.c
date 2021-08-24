@@ -2,10 +2,10 @@
  * @file cdr_canDriver.c
  * CAN communication driver for MPC5748G amd MPC5775B/E and safe-RTOS. Pin configuration
  * and a sample configuration is provided for the evaluation board DEVKIT-MPC5748G, so that
- * the driver can beused out of the box with this board.\n
+ * the driver can be used out of the box with this board.\n
  *   This is the main file of the driver implementation. It instantiates the constant
  * configuration data object, initializes the driver according to the configuration
- * settings and offers the global API functions.\n
+ * settings and offers the global API functions.
  *
  * @note References "RM48" (reference manual) in this module refer to "MPC5748G Reference
  * Manual", document number: MPC5748GRM, Rev. 6, 10/2017.
@@ -229,38 +229,57 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
 
 
 
-
-#if CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD == 1  &&  CDR_ENABLE_USE_OF_CAN_0 == 1
-# if defined(MCU_MPC5748G)
+#if CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD == 1
+# if defined(MCU_MPC5748G) && (CDR_ENABLE_USE_OF_CAN_0 == 1  ||  CDR_ENABLE_USE_OF_CAN_2 == 1)
+#  define BOARD_SUPPORT_DEVKIT_MPC5748G
 /**
- * Do the configuration of the MCU pins such that CAN device CAN_0 can communicated through
- * the CAN transceiver, which is mounted on the evaluation board DEVKIT_MPC5748G.\n
+ * Do the configuration of the MCU pins such that either CAN device CAN_0 can communicated
+ * through the CAN transceiver, which is mounted on the evaluation board DEVKIT_MPC5748G or
+ * CAN_2 can communicate with an externally connected transceiver.\n
  *   The code in this function is not generally usable.
+ *   @note
+ * If CAN_2 is configured and even if no external CAN transceiver is connected to its Rx
+ * and Tx lines on the extension connector pins (J2,6) and (J2,8), you can still see the
+ * created output signals if you directly connect the two pins. For arbitration purpose,
+ * the Rx pin must be able to listen to the bus traffic; if it can't the CAN device in the
+ * MCU runs into an error state.
  */
 static void configSIULForUseWithDEVKIT_MPC5748G(void)
 {
     /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 388ff: Route Tx output of
        device CAN_0 to MCU pin PB0, which is connected to the Tx input of the external
        transceiver chip on the board DEVKIT-MPC5748G. */
-    const unsigned int idxSIUL_PB0 = 16
-                     , idxSIUL_PB1 = 17
-                     , idxIMCR_PB1 = 188;
+#if CDR_ENABLE_USE_OF_CAN_0 == 1
+    const unsigned int idxSIUL_PTx = 16u
+                     , idxSIUL_PTx_SSS = 1u
+                     , idxSIUL_PRx = 17u
+                     , idxIMCR_PRx = 188u
+                     , idxIMCR_selVal = 2u;
+#elif CDR_ENABLE_USE_OF_CAN_2 == 1
+    /* Logical CAN signals Tx and Rx are on PE8 and PE9, accessible at (J2,6) and (J2,8),
+       but no CAN transceiver is connected, no true communication with a bus is possible. */
+    const unsigned int idxSIUL_PTx = 72u
+                     , idxSIUL_PTx_SSS = 1u
+                     , idxSIUL_PRx = 73u
+                     , idxIMCR_PRx = 190u
+                     , idxIMCR_selVal = 1u;
+#endif
 
     /* Configuration of Tx port. */
     const siu_portOutCfg_t outputCfg =
         {
-          .idxPortSource_SSS = 1u, /* Source signal is CAN0_TX */
+          .idxPortSource_SSS = idxSIUL_PTx_SSS, /* Source signal is CAN0_TX */
           .enableReadBack = false,
           .enableOpenDrain_ODE = false, /* Disable open drain, drive both edges */
           .maxSlewRate_SRC = 3u, /* Slew rate: Full drive without SR control */
         };
 
     /* Acquire Tx port for exclusive use with this driver. */
-    bool gotIt ATTRIB_DBG_ONLY = siu_osAcquirePort(idxSIUL_PB0);
+    bool gotIt ATTRIB_DBG_ONLY = siu_osAcquirePort(idxSIUL_PTx);
     assert(gotIt);
 
     /* Configure Tx port. */
-    siu_osConfigureOutput(idxSIUL_PB0, &outputCfg);
+    siu_osConfigureOutput(idxSIUL_PTx, &outputCfg);
 
 
     /* The Rx output of external transceiver chip is connected to pin PB1 of the MCU.
@@ -268,21 +287,24 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
     const siu_portInCfg_t inputCfg =
         { .enableHysteresis_HYS = true,
           .pullUpDownCfg = siu_pullRes_none,
-          .idxMultiplexerRegister = idxIMCR_PB1,    /* Connect CAN0_RX with ... */
-          .idxInputSource_MUXSELVALUE = 2u,         /* ... IO_PAD PB1 */
+          .idxMultiplexerRegister = idxIMCR_PRx,    /* Connect CAN0_RX with ... */
+          .idxInputSource_MUXSELVALUE = idxIMCR_selVal, /* ... IO_PAD */
         };
 
     /* Acquire Rx port for exclusive use with this driver. */
-    gotIt = siu_osAcquirePort(idxSIUL_PB1);
+    gotIt = siu_osAcquirePort(idxSIUL_PRx);
     assert(gotIt);
 
     /* Configure Rx port. */
-    siu_osConfigureInput(idxSIUL_PB1, &inputCfg);
+    siu_osConfigureInput(idxSIUL_PRx, &inputCfg);
 
 } /* End of configSIULForUseWithDEVKIT_MPC5748G */
+# endif /* Which MCU derivative and CAN device */
 
-# else
 
+
+# if (defined(MCU_MPC5775B) || defined(MCU_MPC5775E)) &&  CDR_ENABLE_USE_OF_CAN_0 == 1
+#  define BOARD_SUPPORT_MPC5775BE_416DS
 /**
  * Do the configuration of the MCU pins such that CAN device CAN_0 can communicated through
  * the CAN transceiver, which is mounted on the evaluation board MPC5775BE_416DS.\n
@@ -364,8 +386,8 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
     siu_osConfigureInput(/* idxPort */ 84 /* CNRXA */, &inputCfg);
 
 } /* End of configSIUForUseWithMPC5775BE_416DS */
+# endif /* Which MCU derivative and CAN device */
 
-# endif /* Which MCU derivative */
 #endif /* CDR_ENABLE_USE_OF_CAN_0 == 1 */
 
 
@@ -889,14 +911,10 @@ void cdr_osInitCanDriver(void)
     for(idxCanDev=0; idxCanDev<(unsigned)cdr_canDev_noCANDevicesEnabled; ++idxCanDev)
         initCanDevice(idxCanDev);
 
-#if CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD == 1  &&  CDR_ENABLE_USE_OF_CAN_0 == 1
-    /* Configure the MCU pins so that the external circuitry is connected to the MCU
-       internal CAN device we've just configured. */
-# if defined(MCU_MPC5748G)
+#if defined( BOARD_SUPPORT_DEVKIT_MPC5748G)
     configSIULForUseWithDEVKIT_MPC5748G();
-# else
+#elif defined(BOARD_SUPPORT_MPC5775BE_416DS)
     configSIUForUseWithMPC5775BE_416DS();
-# endif
 #endif
 } /* End of cdr_osInitCanDriver */
 

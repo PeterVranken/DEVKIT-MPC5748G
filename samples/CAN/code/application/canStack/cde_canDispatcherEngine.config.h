@@ -162,7 +162,7 @@ typedef unsigned int cde_atomicUnsignedInt_t;
     cde_getOsHandleFrame(), is not always required and can be switched off at compile time.
     This will safe \a sizeof(cde_osHandleFrame_t) Byte per registered frame.\n
       The define is set to either 1 or 0. */
-#define CDE_ENABLE_API_GET_OS_HANDLE_FRAME      0
+#define CDE_ENABLE_API_GET_OS_HANDLE_FRAME      1
 
 /** Tailoring of the API: The query function for the transmission direction, \a
     cde_isInboundTransmission, is not always required and can be switched off at compile

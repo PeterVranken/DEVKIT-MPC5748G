@@ -71,73 +71,12 @@ dataTables_h(cluster,info) ::= <<
 
 #include "<file.baseTypes_h>"
 #include "<file.canApi_h>"
+#include "can_canRuntime.h"
 #include "cde_canStatistics.h"
 
 >>
 
 @modH.defines() ::= <<
-/** Both, operating system and CAN interface use their handles for identification of a
-    frame. The operating system uses separate handles for in- and outbound, while the CAN
-    interface enginge has one solid handle space for all frames. This requires a mapping of
-    the OS handle to the CAN interface handle.\n
-      Here is the mapping for the inbound frames. */
-#define CDE_MAP_HANDLE_RX_FRAME_OS_TO_CAN_IF(hOS)                                           \
-            (assert((hOS) \< (CDE_NO_CAN_FRAMES_RECEIVED)+(BSW_IDX_FIRST_RX_MAILBOX)),       \
-             (hOS)-(BSW_IDX_FIRST_RX_MAILBOX)                                               \
-            )
-
-/** Both, operating system and CAN interface use their handles for identification of a
-    frame. The operating system uses separate handles for in- and outbound, while the CAN
-    interface enginge has one solid handle space for all frames. This requires a mapping of
-    CAN interface handle to OS handle.\n
-      Here is the mapping for the inbound frames. */
-#define CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_OS(hIF)                                           \
-            (assert((hIF)+(BSW_IDX_FIRST_RX_MAILBOX) \<= (BSW_IDX_LAST_RX_MAILBOX)),         \
-             (hIF)+(BSW_IDX_FIRST_RX_MAILBOX)                                               \
-            )
-
-/** Our data tables with frame decriptions are separated in Rx and Tx frames. The interface
-    engine has one solid handle space for all frames. This macro computes the array index of
-    a received frame from the handle used by the engine. The index relates to array \a
-    cde_canRxFrameAry. */
-#define CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde)                                  \
-            (assert((idxFrCde) \< sizeOfAry(cde_canRxFrameAry)),(idxFrCde))
-
-/** Both, operating system and CAN interface use their handles for identification of a
-    frame. The operating system uses separate handles for in- and outbound, while the CAN
-    interface enginge has one solid handle space for all frames. This requires a mapping of
-    the OS handle to the CAN interface handle.\n
-      Here is the mapping for the outbound frames. */
-#define CDE_MAP_HANDLE_TX_FRAME_OS_TO_CAN_IF(hOS)                                           \
-            (assert((hOS) >= (BSW_IDX_FIRST_TX_MAILBOX)                                     \
-                    &&  (hOS)-(BSW_IDX_FIRST_TX_MAILBOX)+(CDE_NO_CAN_FRAMES_RECEIVED)       \
-                        \< (CDE_NO_CAN_FRAMES)                                               \
-                   ),                                                                       \
-             (hOS)-(BSW_IDX_FIRST_TX_MAILBOX)+(CDE_NO_CAN_FRAMES_RECEIVED)                  \
-            )
-
-/** Both, operating system and CAN interface use their handles for identification of a
-    frame. The operating system uses separate handles for in- and outbound, while the CAN
-    interface enginge has one solid handle space for all frames. This requires a mapping of
-    CAN interface handle to OS handle.\n
-      Here is the mapping for the outbound frames. */
-#define CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_OS(hIF)                                           \
-            (assert((hIF) >= (CDE_NO_CAN_FRAMES_RECEIVED)                                   \
-                    &&  (hIF)+(BSW_IDX_FIRST_TX_MAILBOX)                                    \
-                        \<= (BSW_IDX_LAST_TX_MAILBOX)+(CDE_NO_CAN_FRAMES_RECEIVED)           \
-                   ),                                                                       \
-             (hIF)-(CDE_NO_CAN_FRAMES_RECEIVED)+(BSW_IDX_FIRST_TX_MAILBOX)                  \
-            )
-
-/** Our data tables with frame decriptions are separated in Rx and Tx frames. The interface
-    engine has one solid handle space for all frames. This macro computes the array index of
-    a sent frame from the handle used by the engine. The index relates to array \a
-    cde_canTxFrameAry. */
-#define CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde)                                  \
-            (assert((idxFrCde)-(CDE_NO_CAN_FRAMES_RECEIVED) \< sizeOfAry(cde_canTxFrameAry)),\
-             (idxFrCde)-(CDE_NO_CAN_FRAMES_RECEIVED)                                        \
-            )
-
 >>
 
 @modC.defines() ::= <<

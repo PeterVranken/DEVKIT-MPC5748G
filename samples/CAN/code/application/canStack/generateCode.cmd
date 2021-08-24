@@ -13,6 +13,9 @@ call codeGenerator ^
   --template-wrap-column 70 ^
   --bus-name PT ^
     -dbc dbcFiles/sampleCanBus.dbc ^
+  --output-file-name cap_precoCheck.h ^
+    --template-file-name cap_precoCheck.h.stg ^
+    --template-name precoCheck ^
   --output-file-name cde_canStatistics.h ^
     --template-file-name cde_canStatistics.h.stg ^
     --template-name canStatistics_h ^
@@ -22,9 +25,6 @@ call codeGenerator ^
   --output-file-name cde_canDataTables.h ^
     --template-file-name cde_canDataTables.c.stg ^
     --template-name dataTables_h ^
-  --output-file-name cap_precoCheck.h ^
-    --template-file-name cap_precoCheck.h.stg ^
-    --template-name precoCheck ^
   --output-file-name cap_canApi.h ^
     --template-file-name cap_canApi.c.stg ^
     --template-name canApiDecl ^

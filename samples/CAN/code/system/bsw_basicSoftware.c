@@ -7,7 +7,7 @@
  * supervisor mode and has the highest quality assurance level defined for the parts of the
  * aimed software.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -23,12 +23,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   bsw_osCbOnCANRx
+ *   bsw_osCbOnCANRx_CAN_0
+ *   bsw_osCbOnCANRx_CAN_1
+ *   bsw_osCbOnCANRx_CAN_2
+ *   bsw_osCbOnCANRx_CAN_3
+ *   main
+ *   startSecondaryCore
+ *   main
  * Local functions
  */
 
 /*
  * Include files
  */
+
+#include "bsw_basicSoftware.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -43,12 +53,37 @@
 #include "sio_serialIO.h"
 #include "stm_systemTimer.h"
 #include "cdr_canDriverAPI.h"
-#include "bsw_basicSoftware.h"
 
 
 /*
  * Defines
  */
+
+/* Check consistency of exported CAN bus enumeration with actual enumeration used in the
+   CAN driver. */
+_Static_assert( true
+#if CDR_ENABLE_USE_OF_CAN_0 == 1
+                &&  BSW_CAN_BUS_0 == cdr_canDev_CAN_0
+#elif defined(BSW_CAN_BUS_0)
+# error Inconsistency between API and implementation
+#endif
+#if CDR_ENABLE_USE_OF_CAN_3 == 1
+                &&  BSW_CAN_BUS_1 == cdr_canDev_CAN_1
+#elif defined(BSW_CAN_BUS_1)
+# error Inconsistency between API and implementation
+#endif
+#if CDR_ENABLE_USE_OF_CAN_2 == 1
+                &&  BSW_CAN_BUS_2 == cdr_canDev_CAN_2
+#elif defined(BSW_CAN_BUS_2)
+# error Inconsistency between API and implementation
+#endif
+#if CDR_ENABLE_USE_OF_CAN_1 == 1
+                &&  BSW_CAN_BUS_3 == cdr_canDev_CAN_3
+#elif defined(BSW_CAN_BUS_3)
+# error Inconsistency between API and implementation
+#endif
+              , "Inconsistency between API and implementation"
+              );
 
 
 /*
@@ -118,11 +153,65 @@ unsigned int UNCACHED_OS(bsw_cpuLoad) = 1000;
  */
 
 /**
- * This is the CAN RX FIFO callback from the CAN driver. It receives the Rx data and
- * forwards it to the application code in user process \a bsw_pidUser.
+ * This is the common portion of code for all CAN devices of the CAN RX FIFO callbacks from
+ * the CAN driver. It receives the Rx data and forwards it to the application code in user
+ * process \a bsw_pidUser.
+ *   @param idxCanBus
+ * The zeror based index of the receiving bus among all configured buses.
  *   @param hMB
- * The handle of the message as agreed on at messge registration time is returned to support
- * a simple association of the Tx event with the transmitted data content.
+ * The handle of the message as agreed on at message registration time is returned to
+ * support a simple association of the Rx event with the transmitted data content.
+ *   @param sizeOfPayload
+ * The number of received content bytes. This number of bytes may be read via \a payload.
+ *   @param payload
+ * The received payload by reference.
+ *   @remark
+ * This function is called from one of the CAN device's interrupt contexts. The IRQ
+ * priority is #CDR_IRQ_PRIO_CAN_RX for all (non polled) RX messages. It is executed
+ * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
+ * if two of them shouldn't have the same interrupt priority.
+ */
+static void cbOnCANRx( unsigned int idxCanBus
+                     , unsigned int hMB
+                     , unsigned int sizeOfPayload
+                     , const uint8_t payload[8]
+                     )
+{
+    /* The callback into a user process can take only a single (pojnter) argument. We need
+       to pack all information into a struct so that we can provide its address to the user
+       code. This pointer operation is uncritical with respect to our safety concept since
+       the user code only needs read access. We can simply put the stuct here on our
+       stack. */
+    assert(hMB >= BSW_IDX_FIRST_RX_MAILBOX  &&  hMB <= BSW_IDX_LAST_RX_MAILBOX);
+    const bsw_rxCanMessage_t rxCanMessage = { .idxCanBus = idxCanBus
+                                            , .idxMailbox = hMB
+                                            , .payload = payload
+                                            , .sizeOfPayload = sizeOfPayload
+                                            };
+
+    /* Propagate the information into the user code in a way, which cannot violate the
+       execution of the OS code. We catch all exceptions and we limit the execution time to
+       avoid deadlocks. The time budget needs to consider preemptions b interrupts of
+       higher priority and should not be too narrow. */
+    static const rtos_taskDesc_t RODATA(userTaskConfig) =
+                                            { .addrTaskFct = (uintptr_t)bsw_onRxCan
+                                            , .tiTaskMax = RTOS_TI_US2TICKS(200u /* us */)
+                                            , .PID = bsw_pidUser
+                                            };
+    rtos_osRunTask(&userTaskConfig, /* taskParam */ (uintptr_t)&rxCanMessage);
+
+} /* End of cbOnCANRx */
+
+
+
+
+/**
+ * This is the callback from the CAN driver of the CAN RX FIFO of a single CAN device. It
+ * receives the Rx data and forwards it to the common part of all the callbacks,
+ * cbOnCANRx().
+ *   @param hMB
+ * The handle of the message as agreed on at message registration time is returned to
+ * support a simple association of the Rx event with the transmitted data content.
  *   @param isExtId
  * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
  * additional Boolean information, which of the two the ID \a canId belongs to.
@@ -143,37 +232,32 @@ unsigned int UNCACHED_OS(bsw_cpuLoad) = 1000;
  * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
  * if two of them shouldn't have the same interrupt priority.
  */
-void bsw_osCbOnCANRx( unsigned int hMB
-                    , bool isExtId ATTRIB_UNUSED
-                    , unsigned int canId ATTRIB_UNUSED
-                    , unsigned int sizeOfPayload
-                    , const uint8_t payload[8]
-                    , unsigned int timeStamp ATTRIB_UNUSED
-                    )
-{
-    /* The callback into a user process can take only a single (pojnter) argument. We need
-       to pack all information into a struct so that we can provide its address to the user
-       code. This pointer operation is uncritical with respect to our safety concept since
-       the user code only needs read access. We can simply put the stuct here on our
-       stack. */
-    assert(hMB >= BSW_IDX_FIRST_RX_MAILBOX  &&  hMB <= BSW_IDX_LAST_RX_MAILBOX);
-    const bsw_rxCanMessage_t rxCanMessage = { .idxMailbox = hMB
-                                            , .payload = payload
-                                            , .sizeOfPayload = sizeOfPayload
-                                            };
-                                            
-    /* Propagate the information into the user code in a way, which cannot violate the
-       execution of the OS code. We catch all exceptions and we limit the execution time to
-       avoid deadlocks. The time budget needs to consider preemptions b interrupts of
-       higher priority and should not be too narrow. */
-    static const rtos_taskDesc_t RODATA(userTaskConfig) =
-                                            { .addrTaskFct = (uintptr_t)bsw_onRxCan
-                                            , .tiTaskMax = RTOS_TI_US2TICKS(200u /* us */)
-                                            , .PID = bsw_pidUser
-                                            };
-    rtos_osRunTask(&userTaskConfig, /* taskParam */ (uintptr_t)&rxCanMessage);
+#define bsw_osCbOnCANRxCanN(dev)                                        \
+void bsw_osCbOnCANRx_##dev( unsigned int hMB                            \
+                          , bool isExtId ATTRIB_UNUSED                  \
+                          , unsigned int canId ATTRIB_UNUSED            \
+                          , unsigned int sizeOfPayload                  \
+                          , const uint8_t payload[8]                    \
+                          , unsigned int timeStamp ATTRIB_UNUSED        \
+                          )                                             \
+{                                                                       \
+    cbOnCANRx(cdr_canDev_##dev, hMB, sizeOfPayload, payload);           \
+}
 
-} /* End of bsw_cbOnCANRx */
+#if CDR_ENABLE_USE_OF_CAN_0 == 1
+bsw_osCbOnCANRxCanN(CAN_0)
+#endif
+#if CDR_ENABLE_USE_OF_CAN_1 == 1
+bsw_osCbOnCANRxCanN(CAN_1)
+#endif
+#if CDR_ENABLE_USE_OF_CAN_2 == 1
+bsw_osCbOnCANRxCanN(CAN_2)
+#endif
+#if CDR_ENABLE_USE_OF_CAN_3 == 1
+bsw_osCbOnCANRxCanN(CAN_3)
+#endif
+#undef bsw_osCbOnCANRxCanN
+
 
 
 

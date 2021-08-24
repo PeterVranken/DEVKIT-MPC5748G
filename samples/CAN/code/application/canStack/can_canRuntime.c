@@ -52,6 +52,8 @@
  * Include files
  */
 
+#include "can_canRuntime.h"
+
 #include <assert.h>
 
 #include "typ_types.h"
@@ -62,7 +64,7 @@
 #include "cde_canStatistics.h"
 #include "cde_canDataTables.h"
 #include "cmd_canCommand.h"
-#include "can_canRuntime.h"
+#include "chm_canHandleMap.h"
 
 
 /*
@@ -76,13 +78,30 @@
     measurement is done only with the resolution of the tick of the CAN interface engine. */
 #define TIMEOUT(tiCycle) (assert((int)(3*(tiCycle)+1)>0),((signed int)(3*(tiCycle)+1)))
 
+/** Our data tables with frame decriptions are separated in Rx and Tx frames. The interface
+    engine has one solid handle space for all frames. This macro computes the array index of
+    a received frame from the handle used by the engine. The returned index relates to array
+    \a cde_canRxFrameAry. */
+#define MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde)                                      \
+            (assert((idxFrCde) < sizeOfAry(cde_canRxFrameAry)),(idxFrCde))
+
+/** Our data tables with frame decriptions are separated in Rx and Tx frames. The interface
+    engine has one solid handle space for all frames. This macro computes the array index of
+    a sent frame from the handle used by the engine. The returned index relates to array \a
+    cde_canTxFrameAry. */
+#define MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde)                                      \
+            (assert((idxFrCde)-(CDE_NO_CAN_FRAMES_RECEIVED) < sizeOfAry(cde_canTxFrameAry)),\
+             (idxFrCde)-(CDE_NO_CAN_FRAMES_RECEIVED)                                        \
+            )
+
+
 /* Check the number of processed messages against the HW constraints. Note, the condition
    is necessary but not sufficient; a bad distrubution of messages between user and safety
    process cann still foil successful initialization of the CAN stack. */
-_Static_assert( CDE_NO_CAN_FRAMES_RECEIVED
+_Static_assert( CDE_NO_CAN_FRAMES_RECEIVED_PT
                 <= (BSW_IDX_LAST_RX_MAILBOX-BSW_IDX_FIRST_RX_MAILBOX+1)
                    + (BSW_IDX_LAST_RX_MAILBOX_SAFETY-BSW_IDX_FIRST_RX_MAILBOX_SAFETY+1u)
-                &&  CDE_NO_CAN_FRAMES_SENT
+                &&  CDE_NO_CAN_FRAMES_SENT_PT
                     <= (BSW_IDX_LAST_TX_MAILBOX-BSW_IDX_FIRST_TX_MAILBOX+1)
                        + (BSW_IDX_LAST_TX_MAILBOX_SAFETY-BSW_IDX_FIRST_TX_MAILBOX_SAFETY+1u)
               , "The number of processed messages exceeds the given hardware capabilities"
@@ -165,7 +184,7 @@ static void onFrameReception(const cde_callbackContext_t *pContext)
     /* Get the CDE index of the frame, which is the index into the CDE data tables at the
        same time. This has been ensured by the frame registration process. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
-                     , idxRxFr = CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
+                     , idxRxFr = MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
     const cde_canFrame_t *const pFrDescCde = &cde_canRxFrameAry[idxRxFr];
 
     /* Test: Do some consistency tests. */
@@ -233,9 +252,9 @@ static void onFrameReception(const cde_callbackContext_t *pContext)
            CAN API has not been updated with new signal values and no reception event must
            be notified. */
         ++ pFrDescCde->pInfoTransmission->noTransmittedFrames;
-        
+
         /* This application makes use of a callback in order to be notified about any
-           successful reception event. */ 
+           successful reception event. */
         cmd_onReceiveMessage(idxRxFr);
     }
     else
@@ -268,7 +287,7 @@ static void onFrameInTimeout(const cde_callbackContext_t *pContext)
     /* Get the CDE index of the frame, which is the index into the CDE data tables at the
        same time. This has been ensured by the frame registration process. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
-                     , idxRxFr = CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
+                     , idxRxFr = MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
     const cde_canFrame_t *const pFrDescCde = &cde_canRxFrameAry[idxRxFr];
 
     /* Test: Do some consistency tests. */
@@ -310,7 +329,7 @@ static void onInitReceivedFrames(const cde_callbackContext_t *pContext)
     /* Get the CDE index of the frame, which is the index into the CDE data tables at the
        same time. This has been ensured by the frame registration process. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
-                     , idxRxFr = CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
+                     , idxRxFr = MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
     const cde_canFrame_t *const pFrDescCde = &cde_canRxFrameAry[idxRxFr];
     assert(pFrDescCde->pInfoTransmission->stsTransmission == cap_stsTransm_neverReceived);
 
@@ -355,12 +374,14 @@ static void onInitReceivedFrames(const cde_callbackContext_t *pContext)
  * Common code for sending frames of different transmission modes: E2E protect the data
  * found in the global CAN API of a given frame and submit this frame at the operating
  * system for sending.
- *   @param idxFrCde
- * The frame to process is identified by its index in the CAN interface engine.
+ *   @param pContext
+ * The dispatcher context, which the callback is invoked in, which makes use of this
+ * function.
  */
-static void protectAndSendFrame(const unsigned int idxFrCde)
+static void protectAndSendFrame(const cde_callbackContext_t * const pContext)
 {
-    const unsigned int idxTxFr = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
+    const unsigned int idxFrCde = cde_getIdxFrame(pContext);
+    const unsigned int idxTxFr = MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
     const cde_canFrame_t *pFrDescCde = &cde_canTxFrameAry[idxTxFr];
     assert(!pFrDescCde->isReceived);
 
@@ -380,8 +401,8 @@ static void protectAndSendFrame(const unsigned int idxFrCde)
        is a simple and efficient decision, which has been taken in the call of the
        registration method. */
     assert(pFrDescCde->pInfoTransmission != NULL);
-    if(cdr_sendMessage( /* idxCanDevice */ OSE_CAN_BUS_PT
-                      , CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_OS(idxFrCde)
+    if(cdr_sendMessage( pFrDescCde->idxCanBus
+                      , cde_getOsHandleFrame(pContext)
                       , &frameContent[0]
                       )
        == cdr_errApi_noError
@@ -429,7 +450,7 @@ static void onSendRegularFrame(const cde_callbackContext_t *pContext)
 
     /* Sending a regular frame is an unconditional, straight forward operation each time
        the callback fires. */
-    protectAndSendFrame(cde_getIdxFrame(pContext));
+    protectAndSendFrame(pContext);
 
 } /* End of onSendRegularFrame */
 
@@ -453,7 +474,7 @@ static void onDueCheckEventFrame(const cde_callbackContext_t *pContext)
        is a simple and efficient decision, which has been taken in the call of the
        registration method. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
-                     , idxTxFr = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
+                     , idxTxFr = MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
     const cde_canFrame_t * const pFrDescCde = &cde_canTxFrameAry[idxTxFr];
 
     signed int tiNewFromNow;
@@ -463,7 +484,7 @@ static void onDueCheckEventFrame(const cde_callbackContext_t *pContext)
         /* APSW has signaled an event, acknowledge by resetting the flag and send the
            frame. */
         pFrDescCde->pInfoTransmission->isEvent = false;
-        protectAndSendFrame(idxFrCde);
+        protectAndSendFrame(pContext);
 
         /* The time when the timer should fire the next time depends. We had an event in
            this tick, so we need to regard the minimum distance. */
@@ -500,7 +521,7 @@ static void onDueCheckMixedFrame(const cde_callbackContext_t *pContext)
        is a simple and efficient decision, which has been taken in the call of the
        registration method. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
-                     , idxTxFr = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
+                     , idxTxFr = MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
     const cde_canFrame_t * const pFrDescCde = &cde_canTxFrameAry[idxTxFr];
 
     /* Double-check that this callback is called from an expected context. */
@@ -526,7 +547,7 @@ static void onDueCheckMixedFrame(const cde_callbackContext_t *pContext)
            frame. If it is a timeout, we can still reset the flag, there are no race
            conditions. */
         pFrDescCde->pInfoTransmission->isEvent = false;
-        protectAndSendFrame(idxFrCde);
+        protectAndSendFrame(pContext);
 
         /* The time when the due check should be done again depends. We had a sent event in
            this tick, so we need to regard the minimum distance.
@@ -572,7 +593,7 @@ static void onInitSendFrames(const cde_callbackContext_t *pContext)
     /* This callback is shared between all outbound frames. Get access to the specification
        entry of the currently processed frame. */
     const unsigned int idxFrCde = cde_getIdxFrame(pContext)
-                     , idxTxFr = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
+                     , idxTxFr = MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
     const cde_canFrame_t * const pFrDescCde = &cde_canTxFrameAry[idxTxFr];
 
     switch(pFrDescCde->sendMode)
@@ -694,18 +715,11 @@ int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
     /* Note, this is a callback from the operating system and not a dispatcher callback.
        The CDE API is not available here to access frame properties. */
 
-    /* The OS reports the received frame with its own handle. The postEvent method can do
-       the mapping from this handle (and maybe the CAN bus selection) to the frame index of
-       the the dispatcher engine implementation. In this sample is the mapping of the
-       handles made explicitly visible outside the CAN interface methods. */
-    const unsigned int idxFrameCde =
-                        CDE_MAP_HANDLE_RX_FRAME_OS_TO_CAN_IF(pRxCanMsg->idxMailbox);
-
     /* Having the CAN interface handle of the received frame, we can post a frame-received
-       event to the dispatcher. If no internal mapping is configured then the bus index
-       specified here doesn't care and the parameter osHandle is taken as CDE index. */
-    boolean_t success = cde_postFrameEvent( /* idxBus */ UINT_MAX
-                                          , /* osHandle */ idxFrameCde
+       event to the dispatcher. In this sample, we apply the internal mapping, which maps
+       bus and mailbox index onto the frame index used in the CAN engine. */
+    boolean_t success = cde_postFrameEvent( pRxCanMsg->idxCanBus
+                                          , /* osHandle */ pRxCanMsg->idxMailbox
                                           , /* kindOfEvent */ CDE_EV_FRAME_RECEPTION
                                           , /* pData */ pRxCanMsg->payload
                                           , /* sizeOfData */ pRxCanMsg->sizeOfPayload
@@ -732,7 +746,7 @@ int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
 /**
  * Initialization of the CAN interface.
  *   @return
- * Get \a true if evrythimg is alright, or \a false otherwise. \a false will mostly point
+ * Get \a true if everythimg is alright, or \a false otherwise. \a false will mostly point
  * to a lack of memory for the given number of messages and signals. Memory is allocated in
  * a static way and in this case the code needs recompilation with more memory; see
  * #CAN_SIZE_OF_HEAP_FOR_CAN_INTERFACE for details.\n
@@ -754,10 +768,25 @@ bool can_initCanStack(void)
                   , /* sizeOfAppMemory */ sizeof(heapMemoryForCanInterface)
                   );
 
+    /* Initialize the CAN interface engine. */
     success = cde_initModule( /* maxNoBuses */  1
                             , /* maxNoFrames */ CDE_NO_CAN_FRAMES
                             , /* noDispatchers */ 1
                             );
+
+    /* We use a piecewise linear mapping from OS frame handles onto the zero based index,
+       which the CAN interface engine uses as frame handle. */
+    const cde_mapOsHandleFrameToCdeIndex_t mapOsHandleFrameToCdeIndex =
+    { .fctMakeMapEntryOsHandleFrameToCdeIndex = chm_makeMapEntryOsHandleFrameToCdeIndex,
+      .fctMapOsHandleFrameToCdeIndex = chm_mapOsHandleFrameToCdeIndex,
+    };
+    cde_installMapOsHandleFrameToCdeIndex(mapOsHandleFrameToCdeIndex);
+
+    /* Our particular map implementation requires that the caller provides workspace memory
+       for the map buildup. The provides memory needs to be accessible during the entire
+       frame registration process. */
+    chm_workDataset_t workDataset;
+    chm_allocateWorkspaceForMapBuildup(/* pProvidedMemory */ workDataset);
 
     /* Initialize the global data of this module. */
     unsigned int u;
@@ -786,23 +815,47 @@ bool can_initCanStack(void)
                                       );
     }
 
-    /* Register all frames at the dispatcher engine. The CAN driver for the MPC5748G uses
-       different ranges in the index space of its mailboxes for Rx and Tx. Therefore it
-       offers two linear index spaces for Rx and Tx with a fixed offset in between. The
-       mapping between the index spaces of CAN driver and CAN interface engine is most easy
-       if we register our Rx and Tx messages in two blocks. */
-       
-
-    unsigned int idxFrCde;
-    for(idxFrCde=0; success && idxFrCde<CDE_NO_CAN_FRAMES_RECEIVED; ++idxFrCde)
+    /* Handle mapping: The CAN interface engines deals out its handles as sequence 0, 1, 2,
+       ..., regardless which bus the registered message belongs to or wther it is Rx or Tx.
+       The CAN driver for the MPC5748G uses mailboxes with index and the user may
+       register a message with any mailbox in the range in any order. Rx and Tx have two
+       disjunct index ranges.
+         We get a simple piecewise linear handle mapping with desired complexity of O(1) if
+       we register the messages Rx before Tx and both groups with increasing mailbox index
+       at the CAN driver. Moreover, all CAN buses use the same index ranges for their
+       individual mailboxes, so we need to do this repeatedly for all buses one after
+       another.
+         Note, we we do not stick to this (or an equivalent) order then the implementation
+       of the map will report an error and CAN communication won't be able to process all
+       messages. */
+    unsigned int idxBusLast, hOsFrame, idxFrCde, idxRxFr;
+    
+    idxFrCde = 0;
+    idxBusLast = UINT_MAX;
+    hOsFrame = UINT_MAX;
+    for(idxRxFr=0; success && idxRxFr<CDE_NO_CAN_FRAMES_RECEIVED; ++idxRxFr)
     {
-        const unsigned int hOsFrame = CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_OS(idxFrCde)
-                         , idxRxFr = CDE_MAP_HANDLE_RX_FRAME_CAN_IF_TO_IDX_RX(idxFrCde);
         const cde_canFrame_t *const pFrDescCde = &cde_canRxFrameAry[idxRxFr];
 
+        /* Processing bus after bus is simplified by the fact that the CAN datatables are
+           generally ordered in this way. We just look for the change of bus index in the
+           sequence. */
+        if(pFrDescCde->idxCanBus == idxBusLast)
+        {
+            /* Same CAN bus as before, address to next available mailbox. */
+            ++ hOsFrame;
+        }
+        else
+        {
+            /* The messages from the next bus begin. We switch to the next instance of the
+               CAN driver and need to count the mailboxes again from the beginning. */
+            hOsFrame = BSW_IDX_FIRST_RX_MAILBOX;
+        }
+        idxBusLast = pFrDescCde->idxCanBus;
+
         /// @todo The BSW should wrap this API from the CAN driver: The argument doNotify is in now way relevant to the APSW but handled internally to the BSW. Maybe, the wrapping API in the BSW could also hide some aspects from the handle mapping and/or it could offer polled safety mailbox vs. queued QM mailboxes. However, the safety concept should not be touched by seeing the argument doNotify here
-        assert(hOsFrame <= BSW_IDX_LAST_RX_MAILBOX);
-        success = cdr_makeMailboxReservation( /* idxCanDevice */ OSE_CAN_BUS_PT
+        assert(hOsFrame >= BSW_IDX_FIRST_RX_MAILBOX  &&  hOsFrame <= BSW_IDX_LAST_RX_MAILBOX);
+        success = cdr_makeMailboxReservation( pFrDescCde->idxCanBus
                                             , /* hMB */ hOsFrame
                                             , pFrDescCde->isExtId
                                             , pFrDescCde->canId
@@ -819,7 +872,7 @@ bool can_initCanStack(void)
         if(success)
         {
 #ifdef DEBUG
-            const unsigned int idxCde =
+            unsigned int idxCde =
 #endif
             cde_registerFrame( pFrDescCde->canId
                              , /* isInbound */ true
@@ -828,22 +881,42 @@ bool can_initCanStack(void)
                              , CAN_IDX_DISPATCHER_10MS
                              , /* callback */ onInitReceivedFrames
                              );
-            assert(idxCde == idxFrCde
-                   &&  idxCde == CDE_MAP_HANDLE_RX_FRAME_OS_TO_CAN_IF(hOsFrame)
-                  );
+            assert(idxCde == idxFrCde);
+            assert(chm_mapOsHandleFrameToCdeIndex(&idxCde, pFrDescCde->idxCanBus, hOsFrame));
+            assert(idxCde == idxFrCde);
         }
+
+        ++ idxFrCde;
+
     } /* for(All inbound frames) */
 
     assert(idxFrCde == CDE_NO_CAN_FRAMES_RECEIVED);
-    for(; success && idxFrCde<CDE_NO_CAN_FRAMES; ++idxFrCde)
-    {
-        const unsigned int hOsFrame = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_OS(idxFrCde) 
-                         , idxTxFr = CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_IDX_TX(idxFrCde);
-        const cde_canFrame_t *const pFrDescCde = &cde_canTxFrameAry[idxTxFr];
-        
 
-        assert(hOsFrame <= BSW_IDX_LAST_TX_MAILBOX);
-        success = cdr_makeMailboxReservation( /* idxCanDevice */ OSE_CAN_BUS_PT
+    idxBusLast = UINT_MAX;
+    hOsFrame = UINT_MAX;
+    unsigned int idxTxFr;
+    for(idxTxFr=0; success && idxTxFr<CDE_NO_CAN_FRAMES_SENT; ++idxTxFr)
+    {
+        const cde_canFrame_t *const pFrDescCde = &cde_canTxFrameAry[idxTxFr];
+
+        /* Processing bus after bus is simplified by the fact that the CAN datatables are
+           generally ordered in this way. We just look for the change of bus index in the
+           sequence. */
+        if(pFrDescCde->idxCanBus == idxBusLast)
+        {
+            /* Same CAN bus as before, address to next available mailbox. */
+            ++ hOsFrame;
+        }
+        else
+        {
+            /* The messages from the next bus begin. We switch to the next instance of the
+               CAN driver and need to count the mailboxes again from the beginning. */
+            hOsFrame = BSW_IDX_FIRST_TX_MAILBOX;
+        }
+        idxBusLast = pFrDescCde->idxCanBus;
+
+        assert(hOsFrame >= BSW_IDX_FIRST_TX_MAILBOX  &&  hOsFrame <= BSW_IDX_LAST_TX_MAILBOX);
+        success = cdr_makeMailboxReservation( pFrDescCde->idxCanBus
                                             , /* hMB */ hOsFrame
                                             , pFrDescCde->isExtId
                                             , pFrDescCde->canId
@@ -855,7 +928,7 @@ bool can_initCanStack(void)
         if(success)
         {
 #ifdef DEBUG
-            const unsigned int idxCde =
+            unsigned int idxCde =
 #endif
             cde_registerFrame( pFrDescCde->canId
                              , /* isInbound */ false
@@ -864,11 +937,16 @@ bool can_initCanStack(void)
                              , CAN_IDX_DISPATCHER_10MS
                              , /* callback */ onInitSendFrames
                              );
-            assert(idxCde == idxFrCde
-                   &&  CDE_MAP_HANDLE_TX_FRAME_CAN_IF_TO_OS(idxCde) == hOsFrame
-                  );
+            assert(idxCde == idxFrCde);
+            assert(chm_mapOsHandleFrameToCdeIndex(&idxCde, pFrDescCde->idxCanBus, hOsFrame));
+            assert(idxCde == idxFrCde);
         }
+
+        ++ idxFrCde;
+
     } /* for(All outbound frames) */
+
+    assert(idxFrCde == CDE_NO_CAN_FRAMES);
 
     return success;
 

@@ -24,15 +24,21 @@
  * Include files
  */
 
-#include <stdatomic.h>
-
 #include "typ_types.h"
 #include "cde_canStatistics.h"
+#include "bsw_basicSoftware.h"
 
 
 /*
  * Defines
  */
+
+/** Map the CAN buses of the given board to the meaning they have in the application
+    code. */
+#define CAN_BUS_PT                  (BSW_CAN_BUS_0)
+#define CAN_BUS_1_STILL_UNUSED      (BSW_CAN_BUS_1)
+#define CAN_BUS_2_STILL_UNUSED      (BSW_CAN_BUS_2)
+#define CAN_BUS_3_STILL_UNUSED      (BSW_CAN_BUS_3)
 
 /** The configuration of the supported transmission modes for CAN frames is highly
     dependent on the definition of attributes in the particular CAN database (*.dbc file).

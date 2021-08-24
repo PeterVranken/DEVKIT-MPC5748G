@@ -91,7 +91,7 @@ symbol ::= [ "signal": {<signal><if(signal.isMuxedSignal)>_m<signal.muxValue><en
 
 // The repeatedly used frame and signal related #define's are access through a map, which
 // improves maintainability and readability of the templates.
-define ::= [ "busId": {OSE_CAN_BUS_<bus.name; format="upper">}
+define ::= [ "busId": {CAN_BUS_<bus.name; format="upper">}
            , "signalBinToDbl": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_BIN_TO_DBL}
            , "signalDblToBin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_DBL_TO_BIN}
            , "signalFactor": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_FACTOR}

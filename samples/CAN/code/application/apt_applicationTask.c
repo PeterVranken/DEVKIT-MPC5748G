@@ -72,7 +72,7 @@
  */
 
 /** Software version */
-#define VERSION "0.3.1"
+#define VERSION "0.3.2"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.

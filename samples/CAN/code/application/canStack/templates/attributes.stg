@@ -49,6 +49,22 @@ attribName ::= [ "sendMode": "GenMsgSendType"
                , default: "codeGenerationError_badAttributeName"
                ]
 
+// The different DBC files use different designations for the same send modes. We can't use
+// the designations from the DBC files and provide a mapping onto the designations actually
+// used in the generated code.
+sendModeCEnumVal ::= [ "0": {<symbol.enumSendMode>_0_cyclic}
+                     , "1": {<symbol.enumSendMode>_1_event}
+                     , "2": {<symbol.enumSendMode>_2_cyclicOrEvent}
+                     , "3": {<symbol.enumSendMode>_3_unsupported}
+                     , "4": {<symbol.enumSendMode>_4_unsupported}
+                     , "5": {<symbol.enumSendMode>_5_unsupported}
+                     , "6": {<symbol.enumSendMode>_6_unsupported}
+                     , "7": {<symbol.enumSendMode>_7_unsupported}
+                     , "8": {<symbol.enumSendMode>_8_unsupported}
+                     , "9": {<symbol.enumSendMode>_9_unsupported}
+                     , default: "unsupportedSendMode"
+                     ]
+
 // The other templates access a user attribute's value through this dictionary. The value
 // is not retrieved directly from the net object (which needs to be in scope) but
 // indirectly through the other dictionary attribName: That dictionary can be easily
@@ -58,10 +74,10 @@ attribName ::= [ "sendMode": "GenMsgSendType"
 // project's DBC file will normally require an according change in the template group file
 // cap_precoCheck.h.stg, which generates the compile-time checks for made presumptions.
 attribVal ::= [ "sigInitVal": {<if(signal.isVoidScaling)><signal.attribMap.(attribName.sigInitVal).n; format="%.0f"><else><signal.attribMap.(attribName.sigInitVal).n><endif>}
-              , "sendMode": {<symbol.enumSendMode>_<frame.attribMap.(attribName.sendMode).n>_<frame.attribMap.(attribName.sendMode).str>}
-              , "sendModeRegular": {<frame.attribMap.(attribName.sendMode).is.cyclic>}
-              , "sendModeMixed": {<frame.attribMap.(attribName.sendMode).is.cyclicOrEvent>}
-              , "sendModeEvent": {<frame.attribMap.(attribName.sendMode).is.event>}
+              , "sendMode": {<sendModeCEnumVal.(frame.attribMap.(attribName.sendMode).n)>}
+              , "sendModeRegular": {<if(frame.attribMap.(attribName.sendMode).is.cyclic||frame.attribMap.(attribName.sendMode).is.FixedPeriodic)>true<else>false<endif>}
+              , "sendModeMixed": {<if(frame.attribMap.(attribName.sendMode).is.cyclicOrEvent||frame.attribMap.(attribName.sendMode).is.mixed)>true<else>false<endif>}
+              , "sendModeEvent": {<if(frame.attribMap.(attribName.sendMode).is.event||frame.attribMap.(attribName.sendMode).is.Event)>true<else>false<endif>}
               , "sendPeriod": {<frame.attribMap.(attribName.sendPeriod)>}
               , "eventMinDistance": {<frame.attribMap.(attribName.eventMinDistance)>}
               , "chksumDataId": {<frame.attribMap.(attribName.chksumDataId)>}

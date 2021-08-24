@@ -263,8 +263,10 @@ unsigned int cdr_getNoRxFifoEvents( unsigned int idxCanDevice
 /** Get the number of recorded transmission errors for the given CAN device. */
 unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice);
 
+#if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
 /** Get the number of recorded RAM ECC errors for the given CAN device. */
 unsigned int cdr_getNoEccErrorEvents(unsigned int idxCanDevice);
+#endif
 
 /** Get the last recently reported CAN transmission error. */
 uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice);
@@ -300,7 +302,43 @@ static inline unsigned int cdr_maxNoCanIds(cdr_enumCanDevice_t idxCanDevice)
 
 
 
-/** After driver initialization, associate all CAN messages for Rx or Tx with mailboxes. */
+/**
+ * Application dependent initialization of CAN communication: By calling this function, the
+ * application requests one particular CAN mailbox in the hardware for a particular
+ * message, for either reception or transmission.\n
+ *   Note, this is just a brief function description. Many more details can be found in the
+ * description of the supervisor variant of the API, cdr_osMakeMailboxReservation().
+ *   @return
+ * The function returns \a cdr_errApi_noError in case of success. In all other cases it
+ * has not effect.\n
+ *   All possible errors are static configuration errors in the client code. There's no
+ * need to have a dynamic error check at run-time.
+ *   @param idxCanDevice
+ * The administration of messages and mailboxes is made independently for all enabled CAN
+ * devices. This parameter chooses the affected CAN device.
+ *   @param hMB
+ * The driver has a fixed structure of mailboxes. Some aspects of this structure, e.g. the
+ * number of mailboxes depend on the configuration. All mailboxes can be used for Rx.
+ * Depending on the driver configuration, all or only a subset of them can be used for
+ * Tx. All required details on available mailboxes and their characteristics can be found
+ * in the description of the other API cdr_osMakeMailboxReservation().\n
+ *   Note, each CAN device has its own, individual space of handle values.
+ *   @param isExtId
+ * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
+ * additional Boolean information, which of the two the ID \a canId belongs to.
+ *   @param canId
+ * The standard or extended ID of the CAN message, which the mailbox reservation is made
+ * for.
+ *   @param isReceived
+ * The Boolean information, whether the mailbox is prepared for reception (\a true) of
+ * transmission (\a false).
+ *   @param TxDLC
+ * The number of bytes of a Tx message in the range 0..8.
+ *   @param doNotify
+ * The Boolean choice whether or not the completion of the mailbox activity will trigger an
+ * interrupt. (The notification callback is element of the driver's compile-time
+ * configuration.)
+ */
 static inline cdr_errorAPI_t cdr_makeMailboxReservation( unsigned int idxCanDevice
                                                        , unsigned int hMB
                                                        , bool isExtId
@@ -320,6 +358,7 @@ static inline cdr_errorAPI_t cdr_makeMailboxReservation( unsigned int idxCanDevi
                                           , doNotify
                                           );
 } /* End of cdr_makeMailboxReservation */
+
 
 
 /** 

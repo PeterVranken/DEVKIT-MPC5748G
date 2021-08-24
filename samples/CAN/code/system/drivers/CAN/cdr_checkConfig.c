@@ -377,8 +377,8 @@ bool cdr_checkDriverConfiguration(void)
                 /* The specified index of the API buffer is in range. */
                 ASSERT(configMB.idxAPIBuffer < CDR_NO_RX_USER_CODE_POLLING_MAILBOXES);
 
-                /* The API buffer index has not be specified yet for an ealier visited
-                   mailbox. */
+                /* Had the same API buffer index been specified yet for an earlier visited
+                   mailbox? */
                 assert(sizeOfAry(isAPIBufferInUse) == CDR_NO_RX_USER_CODE_POLLING_MAILBOXES);
                 ASSERT(isAPIBufferInUse[configMB.idxAPIBuffer] == 0);
                 isAPIBufferInUse[configMB.idxAPIBuffer] = 1;

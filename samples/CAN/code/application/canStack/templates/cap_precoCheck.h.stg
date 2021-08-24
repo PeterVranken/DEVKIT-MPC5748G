@@ -192,8 +192,11 @@ checkAttribSignalInitVal(attribDef) ::= <<
 // points to some kind of inconsistency, worth to be double-checked.
 valDef(def) ::= "<[def.i0, \"_\", def.name]>"
 valDefOkay ::= [ "0_cyclic": true
+               , "0_FixedPeriodic": true
                , "1_event": true
+               , "1_Event": true
                , "2_cyclicOrEvent": true
+               , "2_mixed": true
                , default: false
                ]
 checkAttribFrameSendMode(sm) ::= <<

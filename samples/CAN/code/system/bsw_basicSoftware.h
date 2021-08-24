@@ -4,7 +4,7 @@
  * @file bsw_basicSoftware.h
  * Definition of global interface of module bsw_basicSoftware.c
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -35,16 +35,28 @@
     execute longer than this time budget. Otherwise the system won't start up. */
 #define BSW_TI_INIT_TASK_MAX_IN_US          5000
 
+/** CAN interface: The enumeration of configured, usable CAN devices (i.e. CAN buses). The
+    defined value has the perspective of the application code and this perspective is
+    mapped on the enumeration implemented in MCU HW and CAN driver. */
+#define BSW_CAN_BUS_0                (/*cdr_canDev_CAN_*/0u)
+//#define BSW_CAN_BUS_1                (/*cdr_canDev_CAN_*/3u)
+//#define BSW_CAN_BUS_2                (/*cdr_canDev_CAN_*/2u)
+//#define BSW_CAN_BUS_3                (/*cdr_canDev_CAN_*/1u)
+
 /** CAN interface: The BSW uses index spaces for the mailboxes, which are offered to
     user the processes. Rx and Tx messages each have an own solid index space, which is not
-    zero based. The first and last available index are provided. */
+    zero based. The first and last available index are provided.\n
+      Note, all CAN buses use the same configuration and therefore, the macro relates to
+    each of them. */
 #define BSW_IDX_FIRST_RX_MAILBOX            0u
 #define BSW_IDX_LAST_RX_MAILBOX             71u
 #define BSW_IDX_FIRST_TX_MAILBOX            82u
 #define BSW_IDX_LAST_TX_MAILBOX             143u
 
 /** A few mailboxes are reserverd for use by the safety supervision process. The Rx
-    mailboxes can be used by polling only (which is a typical safety requirement). */
+    mailboxes can be used by polling only (which is a typical safety requirement).
+      Note, all CAN buses use the same configuration and therefore, the macro relates to
+    each of them. */
 #define BSW_IDX_FIRST_RX_MAILBOX_SAFETY     72u
 #define BSW_IDX_LAST_RX_MAILBOX_SAFETY      77u
 #define BSW_IDX_FIRST_TX_MAILBOX_SAFETY     78u
@@ -66,6 +78,10 @@ typedef enum bsw_pid_t
 /** CAN interface: The notification of a received message as used in bsw_onRxCan(). */
 typedef struct bsw_rxCanMessage_t
 {
+    /** The index of the CAN bus. The value is one out of #BSW_CAN_BUS_TYSON_0 ..
+        #BSW_CAN_BUS_TYSON_3. */
+    unsigned int idxCanBus;
+
     /** The index of the mailbox, which had received the message. It is in the range
         #BSW_IDX_FIRST_RX_MAILBOX till and including #BSW_IDX_LAST_RX_MAILBOX. */
     unsigned int idxMailbox;
@@ -91,14 +107,21 @@ typedef struct bsw_rxCanMessage_t
 
 /** CAN RX callback internal to the OS.
       Note, this prototype doesn't belong to the public interface of the BSW. It has been
-    placed here to enable type checking in the most simple way. */
-void bsw_osCbOnCANRx( unsigned int hMB
-                    , bool isExtId
-                    , unsigned int canId
-                    , unsigned int sizeOfPayload
-                    , const uint8_t payload[8]
-                    , unsigned int timeStamp
-                    );
+    placed here to enable type checking in the most simple way.
+      @todo Find a better location for this prototype. */
+#define bsw_osCbOnCANRxCanN(dev)                        \
+void bsw_osCbOnCANRx_##dev( unsigned int hMB            \
+                          , bool isExtId                \
+                          , unsigned int canId          \
+                          , unsigned int sizeOfPayload  \
+                          , const uint8_t payload[8]    \
+                          , unsigned int timeStamp      \
+                          );
+bsw_osCbOnCANRxCanN(CAN_0)
+bsw_osCbOnCANRxCanN(CAN_1)
+bsw_osCbOnCANRxCanN(CAN_2)
+bsw_osCbOnCANRxCanN(CAN_3)
+#undef bsw_osCbOnCANRxCanN
 
 /** Application provided initialization function for user process bsw_pidUser. */
 extern int32_t bsw_taskUserInit(uint32_t PID);
