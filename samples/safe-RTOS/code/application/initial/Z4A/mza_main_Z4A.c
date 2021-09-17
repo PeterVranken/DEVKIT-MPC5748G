@@ -11,7 +11,7 @@
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
  * parity, 1 stop bit.
  *
- * Copyright (C) 2018-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -39,6 +39,8 @@
  * Include files
  */
 
+#include "mza_main_Z4A.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,12 +54,13 @@
 
 #include "rtos.h"
 #include "gsl_systemLoad.h"
+#include "siu_siuPortDriver.h"
 #include "dma_dmaDriver.h"
 #include "lbd_ledAndButtonDriver.h"
 #include "sio_serialIO.h"
 #include "del_delay.h"
 #include "stm_systemTimer.h"
-#include "mza_main_Z4A.h"
+
 
 
 /*

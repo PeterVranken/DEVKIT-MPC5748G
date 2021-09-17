@@ -23,7 +23,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   bsw_osCbOnCANRx
  *   bsw_osCbOnCANRx_CAN_0
  *   bsw_osCbOnCANRx_CAN_1
  *   bsw_osCbOnCANRx_CAN_2
@@ -32,6 +31,7 @@
  *   startSecondaryCore
  *   main
  * Local functions
+ *   cbOnCANRx
  */
 
 /*

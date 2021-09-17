@@ -63,6 +63,11 @@
 #include <typ_types.h>
 
 
+/* This header must be included only indirectly via the main header of the SIU driver. */
+#ifndef SIU_SIUPORTDRIVER_INCLUDED
+# error Do not include this file. Include siu_siuPortDriver.h instead
+#endif
+
 /*
  * Defines
  */
@@ -80,7 +85,7 @@
 /** A pull up or pull down resistor can be enabled for in- and outputs. Principal use case
     is a pull-up in combination with an open drain output. All possible configurations are
     enumerated here. */
-typedef enum siu_portInPullResistor_t 
+typedef enum siu_portInPullResistor_t
 {
     siu_pullRes_none,
     siu_pullRes_pullUp,
@@ -96,45 +101,45 @@ typedef struct siu_portOutCfg_t
     /** Source selection as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
         worksheet "IO Signal Table", column C. */
     uint8_t idxPortSource_PA;
-    
+
     /** An output can be input at the same time: The SW can read back the driven output
         value. This is particularly useful with open drain outputs. */
     bool enableReadBack;
-    
+
     /** A port uses either open drain (\a true) or it actively drives both logical states
         (\a false). */
     bool enableOpenDrain_ODE;
-    
+
     /** A pull up or pull down resistor can be enabled for the output. Principal use case
         is a pull-up in combination with an open drain output. */
     siu_portInPullResistor_t pullUpDownCfg;
-    
+
     /** Drive strength from min to max. Range is 0..3. */
     uint8_t driveStrength_DSC;
-    
+
     /** The maximum slew rate can be limited. This is a 2 Bit value:\n
           b00: Half drive strength with slew control enabled\n
           b01: Full drive strength with slew control enabled\n
           b10: Half drive strength with slew control disabled\n
           b11: Full drive strength with slew control disabled */
     uint8_t maxSlewRate_SRC;
-    
+
 } siu_portOutCfg_t;
 
 
 /** Settings of a port, which is configured as input. Most of the settings relate to RM,
     8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff and the multiplxer
     configuration, RM, sections 8.2.66ff Input Multiplexing RegisterN (SIU_IMUXN),
-    pp.373ff. */ 
+    pp.373ff. */
 typedef struct siu_portInCfg_t
 {
     /** Source selection as used in MPC5775B_MPC5775E_System_IO_Definition.xlsx,
         worksheet "IO Signal Table", column C. */
     uint8_t idxPortSource_PA;
-    
+
     /** The input can be used with hysteresis for better stability of input values. */
     bool enableHysteresis_HYS;
-    
+
     /** A pull up or pull down resistor can be enabled for the input. */
     siu_portInPullResistor_t pullUpDownCfg;
 
@@ -145,7 +150,7 @@ typedef struct siu_portInCfg_t
         multiplexer can be configured. You need to specify the invalid index
         #SIU_INPUT_MULTIPLEXER_UNUSED for such a signal. */
     uint8_t idxMultiplexerRegister;
-    
+
     /** Each multiplexer register contains up to 16 2-Bit multiplexers. This is the zero
         based index of the multiplxer inside the selected register. The index is at the same
         time the number N in the name of the multiplexer.\n
@@ -155,11 +160,11 @@ typedef struct siu_portInCfg_t
           The value doesn't care, if \a idxMultiplexerRegister is set to
         #SIU_INPUT_MULTIPLEXER_UNUSED. */
     uint8_t idxMultiplexer;
-    
+
     /** The signal selection for the selected multiplexer. The required value is found in
         MPC5775B_MPC5775E_System_IO_Definition.xlsx, worksheet "Input Muxing", column F.
         Moreover, the possible choices are documented in the description of the selected
-        multiplexer register, RM, sections 8.2.66ff, pp.373ff.\n 
+        multiplexer register, RM, sections 8.2.66ff, pp.373ff.\n
           Range is basically 0..3 but not all of the values are supported by all of the
         inputs.\n
           The value doesn't care, if \a idxMultiplexerRegister is set to

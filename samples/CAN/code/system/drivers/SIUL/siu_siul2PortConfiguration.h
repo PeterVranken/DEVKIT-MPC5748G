@@ -26,7 +26,7 @@
  * other register array IMCR[]. The index into IMCR[] is found by search in the other
  * worksheet "Input Muxing". Look for the port in question in column H or for the
  * device to connect in column C. Column D holds the appropriate index into IMCR[].\n
- *   Note, the reference from worksheet "IO Signal Table" to worksheet "Input Muxing" 
+ *   Note, the reference from worksheet "IO Signal Table" to worksheet "Input Muxing"
  * is made by index of IMCR, too. In worksheet "IO Signal Table", in the sub-ordinated
  * lines inside the area of the given port, column C, there is a second index stated
  * for the input functions of a port. This index can be found in worksheet "Input
@@ -68,6 +68,11 @@
 #include <typ_types.h>
 
 
+/* This header must be included only indirectly via the main header of the SIU driver. */
+#ifndef SIU_SIUPORTDRIVER_INCLUDED
+# error Do not include this file. Include siu_siuPortDriver.h instead
+#endif
+
 /*
  * Defines
  */
@@ -85,7 +90,7 @@
 /** A pull up or pull down resistor can be enabled for in- and outputs. Principal use case
     is a pull-up in combination with an open drain output. All possible configurations are
     enumerated here. */
-typedef enum siu_portInPullResistor_t 
+typedef enum siu_portInPullResistor_t
 {
     siu_pullRes_none,
     siu_pullRes_pullUp,
@@ -101,23 +106,23 @@ typedef struct siu_portOutCfg_t
     /** Source selection as used in IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx,
         worksheet "IO Signal Table", column D. */
     uint8_t idxPortSource_SSS;
-    
+
     /** An output can be input at the same time: The SW can read back the driven output
         value. This is particularly useful with open drain outputs. */
     bool enableReadBack;
-    
+
     /** A port uses either open drain (\a true) or it actively drives both logical states
         (\a false). */
     bool enableOpenDrain_ODE;
-    
+
     /** A pull up or pull down resistor can be enabled for the output. Principal use case
         is a pull-up in combination with an open drain output. */
     siu_portInPullResistor_t pullUpDownCfg;
-    
+
     /** The maximum slew rate can be limited. Range is 0..3. 3 means maximum slew rate, or
         no limitation. */
     uint8_t maxSlewRate_SRC;
-    
+
 } siu_portOutCfg_t;
 
 
@@ -130,10 +135,10 @@ typedef struct siu_portInCfg_t
 {
     /** The input can be used with hysteresis for better stability of input values. */
     bool enableHysteresis_HYS;
-    
+
     /** A pull up or pull down resistor can be enabled for the input. */
     siu_portInPullResistor_t pullUpDownCfg;
-    
+
     /** Zero based index of the related input multiplexer register IMCR. This index is
         found in worksheet "Input Muxing", column D. It can be identified in worksheet "IO
         Signal Table", column C, too, but careful, then you need to subtract the constant
@@ -143,7 +148,7 @@ typedef struct siu_portInCfg_t
         You need to specify the invalid index #SIU_INPUT_MULTIPLEXER_UNUSED for such a
         signal. */
     uint16_t idxMultiplexerRegister;
-    
+
     /** The signal selection for the selected multiplexer. The required value is found in
         IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx, worksheet "Input Muxing",
         column F. It can be identified in worksheet "IO

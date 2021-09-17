@@ -52,17 +52,14 @@
  */
 
 /** The number of available, arbitrated, accessible ports.
-      @remark for the MPC5775B/E we have a discrepancy between RM75 and the device header.
-    The latter defines #SIU_PCR_COUNT as 512, while the former says 416 as maximum number
-    of ports.
-      @remark The actual maximum is MCU housing specific and could be reduced in many
-    cases. The defined number has a direct impact on the memory consumption for the port
-    allocation bit vector and it could pay off to make a project specfic setting with a
-    lower upper boundary for the maximally available port index. */
+      @todo Many of the PCR number are not used. A rather cheap mapping is possible of PCR
+    to zero based index with only a few unused numbers - which would save a significant
+    portion of the allocation table. For the MPC5775B/E mit 416 pin housing this could save
+    more than have the otherwise required memory. (Not checked for the MPC5748G.) */
 #if defined(MCU_MPC5748G)
 # define SIU_NO_MCU_PORTS   SIUL2_MSCR_COUNT
 #elif defined(MCU_MPC5775B)
-# define SIU_NO_MCU_PORTS   /* SIU_PCR_COUNT (see above) */ (416u)
+# define SIU_NO_MCU_PORTS   SIU_PCR_COUNT
 #endif
 
 

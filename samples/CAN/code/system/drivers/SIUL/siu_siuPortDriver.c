@@ -415,9 +415,9 @@ void siu_osConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg)
        based indexes. */
     if(pPortCfg->idxMultiplexerRegister != UINT_T_MAX(uint8_t))
     {
-        #define SIU_IMUX_MUXSELn_MASK(n)       (0x3u<<(n))
-        #define SIU_IMUX_MUXSELn_SHIFT(n)      (2u*(n))
-        #define SIU_IMUX_MUXSELn_WIDTH(n)      2u
+        #define SIU_IMUX_MUXSELn_MASK(n)       (0x3u<<SIU_IMUX_MUXSELn_SHIFT(n))
+        #define SIU_IMUX_MUXSELn_SHIFT(n)      (SIU_IMUX_MUXSELn_WIDTH(n)*(n))
+        #define SIU_IMUX_MUXSELn_WIDTH(n)      (2u)
         #define SIU_IMUX_MUXSELn(n, x)         (((uint32_t)(((uint32_t)(x))<<SIU_IMUX_MUXSELn_SHIFT(n)))&SIU_IMUX_MUXSELn_MASK(n))
 
         __IO uint32_t * const imuxAry = &SIU->IMUX0;
