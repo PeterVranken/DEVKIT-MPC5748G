@@ -872,7 +872,7 @@ static void initRTOSClockTick(void)
  *   @param tiCycleInMs
  * The period time for regularly triggering events in ms.\n
  *   The permitted range is 0..2^30-1. 0 means no regular, timer controlled trigger and the
- * event is only enabled for software trigger using rtos_triggerEvent() (permitted for
+ * event is only enabled for software trigger using rtos_osTriggerEvent() (permitted for
  * interrupts or other tasks).
  *   @param tiFirstActivationInMs
  * The first trigger of the event in ms after start of kernel. The permitted range is
