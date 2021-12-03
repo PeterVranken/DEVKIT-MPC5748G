@@ -33,20 +33,34 @@
  */
 
 /** The clock frequency of the external crystal oscillator. */
-#define CCL_XTAL_CLK    40000000u
+#define CCL_XTAL_CLK        40000000u
 
 /** The core clock rate PHI_0 in Hz. See MCU reference manual, section 9.9.1, Figure
     9-16, p. 223f, and 9.9.1.2. */
-#define CCL_PHI_0_CLK   160000000u
+#define CCL_PHI_0_CLK       160000000u
 
 /** The system or CPU core clock. */
-#define CCL_CORE_CLK    CCL_PHI_0_CLK
+#define CCL_CORE_CLK        CCL_PHI_0_CLK
 
 /** The core clock rate PHI_1 in Hz. See MCU reference manual, section 9.9.1, Figure
     9-16, p. 223f, and 9.9.1.2. */
-#define CCL_PHI_1_CLK   (CCL_PHI_0_CLK/2u)
+#define CCL_PHI_1_CLK       (CCL_PHI_0_CLK/2u)
 
-/// @todo Complete the clock rate definitions
+/** The clock rate of peripheral clock F20. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_F20     20000000u
+
+/** The clock rate of peripheral clock F40. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_F40     40000000u
+
+/** The clock rate of peripheral clock S40. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_S40     40000000u
+
+/** The clock rate of peripheral clock FS80. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_FS80    80000000u
 
 
 /*

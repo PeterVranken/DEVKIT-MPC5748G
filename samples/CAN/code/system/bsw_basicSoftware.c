@@ -40,7 +40,6 @@
 
 #include "bsw_basicSoftware.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -56,7 +55,7 @@
 #include "sio_serialIO.h"
 #include "stm_systemTimer.h"
 #include "cdr_canDriverAPI.h"
-
+#include "pwm_pwmIODriver.h"
 
 /*
  * Defines
@@ -316,11 +315,11 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. Shape access to the eight
        user LEDs and two user buttons. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL//onButtonChangeCallback
@@ -337,6 +336,9 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Initialize the CAN driver. */
     cdr_osInitCanDriver();
+
+    /* Initialize the PWM driver. */
+    pwm_osInitIODriver();
 
 #if 0
     /* After HW initialization, we can start the other cores. Note, there's no guarantee in
@@ -474,7 +476,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
            of the rest of the code in the idle loop. */
         bsw_cpuLoad = gsl_osGetSystemLoad();
 
-    } /* End of inifinite idle loop of RTOS. */
+    } /* End of infinite idle loop of RTOS. */
 
     /* We never get here. Just to avoid a compiler warning. */
     return -1;

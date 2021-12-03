@@ -2126,10 +2126,11 @@ RTOS extensions</p></td>
 <h5 id="_system_calls_of_sample_io_drivers">System calls of sample I/O drivers</h5>
 <div class="paragraph">
 <p>A few more system call indexes are used by the sample I/O drivers, LED and
-button driver, serial interface driver and system time service. If the
-drivers are not used by the client code then these indexes can be reused.
-Moreover, it is straightforward to put the drivers onto another index of
-your choice. Just have a look at the header files of the drivers.</p>
+button driver, PWM driver, serial interface driver and system time
+service. If the drivers are not used by the client code then these indexes
+can be reused. Moreover, it is straightforward to put the drivers onto
+another index of your choice. Just have a look at the header files of the
+drivers.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 2. System call indexes in use by sample I/O drivers</caption>
@@ -2172,6 +2173,18 @@ into serial port</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">stm_scBscHdlr_getSystemTime</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Basic</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">System timers: Get current time</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">35</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pwm_scSmplHdlr_setPwmOutFAndDc</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PWM driver: Set frequency and duty cycle</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">36</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pwm_scSmplHdlr_getPwmInT</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PWM driver: Get input period time</p></td>
 </tr>
 </tbody>
 </table>
@@ -4225,7 +4238,7 @@ a terminal program on the development computer is identical to
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-28 08:39:45 +0200
+Last updated 2021-12-03 19:48:24 +0100
 </div>
 </div>
 </body>

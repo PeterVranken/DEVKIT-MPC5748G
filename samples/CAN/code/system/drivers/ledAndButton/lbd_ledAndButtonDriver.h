@@ -55,13 +55,13 @@
     PCB. If the according port clashes with the application software running on the board
     then the LED should be disabled by setting the macro to 0 and the LED won't be
     accessible through this driver. Here for LED 0. */
-#define LBD_ENABLE_LED_0_DS11       1
-#define LBD_ENABLE_LED_1_DS10       1   /** Enable the use of LED 1. */
+#define LBD_ENABLE_LED_0_DS11       0
+#define LBD_ENABLE_LED_1_DS10       0   /** Enable the use of LED 1. */
 #define LBD_ENABLE_LED_2_DS9        1   /** Enable the use of LED 2. */
 #define LBD_ENABLE_LED_3_DS8        1   /** Enable the use of LED 3. */
 #define LBD_ENABLE_LED_4_DS7        1   /** Enable the use of LED 4. */
 #define LBD_ENABLE_LED_5_DS6        1   /** Enable the use of LED 5. */
-#define LBD_ENABLE_LED_6_DS5        1   /** Enable the use of LED 6. */
+#define LBD_ENABLE_LED_6_DS5        0   /** Enable the use of LED 6. */
 #define LBD_ENABLE_LED_7_DS4        1   /** Enable the use of LED 7. */
 
 /** These defines allow to enable the compilation of the button API for any of the user

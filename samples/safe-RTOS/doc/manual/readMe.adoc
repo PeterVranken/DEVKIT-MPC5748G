@@ -1141,38 +1141,41 @@ not be used by user added code.
 [options="header",cols="^5,22,^5,24"]
 |=======
 |Index |Function |Class |Description
-|0  |rtos_scBscHdlr_terminateUserTask |Basic | (Premature) task abortion
+|0  |rtos_scBscHdlr_terminateUserTask |Basic |(Premature) task abortion
 by user code
-|1  |rtos_scBscHdlr_{zwsp}suspendAllTasksByPriority |Basic | PCP: Get
+|1  |rtos_scBscHdlr_{zwsp}suspendAllTasksByPriority |Basic |PCP: Get
 resource or enter critical section
-|2  |rtos_scBscHdlr_{zwsp}resumeAllTasksByPriority |Basic | PCP: Release
+|2  |rtos_scBscHdlr_{zwsp}resumeAllTasksByPriority |Basic |PCP: Release
 resource or leave critical section
-|3  |rtos_scFlHdlr_triggerEvent |Full | Event trigger by software
-|4  |rtos_scFlHdlr_runTask |Full | Run a user task or inter-process
+|3  |rtos_scFlHdlr_triggerEvent |Full |Event trigger by software
+|4  |rtos_scFlHdlr_runTask |Full |Run a user task or inter-process
 function call 
-|5  |rtos_scSmplHdlr_suspendProcess |Simple | Suspend a process forever
-|6  |assert_scBscHdlr_assert_func |Basic | Implementation of C assert macro
-|7-19 |rtos_scBscHdlr_sysCallUndefined |Basic | Index space reserved for
+|5  |rtos_scSmplHdlr_suspendProcess |Simple |Suspend a process forever
+|6  |assert_scBscHdlr_assert_func |Basic |Implementation of C assert macro
+|7-19 |rtos_scBscHdlr_sysCallUndefined |Basic |Index space reserved for
 RTOS extensions 
 |=======
 
 ===== System calls of sample I/O drivers
 
 A few more system call indexes are used by the sample I/O drivers, LED and
-button driver, serial interface driver and system time service. If the
-drivers are not used by the client code then these indexes can be reused.
-Moreover, it is straightforward to put the drivers onto another index of
-your choice. Just have a look at the header files of the drivers.
+button driver, PWM driver, serial interface driver and system time
+service. If the drivers are not used by the client code then these indexes
+can be reused. Moreover, it is straightforward to put the drivers onto
+another index of your choice. Just have a look at the header files of the
+drivers.
 
 .System call indexes in use by sample I/O drivers
 [options="header",cols="^5,22,^5,24"]
 |=======
 |Index |Function |Class |Description
-|20 |sio_scFlHdlr_writeSerial |Full | Serial I/O driver: Write text string
+|20 |sio_scFlHdlr_writeSerial |Full |Serial I/O driver: Write text string
 into serial port
-|25 |lbd_scSmplHdlr_setLED |Simple | LED driver: Control an LED
-|26 |lbd_scSmplHdlr_getButton |Simple | LED driver: Get button state
-|30 |stm_scBscHdlr_getSystemTime |Basic | System timers: Get current time
+|25 |lbd_scSmplHdlr_setLED |Simple |LED driver: Control an LED
+|26 |lbd_scSmplHdlr_getButton |Simple |LED driver: Get button state
+|30 |stm_scBscHdlr_getSystemTime |Basic |System timers: Get current time
+|35 |pwm_scSmplHdlr_setPwmOutFAndDc |Simple |PWM driver: Set frequency and duty cycle
+|36 |pwm_scSmplHdlr_getPwmInT |Simple |PWM driver: Get input period time
 |=======
 
 ==== Sample code

@@ -130,7 +130,7 @@ int32_t bsw_taskSafety10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
     /* Call the 10ms step function of the safety supervisor. */
     //...
     static uint8_t SDATA_P2(cnt_) = 0;
-    lbd_setLED(lbd_led_0_DS11, /* isOn */ (cnt_+=3) < 50);
+    lbd_setLED(lbd_led_5_DS6, /* isOn */ (cnt_+=3) < 50);
 
     return 0;
 

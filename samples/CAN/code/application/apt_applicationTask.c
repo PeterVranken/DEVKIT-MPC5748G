@@ -65,14 +65,14 @@
 #include "sio_serialIO.h"
 #include "cmd_canCommand.h"
 #include "apt_applicationTask.h"
-
+#include "pwm_pwmIODriver.h"
 
 /*
  * Defines
  */
 
 /** Software version */
-#define VERSION "0.3.2"
+#define VERSION "0.4.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -574,7 +574,7 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
     /* Call the 1s step function of the APSW. */
     //asw_taskApsw_1000ms();
     static bool SDATA_P1(isOn_) = false;
-    lbd_setLED(lbd_led_1_DS10, isOn_=!isOn_);
+    lbd_setLED(lbd_led_7_DS4, isOn_=!isOn_);
 
     /* Some test code of the uniform floating point signal API shaped for this sample. */
     
@@ -604,6 +604,40 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
 //    assert(newValue >= pPower->min  &&  newValue <= pPower->max);
 //    pPower->setter(newValue);
 
+    bool isNewResultPA2;
+    const float tiPeriod = pwm_getChnInputPeriodTime( &isNewResultPA2
+                                                    , pwm_pwmIChn_PA2_J3_pin3_periodTime
+                                                    )
+              , f = 1.0f / tiPeriod;
+
+    bool isNewResultPA6;
+    const float tiDuty = pwm_getChnInputDutyTime( &isNewResultPA6
+                                                , pwm_pwmIChn_PA6_J2_pin1_dutyTime
+                                                )
+              , dutyCycle = tiDuty * f;
+
+    printf( "PWM at input PA2/PA6: %.3f Hz/%.3f ms (%s/%s result), DC: %.1f%%\r\n"
+          , f2d(f)
+          , f2d(1000.0f*tiDuty)
+          , isNewResultPA2? "new": "old"
+          , isNewResultPA6? "new": "old"
+          , f2d(dutyCycle <= 1.0f? 100.0f*dutyCycle: -1.0f)
+          );
+
+    static unsigned int SDATA_P1(dutyCycle_) = 50u;
+    static float SDATA_P1(f_) = 1000.0f;
+    if(dutyCycle_ < 95u)
+        dutyCycle_ += 1u;
+    else
+        dutyCycle_ = 5u;
+    if((dutyCycle_ % 5u) == 0u)
+    {
+        pwm_setChnFrequencyAndDutyCycle( pwm_pwmOChn_PA1_J3_pin1
+                                       , f_ = (f_<2500.0f? f_*1.15f: 10.0f)
+                                       , (float)dutyCycle_ / 100.0f
+                                       );
+    }
+    
     return 0;
 
 } /* End of bsw_taskUser1000ms */

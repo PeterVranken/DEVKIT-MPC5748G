@@ -123,7 +123,10 @@ void siu_osInitPortDriver(void)
  * All port related activities identify the port by it's index. This is the index into
  * register array MSCR (MPC5748G) or PCR (MPC5775B/E). This is the index of the requested
  * port. The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion and the
- * function returns \a false in PRODUCTION compilation.
+ * function returns \a false in PRODUCTION compilation.\n
+ *   Note, even for inputs of the MPC5748G, the base index of MSCR is meant, which is
+ * listed in column D of PM48, "IO Signal Table"; the greater numbers, which are encoded
+ * 512+inputMUXValue, must not be specified here.
  *   @remark
  * On the MPC5748G, the function can be called from any OS context on any core at any time.
  *   @warning
@@ -356,7 +359,10 @@ void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCf
  *   @param idxPort
  * All port related activities identify the port by it's index. This is the index into
  * register array MSCR (MPC5748G) or PCR (MPC5775B/E). Pass the index of the returned port.
- * The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion.
+ * The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion.\n
+ *   Note, even for inputs of the MPC5748G, the base index of MSCR is meant, which is
+ * listed in column D of PM48, "IO Signal Table"; the greater numbers, which are encoded
+ * 512+inputMUXValue, must not be specified here.
  *   @param pPortCfg
  * The desired port configuration by reference.
  */

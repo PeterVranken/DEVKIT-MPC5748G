@@ -524,7 +524,7 @@ static void initChannelAsPWMInput( pwm_hEMIOSChannel_t * const pHChannel
           | eMIOS_C_FEN(0u)     /* IRQ/DMA enable bit */
           | eMIOS_C_BSL(3u)     /* 3: Internal counter is running and take as time base */
           | eMIOS_C_EDSEL(0u)   /* Edge select, according to EDPOL */
-          | eMIOS_C_EDPOL(0u)   /* IPWM: 0: Raising till falling edge, 1: vice versa */
+          | eMIOS_C_EDPOL(1u)   /* IPWM: 1: Raising till falling edge, 0: vice versa */
           | eMIOS_C_MODE(mode); /* Mode is IPM or IPWM, both measure the distance of two
                                    edges. */
 } /* initChannelAsPWMInput */
