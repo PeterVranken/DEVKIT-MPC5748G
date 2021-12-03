@@ -115,6 +115,8 @@ volatile static unsigned int DATA_P1(_cntTask1ms) = 0;
 /** Simple counter of 10ms application task invokations. Used for timing operations. */
 volatile static unsigned int DATA_P1(_cntTask10ms) = 0;
 
+/** Switch to enable/disable the continuous display of PWM measurement results. */
+volatile static bool SBSS_P1(_enableDisplayPWM) = false;
 
 /*
  * Function implementation
@@ -299,12 +301,14 @@ static void help()
     "Type:\r\n"
     "help: Get this help text\r\n"
     "show c, show w: Show details of software license\r\n"
+    "show PWM [on|off]: Enable/disable display of PWM input measurement on PA2 and PA6\r\n"
     "version: Print software version designation\r\n"
     "listen [ID] signal: Report changes of Rx signal. ID is a decimal CAN ID, for"
     " disambiguation of signal name. Maybe preceeded by `x' to specify an extended CAN ID\r\n"
     "unlisten [ID] signal: No longer report changes of Rx signal\r\n"
     "clearlisten: No longer report any Rx signal change\r\n"
     "set [ID] signal value: Specify new value of Tx signal for transmission\r\n"
+    "PWM n f [dc]: PWM output. n: 1 means PA1 at J3, pin 1; 2/4/5 means USR_LED2/4/5 at PA0/4/7\r\n"
     "time: Print current time\r\n"
     "time hour min [sec]: Set current time\r\n";
 
@@ -421,6 +425,8 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
                     showC();
                 else if(strcmp(argV[1], "w") == 0)
                     showW();
+                else if(strcmp(argV[1], "PWM") == 0)
+                    _enableDisplayPWM = argC == 2u  || strcmp(argV[2], "off") != 0u;
             }
             else if(strcmp(argV[0], "help") == 0)
                 help();
@@ -482,6 +488,34 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
                 iprintf( "Current time is %02u:%02u:%02u\r\n"
                        , h, m, s
                        );
+            }
+            else if(strcmp(argV[0], "PWM") == 0)
+            {
+                if(argC == 3  ||  argC == 4)
+                {
+                    const signed int chnN = atoi(argV[1]);
+                    pwm_pwmOutChannel_t chn;
+                    switch(chnN)
+                    {
+                        case 1:  chn = pwm_pwmOChn_PA1_J3_pin1; break;
+                        case 2:  chn = pwm_pwmOChn_LED_2_DS10;  break;
+                        case 4:  chn = pwm_pwmOChn_LED_4_DS11;  break;
+                        case 5:  chn = pwm_pwmOChn_LED_5_DS5;   break;
+                        default: chn = pwm_pwmOChn_noPwmOutputs;
+                    }
+                    if(chn != pwm_pwmOChn_noPwmOutputs)
+                    {
+                        float f = atoff(argV[2]);
+                        float dc = 50.0f;
+                        if(argC == 4)
+                            dc = atoff(argV[3]);
+                        pwm_setChnFrequencyAndDutyCycle(chn, f, dc/100.0f);
+                    }
+                    else
+                        iprintf("Invalid PWM channel chosen. Type `help'\r\n");
+                }
+                else
+                    iprintf("Bad number of arguments for command PWM. Type `help'\r\n");
             }
             else
             {
@@ -604,38 +638,27 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
 //    assert(newValue >= pPower->min  &&  newValue <= pPower->max);
 //    pPower->setter(newValue);
 
-    bool isNewResultPA2;
-    const float tiPeriod = pwm_getChnInputPeriodTime( &isNewResultPA2
-                                                    , pwm_pwmIChn_PA2_J3_pin3_periodTime
-                                                    )
-              , f = 1.0f / tiPeriod;
-
-    bool isNewResultPA6;
-    const float tiDuty = pwm_getChnInputDutyTime( &isNewResultPA6
-                                                , pwm_pwmIChn_PA6_J2_pin1_dutyTime
-                                                )
-              , dutyCycle = tiDuty * f;
-
-    printf( "PWM at input PA2/PA6: %.3f Hz/%.3f ms (%s/%s result), DC: %.1f%%\r\n"
-          , f2d(f)
-          , f2d(1000.0f*tiDuty)
-          , isNewResultPA2? "new": "old"
-          , isNewResultPA6? "new": "old"
-          , f2d(dutyCycle <= 1.0f? 100.0f*dutyCycle: -1.0f)
-          );
-
-    static unsigned int SDATA_P1(dutyCycle_) = 50u;
-    static float SDATA_P1(f_) = 1000.0f;
-    if(dutyCycle_ < 95u)
-        dutyCycle_ += 1u;
-    else
-        dutyCycle_ = 5u;
-    if((dutyCycle_ % 5u) == 0u)
+    if(_enableDisplayPWM)
     {
-        pwm_setChnFrequencyAndDutyCycle( pwm_pwmOChn_PA1_J3_pin1
-                                       , f_ = (f_<2500.0f? f_*1.15f: 10.0f)
-                                       , (float)dutyCycle_ / 100.0f
-                                       );
+        bool isNewResultPA2;
+        const float tiPeriod = pwm_getChnInputPeriodTime( &isNewResultPA2
+                                                        , pwm_pwmIChn_PA2_J3_pin3_periodTime
+                                                        )
+                  , f = 1.0f / tiPeriod;
+
+        bool isNewResultPA6;
+        const float tiDuty = pwm_getChnInputDutyTime( &isNewResultPA6
+                                                    , pwm_pwmIChn_PA6_J2_pin1_dutyTime
+                                                    )
+                  , dutyCycle = tiDuty * f;
+
+        printf( "PWM at input PA2/PA6: %.3f Hz/%.3f ms (%s/%s result), DC: %.1f%%\r\n"
+              , f2d(f)
+              , f2d(1000.0f*tiDuty)
+              , isNewResultPA2? "new": "old"
+              , isNewResultPA6? "new": "old"
+              , f2d(dutyCycle <= 1.0f? 100.0f*dutyCycle: -1.0f)
+              );
     }
     
     return 0;

@@ -275,7 +275,7 @@ static inline bool isValidOutputChnHandle(const pwm_hEMIOSChannel_t * const pHCh
              ||  pEMIOS == eMIOS_2
 #endif
            )
-           && isPossibleInputChn(pEMIOS, idxChn);
+           && isPossibleOutputChn(pEMIOS, idxChn);
 
 } /* isValidOutputChnHandle */
 
