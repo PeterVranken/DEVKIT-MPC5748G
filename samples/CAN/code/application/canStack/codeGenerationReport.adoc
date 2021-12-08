@@ -26,6 +26,104 @@
 == Cluster DEVKIT-MPC5775G
 
 
+=== Bus `PWM`
+* Network file name: `dbcFiles\PWM.dbc`
+* User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true
+* Nodes: `DEVKIT`
+==== Attribute definitions
+1. Attribute `GenMsgSendType`
+ ** Object Type: frame
+  *** Type Enum
+  *** Range: [0..8]
+  *** Name, value pairs:
+   **** cyclic: 0
+   **** event: 1
+   **** cyclicOrEvent: 2
+   **** reserved: 3
+   **** reserved: 4
+   **** reserved: 5
+   **** reserved: 6
+   **** reserved: 7
+   **** noMsgSendType: 8
+ ** Default value: cyclic (0)
+2. Attribute `GenMsgCycleTime`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 10
+3. Attribute `checksumStartValue`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [0..255]
+ ** Default value: 0
+4. Attribute `GenMsgDelayTime`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 20
+5. Attribute `GenSigStartValue`
+ ** Object Type: signal
+  *** Type Float
+  *** Range: [-1.0E99..1.0E99]
+ ** Default value: 0.0
+
+==== Frames
+
+
+===== 1: `PWM_in`
+* CAN ID:  (0x1000)
+* Size: 8 Byte
+* Sender: `DEVKIT`
+* Attribute values:
+ ** GenMsgCycleTime: 100
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 0 (default)
+ ** GenMsgSendType: cyclic (0) (default)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|PA2_J3_pin3_periodTime|uint16_t|15|6|true|0.0|511.98437551|0.015625|0.0|ms|0|false||0
+|2|PA2_J3_pin3_isNew|boolean_t|1|7|false|0.0|0.0|1.0|0.0||0|false||0
+|3|PA6_J2_pin1_isNew|boolean_t|1|16|true|0.0|0.0|1.0|0.0||0|false||0
+|4|PA6_J2_pin1_dutyTime|uint16_t|15|17|false|0.0|511.984375|0.015625|0.0|ms|0|false||0
+|5|PA2_PA6_dutyCycle|uint16_t|15|39|true|0.0|100.0|0.00390625|0.0|%|0|false||0
+|6|PA2_J3_pin3_frequency|uint16_t|15|40|true|0.0|8191.75|0.25|0.0|Hz|0|false||0
+|=======
+
+===== 2: `PWM_out`
+* CAN ID:  (0x1001)
+* Size: 8 Byte
+* Sender: ``
+* Attribute values:
+ ** GenMsgCycleTime: 10 (default)
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 0 (default)
+ ** GenMsgSendType: event (1)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+* 12 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|LED_2_DS10_inhibit|boolean_t|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|LED_4_DS11_inhibit|boolean_t|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|LED_5_DS5_inhibit|boolean_t|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|PA1_J3_pin1_inhibit|boolean_t|1|3|false|0.0|1.0|1.0|0.0||1|true||0
+|5|LED_2_DS10_frequency|uint16_t|10|4|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
+|6|LED_4_DS11_frequency|uint16_t|10|14|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
+|7|LED_5_DS5_frequency|uint16_t|10|24|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
+|8|PA1_J3_pin1_frequency|uint16_t|10|34|false|2.0|10000.0|9.7752|0.0|Hz|1|true||0
+|9|LED_2_DS10_dutyCycle|uint8_t|5|44|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|10|LED_4_DS11_dutyCycle|uint8_t|5|49|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|11|LED_5_DS5_dutyCycle|uint8_t|5|54|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|12|PA1_J3_pin1_dutyCycle|uint8_t|5|59|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|=======
+
 === Bus `PT`
 * Network file name: `dbcFiles\sampleCanBus.dbc`
 * User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true

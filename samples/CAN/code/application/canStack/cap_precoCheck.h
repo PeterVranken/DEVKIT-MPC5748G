@@ -72,6 +72,15 @@
 #undef CAP_TMP_DEF_STRCMP_cap_
 
 
+
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CDE_NO_CAN_FRAMES_PWM
+              , "No single message from PWM.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
 /* For each bus, there should be at least one affected message, received or sent. There a
    typical mistakes in configuration of the code generator, which lead to not considering
    any message from the DBC file. These kind of mistakes are address by this check. */

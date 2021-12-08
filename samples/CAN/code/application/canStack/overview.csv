@@ -1,4 +1,22 @@
 Bus;Frame;ID;ID (hex);Sender;Signal;Receiver(s);Received by me;Byte Order;Type;No Bits;Start Bit;Min;Max;Scale;Offset;Unit
+PWM;PWM_in;1000;0x3e8;DEVKIT;PA2_J3_pin3_periodTime;;false;Motorola;uint16_t;15;6;0.0;511.98437551;0.015625;0.0;ms
+PWM;PWM_in;1000;0x3e8;DEVKIT;PA2_J3_pin3_isNew;;false;Intel;boolean_t;1;7;0.0;0.0;1.0;0.0;
+PWM;PWM_in;1000;0x3e8;DEVKIT;PA6_J2_pin1_isNew;;false;Motorola;boolean_t;1;16;0.0;0.0;1.0;0.0;
+PWM;PWM_in;1000;0x3e8;DEVKIT;PA6_J2_pin1_dutyTime;;false;Intel;uint16_t;15;17;0.0;511.984375;0.015625;0.0;ms
+PWM;PWM_in;1000;0x3e8;DEVKIT;PA2_PA6_dutyCycle;;false;Motorola;uint16_t;15;39;0.0;100.0;0.00390625;0.0;%
+PWM;PWM_in;1000;0x3e8;DEVKIT;PA2_J3_pin3_frequency;;false;Motorola;uint16_t;15;40;0.0;8191.75;0.25;0.0;Hz
+PWM;PWM_out;1001;0x3e9;;LED_2_DS10_inhibit;DEVKIT;true;Intel;boolean_t;1;0;0.0;1.0;1.0;0.0;
+PWM;PWM_out;1001;0x3e9;;LED_4_DS11_inhibit;DEVKIT;true;Intel;boolean_t;1;1;0.0;1.0;1.0;0.0;
+PWM;PWM_out;1001;0x3e9;;LED_5_DS5_inhibit;DEVKIT;true;Intel;boolean_t;1;2;0.0;1.0;1.0;0.0;
+PWM;PWM_out;1001;0x3e9;;PA1_J3_pin1_inhibit;DEVKIT;true;Intel;boolean_t;1;3;0.0;1.0;1.0;0.0;
+PWM;PWM_out;1001;0x3e9;;LED_2_DS10_frequency;DEVKIT;true;Intel;uint16_t;10;4;2.0;1000.0;0.97752;0.0;Hz
+PWM;PWM_out;1001;0x3e9;;LED_4_DS11_frequency;DEVKIT;true;Intel;uint16_t;10;14;2.0;1000.0;0.97752;0.0;Hz
+PWM;PWM_out;1001;0x3e9;;LED_5_DS5_frequency;DEVKIT;true;Intel;uint16_t;10;24;2.0;1000.0;0.97752;0.0;Hz
+PWM;PWM_out;1001;0x3e9;;PA1_J3_pin1_frequency;DEVKIT;true;Intel;uint16_t;10;34;2.0;10000.0;9.7752;0.0;Hz
+PWM;PWM_out;1001;0x3e9;;LED_2_DS10_dutyCycle;DEVKIT;true;Intel;uint8_t;5;44;0.0;0.0;3.2259;0.0;%
+PWM;PWM_out;1001;0x3e9;;LED_4_DS11_dutyCycle;DEVKIT;true;Intel;uint8_t;5;49;0.0;0.0;3.2259;0.0;%
+PWM;PWM_out;1001;0x3e9;;LED_5_DS5_dutyCycle;DEVKIT;true;Intel;uint8_t;5;54;0.0;0.0;3.2259;0.0;%
+PWM;PWM_out;1001;0x3e9;;PA1_J3_pin1_dutyCycle;DEVKIT;true;Intel;uint8_t;5;59;0.0;0.0;3.2259;0.0;%
 PT;StateEcu01;1024;0x400;ECU;checksum;PowerDisplay;true;Motorola;uint8_t;8;7;0.0;255.0;1.0;0.0;
 PT;StateEcu01;1024;0x400;ECU;speedOfRotation;PowerDisplay;true;Motorola;uint16_t;16;11;0.0;6500.0;0.1;0.0;rpm
 PT;StateEcu01;1024;0x400;ECU;sequenceCounter;PowerDisplay;true;Intel;uint8_t;4;12;0.0;14.0;1.0;0.0;

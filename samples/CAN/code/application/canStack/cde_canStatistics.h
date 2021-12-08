@@ -35,34 +35,68 @@
  */
 
 /** The number of CAN buses in the cluster. */
-#define CDE_NO_CAN_BUSES 1
+#define CDE_NO_CAN_BUSES 2
 
 /** The total number of affected CAN frames in the cluster, i.e. either sent or received. */
-#define CDE_NO_CAN_FRAMES (CDE_NO_CAN_FRAMES_PT)
+#define CDE_NO_CAN_FRAMES (CDE_NO_CAN_FRAMES_PWM + CDE_NO_CAN_FRAMES_PT)
 
 /** The number of sent CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_SENT (CDE_NO_CAN_FRAMES_SENT_PT)
+#define CDE_NO_CAN_FRAMES_SENT (CDE_NO_CAN_FRAMES_SENT_PWM + CDE_NO_CAN_FRAMES_SENT_PT)
 
 /** The number of received CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_RECEIVED (CDE_NO_CAN_FRAMES_RECEIVED_PT)
+#define CDE_NO_CAN_FRAMES_RECEIVED (CDE_NO_CAN_FRAMES_RECEIVED_PWM + CDE_NO_CAN_FRAMES_RECEIVED_PT)
 
 /** The number of received regular CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_RECEIVED_REGULAR (CDE_NO_CAN_FRAMES_RECEIVED_REGULAR_PT)
+#define CDE_NO_CAN_FRAMES_RECEIVED_REGULAR (CDE_NO_CAN_FRAMES_RECEIVED_REGULAR_PWM + \
+    CDE_NO_CAN_FRAMES_RECEIVED_REGULAR_PT)
 
 /** The number of received event CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_RECEIVED_EVENT (CDE_NO_CAN_FRAMES_RECEIVED_EVENT_PT)
+#define CDE_NO_CAN_FRAMES_RECEIVED_EVENT (CDE_NO_CAN_FRAMES_RECEIVED_EVENT_PWM + \
+    CDE_NO_CAN_FRAMES_RECEIVED_EVENT_PT)
 
 /** The number of received mixed mode CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_RECEIVED_MIXED (CDE_NO_CAN_FRAMES_RECEIVED_MIXED_PT)
+#define CDE_NO_CAN_FRAMES_RECEIVED_MIXED (CDE_NO_CAN_FRAMES_RECEIVED_MIXED_PWM + \
+    CDE_NO_CAN_FRAMES_RECEIVED_MIXED_PT)
 
 /** The number of sent regular CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_SENT_REGULAR (CDE_NO_CAN_FRAMES_SENT_REGULAR_PT)
+#define CDE_NO_CAN_FRAMES_SENT_REGULAR (CDE_NO_CAN_FRAMES_SENT_REGULAR_PWM + \
+    CDE_NO_CAN_FRAMES_SENT_REGULAR_PT)
 
 /** The number of sent event CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_SENT_EVENT (CDE_NO_CAN_FRAMES_SENT_EVENT_PT)
+#define CDE_NO_CAN_FRAMES_SENT_EVENT (CDE_NO_CAN_FRAMES_SENT_EVENT_PWM + \
+    CDE_NO_CAN_FRAMES_SENT_EVENT_PT)
 
 /** The number of sent mixed mode CAN frames in the cluster. */
-#define CDE_NO_CAN_FRAMES_SENT_MIXED (CDE_NO_CAN_FRAMES_SENT_MIXED_PT)
+#define CDE_NO_CAN_FRAMES_SENT_MIXED (CDE_NO_CAN_FRAMES_SENT_MIXED_PWM + \
+    CDE_NO_CAN_FRAMES_SENT_MIXED_PT)
+
+
+/** The total number of affected CAN frames in bus PWM, i.e. either sent or received. */
+#define CDE_NO_CAN_FRAMES_PWM 2u
+
+/** The number of sent CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_SENT_PWM 1u
+
+/** The number of received CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_RECEIVED_PWM 1u
+
+/** The number of received regular CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_RECEIVED_REGULAR_PWM 0u
+
+/** The number of received event CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_RECEIVED_EVENT_PWM 1u
+
+/** The number of received mixed mode CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_RECEIVED_MIXED_PWM 0u
+
+/** The number of sent regular CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_SENT_REGULAR_PWM 1u
+
+/** The number of sent event CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_SENT_EVENT_PWM 0u
+
+/** The number of sent mixed mode CAN frames in bus PWM. */
+#define CDE_NO_CAN_FRAMES_SENT_MIXED_PWM 0u
 
 
 /** The total number of affected CAN frames in bus PT, i.e. either sent or received. */
@@ -95,7 +129,7 @@
 
 /** We have a global array of all sent and received signals, cde_canSignalAry, which is not
     structured according to buses and fames. Here's the count of all contained signals. */
-#define CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS 25u
+#define CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS 43u
 
 
 /*

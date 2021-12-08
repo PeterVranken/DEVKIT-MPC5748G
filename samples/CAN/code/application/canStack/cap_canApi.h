@@ -48,6 +48,65 @@
 #endif
 
 
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame PWM_in (1000, 0x3e8)
+    on bus PWM in the message catalog. */
+#define CAP_FRAME_PWM_PWM_IN_1000
+
+/** Provide read/write access to the frame API struct, which bundles the set of signals of
+    frame PWM_in (1000, 0x3e8) on bus PWM with the
+    transmission status information. The referenced struct is a nested sub-element of the
+    large the CAN bus describing struct cap_canBus_PWM. */
+#define cap_getFrameSts_PWM_PWM_in_1000() \
+            (cap_canBus_PWM.PWM_PWM_in_1000_sts)
+
+/** Provide read/write access to the frame API struct, which bundles the signals of frame
+    PWM_in (1000, 0x3e8) on bus PWM. The referenced struct is
+    a nested sub-element of the large the CAN bus describing struct cap_canBus_PWM. */
+#define cap_getFrame_PWM_PWM_in_1000() \
+            (cap_canBus_PWM.PWM_PWM_in_1000_sts.signals)
+
+/** Provide read/write access to a field of the struct, which bundles the signals of frame
+    PWM_in (1000, 0x3e8) on bus PWM. This struct is a nested
+    sub-element of the large the CAN bus describing struct cap_canBus_PWM. */
+#define cap_getSignal_PWM_PWM_in_1000(signalName) \
+            (cap_canBus_PWM.PWM_PWM_in_1000_sts.signals.signalName)
+
+/** The size in Byte of frame PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_PWM_IN_1000_DLC	8
+
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame PWM_out (1001, 0x3e9)
+    on bus PWM in the message catalog. */
+#define CAP_FRAME_PWM_PWM_OUT_1001
+
+/** Provide read/write access to the frame API struct, which bundles the set of signals of
+    frame PWM_out (1001, 0x3e9) on bus PWM with the
+    transmission status information. The referenced struct is a nested sub-element of the
+    large the CAN bus describing struct cap_canBus_PWM. */
+#define cap_getFrameSts_PWM_PWM_out_1001() \
+            (cap_canBus_PWM.PWM_PWM_out_1001_sts)
+
+/** Provide read/write access to the frame API struct, which bundles the signals of frame
+    PWM_out (1001, 0x3e9) on bus PWM. The referenced struct is
+    a nested sub-element of the large the CAN bus describing struct cap_canBus_PWM. */
+#define cap_getFrame_PWM_PWM_out_1001() \
+            (cap_canBus_PWM.PWM_PWM_out_1001_sts.signals)
+
+/** Provide read/write access to a field of the struct, which bundles the signals of frame
+    PWM_out (1001, 0x3e9) on bus PWM. This struct is a nested
+    sub-element of the large the CAN bus describing struct cap_canBus_PWM. */
+#define cap_getSignal_PWM_PWM_out_1001(signalName) \
+            (cap_canBus_PWM.PWM_PWM_out_1001_sts.signals.signalName)
+
+/** The size in Byte of frame PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_PWM_OUT_1001_DLC	8
+
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame StateEcu01 (1024, 0x400)
+    on bus PT in the message catalog. */
+#define CAP_FRAME_PT_STATEECU01_1024
+
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame StateEcu01 (1024, 0x400) on bus PT with the
     transmission status information. The referenced struct is a nested sub-element of the
@@ -97,6 +156,11 @@
 /** The maximum value of the sequence counter of frame StateEcu01 (1024, 0x400)
     on bus PT. */
 #define CAP_PT_STATEECU01_1024_SQC_TO	14
+
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame StateEcu02 (1040, 0x410)
+    on bus PT in the message catalog. */
+#define CAP_FRAME_PT_STATEECU02_1040
 
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame StateEcu02 (1040, 0x410) on bus PT with the
@@ -148,6 +212,11 @@
     on bus PT. */
 #define CAP_PT_STATEECU02_1040_SQC_TO	15
 
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame UserLimits (2032, 0x7f0)
+    on bus PT in the message catalog. */
+#define CAP_FRAME_PT_USERLIMITS_2032
+
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame UserLimits (2032, 0x7f0) on bus PT with the
     transmission status information. The referenced struct is a nested sub-element of the
@@ -197,6 +266,11 @@
 /** The maximum value of the sequence counter of frame UserLimits (2032, 0x7f0)
     on bus PT. */
 #define CAP_PT_USERLIMITS_2032_SQC_TO	14
+
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame InfoPowerDisplay (1536, 0x600)
+    on bus PT in the message catalog. */
+#define CAP_FRAME_PT_INFOPOWERDISPLAY_1536
 
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame InfoPowerDisplay (1536, 0x600) on bus PT with the
@@ -248,6 +322,11 @@
     on bus PT. */
 #define CAP_PT_INFOPOWERDISPLAY_1536_SQC_TO	14
 
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame StatusPowerDisplay (1537, 0x601)
+    on bus PT in the message catalog. */
+#define CAP_FRAME_PT_STATUSPOWERDISPLAY_1537
+
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame StatusPowerDisplay (1537, 0x601) on bus PT with the
     transmission status information. The referenced struct is a nested sub-element of the
@@ -298,6 +377,11 @@
     on bus PT. */
 #define CAP_PT_STATUSPOWERDISPLAY_1537_SQC_TO	126
 
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame LimitsPowerDisplay (1538, 0x602)
+    on bus PT in the message catalog. */
+#define CAP_FRAME_PT_LIMITSPOWERDISPLAY_1538
+
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame LimitsPowerDisplay (1538, 0x602) on bus PT with the
     transmission status information. The referenced struct is a nested sub-element of the
@@ -333,353 +417,736 @@
 #define CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_TO	6
 
 
+/** Convert the binary value of signal PA2_J3_pin3_periodTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the world value. */
+#define CAP_PWM_1000_PA2_J3_pin3_periodTime_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1000_PA2_J3_pin3_periodTime_FACTOR)
+
+/** Convert the world value of signal PA2_J3_pin3_periodTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1000_PA2_J3_pin3_periodTime_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1000_PA2_J3_pin3_periodTime_FACTOR))
+
+/** The gain factor of the scaling of signal PA2_J3_pin3_periodTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_periodTime_FACTOR	(0.015625)
+
+/** The offset of the scaling of signal PA2_J3_pin3_periodTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_periodTime_OFFSET	(0.0)
+
+/** The minimum of the world value of signal PA2_J3_pin3_periodTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_periodTime_MIN	(0.0)
+
+/** The maximum of the world value of signal PA2_J3_pin3_periodTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_periodTime_MAX	(511.98437551)
+
+/** The minimum of the world value of signal PA2_J3_pin3_isNew of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_isNew_MIN	(0)
+
+/** The maximum of the world value of signal PA2_J3_pin3_isNew of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_isNew_MAX	(0)
+
+/** The minimum of the world value of signal PA6_J2_pin1_isNew of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA6_J2_pin1_isNew_MIN	(0)
+
+/** The maximum of the world value of signal PA6_J2_pin1_isNew of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA6_J2_pin1_isNew_MAX	(0)
+
+
+/** Convert the binary value of signal PA6_J2_pin1_dutyTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the world value. */
+#define CAP_PWM_1000_PA6_J2_pin1_dutyTime_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1000_PA6_J2_pin1_dutyTime_FACTOR)
+
+/** Convert the world value of signal PA6_J2_pin1_dutyTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1000_PA6_J2_pin1_dutyTime_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1000_PA6_J2_pin1_dutyTime_FACTOR))
+
+/** The gain factor of the scaling of signal PA6_J2_pin1_dutyTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA6_J2_pin1_dutyTime_FACTOR	(0.015625)
+
+/** The offset of the scaling of signal PA6_J2_pin1_dutyTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA6_J2_pin1_dutyTime_OFFSET	(0.0)
+
+/** The minimum of the world value of signal PA6_J2_pin1_dutyTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA6_J2_pin1_dutyTime_MIN	(0.0)
+
+/** The maximum of the world value of signal PA6_J2_pin1_dutyTime of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA6_J2_pin1_dutyTime_MAX	(511.984375)
+
+
+/** Convert the binary value of signal PA2_PA6_dutyCycle of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the world value. */
+#define CAP_PWM_1000_PA2_PA6_dutyCycle_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1000_PA2_PA6_dutyCycle_FACTOR)
+
+/** Convert the world value of signal PA2_PA6_dutyCycle of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1000_PA2_PA6_dutyCycle_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1000_PA2_PA6_dutyCycle_FACTOR))
+
+/** The gain factor of the scaling of signal PA2_PA6_dutyCycle of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_PA6_dutyCycle_FACTOR	(0.00390625)
+
+/** The offset of the scaling of signal PA2_PA6_dutyCycle of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_PA6_dutyCycle_OFFSET	(0.0)
+
+/** The minimum of the world value of signal PA2_PA6_dutyCycle of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_PA6_dutyCycle_MIN	(0.0)
+
+/** The maximum of the world value of signal PA2_PA6_dutyCycle of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_PA6_dutyCycle_MAX	(100.0)
+
+
+/** Convert the binary value of signal PA2_J3_pin3_frequency of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the world value. */
+#define CAP_PWM_1000_PA2_J3_pin3_frequency_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1000_PA2_J3_pin3_frequency_FACTOR)
+
+/** Convert the world value of signal PA2_J3_pin3_frequency of frame
+    PWM_in (1000, 0x3e8) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1000_PA2_J3_pin3_frequency_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1000_PA2_J3_pin3_frequency_FACTOR))
+
+/** The gain factor of the scaling of signal PA2_J3_pin3_frequency of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_frequency_FACTOR	(0.25)
+
+/** The offset of the scaling of signal PA2_J3_pin3_frequency of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_frequency_OFFSET	(0.0)
+
+/** The minimum of the world value of signal PA2_J3_pin3_frequency of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_frequency_MIN	(0.0)
+
+/** The maximum of the world value of signal PA2_J3_pin3_frequency of frame
+    PWM_in (1000, 0x3e8) on bus PWM. */
+#define CAP_PWM_1000_PA2_J3_pin3_frequency_MAX	(8191.75)
+
+/** The minimum of the world value of signal LED_2_DS10_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_inhibit_MIN	(0)
+
+/** The maximum of the world value of signal LED_2_DS10_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_inhibit_MAX	(1)
+
+/** The minimum of the world value of signal LED_4_DS11_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_inhibit_MIN	(0)
+
+/** The maximum of the world value of signal LED_4_DS11_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_inhibit_MAX	(1)
+
+/** The minimum of the world value of signal LED_5_DS5_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_inhibit_MIN	(0)
+
+/** The maximum of the world value of signal LED_5_DS5_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_inhibit_MAX	(1)
+
+/** The minimum of the world value of signal PA1_J3_pin1_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_inhibit_MIN	(0)
+
+/** The maximum of the world value of signal PA1_J3_pin1_inhibit of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_inhibit_MAX	(1)
+
+
+/** Convert the binary value of signal LED_2_DS10_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_LED_2_DS10_frequency_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_LED_2_DS10_frequency_FACTOR)
+
+/** Convert the world value of signal LED_2_DS10_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_LED_2_DS10_frequency_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1001_LED_2_DS10_frequency_FACTOR))
+
+/** The gain factor of the scaling of signal LED_2_DS10_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_frequency_FACTOR	(0.97752)
+
+/** The offset of the scaling of signal LED_2_DS10_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_frequency_OFFSET	(0.0)
+
+/** The minimum of the world value of signal LED_2_DS10_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_frequency_MIN	(2.0)
+
+/** The maximum of the world value of signal LED_2_DS10_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_frequency_MAX	(1000.0)
+
+
+/** Convert the binary value of signal LED_4_DS11_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_LED_4_DS11_frequency_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_LED_4_DS11_frequency_FACTOR)
+
+/** Convert the world value of signal LED_4_DS11_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_LED_4_DS11_frequency_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1001_LED_4_DS11_frequency_FACTOR))
+
+/** The gain factor of the scaling of signal LED_4_DS11_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_frequency_FACTOR	(0.97752)
+
+/** The offset of the scaling of signal LED_4_DS11_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_frequency_OFFSET	(0.0)
+
+/** The minimum of the world value of signal LED_4_DS11_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_frequency_MIN	(2.0)
+
+/** The maximum of the world value of signal LED_4_DS11_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_frequency_MAX	(1000.0)
+
+
+/** Convert the binary value of signal LED_5_DS5_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_LED_5_DS5_frequency_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_LED_5_DS5_frequency_FACTOR)
+
+/** Convert the world value of signal LED_5_DS5_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_LED_5_DS5_frequency_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1001_LED_5_DS5_frequency_FACTOR))
+
+/** The gain factor of the scaling of signal LED_5_DS5_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_frequency_FACTOR	(0.97752)
+
+/** The offset of the scaling of signal LED_5_DS5_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_frequency_OFFSET	(0.0)
+
+/** The minimum of the world value of signal LED_5_DS5_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_frequency_MIN	(2.0)
+
+/** The maximum of the world value of signal LED_5_DS5_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_frequency_MAX	(1000.0)
+
+
+/** Convert the binary value of signal PA1_J3_pin1_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_PA1_J3_pin1_frequency_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_PA1_J3_pin1_frequency_FACTOR)
+
+/** Convert the world value of signal PA1_J3_pin1_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_PA1_J3_pin1_frequency_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PWM_1001_PA1_J3_pin1_frequency_FACTOR))
+
+/** The gain factor of the scaling of signal PA1_J3_pin1_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_frequency_FACTOR	(9.7752)
+
+/** The offset of the scaling of signal PA1_J3_pin1_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_frequency_OFFSET	(0.0)
+
+/** The minimum of the world value of signal PA1_J3_pin1_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_frequency_MIN	(2.0)
+
+/** The maximum of the world value of signal PA1_J3_pin1_frequency of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_frequency_MAX	(10000.0)
+
+
+/** Convert the binary value of signal LED_2_DS10_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_LED_2_DS10_dutyCycle_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_LED_2_DS10_dutyCycle_FACTOR)
+
+/** Convert the world value of signal LED_2_DS10_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_LED_2_DS10_dutyCycle_DBL_TO_BIN(dbl) \
+            ((uint8_t)((dbl)/CAP_PWM_1001_LED_2_DS10_dutyCycle_FACTOR))
+
+/** The gain factor of the scaling of signal LED_2_DS10_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_dutyCycle_FACTOR	(3.2259)
+
+/** The offset of the scaling of signal LED_2_DS10_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_dutyCycle_OFFSET	(0.0)
+
+/** The minimum of the world value of signal LED_2_DS10_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_dutyCycle_MIN	(0.0)
+
+/** The maximum of the world value of signal LED_2_DS10_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_2_DS10_dutyCycle_MAX	(0.0)
+
+
+/** Convert the binary value of signal LED_4_DS11_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_LED_4_DS11_dutyCycle_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_LED_4_DS11_dutyCycle_FACTOR)
+
+/** Convert the world value of signal LED_4_DS11_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_LED_4_DS11_dutyCycle_DBL_TO_BIN(dbl) \
+            ((uint8_t)((dbl)/CAP_PWM_1001_LED_4_DS11_dutyCycle_FACTOR))
+
+/** The gain factor of the scaling of signal LED_4_DS11_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_dutyCycle_FACTOR	(3.2259)
+
+/** The offset of the scaling of signal LED_4_DS11_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_dutyCycle_OFFSET	(0.0)
+
+/** The minimum of the world value of signal LED_4_DS11_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_dutyCycle_MIN	(0.0)
+
+/** The maximum of the world value of signal LED_4_DS11_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_4_DS11_dutyCycle_MAX	(0.0)
+
+
+/** Convert the binary value of signal LED_5_DS5_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_LED_5_DS5_dutyCycle_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_LED_5_DS5_dutyCycle_FACTOR)
+
+/** Convert the world value of signal LED_5_DS5_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_LED_5_DS5_dutyCycle_DBL_TO_BIN(dbl) \
+            ((uint8_t)((dbl)/CAP_PWM_1001_LED_5_DS5_dutyCycle_FACTOR))
+
+/** The gain factor of the scaling of signal LED_5_DS5_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_dutyCycle_FACTOR	(3.2259)
+
+/** The offset of the scaling of signal LED_5_DS5_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_dutyCycle_OFFSET	(0.0)
+
+/** The minimum of the world value of signal LED_5_DS5_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_dutyCycle_MIN	(0.0)
+
+/** The maximum of the world value of signal LED_5_DS5_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_LED_5_DS5_dutyCycle_MAX	(0.0)
+
+
+/** Convert the binary value of signal PA1_J3_pin1_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the world value. */
+#define CAP_PWM_1001_PA1_J3_pin1_dutyCycle_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PWM_1001_PA1_J3_pin1_dutyCycle_FACTOR)
+
+/** Convert the world value of signal PA1_J3_pin1_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM into the binary value as
+    transmitted via the CAN interface. */
+#define CAP_PWM_1001_PA1_J3_pin1_dutyCycle_DBL_TO_BIN(dbl) \
+            ((uint8_t)((dbl)/CAP_PWM_1001_PA1_J3_pin1_dutyCycle_FACTOR))
+
+/** The gain factor of the scaling of signal PA1_J3_pin1_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_dutyCycle_FACTOR	(3.2259)
+
+/** The offset of the scaling of signal PA1_J3_pin1_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_dutyCycle_OFFSET	(0.0)
+
+/** The minimum of the world value of signal PA1_J3_pin1_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_dutyCycle_MIN	(0.0)
+
+/** The maximum of the world value of signal PA1_J3_pin1_dutyCycle of frame
+    PWM_out (1001, 0x3e9) on bus PWM. */
+#define CAP_PWM_1001_PA1_J3_pin1_dutyCycle_MAX	(0.0)
+
 /** The minimum of the world value of signal checksum of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_CHECKSUM_MIN	(0)
+#define CAP_PT_1024_checksum_MIN	(0)
 
 /** The maximum of the world value of signal checksum of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_CHECKSUM_MAX	(255)
+#define CAP_PT_1024_checksum_MAX	(255)
 
 
 /** Convert the binary value of signal speedOfRotation of frame
     StateEcu01 (1024, 0x400) on bus PT into the world value. */
-#define CAP_PT_1024_SPEEDOFROTATION_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_1024_SPEEDOFROTATION_FACTOR)
+#define CAP_PT_1024_speedOfRotation_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_1024_speedOfRotation_FACTOR)
 
 /** Convert the world value of signal speedOfRotation of frame
     StateEcu01 (1024, 0x400) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_1024_SPEEDOFROTATION_DBL_TO_BIN(dbl) \
-            ((uint16_t)((dbl)/CAP_PT_1024_SPEEDOFROTATION_FACTOR))
+#define CAP_PT_1024_speedOfRotation_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PT_1024_speedOfRotation_FACTOR))
 
 /** The gain factor of the scaling of signal speedOfRotation of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_SPEEDOFROTATION_FACTOR	(0.1)
+#define CAP_PT_1024_speedOfRotation_FACTOR	(0.1)
 
 /** The offset of the scaling of signal speedOfRotation of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_SPEEDOFROTATION_OFFSET	(0.0)
+#define CAP_PT_1024_speedOfRotation_OFFSET	(0.0)
 
 /** The minimum of the world value of signal speedOfRotation of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_SPEEDOFROTATION_MIN	(0.0)
+#define CAP_PT_1024_speedOfRotation_MIN	(0.0)
 
 /** The maximum of the world value of signal speedOfRotation of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_SPEEDOFROTATION_MAX	(6500.0)
+#define CAP_PT_1024_speedOfRotation_MAX	(6500.0)
 
 /** The minimum of the world value of signal sequenceCounter of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_SEQUENCECOUNTER_MIN	(0)
+#define CAP_PT_1024_sequenceCounter_MIN	(0)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     StateEcu01 (1024, 0x400) on bus PT. */
-#define CAP_PT_1024_SEQUENCECOUNTER_MAX	(14)
+#define CAP_PT_1024_sequenceCounter_MAX	(14)
 
 /** The minimum of the world value of signal checksum of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_CHECKSUM_MIN	(0)
+#define CAP_PT_1040_checksum_MIN	(0)
 
 /** The maximum of the world value of signal checksum of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_CHECKSUM_MAX	(255)
+#define CAP_PT_1040_checksum_MAX	(255)
 
 /** The minimum of the world value of signal sequenceCounter of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_SEQUENCECOUNTER_MIN	(1)
+#define CAP_PT_1040_sequenceCounter_MIN	(1)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_SEQUENCECOUNTER_MAX	(15)
+#define CAP_PT_1040_sequenceCounter_MAX	(15)
 
 
 /** Convert the binary value of signal torque of frame
     StateEcu02 (1040, 0x410) on bus PT into the world value. */
-#define CAP_PT_1040_TORQUE_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_1040_TORQUE_FACTOR)
+#define CAP_PT_1040_torque_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_1040_torque_FACTOR)
 
 /** Convert the world value of signal torque of frame
     StateEcu02 (1040, 0x410) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_1040_TORQUE_DBL_TO_BIN(dbl) \
-            ((int16_t)((dbl)/CAP_PT_1040_TORQUE_FACTOR))
+#define CAP_PT_1040_torque_DBL_TO_BIN(dbl) \
+            ((int16_t)((dbl)/CAP_PT_1040_torque_FACTOR))
 
 /** The gain factor of the scaling of signal torque of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_TORQUE_FACTOR	(0.5)
+#define CAP_PT_1040_torque_FACTOR	(0.5)
 
 /** The offset of the scaling of signal torque of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_TORQUE_OFFSET	(0.0)
+#define CAP_PT_1040_torque_OFFSET	(0.0)
 
 /** The minimum of the world value of signal torque of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_TORQUE_MIN	(-500.0)
+#define CAP_PT_1040_torque_MIN	(-500.0)
 
 /** The maximum of the world value of signal torque of frame
     StateEcu02 (1040, 0x410) on bus PT. */
-#define CAP_PT_1040_TORQUE_MAX	(500.0)
+#define CAP_PT_1040_torque_MAX	(500.0)
 
 /** The minimum of the world value of signal sequenceCounter of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_SEQUENCECOUNTER_MIN	(1)
+#define CAP_PT_2032_sequenceCounter_MIN	(1)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_SEQUENCECOUNTER_MAX	(14)
+#define CAP_PT_2032_sequenceCounter_MAX	(14)
 
 
 /** Convert the binary value of signal minSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT into the world value. */
-#define CAP_PT_2032_MINSPEEDOFROTATION_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_2032_MINSPEEDOFROTATION_FACTOR)
+#define CAP_PT_2032_minSpeedOfRotation_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_2032_minSpeedOfRotation_FACTOR)
 
 /** Convert the world value of signal minSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_2032_MINSPEEDOFROTATION_DBL_TO_BIN(dbl) \
-            ((uint16_t)((dbl)/CAP_PT_2032_MINSPEEDOFROTATION_FACTOR))
+#define CAP_PT_2032_minSpeedOfRotation_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PT_2032_minSpeedOfRotation_FACTOR))
 
 /** The gain factor of the scaling of signal minSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINSPEEDOFROTATION_FACTOR	(1.6)
+#define CAP_PT_2032_minSpeedOfRotation_FACTOR	(1.6)
 
 /** The offset of the scaling of signal minSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINSPEEDOFROTATION_OFFSET	(0.0)
+#define CAP_PT_2032_minSpeedOfRotation_OFFSET	(0.0)
 
 /** The minimum of the world value of signal minSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINSPEEDOFROTATION_MIN	(0.0)
+#define CAP_PT_2032_minSpeedOfRotation_MIN	(0.0)
 
 /** The maximum of the world value of signal minSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINSPEEDOFROTATION_MAX	(6500.0)
+#define CAP_PT_2032_minSpeedOfRotation_MAX	(6500.0)
 
 
 /** Convert the binary value of signal maxSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT into the world value. */
-#define CAP_PT_2032_MAXSPEEDOFROTATION_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_2032_MAXSPEEDOFROTATION_FACTOR)
+#define CAP_PT_2032_maxSpeedOfRotation_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_2032_maxSpeedOfRotation_FACTOR)
 
 /** Convert the world value of signal maxSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_2032_MAXSPEEDOFROTATION_DBL_TO_BIN(dbl) \
-            ((uint16_t)((dbl)/CAP_PT_2032_MAXSPEEDOFROTATION_FACTOR))
+#define CAP_PT_2032_maxSpeedOfRotation_DBL_TO_BIN(dbl) \
+            ((uint16_t)((dbl)/CAP_PT_2032_maxSpeedOfRotation_FACTOR))
 
 /** The gain factor of the scaling of signal maxSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXSPEEDOFROTATION_FACTOR	(1.6)
+#define CAP_PT_2032_maxSpeedOfRotation_FACTOR	(1.6)
 
 /** The offset of the scaling of signal maxSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXSPEEDOFROTATION_OFFSET	(0.0)
+#define CAP_PT_2032_maxSpeedOfRotation_OFFSET	(0.0)
 
 /** The minimum of the world value of signal maxSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXSPEEDOFROTATION_MIN	(0.0)
+#define CAP_PT_2032_maxSpeedOfRotation_MIN	(0.0)
 
 /** The maximum of the world value of signal maxSpeedOfRotation of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXSPEEDOFROTATION_MAX	(6500.0)
+#define CAP_PT_2032_maxSpeedOfRotation_MAX	(6500.0)
 
 /** The minimum of the world value of signal checksum of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_CHECKSUM_MIN	(0)
+#define CAP_PT_2032_checksum_MIN	(0)
 
 /** The maximum of the world value of signal checksum of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_CHECKSUM_MAX	(255)
+#define CAP_PT_2032_checksum_MAX	(255)
 
 
 /** Convert the binary value of signal minPower of frame
     UserLimits (2032, 0x7f0) on bus PT into the world value. */
-#define CAP_PT_2032_MINPOWER_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_2032_MINPOWER_FACTOR+CAP_PT_2032_MINPOWER_OFFSET)
+#define CAP_PT_2032_minPower_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_2032_minPower_FACTOR+CAP_PT_2032_minPower_OFFSET)
 
 /** Convert the world value of signal minPower of frame
     UserLimits (2032, 0x7f0) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_2032_MINPOWER_DBL_TO_BIN(dbl) \
-            ((uint16_t)(((dbl)-CAP_PT_2032_MINPOWER_OFFSET)/CAP_PT_2032_MINPOWER_FACTOR))
+#define CAP_PT_2032_minPower_DBL_TO_BIN(dbl) \
+            ((uint16_t)(((dbl)-CAP_PT_2032_minPower_OFFSET)/CAP_PT_2032_minPower_FACTOR))
 
 /** The gain factor of the scaling of signal minPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINPOWER_FACTOR	(0.5)
+#define CAP_PT_2032_minPower_FACTOR	(0.5)
 
 /** The offset of the scaling of signal minPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINPOWER_OFFSET	(-10.0)
+#define CAP_PT_2032_minPower_OFFSET	(-10.0)
 
 /** The minimum of the world value of signal minPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINPOWER_MIN	(-10.0)
+#define CAP_PT_2032_minPower_MIN	(-10.0)
 
 /** The maximum of the world value of signal minPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MINPOWER_MAX	(240.0)
+#define CAP_PT_2032_minPower_MAX	(240.0)
 
 
 /** Convert the binary value of signal maxPower of frame
     UserLimits (2032, 0x7f0) on bus PT into the world value. */
-#define CAP_PT_2032_MAXPOWER_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_2032_MAXPOWER_FACTOR+CAP_PT_2032_MAXPOWER_OFFSET)
+#define CAP_PT_2032_maxPower_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_2032_maxPower_FACTOR+CAP_PT_2032_maxPower_OFFSET)
 
 /** Convert the world value of signal maxPower of frame
     UserLimits (2032, 0x7f0) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_2032_MAXPOWER_DBL_TO_BIN(dbl) \
-            ((uint16_t)(((dbl)-CAP_PT_2032_MAXPOWER_OFFSET)/CAP_PT_2032_MAXPOWER_FACTOR))
+#define CAP_PT_2032_maxPower_DBL_TO_BIN(dbl) \
+            ((uint16_t)(((dbl)-CAP_PT_2032_maxPower_OFFSET)/CAP_PT_2032_maxPower_FACTOR))
 
 /** The gain factor of the scaling of signal maxPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXPOWER_FACTOR	(0.5)
+#define CAP_PT_2032_maxPower_FACTOR	(0.5)
 
 /** The offset of the scaling of signal maxPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXPOWER_OFFSET	(-10.0)
+#define CAP_PT_2032_maxPower_OFFSET	(-10.0)
 
 /** The minimum of the world value of signal maxPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXPOWER_MIN	(-10.0)
+#define CAP_PT_2032_maxPower_MIN	(-10.0)
 
 /** The maximum of the world value of signal maxPower of frame
     UserLimits (2032, 0x7f0) on bus PT. */
-#define CAP_PT_2032_MAXPOWER_MAX	(240.0)
+#define CAP_PT_2032_maxPower_MAX	(240.0)
 
 /** The minimum of the world value of signal checksum of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_CHECKSUM_MIN	(0)
+#define CAP_PT_1536_checksum_MIN	(0)
 
 /** The maximum of the world value of signal checksum of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_CHECKSUM_MAX	(255)
+#define CAP_PT_1536_checksum_MAX	(255)
 
 /** The minimum of the world value of signal sequenceCounter of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_SEQUENCECOUNTER_MIN	(0)
+#define CAP_PT_1536_sequenceCounter_MIN	(0)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_SEQUENCECOUNTER_MAX	(14)
+#define CAP_PT_1536_sequenceCounter_MAX	(14)
 
 
 /** Convert the binary value of signal power of frame
     InfoPowerDisplay (1536, 0x600) on bus PT into the world value. */
-#define CAP_PT_1536_POWER_BIN_TO_DBL(bin) \
-            ((double)(bin)*CAP_PT_1536_POWER_FACTOR+CAP_PT_1536_POWER_OFFSET)
+#define CAP_PT_1536_power_BIN_TO_DBL(bin) \
+            ((double)(bin)*CAP_PT_1536_power_FACTOR+CAP_PT_1536_power_OFFSET)
 
 /** Convert the world value of signal power of frame
     InfoPowerDisplay (1536, 0x600) on bus PT into the binary value as
     transmitted via the CAN interface. */
-#define CAP_PT_1536_POWER_DBL_TO_BIN(dbl) \
-            ((uint16_t)(((dbl)-CAP_PT_1536_POWER_OFFSET)/CAP_PT_1536_POWER_FACTOR))
+#define CAP_PT_1536_power_DBL_TO_BIN(dbl) \
+            ((uint16_t)(((dbl)-CAP_PT_1536_power_OFFSET)/CAP_PT_1536_power_FACTOR))
 
 /** The gain factor of the scaling of signal power of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_POWER_FACTOR	(32.0)
+#define CAP_PT_1536_power_FACTOR	(32.0)
 
 /** The offset of the scaling of signal power of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_POWER_OFFSET	(-500000.0)
+#define CAP_PT_1536_power_OFFSET	(-500000.0)
 
 /** The minimum of the world value of signal power of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_POWER_MIN	(-500000.0)
+#define CAP_PT_1536_power_MIN	(-500000.0)
 
 /** The maximum of the world value of signal power of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_POWER_MAX	(500000.0)
+#define CAP_PT_1536_power_MAX	(500000.0)
 
 /** The minimum of the world value of signal state of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_STATE_MIN	(0)
+#define CAP_PT_1536_state_MIN	(0)
 
 /** The maximum of the world value of signal state of frame
     InfoPowerDisplay (1536, 0x600) on bus PT. */
-#define CAP_PT_1536_STATE_MAX	(2)
+#define CAP_PT_1536_state_MAX	(2)
 
 /** The minimum of the world value of signal noDlcErrors of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_NODLCERRORS_MIN	(0)
+#define CAP_PT_1537_noDlcErrors_MIN	(0)
 
 /** The maximum of the world value of signal noDlcErrors of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_NODLCERRORS_MAX	(2047)
+#define CAP_PT_1537_noDlcErrors_MAX	(2047)
 
 /** The minimum of the world value of signal noCheckSumErrors of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_NOCHECKSUMERRORS_MIN	(0)
+#define CAP_PT_1537_noCheckSumErrors_MIN	(0)
 
 /** The maximum of the world value of signal noCheckSumErrors of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_NOCHECKSUMERRORS_MAX	(2047)
+#define CAP_PT_1537_noCheckSumErrors_MAX	(2047)
 
 /** The minimum of the world value of signal noSqcErrors of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_NOSQCERRORS_MIN	(0)
+#define CAP_PT_1537_noSqcErrors_MIN	(0)
 
 /** The maximum of the world value of signal noSqcErrors of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_NOSQCERRORS_MAX	(2047)
+#define CAP_PT_1537_noSqcErrors_MAX	(2047)
 
 /** The minimum of the world value of signal sequenceCounter of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_SEQUENCECOUNTER_MIN	(1)
+#define CAP_PT_1537_sequenceCounter_MIN	(1)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_SEQUENCECOUNTER_MAX	(126)
+#define CAP_PT_1537_sequenceCounter_MAX	(126)
 
 /** The minimum of the world value of signal checksum of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_CHECKSUM_MIN	(0)
+#define CAP_PT_1537_checksum_MIN	(0)
 
 /** The maximum of the world value of signal checksum of frame
     StatusPowerDisplay (1537, 0x601) on bus PT. */
-#define CAP_PT_1537_CHECKSUM_MAX	(255)
+#define CAP_PT_1537_checksum_MAX	(255)
 
 /** The minimum of the world value of signal sequenceCounter of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_SEQUENCECOUNTER_MIN	(1)
+#define CAP_PT_1538_sequenceCounter_MIN	(1)
 
 /** The maximum of the world value of signal sequenceCounter of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_SEQUENCECOUNTER_MAX	(6)
+#define CAP_PT_1538_sequenceCounter_MAX	(6)
 
 /** The minimum of the world value of signal belowMinSpeedOfRotation of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_BELOWMINSPEEDOFROTATION_MIN	(0)
+#define CAP_PT_1538_belowMinSpeedOfRotation_MIN	(0)
 
 /** The maximum of the world value of signal belowMinSpeedOfRotation of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_BELOWMINSPEEDOFROTATION_MAX	(1)
+#define CAP_PT_1538_belowMinSpeedOfRotation_MAX	(1)
 
 /** The minimum of the world value of signal aboveMaxSpeedOfRotation of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_ABOVEMAXSPEEDOFROTATION_MIN	(0)
+#define CAP_PT_1538_aboveMaxSpeedOfRotation_MIN	(0)
 
 /** The maximum of the world value of signal aboveMaxSpeedOfRotation of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_ABOVEMAXSPEEDOFROTATION_MAX	(1)
+#define CAP_PT_1538_aboveMaxSpeedOfRotation_MAX	(1)
 
 /** The minimum of the world value of signal belowMinPower of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_BELOWMINPOWER_MIN	(0)
+#define CAP_PT_1538_belowMinPower_MIN	(0)
 
 /** The maximum of the world value of signal belowMinPower of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_BELOWMINPOWER_MAX	(1)
+#define CAP_PT_1538_belowMinPower_MAX	(1)
 
 /** The minimum of the world value of signal aboveMaxPower of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_ABOVEMAXPOWER_MIN	(0)
+#define CAP_PT_1538_aboveMaxPower_MIN	(0)
 
 /** The maximum of the world value of signal aboveMaxPower of frame
     LimitsPowerDisplay (1538, 0x602) on bus PT. */
-#define CAP_PT_1538_ABOVEMAXPOWER_MAX	(1)
+#define CAP_PT_1538_aboveMaxPower_MAX	(1)
 
 
 
@@ -772,6 +1239,74 @@ typedef struct cap_infoTransmission_t
 
 } cap_infoTransmission_t;
 
+
+
+/** The signals of outbound CAN frame PWM_in (1000, 0x3e8) on
+    bus PWM. */
+typedef struct cap_PWM_PWM_in_1000_t
+{
+    /** Signal PA2_J3_pin3_periodTime. */
+    uint16_t PA2_J3_pin3_periodTime;
+
+    /** Signal PA2_J3_pin3_isNew. */
+    boolean_t PA2_J3_pin3_isNew;
+
+    /** Signal PA6_J2_pin1_isNew. */
+    boolean_t PA6_J2_pin1_isNew;
+
+    /** Signal PA6_J2_pin1_dutyTime. */
+    uint16_t PA6_J2_pin1_dutyTime;
+
+    /** Signal PA2_PA6_dutyCycle. */
+    uint16_t PA2_PA6_dutyCycle;
+
+    /** Signal PA2_J3_pin3_frequency. */
+    uint16_t PA2_J3_pin3_frequency;
+
+} cap_PWM_PWM_in_1000_t;
+
+
+/** The signals of inbound CAN frame PWM_out (1001, 0x3e9) on
+    bus PWM. */
+typedef struct cap_PWM_PWM_out_1001_t
+{
+    /** Signal LED_2_DS10_inhibit. */
+    boolean_t LED_2_DS10_inhibit;
+
+    /** Signal LED_4_DS11_inhibit. */
+    boolean_t LED_4_DS11_inhibit;
+
+    /** Signal LED_5_DS5_inhibit. */
+    boolean_t LED_5_DS5_inhibit;
+
+    /** Signal PA1_J3_pin1_inhibit. */
+    boolean_t PA1_J3_pin1_inhibit;
+
+    /** Signal LED_2_DS10_frequency. */
+    uint16_t LED_2_DS10_frequency;
+
+    /** Signal LED_4_DS11_frequency. */
+    uint16_t LED_4_DS11_frequency;
+
+    /** Signal LED_5_DS5_frequency. */
+    uint16_t LED_5_DS5_frequency;
+
+    /** Signal PA1_J3_pin1_frequency. */
+    uint16_t PA1_J3_pin1_frequency;
+
+    /** Signal LED_2_DS10_dutyCycle. */
+    uint8_t LED_2_DS10_dutyCycle;
+
+    /** Signal LED_4_DS11_dutyCycle. */
+    uint8_t LED_4_DS11_dutyCycle;
+
+    /** Signal LED_5_DS5_dutyCycle. */
+    uint8_t LED_5_DS5_dutyCycle;
+
+    /** Signal PA1_J3_pin1_dutyCycle. */
+    uint8_t PA1_J3_pin1_dutyCycle;
+
+} cap_PWM_PWM_out_1001_t;
 
 
 /** The signals of inbound CAN frame StateEcu01 (1024, 0x400) on
@@ -894,6 +1429,32 @@ typedef struct cap_PT_LimitsPowerDisplay_1538_t
 } cap_PT_LimitsPowerDisplay_1538_t;
 
 
+/** Signals and transmission status of outbound CAN frame PWM_in
+    (1000, 0x3e8) on bus PWM. */
+typedef struct cap_PWM_PWM_in_1000_sts_t
+{
+    /** The collection of signals of the frame. */
+    cap_PWM_PWM_in_1000_t signals;
+
+    /** Some transmission related information for this frame. */
+    cap_infoTransmission_t infoTransmission;
+
+} cap_PWM_PWM_in_1000_sts_t;
+
+
+/** Signals and transmission status of inbound CAN frame PWM_out
+    (1001, 0x3e9) on bus PWM. */
+typedef struct cap_PWM_PWM_out_1001_sts_t
+{
+    /** The collection of signals of the frame. */
+    cap_PWM_PWM_out_1001_t signals;
+
+    /** Some transmission related information for this frame. */
+    cap_infoTransmission_t infoTransmission;
+
+} cap_PWM_PWM_out_1001_sts_t;
+
+
 /** Signals and transmission status of inbound CAN frame StateEcu01
     (1024, 0x400) on bus PT. */
 typedef struct cap_PT_StateEcu01_1024_sts_t
@@ -973,6 +1534,22 @@ typedef struct cap_PT_LimitsPowerDisplay_1538_sts_t
 
 
 
+/** The frames and signals of CAN bus PWM. A global variable of this type is used
+    as API between the lower layers of the CAN stack and the APSW. */
+typedef struct cap_canBus_PWM_t
+{
+    /** Signals and transmission status of outbound CAN frame PWM_in
+        (1000, 0x3e8) */
+    cap_PWM_PWM_in_1000_sts_t PWM_PWM_in_1000_sts;
+
+    /** Signals and transmission status of inbound CAN frame PWM_out
+        (1001, 0x3e9) */
+    cap_PWM_PWM_out_1001_sts_t PWM_PWM_out_1001_sts;
+
+
+} cap_canBus_PWM_t;
+
+
 /** The frames and signals of CAN bus PT. A global variable of this type is used
     as API between the lower layers of the CAN stack and the APSW. */
 typedef struct cap_canBus_PT_t
@@ -1011,6 +1588,10 @@ typedef struct cap_canBus_PT_t
  * Data declarations
  */
 
+/** Signals and transmission status of CAN frames on bus PWM. This global variable
+    is used as API between the lower layers of the CAN stack and the APSW. */
+extern cap_canBus_PWM_t cap_canBus_PWM;
+
 /** Signals and transmission status of CAN frames on bus PT. This global variable
     is used as API between the lower layers of the CAN stack and the APSW. */
 extern cap_canBus_PT_t cap_canBus_PT;
@@ -1020,6 +1601,62 @@ extern cap_canBus_PT_t cap_canBus_PT;
 /*
  * Function declarations
  */
+
+/** Pack the signal values of outbound PDU PWM_in (1000, 0x3e8)
+    into a byte array of 8 Byte. The signal values are read from the global interface
+    struct cap_canBus_PWM.PWM_PWM_in_1000_sts. */
+void cap_packApi_PWM_PWM_in(uint8_t m[]);
+
+/** Pack the signal values of outbound PDU PWM_in (1000, 0x3e8)
+    into a byte array of 8 Byte. The signal values are read from a frame by reference. */
+void cap_pack_PWM_PWM_in
+                ( uint8_t m[]
+                , const cap_PWM_PWM_in_1000_t *pFrameStruct
+                );
+
+#if CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+/** Unpack the signals of outbound PDU PWM_in (1000, 0x3e8) from
+    a byte array of 8 Byte. The signal values are written into the global interface struct
+    PWM_PWM_in_1000_sts. */
+void cap_unpackApi_PWM_PWM_in(const uint8_t m[]);
+
+/** Unpack the signals of outbound PDU PWM_in (1000, 0x3e8) from
+    a byte array of 8 Byte. The signal values are written into a frame struct by
+    reference. */
+void cap_unpack_PWM_PWM_in
+                ( cap_PWM_PWM_in_1000_t *pFrameStruct
+                , const uint8_t m[]
+                );
+#endif
+
+
+#if CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+/** Pack the signal values of inbound PDU PWM_out (1001, 0x3e9)
+    into a byte array of 8 Byte. The signal values are read from the global interface
+    struct cap_canBus_PWM.PWM_PWM_out_1001_sts. */
+void cap_packApi_PWM_PWM_out(uint8_t m[]);
+
+/** Pack the signal values of inbound PDU PWM_out (1001, 0x3e9)
+    into a byte array of 8 Byte. The signal values are read from a frame by reference. */
+void cap_pack_PWM_PWM_out
+                ( uint8_t m[]
+                , const cap_PWM_PWM_out_1001_t *pFrameStruct
+                );
+#endif
+
+/** Unpack the signals of inbound PDU PWM_out (1001, 0x3e9) from
+    a byte array of 8 Byte. The signal values are written into the global interface struct
+    PWM_PWM_out_1001_sts. */
+void cap_unpackApi_PWM_PWM_out(const uint8_t m[]);
+
+/** Unpack the signals of inbound PDU PWM_out (1001, 0x3e9) from
+    a byte array of 8 Byte. The signal values are written into a frame struct by
+    reference. */
+void cap_unpack_PWM_PWM_out
+                ( cap_PWM_PWM_out_1001_t *pFrameStruct
+                , const uint8_t m[]
+                );
+
 
 #if CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
 /** Pack the signal values of inbound PDU StateEcu01 (1024, 0x400)
@@ -1185,6 +1822,132 @@ void cap_unpack_PT_LimitsPowerDisplay
                 );
 #endif
 
+
+/** Get the current value of frame PWM_in (1000), signal PA2_J3_pin3_periodTime
+    as float. */
+float get_PWM_1000_PA2_J3_pin3_periodTime(void);
+
+/** Set the value of frame PWM_in (1000), signal PA2_J3_pin3_periodTime. */
+void set_PWM_1000_PA2_J3_pin3_periodTime(float newValue);
+
+/** Get the current value of frame PWM_in (1000), signal PA2_J3_pin3_isNew
+    as float. */
+float get_PWM_1000_PA2_J3_pin3_isNew(void);
+
+/** Set the value of frame PWM_in (1000), signal PA2_J3_pin3_isNew. */
+void set_PWM_1000_PA2_J3_pin3_isNew(float newValue);
+
+/** Get the current value of frame PWM_in (1000), signal PA6_J2_pin1_isNew
+    as float. */
+float get_PWM_1000_PA6_J2_pin1_isNew(void);
+
+/** Set the value of frame PWM_in (1000), signal PA6_J2_pin1_isNew. */
+void set_PWM_1000_PA6_J2_pin1_isNew(float newValue);
+
+/** Get the current value of frame PWM_in (1000), signal PA6_J2_pin1_dutyTime
+    as float. */
+float get_PWM_1000_PA6_J2_pin1_dutyTime(void);
+
+/** Set the value of frame PWM_in (1000), signal PA6_J2_pin1_dutyTime. */
+void set_PWM_1000_PA6_J2_pin1_dutyTime(float newValue);
+
+/** Get the current value of frame PWM_in (1000), signal PA2_PA6_dutyCycle
+    as float. */
+float get_PWM_1000_PA2_PA6_dutyCycle(void);
+
+/** Set the value of frame PWM_in (1000), signal PA2_PA6_dutyCycle. */
+void set_PWM_1000_PA2_PA6_dutyCycle(float newValue);
+
+/** Get the current value of frame PWM_in (1000), signal PA2_J3_pin3_frequency
+    as float. */
+float get_PWM_1000_PA2_J3_pin3_frequency(void);
+
+/** Set the value of frame PWM_in (1000), signal PA2_J3_pin3_frequency. */
+void set_PWM_1000_PA2_J3_pin3_frequency(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_2_DS10_inhibit
+    as float. */
+float get_PWM_1001_LED_2_DS10_inhibit(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_2_DS10_inhibit. */
+void set_PWM_1001_LED_2_DS10_inhibit(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_4_DS11_inhibit
+    as float. */
+float get_PWM_1001_LED_4_DS11_inhibit(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_4_DS11_inhibit. */
+void set_PWM_1001_LED_4_DS11_inhibit(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_5_DS5_inhibit
+    as float. */
+float get_PWM_1001_LED_5_DS5_inhibit(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_5_DS5_inhibit. */
+void set_PWM_1001_LED_5_DS5_inhibit(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal PA1_J3_pin1_inhibit
+    as float. */
+float get_PWM_1001_PA1_J3_pin1_inhibit(void);
+
+/** Set the value of frame PWM_out (1001), signal PA1_J3_pin1_inhibit. */
+void set_PWM_1001_PA1_J3_pin1_inhibit(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_2_DS10_frequency
+    as float. */
+float get_PWM_1001_LED_2_DS10_frequency(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_2_DS10_frequency. */
+void set_PWM_1001_LED_2_DS10_frequency(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_4_DS11_frequency
+    as float. */
+float get_PWM_1001_LED_4_DS11_frequency(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_4_DS11_frequency. */
+void set_PWM_1001_LED_4_DS11_frequency(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_5_DS5_frequency
+    as float. */
+float get_PWM_1001_LED_5_DS5_frequency(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_5_DS5_frequency. */
+void set_PWM_1001_LED_5_DS5_frequency(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal PA1_J3_pin1_frequency
+    as float. */
+float get_PWM_1001_PA1_J3_pin1_frequency(void);
+
+/** Set the value of frame PWM_out (1001), signal PA1_J3_pin1_frequency. */
+void set_PWM_1001_PA1_J3_pin1_frequency(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_2_DS10_dutyCycle
+    as float. */
+float get_PWM_1001_LED_2_DS10_dutyCycle(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_2_DS10_dutyCycle. */
+void set_PWM_1001_LED_2_DS10_dutyCycle(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_4_DS11_dutyCycle
+    as float. */
+float get_PWM_1001_LED_4_DS11_dutyCycle(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_4_DS11_dutyCycle. */
+void set_PWM_1001_LED_4_DS11_dutyCycle(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal LED_5_DS5_dutyCycle
+    as float. */
+float get_PWM_1001_LED_5_DS5_dutyCycle(void);
+
+/** Set the value of frame PWM_out (1001), signal LED_5_DS5_dutyCycle. */
+void set_PWM_1001_LED_5_DS5_dutyCycle(float newValue);
+
+/** Get the current value of frame PWM_out (1001), signal PA1_J3_pin1_dutyCycle
+    as float. */
+float get_PWM_1001_PA1_J3_pin1_dutyCycle(void);
+
+/** Set the value of frame PWM_out (1001), signal PA1_J3_pin1_dutyCycle. */
+void set_PWM_1001_PA1_J3_pin1_dutyCycle(float newValue);
 
 /** Get the current value of frame StateEcu01 (1024), signal checksum
     as float. */

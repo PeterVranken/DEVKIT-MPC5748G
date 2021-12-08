@@ -216,6 +216,11 @@ definesSignalScaling(signal,kind) ::= <<
 // easily available to the generated C code without introducing meaningless literals in the
 // code.
 definesPduProperties(pdu) ::= <<
+/** This macro can be used to control the compilation of code, which depends on the
+    presence of the particular frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus> in the message catalog. */
+#define <define.isFramePresent>
+
 /** Provide read/write access to the frame API struct, which bundles the set of signals of
     frame <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> with the
     transmission status information. The referenced struct is a nested sub-element of the

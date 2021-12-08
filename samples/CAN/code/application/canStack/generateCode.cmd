@@ -11,7 +11,11 @@ call codeGenerator ^
   -s checksum -re "(?i)^(checksum|chk|crc).*" ^
   -s SQC -re "(?i).*^(aliv|sequence).*" ^
   --template-wrap-column 70 ^
+  --bus-name PWM ^
+    --node-name DEVKIT ^
+    -dbc dbcFiles/PWM.dbc ^
   --bus-name PT ^
+    --node-name PowerDisplay ^
     -dbc dbcFiles/sampleCanBus.dbc ^
   --output-file-name cap_precoCheck.h ^
     --template-file-name cap_precoCheck.h.stg ^

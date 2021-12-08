@@ -50,7 +50,7 @@ typedef enum pwm_pwmOutChannel_t
     pwm_pwmOChn_LED_2_DS10 = 0u,/// PWM output driving user LED 2, DS10
     pwm_pwmOChn_LED_4_DS11,     /// PWM output driving user LED 4, DS11
     pwm_pwmOChn_LED_5_DS5,      /// PWM output driving user LED 5, DS5
-    pwm_pwmOChn_PA1_J3_pin1,    /// PWM output on pin 1 of extension port J2
+    pwm_pwmOChn_PA1_J3_pin1,    /// PWM output on pin 1 of extension port J3
     
     pwm_pwmOChn_noPwmOutputs,   /// The total number of supported PWM outputs.
     

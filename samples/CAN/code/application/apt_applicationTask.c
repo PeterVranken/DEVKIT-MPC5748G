@@ -66,6 +66,7 @@
 #include "cmd_canCommand.h"
 #include "apt_applicationTask.h"
 #include "pwm_pwmIODriver.h"
+#include "c2p_canToPWM.h"
 
 /*
  * Defines
@@ -580,8 +581,8 @@ int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTR
 {
     assert(PID == bsw_pidUser);
 
-    /* Call the 100ms step function of the APSW. */
-    //asw_taskApsw_100ms();
+    /* Call the 100ms step functions of the APSW. */
+    c2p_mainFunction100ms();
 
     return 0;
 

@@ -92,12 +92,13 @@ symbol ::= [ "signal": {<signal><if(signal.isMuxedSignal)>_m<signal.muxValue><en
 // The repeatedly used frame and signal related #define's are access through a map, which
 // improves maintainability and readability of the templates.
 define ::= [ "busId": {CAN_BUS_<bus.name; format="upper">}
-           , "signalBinToDbl": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_BIN_TO_DBL}
-           , "signalDblToBin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_DBL_TO_BIN}
-           , "signalFactor": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_FACTOR}
-           , "signalOffset": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_OFFSET}
-           , "signalMin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_MIN}
-           , "signalMax": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_MAX}
+           , "signalBinToDbl": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_BIN_TO_DBL}
+           , "signalDblToBin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_DBL_TO_BIN}
+           , "signalFactor": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_FACTOR}
+           , "signalOffset": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_OFFSET}
+           , "signalMin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_MIN}
+           , "signalMax": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_MAX}
+           , "isFramePresent": {<file.mnmApi; format="upper">_FRAME_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>}
            , "aliasOfStructFrame": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>}
            , "referenceStructFrame": {<file.mnmApi>_getFrame_<bus>_<frame>_<frame.id>}
            , "referenceStructFrameSts": {<file.mnmApi>_getFrameSts_<bus>_<frame>_<frame.id>}
@@ -112,4 +113,3 @@ define ::= [ "busId": {CAN_BUS_<bus.name; format="upper">}
            , "sqcTo": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_SQC_TO}
            , default: "codeGenerationError_badDefine"
            ]
-

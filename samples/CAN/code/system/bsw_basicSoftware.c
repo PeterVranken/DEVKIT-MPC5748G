@@ -133,7 +133,7 @@ enum
 
     prioHighestForApplTasks = prioEv1000ms,
 };
-
+_Static_assert(BSW_PRIO_USER_TASK_10MS == prioEv10ms, "Inconsistency in public interface");
 
 
 /*
