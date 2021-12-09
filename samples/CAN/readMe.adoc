@@ -51,7 +51,7 @@ features of the driver:
 The sample application integrates the CAN driver with safe-RTOS and
 https://vranken@svn.code.sf.net/p/comframe/code[comFramework^]. The
 integration with safe-RTOS has been done in a way a true Basic Software
-(BSW) would look like. The CAN driver is not directly visible by the
+(BSW) would look like. The CAN driver is not directly visible to the
 Application Software (APSW) but only through an API, which offers the
 driver's functionality in a user process related way. The APSW has
 restricted access, can't reconfigure or distort the driver but has the
@@ -59,6 +59,14 @@ capability to register, receive and transmit its own set of messages.
 Another user process -- typically applied for safety supervision -- can
 access its own, dedicated messages and full separation ("Freedom from
 interference") is granted for the two processes.
+
+This sample also introduces a new reusable PWM I/O driver for the eMIOS
+devices of both the MCUs, MPC5748G and MPC5775B/E. A few PWM channels are
+configured for PWM out- and input and they can be managed via the CAN bus.
+Primarily those PWM channels have been selected, which are connected to
+user LEDs on the DEVKIT-MPC5748G; and so these LEDs are controllable via
+CAN, you can switch them on or off, let them blink at variable rates and
+duty cycles or dim them.
 
 == Behavior of the sample application
 
@@ -72,6 +80,12 @@ https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/app
 sent with the signal default values and Rx messages are received and
 the signal values are internally stored.
 
+Optionally, and by default, a second *.dbc file
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/application/canStack/dbcFiles/PWM.dbc[PWM.dbc^]
+is merged into the communication on the same bus. It defines two
+messages, one to control some PWM output channels and one to broadcast the
+measurement results from two PWM inputs.
+
 The application has a user interface based on serial I/O. You need to open
 a terminal application on your development host machine, which the
 evaluation board is connected to via USB. The NXP software implements a
@@ -79,7 +93,7 @@ virtual COM device on the host machine; open this COM channel with 115200
 Bd, 8 Bit, no parity bit, 1 stop bit. Type *help* to begin. A usage
 message is printed with the available commands.
 
-The two principal commands are:
+The principal commands are:
 
 * *listen:* A signal from one of the Rx messages in the CAN database is
 named. On every future reception of the message, which contains this
@@ -91,11 +105,28 @@ that the new value will be considered at the next due time of the message.
 For event messages, the command is at the same time the triggering event
 and the message is sent immediately with the new value
 
+* *show:* Enable or disable regular reporting of particular events, e.g.
+the PWM measurement results
+
+* *PWM:* Set the new frequency and duty cycle of a PWM output -- if it is
+not currently under control of the CAN interface.
+
 Some additional commands are available, too.
+
+Controlling the PWM outputs via CAN is explained best by looking into file
+PWM.dbc. The CAN message PWM_out has signals to set frequency and duty
+cycle of the connected PWM channels and there is a Boolean switch to
+between CAN control and control via command line otherwise.
+
+The effect is best if the PWM output PA1, on extension port J3, pin 1 is
+connected to both PWM inputs, PA2 on J3, pin 3 and PA6 on J2, pin1. At PA2
+the frequency of the PWM is measured and at PA6 its duty, i.e., high time.
+If both inputs are fed with the same input then the duty cycle in percent
+can be calculated.
 
 == Safety features
 
-As of writing, Jan 2021, the safety concept of the driver is not
+As of writing, Jan 2021, the safety concept of the CAN driver is not
 demonstrated by the sample application yet. There's no second user process
 yet. This is the intention, once the sample is finalized:
 
