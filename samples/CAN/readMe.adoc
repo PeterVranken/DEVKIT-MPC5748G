@@ -114,11 +114,12 @@ not currently under control of the CAN interface.
 Some additional commands are available, too.
 
 Controlling the PWM outputs via CAN is explained best by looking into file
-PWM.dbc. The CAN message PWM_out has signals to set frequency and duty
-cycle of the connected PWM channels and there is a Boolean switch to
-between CAN control and control via command line otherwise.
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/CAN/code/application/canStack/dbcFiles/PWM.dbc[PWM.dbc^].
+The CAN message PWM_out has signals to set frequency and duty cycle of the
+connected PWM channels and there is a Boolean to switch between CAN
+control and control via command line otherwise.
 
-The effect is best if the PWM output PA1, on extension port J3, pin 1 is
+The effect is strongest if the PWM output PA1, on extension port J3, pin 1 is
 connected to both PWM inputs, PA2 on J3, pin 3 and PA6 on J2, pin1. At PA2
 the frequency of the PWM is measured and at PA6 its duty, i.e., high time.
 If both inputs are fed with the same input then the duty cycle in percent
