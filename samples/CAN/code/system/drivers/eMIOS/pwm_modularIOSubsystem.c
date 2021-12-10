@@ -51,6 +51,7 @@
  *   pwm_osInitEMIOSChannelForPeriodTimeMeasurement
  *   pwm_osGetChnInputPeriodTime
  *   pwm_osInitEMIOSChannelForDutyTimeMeasurement
+ *   pwm_osGetChnInputDutyTime
  *   pwm_osInitEMIOSChannelForPWMGeneration
  *   pwm_osSetChnFrequencyAndDutyCycle
  *   pwm_osSetChnDutyCycle
@@ -669,6 +670,8 @@ void pwm_osInitEMIOSChannelForPeriodTimeMeasurement( pwm_hEMIOSChannel_t * const
  * reading the flag and the result registers coherently. Therefore, and if the client code
  * wants to process inputfrequencies down to f_min, it must implement a timeout value,
  * which is not lesser than 2/f_min.
+ *   @remark
+ * The function can be used at any time from any supervisor context context on any core.
  */
 unsigned int pwm_osGetChnInputPeriodTime( bool * const pIsNewResult
                                         , const pwm_hEMIOSChannel_t * const pHChannel
@@ -759,6 +762,8 @@ void pwm_osInitEMIOSChannelForDutyTimeMeasurement( pwm_hEMIOSChannel_t * const p
  * reading the flag and the result registers coherently. Therefore, and if the client code
  * wants to process input frequencies down to f_min, it must implement a timeout value,
  * which is not lesser than 2/f_min.
+ *   @remark
+ * The function can be used at any time from any supervisor context context on any core.
  */
 unsigned int pwm_osGetChnInputDutyTime( bool * const pIsNewResult
                                       , const pwm_hEMIOSChannel_t * const pHChannel
@@ -888,9 +893,9 @@ void pwm_osInitEMIOSChannelForPWMGeneration( pwm_hEMIOSChannel_t * const pHChann
  * The new duty cycle in the range 0..1. The specified floating point value is silently
  * limited to this range.
  *   @remark
- * The function can be used at any time from any context on any core. However, if more than
- * a single PWM channel is in use than all possibly competing calls need to be done from
- * one and the same core.
+ * The function can be used at any time from any supervisor context context on any core.
+ * However, if more than a single PWM channel is in use than all possibly competing calls
+ * need to be done from one and the same core.
  *   @remark
  * The function has race conditions with pwm_osSetChnDutyCycle(). Both of them
  * mustn't be called at a time.
@@ -942,7 +947,7 @@ void pwm_osSetChnFrequencyAndDutyCycle( const pwm_hEMIOSChannel_t * const pHChan
  * The new duty cycle in the range is 0..1. The specified floating point value is
  * silently limited to this range.
  *   @remark
- * The function can be used at any time from any context on any core.
+ * The function can be used at any time from any supervisor context on any core.
  *   @remark
  * The function has race conditions with pwm_osSetChnFrequencyAndDutyCycle(). Both of them
  * mustn't be called at a time.
@@ -968,4 +973,3 @@ void pwm_osSetChnDutyCycle(const pwm_hEMIOSChannel_t * const pHChannel, float du
     pUC->A = dcNew;
     
 } /* pwm_osSetChnDutyCycle */
-
