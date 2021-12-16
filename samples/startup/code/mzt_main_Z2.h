@@ -44,10 +44,10 @@
 typedef struct mzt_dataMutexTest_t 
 {
     /** Cycle counters for successful access to the shared object, per core. */
-    unsigned long cntCore0Success, cntCore1Success, cntCore2Success;
+    unsigned long long cntCore0Success, cntCore1Success, cntCore2Success;
     
     /** Total access count, needs to be same as sum of core related counts. */
-    unsigned long totalCntSuccess;
+    unsigned long long totalCntSuccess;
     
 } mzt_dataMutexTest_t ;
 

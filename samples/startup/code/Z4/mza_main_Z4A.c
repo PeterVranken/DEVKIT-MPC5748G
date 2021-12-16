@@ -705,8 +705,11 @@ int /*_Noreturn*/ main(int noArgs TYP_DBG_ONLY, const char *argAry[] TYP_DBG_ONL
               );
 
         const uint32_t tiStart = stm_getTimerValue(/* idxTimer */ 0);
+
+        /* Caution, once the sum of the compared counters overflows after a (very long)
+           while, the calculated and printed ratios will become totally wrong. */
         printf( "Mutex test:\r\n"
-                "  %lu successful cycles, (%.1f%%, %.1f%%, %.1f%%)\r\n"
+                "  %llu successful cycles, (%.1f%%, %.1f%%, %.1f%%)\r\n"
               , testDataMutex.totalCntSuccess
               , f2d(100.0f*(float)testDataMutex.cntCore0Success/testDataMutex.totalCntSuccess)
               , f2d(100.0f*(float)testDataMutex.cntCore1Success/testDataMutex.totalCntSuccess)

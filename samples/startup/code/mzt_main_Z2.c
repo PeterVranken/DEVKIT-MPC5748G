@@ -79,12 +79,12 @@ mtx_nestedMutex_t mzt_mtxDataMutexTest = MTX_NESTED_MUTEX_INITIALLY_RELEASED;
 volatile mzt_dataMutexTest_t mzt_dataMutexTest TYP_SECTION(.uncached.data) =
 {
     /** Cycle counters for successful access to the shared object, per core. */
-    .cntCore0Success = 0,
-    .cntCore1Success = 0,
-    .cntCore2Success = 0,
+    .cntCore0Success = 0ull,
+    .cntCore1Success = 0ull,
+    .cntCore2Success = 0ull,
     
     /** Total access count, needs to be same as sum of core related counts. */
-    .totalCntSuccess = 0,
+    .totalCntSuccess = 0ull,
 };
 
 
