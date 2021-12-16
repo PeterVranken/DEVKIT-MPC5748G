@@ -119,8 +119,11 @@ typedef struct siu_portOutCfg_t
         is a pull-up in combination with an open drain output. */
     siu_portInPullResistor_t pullUpDownCfg;
 
-    /** The maximum slew rate can be limited. Range is 0..3. 3 means maximum slew rate, or
-        no limitation. */
+    /** The maximum slew rate can be limited. This is a 2 Bit value:\n
+          b00: Half drive strength with slew control enabled\n
+          b01: Full drive strength with slew control enabled\n
+          b10: Half drive strength with slew control disabled\n
+          b11: Full drive strength with slew control disabled */
     uint8_t maxSlewRate_SRC;
 
 } siu_portOutCfg_t;

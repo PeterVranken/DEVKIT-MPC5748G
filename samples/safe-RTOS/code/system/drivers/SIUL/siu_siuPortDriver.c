@@ -17,7 +17,8 @@
  * document number: MPC5775E, Rev. 1, 05/2018.
  *
  * @note References "PM75" in this module refer to file
- * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", which is an attachment of RM75.
+ * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", V1.14, which is an attachment of
+ * RM75.
  *
  * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -39,6 +40,7 @@
  *   siu_osAcquirePort
  *   siu_osReleasePort
  *   siu_osConfigureOutput
+ *   siu_osConfigureStandardOutput
  *   siu_osConfigureInput
  *   siu_osGetGPIO (inline)
  *   siu_osSetGPIO (inline)
@@ -123,7 +125,10 @@ void siu_osInitPortDriver(void)
  * All port related activities identify the port by it's index. This is the index into
  * register array MSCR (MPC5748G) or PCR (MPC5775B/E). This is the index of the requested
  * port. The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion and the
- * function returns \a false in PRODUCTION compilation.
+ * function returns \a false in PRODUCTION compilation.\n
+ *   Note, for inputs of the MPC5748G, the base index of MSCR is meant, which is
+ * listed in column D of PM48, "IO Signal Table"; the greater numbers, which are encoded
+ * 512+inputMUXValue, must not be specified here.
  *   @remark
  * On the MPC5748G, the function can be called from any OS context on any core at any time.
  *   @warning
@@ -146,7 +151,7 @@ bool siu_osAcquirePort(unsigned int idxPort)
 #if defined(MCU_MPC5748G)
     static mtx_intercoreCriticalSection_t DATA_OS(critSec) = MTX_INTERCORE_CRITICAL_SECTION;
     mtx_osEnterIntercoreCriticalSection(&critSec);
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /* On MCU_MPC5775B, we don't have a multi-core concept for this driver yet. For now, we
        restrict the use of this function to the boot core. */
     assert(rtos_osGetIdxCore() == 0);
@@ -175,7 +180,7 @@ bool siu_osAcquirePort(unsigned int idxPort)
     
 #if defined(MCU_MPC5748G)
     mtx_osLeaveIntercoreCriticalSection(&critSec);
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     rtos_osLeaveCriticalSection(stateOnEntry);
 #endif
     
@@ -257,7 +262,7 @@ void siu_osReleasePort(unsigned int idxPort)
     /* See RM48, 15.2.11, pp.388f for default out of POR: Output buffer off, no pull-up,
        only hystheresis and Safe Mode Control are on. */
     SIUL2->MSCR[idxPort] = 0x00840000u;
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /* See RM75, 8.2.13, pp.241f for default out of POR: Output buffer off, no pull-up,
        hystheresis off. */
     SIU->PCR[idxPort] = 0x00000000u;
@@ -269,7 +274,7 @@ void siu_osReleasePort(unsigned int idxPort)
 #if defined(MCU_MPC5748G)
     static mtx_intercoreCriticalSection_t DATA_OS(critSec) = MTX_INTERCORE_CRITICAL_SECTION;
     mtx_osEnterIntercoreCriticalSection(&critSec);
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /* On MCU_MPC5775B, we don't have a multi-core concept for this driver yet. For now, we
        restrict the use of this function to the boot core. */
     assert(rtos_osGetIdxCore() == 0);
@@ -288,7 +293,7 @@ void siu_osReleasePort(unsigned int idxPort)
 
 #if defined(MCU_MPC5748G)
     mtx_osLeaveIntercoreCriticalSection(&critSec);
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     rtos_osLeaveCriticalSection(stateOnEntry);
 #endif
     
@@ -331,7 +336,7 @@ void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCf
         | SIUL2_MSCR_PUE(pPortCfg->pullUpDownCfg != siu_pullRes_none? 1u: 0u)/* Pull res on? */
         | SIUL2_MSCR_PUS(pPortCfg->pullUpDownCfg == siu_pullRes_pullUp? 1u: 0u) /* Up/down */
         ;
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     SIU->PCR[idxPort] =
         SIU_PCR_PA(pPortCfg->idxPortSource_PA) /* Source signal of port for output. */
         | SIU_PCR_OBE(1u) /* Enable output buffer */
@@ -352,11 +357,63 @@ void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCf
 
 
 /**
- * Configure a port as input.
+ * Many digital outputs don't require a particular configuration. This method offers the
+ * complete port initialization in a single call. This includes port aquisition - the port
+ * must be still free and available (siu_osAcquirePort() has not been called yet) and it'll
+ * be reserved for the caller.
+ *   @return
+ * Get \a true if the port was still available and if it could be configured. Do not use
+ * the port if the function returns \a false.
  *   @param idxPort
  * All port related activities identify the port by it's index. This is the index into
  * register array MSCR (MPC5748G) or PCR (MPC5775B/E). Pass the index of the returned port.
  * The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion.
+ *   @param isInitiallyOn
+ * The inital state of the port. \a false means low voltage level at the MCU pin.
+ */
+bool siu_osConfigureStandardOutput(unsigned int idxPort, bool isInitiallyOn)
+{
+    /* The pin configuration, which is applied to all standard MCU output pins. */
+    const siu_portOutCfg_t mcuOutputCfg =
+    {
+#if defined(MCU_MPC5748G)   
+      /* See RM48, 15.2.11 SIUL2_MSCRn, pp.388ff, for most details. */
+      .idxPortSource_SSS = 0u,  /* GPIO is 0 */
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
+      /* See RM75, 8.2.13 SIU_PCRn, pp.241ff, for most details. */
+      .idxPortSource_PA = 0u,   /* GPIO is 0 */
+      .driveStrength_DSC = 1u,  /* 0..3: Drive strength from min to max */
+#endif
+      .enableReadBack = false,          /* No simulataneous input. */
+      .enableOpenDrain_ODE = false,     /* No open-drain, drive both levels actively. */
+      .pullUpDownCfg = siu_pullRes_none,/* No pull-up since we aren't in open-drain. */
+      .maxSlewRate_SRC = 0u,            /* Half drive strength with slew control enabled. */
+    };
+
+    /* Configure the MCU pin, which is connected to the TLS115's input EN as GPIO for
+       digital control of the external sensor supply voltage. */
+    const bool success = siu_osAcquirePort(idxPort);
+    if(success)
+    {
+        siu_osSetGPIO(idxPort, isInitiallyOn); /* Set level before init to avoid glitch. */
+        siu_osConfigureOutput(idxPort, &mcuOutputCfg);
+    }
+    
+    return success;
+    
+} /* siu_osConfigureStandardOutput */
+
+
+
+/**
+ * Configure a port as input.
+ *   @param idxPort
+ * All port related activities identify the port by it's index. This is the index into
+ * register array MSCR (MPC5748G) or PCR (MPC5775B/E). Pass the index of the returned port.
+ * The range is 0..#SIU_NO_MCU_PORTS. Violations are caught by assertion.\n
+ *   Note, for inputs of the MPC5748G, the base index of MSCR is meant, which is
+ * listed in column D of PM48, "IO Signal Table"; the greater numbers, which are encoded
+ * 512+inputMUXValue, must not be specified here.
  *   @param pPortCfg
  * The desired port configuration by reference.
  */
@@ -389,7 +446,7 @@ void siu_osConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg)
         SIUL2->IMCR[pPortCfg->idxMultiplexerRegister] = 
                                         SIUL2_IMCR_SSS(pPortCfg->idxInputSource_MUXSELVALUE);
     }
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
 
     /* Port configuration. */
     SIU->PCR[idxPort] =

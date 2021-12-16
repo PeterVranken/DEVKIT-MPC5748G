@@ -31,19 +31,22 @@
 
 /** @todo Uncomment the very device header, which relates to the MCU in your project. */
 //#include "MPC5775B.h"
+//#include "MPC5775E.h"
 #include "MPC5748G.h"
 
+#include <assert.h>
 #include "typ_types.h"
 
 /* Double-check that the MCU selection has been properly done and read the related
    definition of port settings. */
-#if defined(MCU_MPC5748G)  &&  !defined(MCU_MPC5775B)
-# include "siu_siul2PortConfiguration.h"
-#elif defined(MCU_MPC5775B)  &&  !defined(MCU_MPC5748G)
-# include "siu_siuPortConfiguration.h"
-#else
+#if defined(MCU_MPC5748G) + defined(MCU_MPC5775B) + defined(MCU_MPC5775E) != 1
 # error Bad configuration of supported MCU derivative. Double-check your include \
         statements above!
+# endif
+#if defined(MCU_MPC5748G)
+# include "siu_siul2PortConfiguration.h"
+#else
+# include "siu_siuPortConfiguration.h"
 #endif
 
 
@@ -53,12 +56,12 @@
 
 /** The number of available, arbitrated, accessible ports.
       @todo Many of the PCR number are not used. A rather cheap mapping is possible of PCR
-    to zero based index with only a few unused numbers - which would save a significant
-    portion of the allocation table. For the MPC5775B/E mit 416 pin housing this could save
-    more than have the otherwise required memory. (Not checked for the MPC5748G.) */
+    to a zero based index with only a few unused numbers - which would save a significant
+    portion of the allocation table. For the MPC5775B/E with 416 pin housing this could save
+    more than half the otherwise required memory. (Not checked for the MPC5748G.) */
 #if defined(MCU_MPC5748G)
 # define SIU_NO_MCU_PORTS   SIUL2_MSCR_COUNT
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
 # define SIU_NO_MCU_PORTS   SIU_PCR_COUNT
 #endif
 
@@ -92,6 +95,9 @@ void siu_osReleasePort(unsigned int idxPort);
 /** Configure a port as output. */
 void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCfg);
 
+/** Compact port initialization, suitable for most digital outputs. */
+bool siu_osConfigureStandardOutput(unsigned int idxPort, bool isInitiallyOn);
+
 /** Configure a port as input. */
 void siu_osConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg);
 
@@ -122,7 +128,7 @@ static inline bool siu_osGetGPIO(unsigned int idxPort)
        register address so that we can use byte access. See RM48, 15.2.14 SIUL2 GPIO Pad
        Data Input Register (SIUL2_GPDIn), pp.394f. */
     return *(((__IO uint8_t*)&SIUL2->GPDI[0])+idxPort) != 0;
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /* See RM75, 8.2.65 GPIO Pin Data Input Register (SIU_GPDIn), pp.372f. */
     return SIU->GPDI[idxPort] != 0;
 #endif
@@ -151,7 +157,7 @@ static inline void siu_osSetGPIO(unsigned int idxPort, bool highLevel)
        register address so that we can use byte access. See RM48, 15.2.13 SIUL2 GPIO Pad
        Data Output Register (SIUL2_GPDOn), pp.392f. */
     *(((__IO uint8_t*)&SIUL2->GPDO[0])+idxPort) = highLevel? 1u: 0u;
-#elif defined(MCU_MPC5775B)
+#elif defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /** See RM75, 8.2.14 GPIO Pin Data Output Register (SIU_GPDOn), pp.244f. */
     SIU->GPDO[idxPort] = highLevel? 1u: 0u;
 #endif

@@ -38,7 +38,8 @@
  * document number: MPC5775E, Rev. 1, 05/2018.
  *
  * @note References "PM75" in this module refer to file
- * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", which is an attachment of RM75.
+ * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", V1.14, which is an attachment of
+ * RM75.
  *
  * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -94,7 +95,7 @@ typedef enum siu_portInPullResistor_t
 } siu_portInPullResistor_t;
 
 
-/** Settings of a port, which is configured as output. Most of the settings relate to RM,
+/** Settings of a port, which is configured as output. Most of the settings relate to RM75,
     8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff. */
 typedef struct siu_portOutCfg_t
 {
@@ -127,7 +128,7 @@ typedef struct siu_portOutCfg_t
 } siu_portOutCfg_t;
 
 
-/** Settings of a port, which is configured as input. Most of the settings relate to RM,
+/** Settings of a port, which is configured as input. Most of the settings relate to RM75,
     8.2.13 Pad Configuration Register (SIU_PCRn), pp.241ff and the multiplxer
     configuration, RM, sections 8.2.66ff Input Multiplexing RegisterN (SIU_IMUXN),
     pp.373ff. */
