@@ -7,7 +7,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -31,17 +31,17 @@ LOCATE_TOOLS_INCLUDED := 1
 # PATH.
 #   CAUTION: Blanks in path designations found in the environment variable PATH can't be
 # processed. A search will not take place in those directories.
-ifeq ($(OS),Windows_NT)
-toolsSearchPath := $(subst ;, ,$(call w2u,$(PATH)))
+ifeq ($(call isWin),true)
+    toolsSearchPath := $(subst ;, ,$(call w2u,$(PATH)))
 else
-toolsSearchPath := $(subst :, ,$(PATH))
+    toolsSearchPath := $(subst :, ,$(PATH))
 endif
 toolsSearchPath := $(call trailingSlash,$(GCC_POWERPC_HOME))bin $(toolsSearchPath)
 toolsSearchPath := $(call w2u,$(toolsSearchPath))
 #$(info Search path for external tools: $(toolsSearchPath))
 
 # Under Windows we have to look for gcc.exe rather than for gcc.
-ifeq ($(OS),Windows_NT)
+ifeq ($(call isWin),true)
     dotExe := .exe
 else
     dotExe :=

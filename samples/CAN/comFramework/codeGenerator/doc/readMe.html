@@ -33,18 +33,19 @@
 <li><a href="#installation"><span class="toc-section-number">1.3</span> Installation</a></li>
 <li><a href="#whats-new"><span class="toc-section-number">1.4</span> What’s new</a>
 <ul>
-<li><a href="#release-1.10.4"><span class="toc-section-number">1.4.1</span> Release 1.10.4</a></li>
-<li><a href="#release-1.10"><span class="toc-section-number">1.4.2</span> Release 1.10</a></li>
-<li><a href="#release-1.9"><span class="toc-section-number">1.4.3</span> Release 1.9</a></li>
-<li><a href="#release-1.8"><span class="toc-section-number">1.4.4</span> Release 1.8</a></li>
-<li><a href="#release-1.7"><span class="toc-section-number">1.4.5</span> Release 1.7</a></li>
-<li><a href="#release-1.6"><span class="toc-section-number">1.4.6</span> Release 1.6</a></li>
-<li><a href="#release-1.5"><span class="toc-section-number">1.4.7</span> Release 1.5</a></li>
-<li><a href="#release-1.4"><span class="toc-section-number">1.4.8</span> Release 1.4</a></li>
-<li><a href="#release-1.3"><span class="toc-section-number">1.4.9</span> Release 1.3</a></li>
-<li><a href="#release-1.2"><span class="toc-section-number">1.4.10</span> Release 1.2</a></li>
-<li><a href="#release-1.1"><span class="toc-section-number">1.4.11</span> Release 1.1</a></li>
-<li><a href="#release-1.0"><span class="toc-section-number">1.4.12</span> Release 1.0</a></li>
+<li><a href="#release-1.10.6"><span class="toc-section-number">1.4.1</span> Release 1.10.6</a></li>
+<li><a href="#release-1.10.4"><span class="toc-section-number">1.4.2</span> Release 1.10.4</a></li>
+<li><a href="#release-1.10"><span class="toc-section-number">1.4.3</span> Release 1.10</a></li>
+<li><a href="#release-1.9"><span class="toc-section-number">1.4.4</span> Release 1.9</a></li>
+<li><a href="#release-1.8"><span class="toc-section-number">1.4.5</span> Release 1.8</a></li>
+<li><a href="#release-1.7"><span class="toc-section-number">1.4.6</span> Release 1.7</a></li>
+<li><a href="#release-1.6"><span class="toc-section-number">1.4.7</span> Release 1.6</a></li>
+<li><a href="#release-1.5"><span class="toc-section-number">1.4.8</span> Release 1.5</a></li>
+<li><a href="#release-1.4"><span class="toc-section-number">1.4.9</span> Release 1.4</a></li>
+<li><a href="#release-1.3"><span class="toc-section-number">1.4.10</span> Release 1.3</a></li>
+<li><a href="#release-1.2"><span class="toc-section-number">1.4.11</span> Release 1.2</a></li>
+<li><a href="#release-1.1"><span class="toc-section-number">1.4.12</span> Release 1.1</a></li>
+<li><a href="#release-1.0"><span class="toc-section-number">1.4.13</span> Release 1.0</a></li>
 </ul></li>
 <li><a href="#the-comframework-project"><span class="toc-section-number">1.5</span> The comFramework project</a></li>
 </ul></li>
@@ -87,7 +88,7 @@
 <p>The technique of rendering the information held in a Cluster and an Info object is well documented. The two objects are passed to the StringTemplate V4 template engine and this engine is fully documented. Please refer to <a href="http://www.stringtemplate.org/" class="uri">http://www.stringtemplate.org/</a> or find a printable version of the documentation as <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/doc/ST4-270115-0836-52.pdf" class="uri">https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/doc/ST4-270115-0836-52.pdf</a>.</p>
 <p>Please note, as a matter of experience, you will have to read the StringTemplate V4 documentation entirely before you can start to successfully develop your first useful template. StringTemplate V4 is powerful and convenient but not self-explaining.</p>
 <h3 data-number="1.2.4" id="the-wiki-pages"><span class="header-section-number">1.2.4</span> The Wiki pages</h3>
-<p>An additional source of documentation are the Wiki pages of the project, please refer to <a href="https://sourceforge.net/p/comframe/wiki/browse_pages/" class="uri">https://sourceforge.net/p/comframe/wiki/browse_pages/</a>. The Wiki pages shade a light at some most relevant, selected issues; a comprehensive, self-contained (printable) manual is not planned. As of today, October 2020, we have the following discussions in the Wiki pages:</p>
+<p>An additional source of documentation are the Wiki pages of the project, please refer to <a href="https://sourceforge.net/p/comframe/wiki/browse_pages/" class="uri">https://sourceforge.net/p/comframe/wiki/browse_pages/</a>. The Wiki pages shade a light at some most relevant, selected issues; a comprehensive, self-contained (printable) manual is not planned. As of today, March 2021, we have the following discussions in the Wiki pages:</p>
 <ul>
 <li><a href="https://sourceforge.net/p/comframe/wiki/Home/" title="comFramework - About this Project">Overview on the comFramework project</a></li>
 <li><a href="https://sourceforge.net/p/comframe/wiki/Command%20Line%20DBC%20Code%20Generator/">The command line of the DBC code generator</a></li>
@@ -101,20 +102,23 @@
 <li><a href="https://sourceforge.net/p/comframe/wiki/Sugar%20on%20top%20of%20Inheritance%20or%20how%20to%20change%20the%20copyright%20notice/" title="Terence Parr: &#39;Sugar on top of inheritance&#39;">Sugar on top of inheritance or how to change the copyright notice</a></li>
 </ul>
 <h2 data-number="1.3" id="installation"><span class="header-section-number">1.3</span> Installation</h2>
-<p>The code generator is a Java 7 application. The installation is as simple as unpacking an archive and setting an environment variable. It is described in detail in the file <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/doc/installation.txt">installation.txt</a>.</p>
+<p>The code generator is a Java 8 application. The installation is as simple as unpacking an archive and setting an environment variable. It is described in detail in the file <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/doc/installation.txt">installation.txt</a>.</p>
 <h2 data-number="1.4" id="whats-new"><span class="header-section-number">1.4</span> What’s new</h2>
-<h3 data-number="1.4.1" id="release-1.10.4"><span class="header-section-number">1.4.1</span> Release 1.10.4</h3>
+<h3 data-number="1.4.1" id="release-1.10.6"><span class="header-section-number">1.4.1</span> Release 1.10.6</h3>
+<p>Bug fix: Bad lookup code had let the code generator mix up 11 and 29 Bit CAN IDs if they would have the same numeric values. Parser aborted with error message.</p>
+<p>Bug fix: A specific syntax error in the DBC could make the code generator abort with null pointer exception rather than with proper error message. The problem appeared if an attribute value was specified for the wrong type of object, e.g. if an attribute was set for a signal although it had been defined before as message related attribute. Such a wrong DBC file had been produced by the Kvaser Database Editor (Version 3.13.317, Sep 9, 2020) after editing some attribute values. Now the application simply rejects the DBC file with precise hint what’s wrong with the file.</p>
+<h3 data-number="1.4.2" id="release-1.10.4"><span class="header-section-number">1.4.2</span> Release 1.10.4</h3>
 <p>The code generator has been migrated to the recently issued revisions of StringTemplate and ANTLR, 4.3.1 and 4.8, respectively.</p>
 <p>The only noticeable difference should be a fix of the white space handling in StringTemplate. In all revisions so far, it used to be very difficult to precisely control the generation of blank lines in the output. With this fix, the handling of newline characters in templates became more transparent. In particular, this relates to leading and trailing newlines in sub-templates.</p>
 <p>Caution, this means that this version of the code generator can produce different output with existing templates. The differences are however limited to blank lines and should not matter in C code generation environments.</p>
 <p>The support of CAN FD has been improved. The frame size of CAN messages is checked against the allowed CAN FD frame sizes. The data model has been extended by the data length code (DLC). The new data model has revision 1010.</p>
-<h3 data-number="1.4.2" id="release-1.10"><span class="header-section-number">1.4.2</span> Release 1.10</h3>
+<h3 data-number="1.4.3" id="release-1.10"><span class="header-section-number">1.4.3</span> Release 1.10</h3>
 <p>Error handling improved. Firstly, internal errors of StringTemplate V4 during rendering are now streamlined with the application logging. Before, they were printed in the log (together with the bulky but in the given context meaningless Java stack frame) but were not recognized or counted by the application.</p>
 <p>Secondly, error counting has been aligned with the other application excelExporter. A summary note is printed at the end of the application run, which reports the total number of errors and warnings in all parse and output generation steps. Moreover, if the total number is not zero then the application now ends with exit value one, which facilitates proper integration of the code generator into an automated build environment.</p>
 <p>Note: There’s no change of the data model. It remains at revision designation 1009.</p>
-<h3 data-number="1.4.3" id="release-1.9"><span class="header-section-number">1.4.3</span> Release 1.9</h3>
+<h3 data-number="1.4.4" id="release-1.9"><span class="header-section-number">1.4.4</span> Release 1.9</h3>
 <p>The data model class Signal gets a new field, which permits a template to find out if the signal is a particular “special” signal, like checksum or sequence counter.</p>
-<h3 data-number="1.4.4" id="release-1.8"><span class="header-section-number">1.4.4</span> Release 1.8</h3>
+<h3 data-number="1.4.5" id="release-1.8"><span class="header-section-number">1.4.5</span> Release 1.8</h3>
 <p>New feature: A new command line argument, invert-transmission-direction, supports code generation for a node, which implements residual bus simulation. If the argument is given then the transmission direction of frames and signals is inverted in the data model. A new field in the data model, Bus.isTransmissionDirectionInverted, makes this behavior transparent to the templates.</p>
 <p>Inverse sort orders have been added for the bus’s frame array and documentation of sorting became much more accurate; it used to not mention all supported sort orders.</p>
 <p>Frame sort order sendFirst has been renamed to sentFirst, which means a not backward compatible change of the data model. Existing templates may fail to do expected frame sorting with this revision of the code generator!</p>
@@ -125,11 +129,11 @@
 <p>The interface descriptions for AUTOSAR, Embedded Coder, TargetLink and ASAM 2-MC generated by the samples will now list all signals of a transmitted frame. So far, only sent and received signals had been listed. Although this is basically correct was it found to be hindering because many real network databases don’t specify senders and receivers properly for all frames and signals.</p>
 <p>Bug fix: A misplaced <em>&lt;endif&gt;</em> has been found in template cap_canApi.c.stg of the Embedded Coder sample. The #define’s that make min and max of a signal public were only generated for scaled signals. This was not by intention, min and max are as useful for unscaled integers. Now, the min and max values are available as #define for all signals.</p>
 <p>Bug fix: The same misplaced <em>&lt;endif&gt;</em> let to unwanted suppression of parts of the Embedded Coder interface. For unscaled integers was the chosen storage class mechanism not generated.</p>
-<h3 data-number="1.4.5" id="release-1.7"><span class="header-section-number">1.4.5</span> Release 1.7</h3>
+<h3 data-number="1.4.6" id="release-1.7"><span class="header-section-number">1.4.6</span> Release 1.7</h3>
 <p>DBC Parser: User attributes and named signal values now support the full signed and unsigned 32 Bit integer range from -2^31 till 2^32-1. Before, the parser’s implementation had used the Java type int, which limited the positive range to 2^31-1.</p>
 <p>Some more fields in the data model class Signal facilitate the handling of multiplexed signals. Although a rather minor change demands the change of the data model the increase of the second field of the revision number.</p>
 <p>A new sample, EmbeddedCoderAPIWithBusStruct, demonstrates how to perfectly integrate a comFramework based CAN interface with model based APSW design and Embedded Coder based code generation from a Simulink model.</p>
-<h3 data-number="1.4.6" id="release-1.6"><span class="header-section-number">1.4.6</span> Release 1.6</h3>
+<h3 data-number="1.4.7" id="release-1.6"><span class="header-section-number">1.4.7</span> Release 1.6</h3>
 <p>The DBC parser has been made more tolerant against typical mistakes:</p>
 <ul>
 <li>Attribute names may use the actually forbidden hyphen. The parser replaces the hyphens with underscores, emits a warning only and continues</li>
@@ -142,26 +146,26 @@
 <li>A numeric scratch pad is available. Numeric operations, including comparisons and binary operations, can be applied to numeric fields of the data model. This means a new level of conditional code generation and opens some new structural possibilities</li>
 </ul>
 <p>A new sample, <em>scratchPad</em>, demonstrates the capabilities and the usage of the new scratch pad. Please have a look at the <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/samples/scratchPad/output/demoScratchPad.txt">generated output</a> to get a first impression.</p>
-<h3 data-number="1.4.7" id="release-1.5"><span class="header-section-number">1.4.7</span> Release 1.5</h3>
+<h3 data-number="1.4.8" id="release-1.5"><span class="header-section-number">1.4.8</span> Release 1.5</h3>
 <p>The data model now offers sorted lists of frames. A template can iterate along all frames in lexical order of their names or in numerical order of ID or in parsing i.e. file order. In all cases the iteration can be done in both directions.</p>
-<h3 data-number="1.4.8" id="release-1.4"><span class="header-section-number">1.4.8</span> Release 1.4</h3>
+<h3 data-number="1.4.9" id="release-1.4"><span class="header-section-number">1.4.9</span> Release 1.4</h3>
 <p>A minor extension of the data model for sake of template design: The description of a signal’s bit pattern in the PDU is supported by additional redundant but convenient fields. See <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/doc/dataModel/index.html">Javadoc</a> of Java class Signal.</p>
 <p>Fix: The log file contained a few bad end of line characters, which let to a mixture of UNIX and Windows style.</p>
-<h3 data-number="1.4.9" id="release-1.3"><span class="header-section-number">1.4.9</span> Release 1.3</h3>
+<h3 data-number="1.4.10" id="release-1.3"><span class="header-section-number">1.4.10</span> Release 1.3</h3>
 <p>Our understanding of multiplexed signals turned out to be wrong. Release 1.2 and before only permitted alternative signals, where alternative sets of signals is the true intention. The according change of the data model required the increment of the minor version number.</p>
-<h4 data-number="1.4.9.1" id="fix-1.3.4"><span class="header-section-number">1.4.9.1</span> Fix 1.3.4</h4>
+<h4 data-number="1.4.10.1" id="fix-1.3.4"><span class="header-section-number">1.4.10.1</span> Fix 1.3.4</h4>
 <p>Revision 1.3.3 had been released with a bug in one of its core sample templates. This bug has been fixed in 1.3.4. The source code of the code generator itself has not been modified but we changed the third field of its revision designation because of the high impact of this issue: Most people will use the sample templates as starting point for their application and would suffer from the inherited bug in the template.</p>
 <p>The bug was located and is fixed in the template <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/samples/raceTechnology/templates/lib/codeGenC.stg" title="SVN repository">codeGenC.stg</a>.</p>
 <p>However, the complete set of templates should be exchanged for consistency reasons. The introduction of the support template <a href="https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/samples/raceTechnology/templates/lib/iterations.stg" title="SVN repository">iterations.stg</a> had established the attribute name <em>signal</em> for signals. Earlier templates used to refer to <em>s</em> to address to the signal in scope. This has now been aligned and all templates use the attribute name <em>signal</em>.</p>
-<h3 data-number="1.4.10" id="release-1.2"><span class="header-section-number">1.4.10</span> Release 1.2</h3>
+<h3 data-number="1.4.11" id="release-1.2"><span class="header-section-number">1.4.11</span> Release 1.2</h3>
 <p>An unpleasant bug fix: The code itself was alright but there were two too strict assertions in the code of release 1.1, which let the program abort depending on the network database. One assertion would fire in case of a specific error in the network file but the other one for each input file not defining any frame related attribute - which is a quite common situation. Release 1.1 would run if the Java machine is not started with assertion support (-ea).</p>
 <p>The release number has been incremented not because of the fixes but since the data model has been polished. All objects now support the method <em>toString</em> so that they can be rendered in a template by themselves, e.g. <em>&lt;frame&gt;</em> will render a complete frame object. The default behavior is to render an object as its name, <em>&lt;frame&gt;</em> would be identical to <em>&lt;frame.name&gt;</em>.</p>
 <p>Furthermore, the availability of get-number-of-element methods has been harmonized; they should now be available for all the collections in the data model. The StringTemplate V4 operator <em>&lt;length()&gt;</em> is probably no longer required.</p>
-<h3 data-number="1.4.11" id="release-1.1"><span class="header-section-number">1.4.11</span> Release 1.1</h3>
+<h3 data-number="1.4.12" id="release-1.1"><span class="header-section-number">1.4.12</span> Release 1.1</h3>
 <p>This release appeared already two weeks after the first release. By chance we found a side note in the StringTemplate V4 documentation mentioning the support of Java Map objects. This led to a redesign of the handling of CAN DBC attributes and the special signals. The data model has been changed. The functionality is exactly the same but the usage (i.e. the required template constructs) is much more intuitive. The sample template file attributes.stg disappeared; it was a convenience file to compensate for the somewhat cumbersome earlier approach.</p>
 <p>Having Java Map available it became now possible to implement an earlier idea, user specified options or, with other words, template attributes. Arbitrary attributes of Boolean, numerical or string type can be defined on the command line and are put into the rendered data model. The code generation process can be controlled by user specified command line options.</p>
 <p>CAUTION: This revision will fail if run with assertion checking. See next revision for details.</p>
-<h3 data-number="1.4.12" id="release-1.0"><span class="header-section-number">1.4.12</span> Release 1.0</h3>
+<h3 data-number="1.4.13" id="release-1.0"><span class="header-section-number">1.4.13</span> Release 1.0</h3>
 <p>The initial release. Full functionality of code generation but preliminary state of samples and documentation.</p>
 <h2 data-number="1.5" id="the-comframework-project"><span class="header-section-number">1.5</span> The comFramework project</h2>
 <p>The code generator is only a part of the comFramework projects, which embeds the code generator into the concept of a highly reusable, flexibly integratable CAN interface. comFramework can be found at <a href="https://sourceforge.net/projects/comframe/" class="uri">https://sourceforge.net/projects/comframe/</a>.</p>

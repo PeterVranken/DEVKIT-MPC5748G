@@ -4,7 +4,7 @@
  * @file apt_applicationTask.h
  * Definition of global interface of module apt_applicationTask.c
  *
- * Copyright (C) 2015-2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -27,7 +27,7 @@
 #include <stdatomic.h>
 
 #include "typ_types.h"
-#include "cde_canStatistics.h"
+#include "cst_canStatistics.h"
 
 
 /*

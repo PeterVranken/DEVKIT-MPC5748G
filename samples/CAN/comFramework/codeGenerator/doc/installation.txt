@@ -2,26 +2,42 @@ Installation of binary distribution of Java application comFramework codeGenerat
 ----------------------------------------------------------------------------------
 
 The code generator belonging to project comFramework is a stand-alone Java
-7 application. To install it you copy the contents of the archive to any
-location. However, to avoid later problems with localizing files you
-should only consider paths, which do not contain any blanks.
+8 application. An installed Java 8 (version 1.8) or higher is a
+prerequisite of running the code generator. The Java runtime environment
+suffices. You can get the Java JRE at
+http://www.oracle.com/technetwork/java/javase/downloads/index.html (Apr
+2021).
 
-The complete installation path, including the name of the root folder in
-the archive and the folder name codeGenerator is assigned to a new
-environment variable COMFRAMEWORK_CODEGENERATOR_HOME. The script that
-launches the Java application, will set the Java CLASSPATH based on this
-root directory. Java will fail to locate the required jar files if the
-environment variable is not properly set. Given, you'd copied the
-archive's contents to the folder c:\ProgramFiles, then you could issue the
-command
+Either the Java executable, java.exe, needs to be in the Windows search
+path or the Java installation path -- where bin\java.exe is located in --
+is assigned to a new environment variable COMFRAMEWORK_JAVA_HOME. Given,
+you're Java executable would be
+c:\ProgramFiles\jdk1.8.0_144_win32\jre\bin\java.exe, then you could issue
+the command
 
-setx COMFRAMEWORK_CODEGENERATOR_HOME c:\ProgramFiles\comFramework\codeGenerator
+    setx COMFRAMEWORK_JAVA_HOME c:\ProgramFiles\jdk1.8.0_144_win32\jre
 
 from a Command Prompt window. (Now you need to open another shell window
 to proceed; the current one will not take the new setting.) Please note,
-that the proposed command will only install the new environment for the
-current user. A machine wide setting by putting /m at the end of the
-command line requires administrator rights.
+that the proposed command will install the new environment variable only
+for the current user. A machine wide setting by putting /m at the end of
+the command line requires administrator rights.
+
+Now, the comFramework archive is unzipped to any location. Installation
+paths containing blanks should be avoided.
+
+The installation path of comFramework's code generator (i.e. a path like
+...\comFramework\codeGenerator, where folder dist is located in) is
+assigned to a new environment variable COMFRAMEWORK_CODEGENERATOR_HOME.
+The script that launches the Java application, will set the Java CLASSPATH
+based on this root directory. Java will fail to locate the required jar
+files if the environment variable is not properly set. Given, you'd copied
+the archive's contents to the folder c:\ProgramFiles, then you could issue
+the command
+
+    setx COMFRAMEWORK_CODEGENERATOR_HOME c:\ProgramFiles\comFramework\codeGenerator
+
+from a Command Prompt window.
 
 The application launcher is a Windows script named codeGenerator.cmd. It
 is located in the folder codeGenerator\dist. It's a very simple script and
@@ -32,7 +48,7 @@ variable PATH would be extended by
 c:\ProgramFiles\comFramework\codeGenerator\dist in the example above).
 Consider to type
 
-pathman c:\ProgramFiles\comFramework\codeGenerator\dist
+    pathman c:\ProgramFiles\comFramework\codeGenerator\dist
 
 in a shell window.
 
@@ -43,7 +59,7 @@ If you decided to extend your PATH variable then you should test your
 installation by opening a new shell window, cd'ing to an arbitrary working
 directory and submitting the command:
 
-codeGenerator.cmd --help
+    codeGenerator.cmd --help
 
 The application should be started and it should respond with its usage
 text.

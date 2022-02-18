@@ -1,17 +1,17 @@
 // ASAM MCD-2MC interface specification for CAN network cluster raceCar
-// Created with comFramework - codeGenerator version 1.10.4, see http://sourceforge.net/projects/comframe/
+// Created with comFramework - codeGenerator version 1.10.6, see http://sourceforge.net/projects/comframe/
 /begin PROJECT
     MERGED_PROJECT "CAN interface of cluster raceCar"
     /begin HEADER
        "This is an A2L fragment which has to be merged into the main project"
-       VERSION "31.10.2020 18:40:30"
+       VERSION "09.04.2021 22:29:59"
     /end HEADER
     /begin MODULE
         MERGED_MODULE "CAN interface of cluster raceCar"
 
         /begin MOD_PAR
             "MODULE PARAMETERS"
-            VERSION "31.10.2020 18:40:30"
+            VERSION "09.04.2021 22:29:59"
         /end MOD_PAR
 
         // Measurement point for signal Validity_INS_Vel_Forwards of frame RT_SB_INS_Vel_Body_Axes, 215 (0x0d7)

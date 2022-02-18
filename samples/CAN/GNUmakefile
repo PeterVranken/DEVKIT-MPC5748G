@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -58,12 +58,12 @@ project := DEVKIT-MPC5748G-CAN
 # searched recursively for C/C++ and assembler source files.
 #   Caution, absolute paths are not supported. Use paths only, which relate to the path of
 # this makefile.
-srcDirList := code/ comFramework/canInterface/components/canInterface/
+srcDirList := code/ comFramework/canInterface/code/
 
 # Exclusion list: Edit the list of excluded files. A blank separated list of C or assembler
 # source files is expected (all file designations with relative path), which are excluded
 # from build.
-cFileListExcl := asw_APSW.c
+cFileListExcl :=
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).

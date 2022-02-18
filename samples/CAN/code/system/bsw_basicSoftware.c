@@ -27,7 +27,6 @@
  *   bsw_osCbOnCANRx_CAN_1
  *   bsw_osCbOnCANRx_CAN_2
  *   bsw_osCbOnCANRx_CAN_3
- *   main
  *   startSecondaryCore
  *   main
  * Local functions
@@ -437,7 +436,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     CREATE_REGULAR_EVENT(/* tiInMs */ 100, /* tiFirstInMs */ 5)
     CREATE_REGULAR_EVENT(/* tiInMs */ 1000, /* tiFirstInMs */ 55)
 
-    /* OS task are created first. This ensures that they will get the CPU first when the
+    /* OS task are created first. This ensures that they will get the CPU first if the
        triggering event is shared with user tasks. */
     //CREATE_OS_TASK(idEv1ms, bsw_taskOs1ms)
     //CREATE_OS_TASK(idEv10ms, bsw_taskOs10ms)
@@ -449,7 +448,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     CREATE_USER_TASK(idEv1ms, bsw_pidSafety, bsw_taskSafety1ms)
     CREATE_USER_TASK(idEv10ms, bsw_pidSafety, bsw_taskSafety10ms)
 
-    /* User tasks in the QM process are created last. They will be served latest when the
+    /* User tasks in the QM process are created last. They will be served latest if the
        triggering event is shared with OS or safety tasks. */
     CREATE_USER_TASK(idEv1ms, bsw_pidUser, bsw_taskUser1ms)
     CREATE_USER_TASK(idEv10ms, bsw_pidUser, bsw_taskUser10ms)
@@ -462,9 +461,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
        succeeds. The step involves a configuration check. We must not startup the SW if the
        check fails. */
-    if(!initOk ||  rtos_osInitKernel() != rtos_err_noError)
-        while(true)
+    if(initOk)
+    {
+        rtos_errorCode_t errCode = rtos_osInitKernel();
+        while(errCode != rtos_err_noError)
             ;
+    }
 
     /* The code down here becomes the idle task of the RTOS. We enter an infinite loop,
        where some background can be placed. */

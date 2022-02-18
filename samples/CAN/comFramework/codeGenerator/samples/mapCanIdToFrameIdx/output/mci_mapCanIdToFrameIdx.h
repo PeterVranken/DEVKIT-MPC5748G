@@ -10,10 +10,10 @@
  * code, which doesn't belong into an auto-generated module. It's however straightforward
  * to implement the function that operates on the generated data tables.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.4,
+ * This file has been created with comFramework - codeGenerator version 1.10.6,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

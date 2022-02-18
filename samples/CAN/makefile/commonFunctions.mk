@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -23,6 +23,16 @@
 #
 ifndef COMMON_FUNCTIONS_INCLUDED
 COMMON_FUNCTIONS_INCLUDED := 1
+
+# Return a non-empty string ("true") if the makefile executes on a Windows system. On
+# Linux, the macro will return the empty string.
+isWin = $(if (or $(call eq,$(OS),WINDOWS),$(call eq,$(OS),Windows_NT)),true,)
+# Example:
+ifeq ($(call isWin),true)
+    $(warn We are executing on Windows)
+else
+    $(warn We are executing on Linux)
+endif
 
 # Return a end of line character. No parameters, can be called without $(call).
 define EOL

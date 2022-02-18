@@ -1,16 +1,35 @@
 Installation of binary distribution of Java application excelExporter
 ---------------------------------------------------------------------
 
-excelExporter is a stand-alone Java 7 application. An installed Java 7
-(version 1.7) or higher is a prerequisite of running excelExporter. The
+excelExporter is a stand-alone Java 8 application. An installed Java 8
+(version 1.8) or higher is a prerequisite of running excelExporter. The
 Java runtime environment suffices. You can get the Java JRE at
-http://www.oracle.com/technetwork/java/javase/downloads/index.html (Mar
-2016).
+http://www.oracle.com/technetwork/java/javase/downloads/index.html (Apr
+2021).
 
-To install excelExporter you copy the contents of the archive to any
+Either the Java executable, java.exe, needs to be in the Windows search
+path or the Java installation path -- where bin\java.exe is located in --
+is assigned to a new environment variable COMFRAMEWORK_JAVA_HOME. Given,
+you're Java executable would be
+c:\ProgramFiles\jdk1.8.0_144_win32\jre\bin\java.exe, then you could issue
+the command
+
+    setx COMFRAMEWORK_JAVA_HOME c:\ProgramFiles\jdk1.8.0_144_win32\jre
+ 
+from a Command Prompt window. (Now you need to open another shell window
+to proceed; the current one will not take the new setting.) Please note,
+that the proposed command will install the new environment variable only
+for the current user. A machine wide setting by putting /m at the end of
+the command line requires administrator rights.
+
+Now you unzip the contents of the excelExporter archive to any
 location. However, to avoid later problems with localizing files from
 shell command line and scripts you should only consider paths, which do
 not contain any blanks.
+
+TIP: Usually, excelExporter is distributed as an element of the
+comFramework package. If so, then the comFramework archive is the only one
+to unzip; folder excelExporter is contained.
 
 The complete installation path, including the name of the archive's root
 folder excelExporter is assigned to a new environment variable
@@ -20,13 +39,9 @@ locate the required jar files if the environment variable is not properly
 set. Given, you'd copied the archive's contents to the folder
 c:\ProgramFiles, then you could issue the command
 
-setx EXCELEXPORTER_HOME c:\ProgramFiles\excelExporter
+    setx EXCELEXPORTER_HOME c:\ProgramFiles\excelExporter
 
-from a Command Prompt window. (Now you need to open another shell window
-to proceed; the current one will not take the new setting.) Please note, that
-the proposed command will only install the new environment for the current
-user. A machine wide setting by putting /m at the end of the command line
-requires administrator rights.
+from a Command Prompt window.
 
 The application launcher is a Windows script named excelExporter.cmd. It
 is located in the folder excelExporter\dist. It's a very simple script and
@@ -36,7 +51,7 @@ the folder dist is added to the system search path (i.e. environment
 variable PATH would be extended by c:\ProgramFiles\excelExporter\dist in
 the example case above). Consider to type
 
-pathman c:\ProgramFiles\excelExporter\dist
+    pathman c:\ProgramFiles\excelExporter\dist
 
 in a shell window.
 
@@ -47,7 +62,7 @@ If you decided to extend your PATH variable then you should test your
 installation by opening a new shell window, cd'ing to an arbitrary working
 directory and submitting the command:
 
-excelExporter.cmd --help
+    excelExporter.cmd --help
 
 The application should be started and it should respond with its usage
 text.

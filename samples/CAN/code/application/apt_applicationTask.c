@@ -8,9 +8,9 @@
  * interface.\n
  *   The regularly executed run-time tasks run the CAN interface engine and call the APSW.
  * The CAN interface engine updates all signal values and status in the global CAN API and
- * sends due frames, filled with information read from this API.
+ * sends due messages, filled with information read from this API.
  *
- * Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -46,6 +46,8 @@
  * Include files
  */
 
+#include "apt_applicationTask.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,15 +58,13 @@
 #include "lbd_ledAndButtonDriver.h"
 #include "bsw_basicSoftware.h"
 #include "cdr_canDriverAPI.h"
-#include "mem_malloc.h"
-#include "cde_canDispatcherEngine.h"
-#include "cde_canStatistics.h"
-#include "cde_canDataTables.h"
+#include "ede_eventDispatcherEngine.h"
+#include "cst_canStatistics.h"
+#include "cdt_canDataTables.h"
 #include "f2d_float2Double.h"
 #include "can_canRuntime.h"
 #include "sio_serialIO.h"
 #include "cmd_canCommand.h"
-#include "apt_applicationTask.h"
 #include "pwm_pwmIODriver.h"
 #include "c2p_canToPWM.h"
 
@@ -358,7 +358,7 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
  *   @return
  * Normally, the function will return zero. However, it may return a negative value to
  * indicate a severe problem. The system would count a process error and a safety
- * supervior task could take an action.
+ * supervisor task could take an action.
  *   @param PID
  * The process ID of the process, the task belongs to; always bsw_pidUser in our case.
  *   @param taskParam
@@ -389,7 +389,7 @@ int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB
  *   @return
  * Normally, the function will return zero. However, it may return a negative value to
  * indicate a severe problem. The system would count a process error and a safety
- * supervior task could take an action.
+ * supervisor task could take an action.
  *   @param PID
  * The process ID of the process, the task belongs to; always bsw_pidUser in our case.
  *   @param taskParam
@@ -402,7 +402,8 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
     ++ _cntTask10ms;
     
     /* Call the step function of the CAN interface engine for this task. */
-    cde_dispatcherMain(CAN_IDX_DISPATCHER_10MS);
+    assert(can_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
+    ede_dispatcherMain(can_hDispatcherSystem, CAN_IDX_DISPATCHER_10MS);
 
     /* Look for possible user input through serial interface. */
     static unsigned int DATA_P1(cntIdleLoops_) = 2800;
@@ -571,7 +572,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
  *   @return
  * Normally, the function will return zero. However, it may return a negative value to
  * indicate a severe problem. The system would count a process error and a safety
- * supervior task could take an action.
+ * supervisor task could take an action.
  *   @param PID
  * The process ID of the process, the task belongs to; always bsw_pidUser in our case.
  *   @param taskParam
@@ -596,7 +597,7 @@ int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTR
  *   @return
  * Normally, the function will return zero. However, it may return a negative value to
  * indicate a severe problem. The system would count a process error and a safety
- * supervior task could take an action.
+ * supervisor task could take an action.
  *   @param PID
  * The process ID of the process, the task belongs to; always bsw_pidUser in our case.
  *   @param taskParam
@@ -614,21 +615,21 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATT
     /* Some test code of the uniform floating point signal API shaped for this sample. */
     
 //    /* CAN ID 1024, Rx signal "speedOfRotation": Print current value. */
-//    const cde_canSignal_t *pSpeedOfRotation = &cde_canSignalAry[1];
+//    const cdt_canSignal_t *pSpeedOfRotation = &cdt_canSignalAry[1];
 //    assert(pSpeedOfRotation->isReceived
-//           &&  pSpeedOfRotation->idxFrame < sizeOfAry(cde_canRxFrameAry)
+//           &&  pSpeedOfRotation->idxMsg < sizeOfAry(cdt_canRxMsgAry)
 //          );
-//    printf( "Frame %d, signal %s: %f %s\r\n"
-//          , cde_canRxFrameAry[pSpeedOfRotation->idxFrame].canId
+//    printf( "Message %d, signal %s: %f %s\r\n"
+//          , cdt_canRxMsgAry[pSpeedOfRotation->idxMsg].canId
 //          , pSpeedOfRotation->name
 //          , f2d(pSpeedOfRotation->getter())
 //          , pSpeedOfRotation->unit
 //          );
 //
 //    /* CAN ID 1536, Tx signal "power": Change value visibly. */
-//    const cde_canSignal_t *pPower = &cde_canSignalAry[14];
+//    const cdt_canSignal_t *pPower = &cdt_canSignalAry[14];
 //    assert(!pPower->isReceived
-//           &&  pPower->idxFrame < sizeOfAry(cde_canTxFrameAry)
+//           &&  pPower->idxMsg < sizeOfAry(cdt_canTxMsgAry)
 //          );
 //    const float range = pPower->max - pPower->min
 //              , delta = range/15.0f;

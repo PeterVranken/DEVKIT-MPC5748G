@@ -4,10 +4,10 @@
  * @file cap_canApi.h
  * Declaration of API and pack/unpack functions for the CAN frames of cluster ecSample.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.4,
+ * This file has been created with comFramework - codeGenerator version 1.10.6,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -609,7 +609,7 @@ typedef enum cap_enumStsTransmission_t
         frames. */
     cap_stsTransm_neverReceived = 1,
 
-    /** The frame could not be send, send buffer full. Only for outbound frames. */
+    /** The frame could not be sent, send buffer full. Only for outbound frames. */
     cap_stsTransm_errSendBufferFull = 1,
 
     /** The frame has not been received timely. */

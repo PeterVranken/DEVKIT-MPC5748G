@@ -1,6 +1,6 @@
 /**
  * @file c2p_canToPWM.c
- * Interface between CAN stack and PWm driver. Particular CAN messages are defined to
+ * Interface between CAN stack and PWM driver. Particular CAN messages are defined to
  * either control a PWM ouput or to report the measurement results captured at a PWM input.
  * These CAN message are coupled with the PWM I/O driver in this module.
  *   
@@ -69,7 +69,7 @@
  */
 void c2p_mainFunction100ms(void)
 {
-#if defined(CAP_FRAME_PWM_PWM_IN_1000)
+#if defined(CAP_MSG_PWM_PWM_IN_1000)
     bool isNewPeriodTime;
     const float tiP = pwm_getChnInputPeriodTime( &isNewPeriodTime
                                                , pwm_pwmIChn_PA2_J3_pin3_periodTime
@@ -101,13 +101,13 @@ void c2p_mainFunction100ms(void)
 #endif
 
     /* For reading and updating the global CAN API, we need a critical section with the CAN
-       stack task, that packs the frames and sends them out. This is the task, which runs
+       stack task, that packs the messages and sends them out. This is the task, which runs
        the main function of the (only) CAN dispatcher, cde_dispatcherMain(). */
-#if defined(CAP_FRAME_PWM_PWM_IN_1000) || defined(CAP_FRAME_PWM_PWM_OUT_1001)
+#if defined(CAP_MSG_PWM_PWM_IN_1000) || defined(CAP_MSG_PWM_PWM_OUT_1001)
     uint32_t oldStateTx = rtos_suspendAllTasksByPriority(BSW_PRIO_USER_TASK_10MS);
 #endif
 
-#ifdef CAP_FRAME_PWM_PWM_IN_1000
+#ifdef CAP_MSG_PWM_PWM_IN_1000
     cap_getSignal_PWM_PWM_in_1000(PA2_J3_pin3_isNew)      = isNewPeriodTime;
     cap_getSignal_PWM_PWM_in_1000(PA2_J3_pin3_periodTime) = PA2_J3_pin3_periodTime;
     cap_getSignal_PWM_PWM_in_1000(PA6_J2_pin1_isNew)      = isNewDutyTime;
@@ -115,7 +115,7 @@ void c2p_mainFunction100ms(void)
     cap_getSignal_PWM_PWM_in_1000(PA2_J3_pin3_frequency)  = PA2_J3_pin3_frequency;
     cap_getSignal_PWM_PWM_in_1000(PA2_PA6_dutyCycle)      = PA2_PA6_dutyCycle;
 #endif
-#ifdef CAP_FRAME_PWM_PWM_OUT_1001
+#ifdef CAP_MSG_PWM_PWM_OUT_1001
 # define GET_PWM_CAN_CMD(chn)                                                               \
     const bool doCtrl_##chn = !cap_getSignal_PWM_PWM_out_1001(chn##_inhibit);               \
     cap_getSignal_PWM_PWM_out_1001(chn##_inhibit) = true; /* Acknowlegde input */           \
@@ -130,11 +130,11 @@ void c2p_mainFunction100ms(void)
 #undef GET_PWM_CAN_CMD
 #endif
     
-#if defined(CAP_FRAME_PWM_PWM_IN_1000) || defined(CAP_FRAME_PWM_PWM_OUT_1001)
+#if defined(CAP_MSG_PWM_PWM_IN_1000) || defined(CAP_MSG_PWM_PWM_OUT_1001)
     rtos_resumeAllTasksByPriority(oldStateTx);
 #endif
 
-#if defined(CAP_FRAME_PWM_PWM_OUT_1001)
+#if defined(CAP_MSG_PWM_PWM_OUT_1001)
 # define UPDATE_PWM_CHN(chn)                                                                \
     if(doCtrl_##chn)                                                                        \
     {                                                                                       \

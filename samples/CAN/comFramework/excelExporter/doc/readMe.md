@@ -158,7 +158,7 @@ An additional source of documentation are the Wiki pages of the project,
 please refer to <https://sourceforge.net/p/excelexporter/wiki/browse_pages/>.
 The Wiki pages shade a light at some most relevant, selected issues; a
 comprehensive, self-contained (printable) manual is not planned. As of
-today, September 2018, we have the following discussions in the Wiki pages:
+today, March 2021, we have the following discussions in the Wiki pages:
 
 - [excelExporter's Data Model](https://sourceforge.net/p/excelexporter/wiki/The%20Data%20Model/)
 - [Grouping and sorting](https://sourceforge.net/p/excelexporter/wiki/Grouping%20and%20sorting/)
@@ -167,7 +167,7 @@ today, September 2018, we have the following discussions in the Wiki pages:
 
 ## Installation ##
 
-excelExporter is a Java 7 application. The installation is as simple as
+excelExporter is a Java 8 application. The installation is as simple as
 unpacking an archive and optionally setting an environment variable. It is
 described in detail in the file
 [installation.txt](https://svn.code.sf.net/p/comframe/code/excelExporter/trunk/doc/installation.txt).
@@ -175,6 +175,34 @@ described in detail in the file
 
 ## What's new ##
 
+### Release 1.0.3 ###
+
+Text output, which contains non ASCII characters is now saved to file as
+UTF-8. (Used to be a non specified, default code page.) 
+
+Master sample "renderTable" re-designed. This actually is a small
+convenience application, which strongly simplifies the use of
+excelExporter for the most common use cases.
+
+Fix: We found an Excel workbook, which let to still unexpected runtime
+errors of POI when evaluating the cell contents. These Java
+RuntimeExceptions had made the application immediately abort rather then
+reporting the problem. Now, the evaluation of affected cells is skipped
+with warning and no reasonable cell contents are accessible from the
+templates.
+
+excelExporter has been migrated to the recent release of StringTemplate
+V4, which is 4.3.1. The only noticeable difference should be a fix of the
+white space handling in StringTemplate. It used to be very difficult to
+precisely control the generation of blank lines in the output. With this
+fix, the newline characters found in the templates are accurately conveyed
+into the generated output.
+
+Caution, this will likely mean that this version of the code generator
+will produce different output when using the same, existing templates. The
+differences are however restricted to blank lines and should not matter in
+C code generation environments.
+  
 ### Release 1.0 ###
 
 After more than a year of hassle-free productive use of the tool we

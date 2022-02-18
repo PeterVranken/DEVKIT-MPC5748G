@@ -1,27 +1,29 @@
 /*
  * File: pwr_computeEnginePower_types.h
  *
- * Real-Time Workshop code generated for Simulink model pwr_computeEnginePower.
+ * Code generated for Simulink model 'pwr_computeEnginePower'.
  *
- * Model version                        : 1.126
- * Real-Time Workshop file version      : 7.3  (R2009a)  15-Jan-2009
- * Real-Time Workshop file generated on : Mon Oct 17 21:28:15 2016
- * TLC version                          : 7.3 (Jan 18 2009)
- * C/C++ source code generated on       : Mon Oct 17 21:28:15 2016
+ * Model version                  : 1.4
+ * Simulink Coder version         : 9.2 (R2019b) 18-Jul-2019
+ * C/C++ source code generated on : Fri Apr  9 10:31:36 2021
  *
  * Target selection: ert.tlc
- * Embedded hardware selection: Intel->x86/Pentium
- * Code generation objective: Efficiency
+ * Embedded hardware selection: Intel->x86-64 (Windows64)
+ * Code generation objectives: Unspecified
  * Validation result: Not run
  */
 
 #ifndef RTW_HEADER_pwr_computeEnginePower_types_h_
 #define RTW_HEADER_pwr_computeEnginePower_types_h_
-#include "rtwtypes.h"
 #include "cap_canApi.h"
-#endif                                 /* RTW_HEADER_pwr_computeEnginePower_types_h_ */
 
-/* File trailer for Real-Time Workshop generated code.
+/* Forward declaration for rtModel */
+typedef struct tag_RTM_pwr_computeEnginePowe_T RT_MODEL_pwr_computeEnginePow_T;
+
+#endif                          /* RTW_HEADER_pwr_computeEnginePower_types_h_ */
+
+/*
+ * File trailer for generated code.
  *
  * [EOF]
  */

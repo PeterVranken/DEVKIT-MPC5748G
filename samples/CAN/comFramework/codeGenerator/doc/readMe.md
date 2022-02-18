@@ -118,7 +118,7 @@ An additional source of documentation are the Wiki pages of the project,
 please refer to <https://sourceforge.net/p/comframe/wiki/browse_pages/>.
 The Wiki pages shade a light at some most relevant, selected issues; a
 comprehensive, self-contained (printable) manual is not planned. As of
-today, October 2020, we have the following discussions in the Wiki pages:
+today, March 2021, we have the following discussions in the Wiki pages:
 
 -   [Overview on the comFramework project](<https://sourceforge.net/p/comframe/wiki/Home/> "comFramework - About this Project")
 -   [The command line of the DBC code generator](https://sourceforge.net/p/comframe/wiki/Command%20Line%20DBC%20Code%20Generator/)
@@ -135,12 +135,27 @@ today, October 2020, we have the following discussions in the Wiki pages:
 
 ## Installation ##
 
-The code generator is a Java 7 application. The installation is as simple as
+The code generator is a Java 8 application. The installation is as simple as
 unpacking an archive and setting an environment variable. It is described
 in detail in the file [installation.txt](<https://svn.code.sf.net/p/comframe/code/codeGenerator/trunk/doc/installation.txt>).
 
 ## What's new ##
 
+### Release 1.10.6 ###
+
+Bug fix: Bad lookup code had let the code generator mix up 11 and 29 Bit
+CAN IDs if they would have the same numeric values. Parser aborted with
+error message.
+
+Bug fix: A specific syntax error in the DBC could make the code generator
+abort with null pointer exception rather than with proper error message.
+The problem appeared if an attribute value was specified for the wrong
+type of object, e.g. if an attribute was set for a signal although it had
+been defined before as message related attribute. Such a wrong DBC file
+had been produced by the Kvaser Database Editor (Version 3.13.317, Sep 9,
+2020) after editing some attribute values. Now the application simply
+rejects the DBC file with precise hint what's wrong with the file.
+  
 ### Release 1.10.4 ###
 
 The code generator has been migrated to the recently issued revisions of

@@ -13,7 +13,7 @@ echo separated list of paths holding your project templates. (The local working 
 echo already is part of the class path.) Please note, setting the environment variable
 echo should be done only locally as it'll contain project specific paths!
 rem
-rem  Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+rem  Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 rem
 rem  This program is free software: you can redistribute it and/or modify it
 rem  under the terms of the GNU Lesser General Public License as published by the
@@ -33,6 +33,8 @@ goto :eof
 
 if "%1" == "" goto usage
 
+setlocal
+
 :: Check for the most typical errors
 if "%COMFRAMEWORK_CODEGENERATOR_HOME%" == "" (
     echo Bad installation of comFramework-codeGenerator detected. You need to set the
@@ -40,6 +42,10 @@ if "%COMFRAMEWORK_CODEGENERATOR_HOME%" == "" (
     echo application installation folder, which contains the folders dist, doc and samples
     goto :eof
 )
+
+:: A dedicated installation of the Java binaries may be used. The variable doesn't need to
+:: be set; if not then the Java installation from the Windows search path would be used.
+if not "%COMFRAMEWORK_JAVA_HOME%" == "" set PATH=%COMFRAMEWORK_JAVA_HOME%\bin;%PATH%
 
 :: Launch the Java application. Pass all script arguments to the application.
 ::   The folders with the required templates can by added by setting the variable

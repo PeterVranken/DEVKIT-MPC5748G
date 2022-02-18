@@ -5,7 +5,7 @@
  * calls. Additionally, some buffer management is required in order to not break the safety
  * concept (memory protection).
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -284,8 +284,9 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
         }
     }
     
-    /* If we get here then we couldn't call the OS function to fetch the message data. We
-       have a bad system call argument, raise exception. This function doesn't return. */
+    /* If we get here then we couldn't call the OS function to send the message data. We
+       have a bad system call argument and raise an exception. This function doesn't
+       return. */
     rtos_osSystemCallBadArgument();
 
 } /* End of cdr_scSmplHdlr_sendMessage */

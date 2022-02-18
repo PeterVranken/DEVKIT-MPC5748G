@@ -346,7 +346,7 @@ static inline bool cdr_mapMailboxHandleToId( cdr_idMailbox_t * const pIdMB
                      , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig)
                      , idxMB = hMB - additionalCapaFIFO;
     
-    /* hMB needs a simple transformation to become the index of the mailboxes in the
+    /* hMB needs a simple transformation to become the index of the mailbox in the
        device. */
     if(hMB >= noFIFOMsgs  &&  idxMB < pDeviceConfig->noMailboxes)
     {

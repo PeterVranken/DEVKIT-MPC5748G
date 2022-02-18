@@ -44,7 +44,7 @@
 
 #include "typ_types.h"
 #include "f2d_float2Double.h"
-#include "cde_canDataTables.h"
+#include "cdt_canDataTables.h"
 #include "cmd_canCommand.h"
 
 
@@ -73,7 +73,7 @@
 /** Table entry of listener. It describes one signal to listen to. */
 typedef struct listenerSigDesc_t
 {
-    /** Signal by reference into the global table \a cde_canSignalAry of all signals in the
+    /** Signal by reference into the global table \a cdt_canSignalAry of all signals in the
         CAN database. A value of UINT_MAX means table entry not in use. */
     unsigned int idxSignal;
 
@@ -111,7 +111,7 @@ static unsigned int DATA_P1(_tiListenerAdd) = 0;
  * each CAN reception event.
  *   @param idxRxFr
  * Index of the received message. The index relates to the global array of message
- * descriptors, \a cde_canRxFrameAry.
+ * descriptors, \a cdt_canRxMsgAry.
  */
 void cmd_onReceiveMessage(unsigned int idxRxFr)
 {
@@ -119,23 +119,23 @@ void cmd_onReceiveMessage(unsigned int idxRxFr)
     for(idxSigInList=0; idxSigInList<sizeOfAry(_listenerSignalAry); ++idxSigInList)
     {
         const listenerSigDesc_t const *pSigInList = &_listenerSignalAry[idxSigInList];
-        if(pSigInList->idxSignal < sizeOfAry(cde_canSignalAry))
+        if(pSigInList->idxSignal < sizeOfAry(cdt_canSignalAry))
         {
             /* Access the descriptor of the currently checked signal. */
-            const cde_canSignal_t * const pSig = &cde_canSignalAry[pSigInList->idxSignal];
+            const cdt_canSignal_t * const pSig = &cdt_canSignalAry[pSigInList->idxSignal];
 
             /* Check if this signal belongs to the just received message. */
-            if(pSig->isReceived &&  pSig->idxFrame == idxRxFr)
+            if(pSig->isReceived &&  pSig->idxMsg == idxRxFr)
             {
-                /* Signal belongs to received frame, report new signal value. */
+                /* Signal belongs to received message, report new signal value. */
                 
-                /* Access the descriptor of the received frame. */
-                assert(idxRxFr < sizeOfAry(cde_canRxFrameAry));
-                const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[idxRxFr];
+                /* Access the descriptor of the received message. */
+                assert(idxRxFr < sizeOfAry(cdt_canRxMsgAry));
+                const cdt_canMessage_t * const pMsg = &cdt_canRxMsgAry[idxRxFr];
 
-                printf( "Frame %s (%lu), signal %s: %f %s\r\n"
-                      , pFrame->name
-                      , pFrame->canId
+                printf( "Message %s (%lu), signal %s: %f %s\r\n"
+                      , pMsg->name
+                      , pMsg->canId
                       , pSig->name
                       , f2d(pSig->getter())
                       , pSig->unit
@@ -319,19 +319,19 @@ static bool parseCanSignal( const char * * const pSignalName
  */
 static bool compareCanId( unsigned int canId
                         , bool isExtId
-                        , const cde_canSignal_t * const pSignalInDb
+                        , const cdt_canSignal_t * const pSignalInDb
                         , bool isReceived
                         )
 {
     if(isReceived)
     {
-        return cde_canRxFrameAry[pSignalInDb->idxFrame].canId == canId
-               &&  cde_canRxFrameAry[pSignalInDb->idxFrame].isExtId == isExtId;
+        return cdt_canRxMsgAry[pSignalInDb->idxMsg].canId == canId
+               &&  cdt_canRxMsgAry[pSignalInDb->idxMsg].isExtId == isExtId;
     }
     else
     {
-        return cde_canTxFrameAry[pSignalInDb->idxFrame].canId == canId
-               &&  cde_canTxFrameAry[pSignalInDb->idxFrame].isExtId == isExtId;
+        return cdt_canTxMsgAry[pSignalInDb->idxMsg].canId == canId
+               &&  cdt_canTxMsgAry[pSignalInDb->idxMsg].isExtId == isExtId;
     }
 } /* End of compareCanId */
 
@@ -343,7 +343,7 @@ static bool compareCanId( unsigned int canId
  * CAN *.dbc file.
  *   @return
  * If the referenced signal was identified in the CAN database then the function returns
- * the found signal as index into the global table \a cde_canSignalAry. Otherwise it
+ * the found signal as index into the global table \a cdt_canSignalAry. Otherwise it
  * returns UINT_MAX. Appropriate user feedback has been written to the serial output in
  * case of \a UINT_MAX.
  *   @param canId
@@ -371,9 +371,9 @@ static unsigned int identifySignalInDb( unsigned int canId
     unsigned int noMatches = 0
                , idxSignalInGlobalTable = UINT_MAX
                , idxSig;
-    for(idxSig=0; idxSig<CDE_NO_SENT_AND_RECEIVED_CAN_SIGNALS; ++idxSig)
+    for(idxSig=0; idxSig<CST_NO_SENT_AND_RECEIVED_CAN_SIGNALS; ++idxSig)
     {
-        const cde_canSignal_t *pSig = &cde_canSignalAry[idxSig];
+        const cdt_canSignal_t *pSig = &cdt_canSignalAry[idxSig];
         
         if(pSig->isReceived == isReceived
            && (!doCompareCanId || compareCanId(canId, isExtId, pSig, isReceived))
@@ -423,7 +423,7 @@ static unsigned int identifySignalInDb( unsigned int canId
  * latter with the actual contents of the CAN DB.
  *   @return
  * If the referenced signal was identified in the CAN database then the function returns
- * the found signal as index into the global table \a cde_canSignalAry. Otherwise it
+ * the found signal as index into the global table \a cdt_canSignalAry. Otherwise it
  * returns UINT_MAX. Appropriate user feedback has been written to the serial output in
  * case of \a UINT_MAX.
  *   @param argC
@@ -467,7 +467,7 @@ static unsigned int parseCanSignalInDb( unsigned int argC
  * eldest, now dropped signal if the table is full.
  *   @param idxSignalInGlobalTable
  * The signal to look for is identified by the index into the global table \a
- * cde_canSignalAry of all signals in the CAN database.\n
+ * cdt_canSignalAry of all signals in the CAN database.\n
  *   If UINT_MAX is passed then the function will return the index of the first empty entry
  * in the local table or UINT_MAX if the table is full.
  */
@@ -527,17 +527,17 @@ static bool searchSignalToListenTo( unsigned int *pIdxInList
  * flooded with output) and if it is full then the new signal will replace to most recently
  * added.
  *   @param idxSignalInCanDb
- * The affected CAN signal, represented by the index into the global table \a cde_canSignalAry.
+ * The affected CAN signal, represented by the index into the global table \a cdt_canSignalAry.
  *   @param add
  * \a true if the signal should be added to the listener and \a false if it should be
  * removed.
  */
 static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
 {
-    assert(idxSignalInCanDb < sizeOfAry(cde_canSignalAry));
-    const cde_canSignal_t * const pSignal = &cde_canSignalAry[idxSignalInCanDb];
-    assert(pSignal->idxFrame < sizeOfAry(cde_canRxFrameAry));
-    const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSignal->idxFrame];
+    assert(idxSignalInCanDb < sizeOfAry(cdt_canSignalAry));
+    const cdt_canSignal_t * const pSignal = &cdt_canSignalAry[idxSignalInCanDb];
+    assert(pSignal->idxMsg < sizeOfAry(cdt_canRxMsgAry));
+    const cdt_canMessage_t * const pMsg = &cdt_canRxMsgAry[pSignal->idxMsg];
     
     /* Look for an existing entry of the same signal first to avoid double entries.
          idxInList: Index of found signal or index to use for next added signal
@@ -554,8 +554,8 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
             iprintf( "Signal %s (%s, %lu) had already been added to the listener. No"
                      " action is taken\r\n"
                    , pSignal->name
-                   , pFrame->name
-                   , pFrame->canId
+                   , pMsg->name
+                   , pMsg->canId
                    );
         }
         else
@@ -567,22 +567,22 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
                                             { .idxSignal = idxSignalInCanDb,
                                               .tiAdded = _tiListenerAdd++,
                                             };
-            if(idxSignalInCanDbBefore < sizeOfAry(cde_canSignalAry))
+            if(idxSignalInCanDbBefore < sizeOfAry(cdt_canSignalAry))
             {
-                const cde_canSignal_t * const pSigBefore =
-                                                    &cde_canSignalAry[idxSignalInCanDbBefore];
-                assert(pSigBefore->idxFrame < sizeOfAry(cde_canRxFrameAry));
-                const cde_canFrame_t * const pFrame = &cde_canRxFrameAry[pSigBefore->idxFrame];
+                const cdt_canSignal_t * const pSigBefore =
+                                                    &cdt_canSignalAry[idxSignalInCanDbBefore];
+                assert(pSigBefore->idxMsg < sizeOfAry(cdt_canRxMsgAry));
+                const cdt_canMessage_t * const pMsg = &cdt_canRxMsgAry[pSigBefore->idxMsg];
                 iprintf( "Signal %s (%s, %lu) has been removed from the listener\r\n"
                        , pSigBefore->name
-                       , pFrame->name
-                       , pFrame->canId
+                       , pMsg->name
+                       , pMsg->canId
                        );
             }
             iprintf( "Signal %s (%s, %lu) is added to the listener\r\n"
                    , pSignal->name
-                   , pFrame->name
-                   , pFrame->canId
+                   , pMsg->name
+                   , pMsg->canId
                    );
         }
     }
@@ -596,8 +596,8 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
             _listenerSignalAry[idxInList].idxSignal = UINT_MAX;
             iprintf( "Signal %s (%s, %lu) has been removed from the listener\r\n"
                    , pSignal->name
-                   , pFrame->name
-                   , pFrame->canId
+                   , pMsg->name
+                   , pMsg->canId
                    );
         }
         else
@@ -605,8 +605,8 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
             iprintf( "Signal %s (%s, %lu) had not been added to the listener before."
                      " No action is taken\r\n"
                    , pSignal->name
-                   , pFrame->name
-                   , pFrame->canId
+                   , pMsg->name
+                   , pMsg->canId
                    );
         }
     } /* End if(Signal to add or to remove?) */
@@ -623,14 +623,14 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
  *   @return
  * \a true, if function succeeded, else \a false.
  *   @param idxSignalInCanDb
- * The affected CAN signal, represented by the index into the global table \a cde_canSignalAry.
+ * The affected CAN signal, represented by the index into the global table \a cdt_canSignalAry.
  */
 static void setSignalValue(unsigned int idxSignalInCanDb, float value)
 {
-    assert(idxSignalInCanDb < sizeOfAry(cde_canSignalAry));
-    const cde_canSignal_t * const pSignal = &cde_canSignalAry[idxSignalInCanDb];
-    assert(pSignal->idxFrame < sizeOfAry(cde_canTxFrameAry));
-    const cde_canFrame_t * const pFrame = &cde_canTxFrameAry[pSignal->idxFrame];
+    assert(idxSignalInCanDb < sizeOfAry(cdt_canSignalAry));
+    const cdt_canSignal_t * const pSignal = &cdt_canSignalAry[idxSignalInCanDb];
+    assert(pSignal->idxMsg < sizeOfAry(cdt_canTxMsgAry));
+    const cdt_canMessage_t * const pMsg = &cdt_canTxMsgAry[pSignal->idxMsg];
     
     /* Use range information to properly saturate the set value. */
     bool needSaturation = false;
@@ -649,8 +649,8 @@ static void setSignalValue(unsigned int idxSignalInCanDb, float value)
     pSignal->setter(value);
     printf( "Signal %s (%s, %lu) has been changed from %f %s to new %svalue %f %s\r\n"
           , pSignal->name
-          , pFrame->name
-          , pFrame->canId
+          , pMsg->name
+          , pMsg->canId
           , f2d(oldValue)
           , pSignal->unit
           , needSaturation? "(saturated) ": ""
@@ -660,7 +660,7 @@ static void setSignalValue(unsigned int idxSignalInCanDb, float value)
     
     /* Trigger sending of event messages. For ordinary regular messages, the statement is
        harm- and useless. */
-    pFrame->pInfoTransmission->isEvent = true;
+    pMsg->pInfoTransmission->isEvent = true;
     
 } /* End of setSignalValue */
 
@@ -689,7 +689,7 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
     if((isCmdListen=stricmp(cmd, "listen") == 0)  ||  stricmp(cmd, "unlisten") == 0)
     {
         unsigned int idxSignalInCanDb = parseCanSignalInDb(argC, argV, /* isReceived */ true);
-        if(idxSignalInCanDb < sizeOfAry(cde_canSignalAry))
+        if(idxSignalInCanDb < sizeOfAry(cdt_canSignalAry))
         {
             /* Command line has been parsed, signal has been identified in the CAN DB,
                now trigger the action. */
@@ -724,7 +724,7 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
                                                               , argV
                                                               , /* isReceived */ false
                                                               );
-            if(idxSignalInCanDb < sizeOfAry(cde_canSignalAry))
+            if(idxSignalInCanDb < sizeOfAry(cdt_canSignalAry))
             {
                 /* Command line has been parsed, signal has been identified in the CAN DB,
                    now trigger the action. */

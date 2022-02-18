@@ -23,8 +23,8 @@ endif
 defineList := $(CONFIG)
 
 # List of C source files
-cFileList := cap_canApi.c pwr_computeEnginePower.c mai_main.c								\
-             $(notdir $(wildcard ../slprj/ert/_sharedutils/*.c))
+#$(notdir $(wildcard ../slprj/ert/_sharedutils/*.c))
+cFileList := cap_canApi.c pwr_computeEnginePower.c mai_main.c
 
 # List of C source code folders
 VPATH := ./ ../output/ ../pwr_computeEnginePower_ert_rtw/ ../slprj/ert/_sharedutils/
