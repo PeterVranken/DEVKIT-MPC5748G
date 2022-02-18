@@ -143,7 +143,7 @@ static inline unsigned int getIdxOffset(unsigned int idxBus, boolean_t isInbound
  * Get \a true if the handle of this frame still fits into the working model of piecewise
  * linear handle mapping without overlap between Tx and Rx.\n
  *   If only a single frame returns \a false during CAN stack initialization then it is
- * proven that the implemented mapping is sufficient for the given use case and not all of
+ * proven that the implemented mapping is insufficient for the given use case and not all of
  * the frames will later be properly delivered.
  *   @param idxBus
  * The zero based index of the bus the frame in question is transmitted on.\n
