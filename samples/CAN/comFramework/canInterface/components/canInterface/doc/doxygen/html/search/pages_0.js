@@ -1,4 +1,0 @@
-var searchData=
-[
-  ['software_20documentation_20for_20comframework_20_2d_20can_20interface',['Software Documentation for comFramework - CAN Interface',['../index.html',1,'']]]
-];

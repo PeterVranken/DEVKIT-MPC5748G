@@ -7,7 +7,7 @@
  * network database, which need to be fulfilled for successful compilation and execution of
  * the generated code.\n
  *   The file is included by the generated file cap_canApi.c after setting a number of
- * #define's that are related to frames and signals. These defines are checked for valid
+ * #define's that are related to messages and signals. These defines are checked for valid
  * values. The checks are completed by some tests of the attributes, which the code
  * generation depends on. It's highly probable that these tests will emit a compile time
  * error if the code generation is done with an arbitrary other network file.
@@ -23,10 +23,10 @@
  * file about most of the tests! Error code will show up only if the error has been
  * detected in the network file.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.4,
+ * This file has been created with comFramework - codeGenerator version 1.10.6,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -48,7 +48,7 @@
 
 #include "cap_canApi.h"
 #include "cap_canApi.h"
-#include "cde_canStatistics.h"
+#include "cst_canStatistics.h"
 
 
 /*
@@ -76,7 +76,7 @@
 /* For each bus, there should be at least one affected message, received or sent. There a
    typical mistakes in configuration of the code generator, which lead to not considering
    any message from the DBC file. These kind of mistakes are address by this check. */
-_Static_assert( CDE_NO_CAN_FRAMES_PWM
+_Static_assert( CST_NO_CAN_MSGS_PWM
               , "No single message from PWM.dbc is considered by the"
                 " generated code. This is likely due to an error in the configuration"
                 " of the code generator. Did you set the node name correctly?"
@@ -84,13 +84,13 @@ _Static_assert( CDE_NO_CAN_FRAMES_PWM
 /* For each bus, there should be at least one affected message, received or sent. There a
    typical mistakes in configuration of the code generator, which lead to not considering
    any message from the DBC file. These kind of mistakes are address by this check. */
-_Static_assert( CDE_NO_CAN_FRAMES_PT
+_Static_assert( CST_NO_CAN_MSGS_PT
               , "No single message from sampleCanBus.dbc is considered by the"
                 " generated code. This is likely due to an error in the configuration"
                 " of the code generator. Did you set the node name correctly?"
               );
 
-/** Check the definition of the checksum of frame StateEcu01 (1024, 0x400)
+/** Check the definition of the checksum of message StateEcu01 (1024, 0x400)
     on bus PT.\n
       A precondition for checksums is that they have eight Bit and are positioned at a byte
     position. */
@@ -100,10 +100,10 @@ _Static_assert( CDE_NO_CAN_FRAMES_PT
         || CAP_PT_STATEECU01_1024_CHECKSUM_IS_BIG_ENDIAN      \
            && CAP_PT_STATEECU01_1024_CHECKSUM_STARTBIT%8 != 7 \
        )
-# error Input file sampleCanBus.dbc, frame StateEcu01 (1024, 0x400): Checksums are supported only as an eight Bit integer on byte boundary
+# error Input file sampleCanBus.dbc, message StateEcu01 (1024, 0x400): Checksums are supported only as an eight Bit integer on byte boundary
 #endif
 
-/** Check the definition of the checksum of frame StateEcu02 (1040, 0x410)
+/** Check the definition of the checksum of message StateEcu02 (1040, 0x410)
     on bus PT.\n
       A precondition for checksums is that they have eight Bit and are positioned at a byte
     position. */
@@ -113,10 +113,10 @@ _Static_assert( CDE_NO_CAN_FRAMES_PT
         || CAP_PT_STATEECU02_1040_CHECKSUM_IS_BIG_ENDIAN      \
            && CAP_PT_STATEECU02_1040_CHECKSUM_STARTBIT%8 != 7 \
        )
-# error Input file sampleCanBus.dbc, frame StateEcu02 (1040, 0x410): Checksums are supported only as an eight Bit integer on byte boundary
+# error Input file sampleCanBus.dbc, message StateEcu02 (1040, 0x410): Checksums are supported only as an eight Bit integer on byte boundary
 #endif
 
-/** Check the definition of the checksum of frame UserLimits (2032, 0x7f0)
+/** Check the definition of the checksum of message UserLimits (2032, 0x7f0)
     on bus PT.\n
       A precondition for checksums is that they have eight Bit and are positioned at a byte
     position. */
@@ -126,10 +126,10 @@ _Static_assert( CDE_NO_CAN_FRAMES_PT
         || CAP_PT_USERLIMITS_2032_CHECKSUM_IS_BIG_ENDIAN      \
            && CAP_PT_USERLIMITS_2032_CHECKSUM_STARTBIT%8 != 7 \
        )
-# error Input file sampleCanBus.dbc, frame UserLimits (2032, 0x7f0): Checksums are supported only as an eight Bit integer on byte boundary
+# error Input file sampleCanBus.dbc, message UserLimits (2032, 0x7f0): Checksums are supported only as an eight Bit integer on byte boundary
 #endif
 
-/** Check the definition of the checksum of frame InfoPowerDisplay (1536, 0x600)
+/** Check the definition of the checksum of message InfoPowerDisplay (1536, 0x600)
     on bus PT.\n
       A precondition for checksums is that they have eight Bit and are positioned at a byte
     position. */
@@ -139,10 +139,10 @@ _Static_assert( CDE_NO_CAN_FRAMES_PT
         || CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_IS_BIG_ENDIAN      \
            && CAP_PT_INFOPOWERDISPLAY_1536_CHECKSUM_STARTBIT%8 != 7 \
        )
-# error Input file sampleCanBus.dbc, frame InfoPowerDisplay (1536, 0x600): Checksums are supported only as an eight Bit integer on byte boundary
+# error Input file sampleCanBus.dbc, message InfoPowerDisplay (1536, 0x600): Checksums are supported only as an eight Bit integer on byte boundary
 #endif
 
-/** Check the definition of the checksum of frame StatusPowerDisplay (1537, 0x601)
+/** Check the definition of the checksum of message StatusPowerDisplay (1537, 0x601)
     on bus PT.\n
       A precondition for checksums is that they have eight Bit and are positioned at a byte
     position. */
@@ -152,49 +152,49 @@ _Static_assert( CDE_NO_CAN_FRAMES_PT
         || CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_IS_BIG_ENDIAN      \
            && CAP_PT_STATUSPOWERDISPLAY_1537_CHECKSUM_STARTBIT%8 != 7 \
        )
-# error Input file sampleCanBus.dbc, frame StatusPowerDisplay (1537, 0x601): Checksums are supported only as an eight Bit integer on byte boundary
+# error Input file sampleCanBus.dbc, message StatusPowerDisplay (1537, 0x601): Checksums are supported only as an eight Bit integer on byte boundary
 #endif
 
-/** Check the definition of the sequence counter of frame StateEcu01 (1024, 0x400)
+/** Check the definition of the sequence counter of message StateEcu01 (1024, 0x400)
     on bus PT.\n
       A precondition for sequence counters is that they have only up to eight Bit. */
 #if CAP_PT_STATEECU01_1024_SQC_LENGTH > 8
-# error Input file sampleCanBus.dbc, frame StateEcu01 (1024, 0x400): Sequence counters must be no longer than eight Bit, found 4 Bit
+# error Input file sampleCanBus.dbc, message StateEcu01 (1024, 0x400): Sequence counters must be no longer than eight Bit, found 4 Bit
 #endif
 
-/** Check the definition of the sequence counter of frame StateEcu02 (1040, 0x410)
+/** Check the definition of the sequence counter of message StateEcu02 (1040, 0x410)
     on bus PT.\n
       A precondition for sequence counters is that they have only up to eight Bit. */
 #if CAP_PT_STATEECU02_1040_SQC_LENGTH > 8
-# error Input file sampleCanBus.dbc, frame StateEcu02 (1040, 0x410): Sequence counters must be no longer than eight Bit, found 4 Bit
+# error Input file sampleCanBus.dbc, message StateEcu02 (1040, 0x410): Sequence counters must be no longer than eight Bit, found 4 Bit
 #endif
 
-/** Check the definition of the sequence counter of frame UserLimits (2032, 0x7f0)
+/** Check the definition of the sequence counter of message UserLimits (2032, 0x7f0)
     on bus PT.\n
       A precondition for sequence counters is that they have only up to eight Bit. */
 #if CAP_PT_USERLIMITS_2032_SQC_LENGTH > 8
-# error Input file sampleCanBus.dbc, frame UserLimits (2032, 0x7f0): Sequence counters must be no longer than eight Bit, found 4 Bit
+# error Input file sampleCanBus.dbc, message UserLimits (2032, 0x7f0): Sequence counters must be no longer than eight Bit, found 4 Bit
 #endif
 
-/** Check the definition of the sequence counter of frame InfoPowerDisplay (1536, 0x600)
+/** Check the definition of the sequence counter of message InfoPowerDisplay (1536, 0x600)
     on bus PT.\n
       A precondition for sequence counters is that they have only up to eight Bit. */
 #if CAP_PT_INFOPOWERDISPLAY_1536_SQC_LENGTH > 8
-# error Input file sampleCanBus.dbc, frame InfoPowerDisplay (1536, 0x600): Sequence counters must be no longer than eight Bit, found 4 Bit
+# error Input file sampleCanBus.dbc, message InfoPowerDisplay (1536, 0x600): Sequence counters must be no longer than eight Bit, found 4 Bit
 #endif
 
-/** Check the definition of the sequence counter of frame StatusPowerDisplay (1537, 0x601)
+/** Check the definition of the sequence counter of message StatusPowerDisplay (1537, 0x601)
     on bus PT.\n
       A precondition for sequence counters is that they have only up to eight Bit. */
 #if CAP_PT_STATUSPOWERDISPLAY_1537_SQC_LENGTH > 8
-# error Input file sampleCanBus.dbc, frame StatusPowerDisplay (1537, 0x601): Sequence counters must be no longer than eight Bit, found 7 Bit
+# error Input file sampleCanBus.dbc, message StatusPowerDisplay (1537, 0x601): Sequence counters must be no longer than eight Bit, found 7 Bit
 #endif
 
-/** Check the definition of the sequence counter of frame LimitsPowerDisplay (1538, 0x602)
+/** Check the definition of the sequence counter of message LimitsPowerDisplay (1538, 0x602)
     on bus PT.\n
       A precondition for sequence counters is that they have only up to eight Bit. */
 #if CAP_PT_LIMITSPOWERDISPLAY_1538_SQC_LENGTH > 8
-# error Input file sampleCanBus.dbc, frame LimitsPowerDisplay (1538, 0x602): Sequence counters must be no longer than eight Bit, found 3 Bit
+# error Input file sampleCanBus.dbc, message LimitsPowerDisplay (1538, 0x602): Sequence counters must be no longer than eight Bit, found 3 Bit
 #endif
 
 

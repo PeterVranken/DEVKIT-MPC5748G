@@ -4,7 +4,7 @@
 //
 // The templates describe the generation of the data oriented CAN API with the APSW code.
 // The integration of the API is supported by also generated pack and unpack functions, one
-// such pair for each frame.
+// such pair for each message.
 //
 // See template moduleDescription for more details.
 //
@@ -44,15 +44,15 @@ moduleDescription() ::= <<
  * layers of the CAN stack. The global data structure is initialized with the initial
  * signal values from the CAN network database.\n
  *   The integration of the API with the CAN stack is supported by a set of pack and unpack
- * functions; one such pair of functions is available for each CAN frame. The pack function
- * composes the binary frame contents from the set of signal values found in the API and
- * the counterpart function (unpack) decomposes received binary frame content data into
+ * functions; one such pair of functions is available for each CAN message. The pack function
+ * composes the binary message contents from the set of signal values found in the API and
+ * the counterpart function (unpack) decomposes received binary message content data into
  * distinct signal values, which are placed into the API.\n
  *   The functions are globally accessible; their names are composed such that name clashes
- * across different buses won't appear even if frames of same name and ID are
+ * across different buses won't appear even if messages of same name and ID are
  * transmitted.\n
  *   Note, concurrency is not handled here. Particularly for CAN input, data reception and
- * decomposition of the frame contents into signals might be an asynchronous event. If so,
+ * decomposition of the message contents into signals might be an asynchronous event. If so,
  * the caller of the unpack function would have to add appropriate code to implement mutual
  * exclusion with the Embedded Coder generated APSW code, which also accesses the API data.
  * Although less likely may the same hold for CAN output.
@@ -63,7 +63,7 @@ moduleDescription() ::= <<
 canApiDef(cluster, info) ::= <<
 <! First put a file header with the reusable library template modC !>
 <modC(["\n", moduleDescription()])>
-<! The list of functions is put after the file frame shaped by modC !>
+<! The list of functions is put after the file message shaped by modC !>
 <iteratePdusOfCluster(cluster,"both","packUnpackFct")>
 <iterateSignalsOfCluster(cluster,"all","both","setterGetterSignal")>
 >>
@@ -72,7 +72,7 @@ canApiDef(cluster, info) ::= <<
 //
 canApiDecl(cluster, info) ::= <<
 <! All code is shaped by overloading the regions of the template modH, see below !>
-<modH([ "Declaration of API and pack/unpack functions for the CAN frames of cluster\n"
+<modH([ "Declaration of API and pack/unpack functions for the CAN messages of cluster\n"
       , " * ", cluster.name, "."])>
 >>
 
@@ -86,10 +86,10 @@ canApiDecl(cluster, info) ::= <<
 >>
 
 
-// Configure the template mod.stg:modC, which shapes the file frame contents: The local
+// Configure the template mod.stg:modC, which shapes the file message contents: The local
 // defines.
 @modC.defines() ::= <<
-/* Check the values of the frame and special signal related #define's. Compilation errors
+/* Check the values of the message and special signal related #define's. Compilation errors
    can occur due to incompatibilites between the code generation templates and the actual
    network databases. */
 #define <file.mnmApi; format="upper">_INCLUDES_PRECO_CHECKS
@@ -99,12 +99,12 @@ canApiDecl(cluster, info) ::= <<
 
 
 // In this sample of a CAN interface the API with the APSW is modeled as a large set of
-// global structs, one for each frame. The struct contains a list of signals as members
-// plus a status variable (related to the transmission of the frame). All of these structs
+// global structs, one for each message. The struct contains a list of signals as members
+// plus a status variable (related to the transmission of the message). All of these structs
 // are bundled in an embracing CAN bus related struct. One global object of this type
 // exists for each CAN bus.
 //   The struct definitions are added to the generated code by modifying the according
-// place holder in the module frame template.
+// place holder in the module message template.
 @modC.data() ::= <<
 <listOfStructBusDefs(cluster)>
 >>
@@ -116,18 +116,18 @@ canApiDecl(cluster, info) ::= <<
 >>
 
 
-// Configure the template mod.stg:modH, which shapes the header file frame contents: Some
-// the compile configuration controlling defines plus many frame and signal related defines.
+// Configure the template mod.stg:modH, which shapes the header file message contents: Some
+// the compile configuration controlling defines plus many message and signal related defines.
 @modH.defines() ::= <<
 #ifndef <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS
-/** Normally, a pack function is generated for sent frames only. If this define is set to a
-    value other than 0 then a pack function is generated for received Frames, too. */
+/** Normally, a pack function is generated for sent messages only. If this define is set to a
+    value other than 0 then a pack function is generated for received messages, too. */
 # define <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS 0
 #endif
 
 #ifndef <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS
-/** Normally, an unpack function is generated for received Frames only. If this define is set
-    to a value other than 0 then an unpack function is generated for sent Frames, too. */
+/** Normally, an unpack function is generated for received messages only. If this define is set
+    to a value other than 0 then an unpack function is generated for sent messages, too. */
 # define <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS 0
 #endif<\n>
 
@@ -138,8 +138,8 @@ canApiDecl(cluster, info) ::= <<
 >>
 
 
-// Configure the template mod.stg:modH, which shapes the header file frame contents: The
-// type definitions for frames and buses.
+// Configure the template mod.stg:modH, which shapes the header file message contents: The
+// type definitions for messages and buses.
 @modH.typedefs() ::= <<
 
 /** The enumeration of supported message send patterns. */
@@ -181,96 +181,96 @@ definesBus(bus) ::= <<
 // Some defines for a signal, which make its scaling globally accessible.
 definesSignalScaling(signal,kind) ::= <<
 <if(!signal.isVoidScaling)>
-/** Convert the binary value of signal <signal> of frame
+/** Convert the binary value of signal <signal> of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the world value. */
 #define <define.signalBinToDbl>(bin) \
             ((double)(bin)<if(!signal.isVoidFactor)>*<define.signalFactor><endif><if(!signal.isVoidOffset)>+<define.signalOffset><endif>)
 
-/** Convert the world value of signal <signal> of frame
+/** Convert the world value of signal <signal> of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the binary value as
     transmitted via the CAN interface. */
 #define <define.signalDblToBin>(dbl) \
             ((<bt(signal.type)>)(<if(!(signal.isVoidOffset||signal.isVoidFactor))>(<endif>(dbl)<if(!signal.isVoidOffset)>-<define.signalOffset><endif><if(!(signal.isVoidOffset||signal.isVoidFactor))>)<endif><if(!signal.isVoidFactor)>/<define.signalFactor><endif>))
 
-/** The gain factor of the scaling of signal <signal> of frame
+/** The gain factor of the scaling of signal <signal> of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 #define <define.signalFactor><\t>(<signal.factor>)
 
-/** The offset of the scaling of signal <signal> of frame
+/** The offset of the scaling of signal <signal> of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 #define <define.signalOffset><\t>(<signal.offset>)
 
 <endif>
-/** The minimum of the world value of signal <signal> of frame
+/** The minimum of the world value of signal <signal> of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 #define <define.signalMin><\t>(<if(!signal.isVoidScaling)><signal.min><else><signal.min; format="%.0f"><endif>)
 
-/** The maximum of the world value of signal <signal> of frame
+/** The maximum of the world value of signal <signal> of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 #define <define.signalMax><\t>(<if(!signal.isVoidScaling)><signal.max><else><signal.max; format="%.0f"><endif>)<\n>
 
 >>
 
 
-// We need a list of defines related to the frame/PDU, which make some numeric properties
+// We need a list of defines related to the message/PDU, which make some numeric properties
 // easily available to the generated C code without introducing meaningless literals in the
 // code.
 definesPduProperties(pdu) ::= <<
 /** This macro can be used to control the compilation of code, which depends on the
-    presence of the particular frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    presence of the particular message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus> in the message catalog. */
 #define <define.isFramePresent>
 
-/** Provide read/write access to the frame API struct, which bundles the set of signals of
-    frame <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> with the
+/** Provide read/write access to the message API struct, which bundles the set of signals of
+    message <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> with the
     transmission status information. The referenced struct is a nested sub-element of the
     large the CAN bus describing struct <symbol.structBus>. */
 #define <define.referenceStructFrameSts>() \
             (<symbol.structBus>.<symbol.structFrameSts>)
 
-/** Provide read/write access to the frame API struct, which bundles the signals of frame
+/** Provide read/write access to the message API struct, which bundles the signals of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. The referenced struct is
     a nested sub-element of the large the CAN bus describing struct <symbol.structBus>. */
 #define <define.referenceStructFrame>() \
             (<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>)
 
-/** Provide read/write access to a field of the struct, which bundles the signals of frame
+/** Provide read/write access to a field of the struct, which bundles the signals of message
     <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. This struct is a nested
     sub-element of the large the CAN bus describing struct <symbol.structBus>. */
 #define <define.referenceSignalOfStructFrame>(signalName) \
             (<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.signalName)
 
-/** The size in Byte of frame <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+/** The size in Byte of message <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 #define <define.pduSize><\t><pdu.size>
 
 <if(pdu.specialSignalMap.checksum)>
-/** The size in Bit of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The size in Bit of checksum signal of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.checksumLength><\t><pdu.specialSignalMap.checksum.length>
 
-/** The start bit of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The start bit of checksum signal of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.checksumStartBit><\t><pdu.specialSignalMap.checksum.startBit>
 
-/** The endianness of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The endianness of checksum signal of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.checksumIsMotorola><\t><pdu.specialSignalMap.checksum.isMotorola>
 
-/** The data ID of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The data ID of checksum signal of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.checksumDataId><\t><pdu.attribMap.(attribName.chksumDataId)>
 
 <endif>
 <if(pdu.specialSignalMap.SQC)>
-/** The size in Bit of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The size in Bit of the sequence counter of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.sqcLength><\t><pdu.specialSignalMap.SQC.length>
 
-/** The minmum value of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The minmum value of the sequence counter of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.sqcFrom><\t><pdu.specialSignalMap.SQC.min; format="%.0f">
 
-/** The maximum value of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+/** The maximum value of the sequence counter of message <frame> (<frame.id>, <frame.id;format="0x%03x">)
     on bus <bus>. */
 #define <define.sqcTo><\t><pdu.specialSignalMap.SQC.max; format="%.0f">
 
@@ -290,10 +290,10 @@ packFctDecl(pdu) ::= <<
 void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[]);
 
 /** Pack the signal values of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">)
-    into a byte array of <pdu.size> Byte. The signal values are read from a frame by reference. */
+    into a byte array of <pdu.size> Byte. The signal values are read from a message by reference. */
 void <fct.packFrame>
                 ( <bt("uint8_t")> <msgAry()>[]
-                , const <symbol.structFrame_t> *pFrameStruct
+                , const <symbol.structFrame_t> *pMsgStruct
                 );
 <if(!pdu.isSent)>#endif<endif>
 
@@ -306,10 +306,10 @@ void <fct.packFrame>
 void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[]);
 
 /** Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) from
-    a byte array of <pdu.size> Byte. The signal values are written into a frame struct by
+    a byte array of <pdu.size> Byte. The signal values are written into a message struct by
     reference. */
 void <fct.unpackFrame>
-                ( <symbol.structFrame_t> *pFrameStruct
+                ( <symbol.structFrame_t> *pMsgStruct
                 , const <bt("uint8_t")> <msgAry()>[]
                 );
 <if(!pdu.isReceived)>
@@ -337,7 +337,7 @@ void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[])
 {
     <fct.packFrame>
             ( &<msgAry()>[0]
-            , /* pFrameStruct */ &<define.referenceStructFrame>()
+            , /* pMsgStruct */ &<define.referenceStructFrame>()
             );
 } /* End of <fct.packApiFrame> */
 
@@ -347,26 +347,26 @@ void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[])
 /**
  * Pack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name>
  * into a byte array of <pdu.size> Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame <frame>.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message <frame>.
  *   @param <msgAry()>
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void <fct.packFrame>
                     ( <bt("uint8_t")> <msgAry()>[]
-                    , const <symbol.structFrame_t> *pFrameStruct
+                    , const <symbol.structFrame_t> *pMsgStruct
                     )
 {
     <setPduDataAreaNull(pdu)>
 
-    <pdu.signalAry:packSignal(pdu,{pFrameStruct-><symbol.signal>}); separator="\n"><\\>
+    <pdu.signalAry:packSignal(pdu,{pMsgStruct-><symbol.signal>}); separator="\n"><\\>
 <if(pdu.muxSelector)>
-    <pdu.muxSelector:packSignal(pdu,{pFrameStruct-><cMuxSelectorName()>})>
+    <pdu.muxSelector:packSignal(pdu,{pMsgStruct-><cMuxSelectorName()>})>
     /* Pack the selected set of multiplexed signals. */
-    switch(pFrameStruct-><cMuxSelectorName()>)
+    switch(pMsgStruct-><cMuxSelectorName()>)
     {
     <pdu.muxSignalSetAry:casePackMuxSignalSet()>
     default: assert(1==0); // Undefined mux selector value encountered
@@ -386,14 +386,14 @@ void <fct.packFrame>
  * Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name>
  * from a byte array of <pdu.size> Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * <symbol.structBus>.<symbol.structFrameSts>, which models frame <frame>.
+ * <symbol.structBus>.<symbol.structFrameSts>, which models message <frame>.
  *   @param <msgAry()>
  * The byte array. The signal values are extracted from this array.
  */
 void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[])
 {
     <fct.unpackFrame>
-            ( /* pFrameStruct */ &<define.referenceStructFrame>()
+            ( /* pMsgStruct */ &<define.referenceStructFrame>()
             , &<msgAry()>[0]
             );
 } /* End of <fct.unpackApiFrame> */
@@ -403,14 +403,14 @@ void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[])
 /**
  * Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name>
  * from a byte array of <pdu.size> Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame <frame>.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message <frame>.
  *   @param <msgAry()>
  * The byte array. The signal values are extracted from this array.
  */
 void <fct.unpackFrame>
-                    ( <symbol.structFrame_t> *pFrameStruct
+                    ( <symbol.structFrame_t> *pMsgStruct
                     , const <bt("uint8_t")> <msgAry()>[]
                     )
 {
@@ -420,7 +420,7 @@ void <fct.unpackFrame>
     /* Decode the multiplex selector signal. */
     <pdu.muxSelector:unpackSignal()>
     /* Decode the selected set of multiplexed signals. */
-    switch(pFrameStruct-><cMuxSelectorName()>)
+    switch(pMsgStruct-><cMuxSelectorName()>)
     {
     <pdu.muxSignalSetAry:caseUnpackMuxSignalSet()>
     default: assert(1==0); // Undefined mux selector value encountered
@@ -457,7 +457,7 @@ case <ss.muxValue>:
 // filter signals for unpacking in case of outbound PDUs.
 unpackSignal(signal) ::= <<
 <if(!info.optionMap.suppressUnaffectedSignals || signal.isReceived || pdu.isSent)>
-pFrameStruct-><symbol.signal> =
+pMsgStruct-><symbol.signal> =
     <extractSignal(signal)>;
 <endif>
 >>
@@ -466,7 +466,7 @@ pFrameStruct-><symbol.signal> =
 // Apply the pack operation for all conditionally encoded signals of a multiplexed signal set.
 casePackMuxSignalSet(ss) ::= <<
 case <ss.muxValue>:
-    <ss.signalAry:packSignal(pdu,{pFrameStruct-><symbol.signal>}); separator="\n">
+    <ss.signalAry:packSignal(pdu,{pMsgStruct-><symbol.signal>}); separator="\n">
     break;<\n>
 >>
 
@@ -479,16 +479,16 @@ cMuxSelectorName() ::= <<
 >>
 
 
-// A string telling the direction of transmission of a frame or a PDU.
+// A string telling the direction of transmission of a message or a PDU.
 direction(pdu) ::= "<if(pdu.isSent)>outbound<elseif(pdu.isReceived)>inbound<else>unused<endif>"
 
 // C code: A setter and getter with unified prototype for a signal.
 setterGetterSignalDecl(signal,kind) ::= <<
-/** Get the current value of frame <frame> (<frame.id>), signal <symbol.signal>
+/** Get the current value of message <frame> (<frame.id>), signal <symbol.signal>
     as float. */
 float <symbol.signalGetter>(void);
 
-/** Set the value of frame <frame> (<frame.id>), signal <symbol.signal>. */
+/** Set the value of message <frame> (<frame.id>), signal <symbol.signal>. */
 void <symbol.signalSetter>(float newValue);<\n>
 
 >>
@@ -525,31 +525,31 @@ void <symbol.signalSetter>(float newValue)
 >>
 
 //<if(!signal.isVoidScaling)>
-///** Convert the binary value of signal <signal> of frame
+///** Convert the binary value of signal <signal> of message
 //    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the world value. */
 //#define <define.signalBinToDbl>(bin) \
 //            ((double)(bin)<if(!signal.isVoidFactor)>*<define.signalFactor><endif><if(!signal.isVoidOffset)>+<define.signalOffset><endif>)
 //
-///** Convert the world value of signal <signal> of frame
+///** Convert the world value of signal <signal> of message
 //    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the binary value as
 //    transmitted via the CAN interface. */
 //#define <define.signalDblToBin>(dbl) \
 //            ((<bt(signal.type)>)(<if(!(signal.isVoidOffset||signal.isVoidFactor))>(<endif>(dbl)<if(!signal.isVoidOffset)>-<define.signalOffset><endif><if(!(signal.isVoidOffset||signal.isVoidFactor))>)<endif><if(!signal.isVoidFactor)>/<define.signalFactor><endif>))
 //
-///** The gain factor of the scaling of signal <signal> of frame
+///** The gain factor of the scaling of signal <signal> of message
 //    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 //#define <define.signalFactor><\t>(<signal.factor>)
 //
-///** The offset of the scaling of signal <signal> of frame
+///** The offset of the scaling of signal <signal> of message
 //    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 //#define <define.signalOffset><\t>(<signal.offset>)
 //
 //<endif>
-///** The minimum of the world value of signal <signal> of frame
+///** The minimum of the world value of signal <signal> of message
 //    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 //#define <define.signalMin><\t>(<if(!signal.isVoidScaling)><signal.min><else><signal.min; format="%.0f"><endif>)
 //
-///** The maximum of the world value of signal <signal> of frame
+///** The maximum of the world value of signal <signal> of message
 //    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
 //#define <define.signalMax><\t>(<if(!signal.isVoidScaling)><signal.max><else><signal.max; format="%.0f"><endif>)<\n>
 //

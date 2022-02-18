@@ -1,0 +1,292 @@
+//
+// pck_packCanFrame.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the set of pack and unpack functions for the
+// CAN frames: For each frame a function is generated to compose the binary frame contents
+// from the set of signal values (pack) and the counterpart function, which decomposes
+// received binary frame content data into distinct signal values (unpack).
+//   The functions are globally accessible, so their names are composed such that name
+// clashes across different buses won't appear.
+//
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+import "lib/codeGenC.stg"
+import "lib/iterations.stg"
+import "symbols.stg"
+import "globalInterface.stg"
+
+
+// This is one of the root templates; the complete C file is rendered.
+//
+packFctsDef(cluster, info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["Implementation of pack/unpack functions for the CAN frames of cluster ", cluster.name, "."])>
+<! The list of functions is put after the file frame shaped by modC !>
+<iteratePdusOfCluster(cluster,"both","packUnpackFct")>
+>>
+
+// This is the other root template; the complete C header file is rendered.
+//
+packFctsDecl(cluster, info) ::= <<
+<! All code is shaped by overloading the regions of the template modH, see below !>
+<modH(["Declaration of pack/unpack functions for the CAN frames of cluster ", cluster.name, "."])>
+>>
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The included
+// files.
+@modC.includes() ::= <<
+#include \<string.h>
+
+#include "types.h"
+#include "rtos_assert.h"<! Don't remove: Is required if there are mux'ed signals !>
+
+>>
+
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The local
+// defines.
+@modC.defines() ::= <<
+>>
+
+
+// In this sample of a CAN interface the API with the APSW is modeled as a large set of
+// global structs, one for each frame. The struct contains a list of signals as members
+// plus a status variable (related to the transmission of the frame).
+//   The struct definitions are added to the generated code by modifying the according
+// place holder in the module frame template.
+@modC.data() ::= <<
+<listOfStructFrameDefs(cluster)>
+>>
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// included files.
+@modH.includes() ::= <<
+#include "types.h"
+#include "cbk_callbacks.h"
+
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: Some
+// the compile configuration controlling defines.
+@modH.defines() ::= <<
+#ifndef <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS
+/** Normally, a pack function is generated for sent frames only. If this define is set to a
+    value other than 0 then a pack function is generated for received Frames, too. */
+# define <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS 0
+#endif
+
+#ifndef <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS
+/** Normally, an unpack function is generated for received Frames only. If this define is set
+    to a value other than 0 then an unpack function is generated for sent Frames, too. */
+# define <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS 0
+#endif<\n>
+
+<iterateSignalsOfCluster(cluster,"all","all","definesSignalScaling")>
+>>
+
+
+@modH.typedefs() ::= <<
+<listOfTypedefsStructFrame(cluster)>
+>>
+
+
+// The global data interface as customization of the header file template: The list of
+// external declarations.
+@modH.data() ::= <<
+<listOfStructFrameDecls(cluster)>
+>>
+
+
+// The global function interface as customization of the header file template: The list of
+// prototypes of the pack and unpack functions.
+@modH.prototypes() ::= <<
+<iteratePdusOfCluster(cluster,"both","packFctDecl")>
+>>
+
+
+// Some defines for a signal, which make its scaling globally accessible.
+definesSignalScaling(signal,kind) ::= <<
+<if(!signal.isVoidScaling)>
+/** Convert the binary value of signal <signal> of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    as received via the CAN interface into the world value. */
+#define <define.signalBinToFlt>(bin) \
+            ((float)(bin)*<define.signalFactor>+<define.signalOffset>)
+
+/** Convert the world value of signal <signal> of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    into the binary value as transmitted via the CAN interface. */
+#define <define.signalFltToBin>(flt) \
+            ((<bt(signal.type)>)(((flt)-<define.signalOffset>)/<define.signalFactor>))
+
+/** The gain factor of the scaling of signal <signal> of frame <frame> (<frame.id>, <frame.id;format="0x%03x">). */
+#define <define.signalFactor><\t>(<signal.factor>)
+
+/** The offset of the scaling of signal <signal> of frame <frame> (<frame.id>, <frame.id;format="0x%03x">). */
+#define <define.signalOffset><\t>(<signal.offset>)
+
+<endif>
+/** The minimum of the world value of signal <signal> of frame <frame> (<frame.id>, <frame.id;format="0x%03x">). */
+#define <define.signalMin><\t>(<if(!signal.isVoidScaling)><signal.min><else><signal.min; format="%.0f"><endif>)
+
+/** The maximum of the world value of signal <signal> of frame <frame> (<frame.id>, <frame.id;format="0x%03x">). */
+#define <define.signalMax><\t>(<if(!signal.isVoidScaling)><signal.max><else><signal.max; format="%.0f"><endif>)<\n>
+
+>>
+
+
+// A (un)pack function pair of prototypes.
+packFctDecl(pdu) ::= <<
+<if(!pdu.isSent)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+<endif>
+/** Pack the signal values of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">)
+    into a byte array of <pdu.size> Byte. The signal values are read from the global interface
+    struct <symbol.structAPIFrame>. */
+void <symbol.fctPackPdu>(<bt("uint8_t")> <msgAry()>[]);
+<if(!pdu.isSent)>#endif<endif>
+
+<if(!pdu.isReceived)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+<endif>
+/** Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) from
+    a byte array of <pdu.size> Byte. The signal values are written into the global interface struct
+    <symbol.structAPIFrame>. */
+void <symbol.fctUnpackPdu>(const <bt("uint8_t")> <msgAry()>[]);
+<if(!pdu.isReceived)>
+#endif
+<endif>
+<\n>
+>>
+
+
+// A PDU is rendered as pair of pack and unpack function for its signal set.
+packUnpackFct(pdu) ::= <<
+<if(!pdu.isSent)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+<endif>
+/**
+ * Pack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name> into a byte
+ * array of <pdu.size> Byte.\n
+ *   The signal values are read from the global interface struct <symbol.structAPIFrame>.
+ * @param <msgAry()>
+ *   The byte array. The packed signal values will be found in this array after return.
+ * Unused bits will be set to zero.
+ */
+
+void <symbol.fctPackPdu>(<bt("uint8_t")> <msgAry()>[])
+{
+    <setPduDataAreaNull(pdu)>
+
+    <pdu.signalAry:packSignal(pdu,{<symbol.structAPIFrame>.signals.<symbol.signal>}); separator="\n"><\\>
+<if(pdu.muxSelector)>
+    <pdu.muxSelector:packSignal(pdu,cMuxSelectorName())>
+    /* Pack the selected set of multiplexed signals. */
+    switch(<cMuxSelectorName()>)
+    {
+    <pdu.muxSignalSetAry:casePackMuxSignalSet()>
+    default: ASSERT(1==0); // Undefined mux selector value encountered
+    }
+<endif>
+} /* End of <symbol.fctPackPdu> */
+<if(!pdu.isSent)>
+#endif
+<endif>
+
+
+
+<if(!pdu.isReceived)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+<endif>
+/**
+ * Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name> from a byte
+ * array of <pdu.size> Byte.\n
+ *   The signal values are written into the global interface struct <symbol.structAPIFrame>.
+ * @param <msgAry()>
+ *   The byte array. The signal values are extracted from this array.
+ */
+
+void <symbol.fctUnpackPdu>(const <bt("uint8_t")> <msgAry()>[])
+{
+    /* Decode all normal, not multiplexed signals. */
+    <pdu.signalAry:unpackSignal()>
+<if(pdu.muxSelector)>
+    /* Decode the multiplex selector signal. */
+    <pdu.muxSelector:unpackSignal()>
+    /* Decode the selected set of multiplexed signals. */
+    switch(<symbol.structAPIFrame>.signals.<cMuxSelectorName()>)
+    {
+    <pdu.muxSignalSetAry:caseUnpackMuxSignalSet()>
+    default: ASSERT(1==0); // Undefined mux selector value encountered
+    }
+<endif>
+} /* End of <symbol.fctUnpackPdu> */
+<if(!pdu.isReceived)>
+#endif
+<endif>
+
+
+
+
+>> // End of template packUnpackFct
+
+
+// Apply the assignment unpackSignal of a signal value to the related global interface
+// variable for all conditionally decoded signals from a multiplexed signal set.
+caseUnpackMuxSignalSet(ss) ::= <<
+case <ss.muxValue>:
+    <ss.signalAry:unpackSignal()>
+    break;<\n>
+>>
+
+
+// A signal is unpacked and the value is assigned to the related global interface variable.
+//   Remark: The handling of user option suppressUnaffectedSignals is somewhat undefined
+// for the generation of unpack functions for outbound PDUs: The signal property
+// isReceived will generally be false, which means for suppressUnaffectedSignals=true to
+// not unpack the signal. But if we follow this what would be the value of an unpack
+// function then? Usually, such a function is barely useful in final production code to
+// fulfill functional needs but it might be helpful for testing code, where inverse
+// functions are required. As a workaround and to support those test situations we do not
+// filter signals for unpacking in case of outbound PDUs.
+unpackSignal(signal) ::= <<
+<if(!info.optionMap.suppressUnaffectedSignals || signal.isReceived || pdu.isSent)>
+<symbol.structAPIFrame>.signals.<symbol.signal> = <extractSignal(signal)>;
+<endif>
+>>
+
+
+// Apply the pack operation for all conditionally encoded signals of a multiplexed signal set.
+casePackMuxSignalSet(ss) ::= <<
+case <ss.muxValue>:
+    <ss.signalAry:packSignal(pdu,{<symbol.structAPIFrame>.signals.<symbol.signal>}); separator="\n">
+    break;<\n>
+>>
+
+
+// A string telling the direction of transmission of a PDU.
+direction(pdu) ::= "<if(pdu.isSent)>outbound<elseif(pdu.isReceived)>inbound<else>unused<endif>"
+
+
+// Similar to <symbol.signal> but specifically for the multiplex selector signal (if any).
+// (<symbol.signal> can't be used directly as it makes use of attribute name scoping to
+// access the signal.)
+cMuxSelectorName() ::= <<
+<pdu.muxSelector:{signal|<symbol.signal>}>
+>>

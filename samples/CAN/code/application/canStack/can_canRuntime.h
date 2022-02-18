@@ -4,7 +4,7 @@
  * @file can_canRuntime.h
  * Definition of global interface of module can_canRuntime.c
  *
- * Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -25,8 +25,9 @@
  */
 
 #include "typ_types.h"
-#include "cde_canStatistics.h"
+#include "cst_canStatistics.h"
 #include "bsw_basicSoftware.h"
+#include "ede_eventDispatcherEngine.h"
 
 
 /*
@@ -41,13 +42,13 @@
 #define CAN_BUS_2_STILL_UNUSED      (BSW_CAN_BUS_2)
 #define CAN_BUS_3_STILL_UNUSED      (BSW_CAN_BUS_3)
 
-/** The configuration of the supported transmission modes for CAN frames is highly
+/** The configuration of the supported transmission modes for CAN messages is highly
     dependent on the definition of attributes in the particular CAN database (*.dbc file).
     This requires some adaptations of CAN code generation templates and C source code. You
     need to specify the name of the enumeration values, which distinguish the transmission
     modes. The names in use depend in turn on the configuration of the CAN code generator
     (compare with attributes.stg).\n
-      Here is how the transmission mode of ordinary, regular frames is named. */
+      Here is how the transmission mode of ordinary, regular messages is named. */
 #define CAN_ENUM_SEND_MODE_REGULAR cap_enumSendMode_0_cyclic
 #define CAN_ENUM_SEND_MODE_EVENT cap_enumSendMode_1_event /// Send mode event triggered
 #define CAN_ENUM_SEND_MODE_MIXED cap_enumSendMode_2_cyclicOrEvent /// Send mode event plus cyclic
@@ -88,21 +89,25 @@
  * Global data declarations
  */
 
-/** The total count of all ever received frames, including the lost one because of queue
+/** The system, which owns the dispatcher engines processing the CAN events in the 10ms and
+    in the 100ms APSW tasks. */
+extern ede_handleDispatcherSystem_t can_hDispatcherSystem;
+
+/** The total count of all ever received messages, including the lost one because of queue
     full events. */
-extern volatile unsigned long can_noRxFrames;
+extern volatile unsigned long can_noRxMsgs;
 
-/** The total number of sent frames, including the lost one because of send buffer full
+/** The total number of sent messages, including the lost one because of send buffer full
     events. */
-extern volatile unsigned long can_noTxFrames;
+extern volatile unsigned long can_noTxMsgs;
 
-/** The total number of lost Rx frames because of queue full. */
+/** The total number of lost Rx messages because of queue full. */
 extern volatile unsigned long can_noEvRxQueueFull;
 
 /** The total number of Rx timeout events. */
 extern volatile unsigned long can_noEvRxTimeout;
 
-/** The total number of lost Tx frames because of send buffer full events. */
+/** The total number of lost Tx messages because of send buffer full events. */
 extern volatile unsigned long can_noEvTxSendBufFull;
 
 

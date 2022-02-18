@@ -1,0 +1,1012 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ddObj Name="Pool" Kind="Pool" xmlns="http://www.dspace.de/DataDictionaryExtended">
+  <ddObj Name="Variables" Kind="VariableGroup">
+    <ddObj Name="winSampleIntegration" Kind="VariableGroup">
+      <ddObj Name="inbound" Kind="VariableGroup">
+        <ddObj Name="pck_API_PT_StateEcu01_1024" Kind="Variable">
+          <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame StateEcu01 (1024, 0x400).&#10;A (hypothetic) ECU provided message we can read the current speed of rotation of the engine from</ddProperty>
+          <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+          <ddProperty Name="Type">winSampleIntegration/pck_API_PT_StateEcu01_1024_t</ddProperty>
+          <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+          <ddProperty Name="Width"></ddProperty>
+          <ddProperty Name="Value"></ddProperty>
+          <ddProperty Name="Min"></ddProperty>
+          <ddProperty Name="Max"></ddProperty>
+          <ddProperty Name="Address"></ddProperty>
+          <ddProperty Name="NameTemplate">$D</ddProperty>
+          <ddObj Name="Components" Kind="DSDDEmbedded">
+            <ddObj Name="stsTransmission" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">UInt8</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">winSampleIntegration/pck_PT_StateEcu01_1024_t</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+              <ddObj Name="Components" Kind="DSDDEmbedded">
+                <ddObj Name="checksum" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.checksum.&#10;Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">255.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="speedOfRotation" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.speedOfRotation.&#10;Speed of rotation of the engine</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">6500.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal speedOfRotation</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">0.1</ddProperty>
+                    <ddProperty Name="Offset">0.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+                <ddObj Name="sequenceCounter" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.sequenceCounter.&#10;Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">14.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+              </ddObj>
+            </ddObj>
+          </ddObj>
+        </ddObj>
+        <ddObj Name="pck_API_PT_StateEcu02_1040" Kind="Variable">
+          <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame StateEcu02 (1040, 0x410).&#10;A (hypothetic) ECU provided message we can read the current engine torque from</ddProperty>
+          <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+          <ddProperty Name="Type">winSampleIntegration/pck_API_PT_StateEcu02_1040_t</ddProperty>
+          <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+          <ddProperty Name="Width"></ddProperty>
+          <ddProperty Name="Value"></ddProperty>
+          <ddProperty Name="Min"></ddProperty>
+          <ddProperty Name="Max"></ddProperty>
+          <ddProperty Name="Address"></ddProperty>
+          <ddProperty Name="NameTemplate">$D</ddProperty>
+          <ddObj Name="Components" Kind="DSDDEmbedded">
+            <ddObj Name="stsTransmission" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">UInt8</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">winSampleIntegration/pck_PT_StateEcu02_1040_t</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+              <ddObj Name="Components" Kind="DSDDEmbedded">
+                <ddObj Name="checksum" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.checksum.&#10;Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">255.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="sequenceCounter" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.sequenceCounter.&#10;Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 15</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">15.0</ddProperty>
+                  <ddProperty Name="Max">1.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="torque" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.torque.&#10;Current engine torque as estimated by the ECU</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">Int16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">-500.0</ddProperty>
+                  <ddProperty Name="Max">500.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal torque</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">0.5</ddProperty>
+                    <ddProperty Name="Offset">0.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+              </ddObj>
+            </ddObj>
+          </ddObj>
+        </ddObj>
+        <ddObj Name="pck_API_PT_UserLimits_2032" Kind="Variable">
+          <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame UserLimits (2032, 0x7f0).&#10;User command: New limits have been set for supervision of speed of rotation and power. This is a purely data change driven frame, it is not sent until the user changes a least one of the limits</ddProperty>
+          <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+          <ddProperty Name="Type">winSampleIntegration/pck_API_PT_UserLimits_2032_t</ddProperty>
+          <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+          <ddProperty Name="Width"></ddProperty>
+          <ddProperty Name="Value"></ddProperty>
+          <ddProperty Name="Min"></ddProperty>
+          <ddProperty Name="Max"></ddProperty>
+          <ddProperty Name="Address"></ddProperty>
+          <ddProperty Name="NameTemplate">$D</ddProperty>
+          <ddObj Name="Components" Kind="DSDDEmbedded">
+            <ddObj Name="stsTransmission" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">UInt8</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">winSampleIntegration/pck_PT_UserLimits_2032_t</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+              <ddObj Name="Components" Kind="DSDDEmbedded">
+                <ddObj Name="sequenceCounter" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.sequenceCounter.&#10;Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around from 14 to 1</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">1.0</ddProperty>
+                  <ddProperty Name="Max">14.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="minSpeedOfRotation" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.minSpeedOfRotation.&#10;User set minimum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the speed falls below this limit</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">6500.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal minSpeedOfRotation</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">1.6</ddProperty>
+                    <ddProperty Name="Offset">0.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+                <ddObj Name="maxSpeedOfRotation" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.maxSpeedOfRotation.&#10;User set maximum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">6500.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal maxSpeedOfRotation</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">1.6</ddProperty>
+                    <ddProperty Name="Offset">0.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+                <ddObj Name="checksum" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.checksum.&#10;Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">255.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="minPower" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.minPower.&#10;User set minimum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the power falls below this limit</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">-10.0</ddProperty>
+                  <ddProperty Name="Max">240.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal minPower</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">0.5</ddProperty>
+                    <ddProperty Name="Offset">-10.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+                <ddObj Name="maxPower" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.maxPower.&#10;User set maximum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">-10.0</ddProperty>
+                  <ddProperty Name="Max">240.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal maxPower</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">0.5</ddProperty>
+                    <ddProperty Name="Offset">-10.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+              </ddObj>
+            </ddObj>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="outbound" Kind="VariableGroup">
+        <ddObj Name="pck_API_PT_InfoPowerDisplay_1536" Kind="Variable">
+          <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame InfoPowerDisplay (1536, 0x600).&#10;A new CAN message which is sent by the control unit, which is implemented by the demonstration code. It broadcasts the current engine power to other network nodes</ddProperty>
+          <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+          <ddProperty Name="Type">winSampleIntegration/pck_API_PT_InfoPowerDisplay_1536_t</ddProperty>
+          <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+          <ddProperty Name="Width"></ddProperty>
+          <ddProperty Name="Value"></ddProperty>
+          <ddProperty Name="Min"></ddProperty>
+          <ddProperty Name="Max"></ddProperty>
+          <ddProperty Name="Address"></ddProperty>
+          <ddProperty Name="NameTemplate">$D</ddProperty>
+          <ddObj Name="Components" Kind="DSDDEmbedded">
+            <ddObj Name="stsTransmission" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">UInt8</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">winSampleIntegration/pck_PT_InfoPowerDisplay_1536_t</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+              <ddObj Name="Components" Kind="DSDDEmbedded">
+                <ddObj Name="checksum" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.checksum.&#10;Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">255.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="sequenceCounter" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.sequenceCounter.&#10;Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">14.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="power" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.power.&#10;The computed, current output power of the engine</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">./LocalScaling</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">-500000.0</ddProperty>
+                  <ddProperty Name="Max">500000.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                  <ddObj Name="LocalScaling" Kind="Scaling">
+                    <ddProperty Name="Description">Local linear scaling for signal power</ddProperty>
+                    <ddProperty Name="ConversionType">LINEAR</ddProperty>
+                    <ddProperty Name="LSB">32.0</ddProperty>
+                    <ddProperty Name="Offset">-500000.0</ddProperty>
+                    <ddProperty Name="Format">%.3f</ddProperty>
+                  </ddObj>
+                </ddObj>
+                <ddObj Name="state" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.state.&#10;The status of the power computation. If the input information is invalid or suspicious or if there is an overflow in the computation then the computed power is unreliable. This status information will indicate whether the power information is reliabale or not and why not</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">2.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+              </ddObj>
+            </ddObj>
+          </ddObj>
+        </ddObj>
+        <ddObj Name="pck_API_PT_StatusPowerDisplay_1537" Kind="Variable">
+          <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame StatusPowerDisplay (1537, 0x601).&#10;Status of power display operation. Error events are counted and broadcasted.whenever the status changes. If no change occurs then the status frame is repeated.every 1000 ms</ddProperty>
+          <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+          <ddProperty Name="Type">winSampleIntegration/pck_API_PT_StatusPowerDisplay_1537_t</ddProperty>
+          <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+          <ddProperty Name="Width"></ddProperty>
+          <ddProperty Name="Value"></ddProperty>
+          <ddProperty Name="Min"></ddProperty>
+          <ddProperty Name="Max"></ddProperty>
+          <ddProperty Name="Address"></ddProperty>
+          <ddProperty Name="NameTemplate">$D</ddProperty>
+          <ddObj Name="Components" Kind="DSDDEmbedded">
+            <ddObj Name="stsTransmission" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">UInt8</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">winSampleIntegration/pck_PT_StatusPowerDisplay_1537_t</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+              <ddObj Name="Components" Kind="DSDDEmbedded">
+                <ddObj Name="noDlcErrors" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.noDlcErrors.&#10;Number of recognized DLC errors in CAN input</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">2047.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="noCheckSumErrors" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.noCheckSumErrors.&#10;Number of recognized checksum errors in CAN input</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">2047.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="noSqcErrors" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.noSqcErrors.&#10;Number of recognized sequence errors in CAN input</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt16</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">2047.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="sequenceCounter" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.sequenceCounter.&#10;Sequence counter of message. The counter is incremented prior to sending the frame. The counter wraps around from 126 to 1. 0 and 127 are invalid values</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">1.0</ddProperty>
+                  <ddProperty Name="Max">126.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="checksum" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.checksum.&#10;Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">255.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+              </ddObj>
+            </ddObj>
+          </ddObj>
+        </ddObj>
+        <ddObj Name="pck_API_PT_LimitsPowerDisplay_1538" Kind="Variable">
+          <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame LimitsPowerDisplay (1538, 0x602).&#10;If a user set limit for speed of rotation or power is crossed (in either direction) then a related status bit is updated and sending this frame is triggered. This is a purely data change driven frame, it is not sent if no data change appears</ddProperty>
+          <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+          <ddProperty Name="Type">winSampleIntegration/pck_API_PT_LimitsPowerDisplay_1538_t</ddProperty>
+          <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+          <ddProperty Name="Width"></ddProperty>
+          <ddProperty Name="Value"></ddProperty>
+          <ddProperty Name="Min"></ddProperty>
+          <ddProperty Name="Max"></ddProperty>
+          <ddProperty Name="Address"></ddProperty>
+          <ddProperty Name="NameTemplate">$D</ddProperty>
+          <ddObj Name="Components" Kind="DSDDEmbedded">
+            <ddObj Name="stsTransmission" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">UInt8</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="Variable">
+              <ddProperty Name="Description"></ddProperty>
+              <ddProperty Name="Class">default</ddProperty>
+              <ddProperty Name="Type">winSampleIntegration/pck_PT_LimitsPowerDisplay_1538_t</ddProperty>
+              <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+              <ddProperty Name="Width"></ddProperty>
+              <ddProperty Name="Value"></ddProperty>
+              <ddProperty Name="Min"></ddProperty>
+              <ddProperty Name="Max"></ddProperty>
+              <ddProperty Name="Address"></ddProperty>
+              <ddProperty Name="NameTemplate">$D</ddProperty>
+              <ddObj Name="Components" Kind="DSDDEmbedded">
+                <ddObj Name="sequenceCounter" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.sequenceCounter.&#10;Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 6</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">UInt8</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">6.0</ddProperty>
+                  <ddProperty Name="Max">1.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="belowMinSpeedOfRotation" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.belowMinSpeedOfRotation.&#10;Boolean: True if and only if the speed of rotation is currently below the user set minimum</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">Bool</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">1.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="aboveMaxSpeedOfRotation" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.aboveMaxSpeedOfRotation.&#10;Boolean: True if and only if the speed of rotation is currently above the user set maximum</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">Bool</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">1.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="belowMinPower" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.belowMinPower.&#10;Boolean: True if and only if the engine power is currently below the user set minimum</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">Bool</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">1.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+                <ddObj Name="aboveMaxPower" Kind="Variable">
+                  <ddProperty Name="Description">Instance of signals.aboveMaxPower.&#10;Boolean: True if and only if the engine power is currently above the user set maximum</ddProperty>
+                  <ddProperty Name="Class">default</ddProperty>
+                  <ddProperty Name="Type">Bool</ddProperty>
+                  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+                  <ddProperty Name="Width"></ddProperty>
+                  <ddProperty Name="Value"></ddProperty>
+                  <ddProperty Name="Min">0.0</ddProperty>
+                  <ddProperty Name="Max">1.0</ddProperty>
+                  <ddProperty Name="Address"></ddProperty>
+                  <ddProperty Name="NameTemplate">$D</ddProperty>
+                </ddObj>
+              </ddObj>
+            </ddObj>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+    </ddObj>
+  </ddObj>
+  <ddObj Name="Typedefs" Kind="TypedefGroup">
+    <ddObj Name="winSampleIntegration" Kind="TypedefGroup">
+      <ddObj Name="pck_API_PT_StateEcu01_1024_t" Kind="Typedef">
+        <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame StateEcu01 (1024, 0x400)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">on</ddProperty>
+        <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="stsTransmission" Kind="TypedefComponent">
+            <ddProperty Name="Description">Transmission status of frame StateEcu01 (1024, 0x400)</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="TypedefComponent">
+            <ddProperty Name="Description">This inner struct contains the actual signals of frame StateEcu01 (1024, 0x400)</ddProperty>
+            <ddProperty Name="Type">winSampleIntegration/pck_PT_StateEcu01_1024_t</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_PT_StateEcu01_1024_t" Kind="Typedef">
+        <ddProperty Name="Description">This inner typedef describes the actual signals of frame StateEcu01 (1024, 0x400)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">off</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="checksum" Kind="TypedefComponent">
+            <ddProperty Name="Description">Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="speedOfRotation" Kind="TypedefComponent">
+            <ddProperty Name="Description">Speed of rotation of the engine</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="sequenceCounter" Kind="TypedefComponent">
+            <ddProperty Name="Description">Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_API_PT_StateEcu02_1040_t" Kind="Typedef">
+        <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame StateEcu02 (1040, 0x410)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">on</ddProperty>
+        <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="stsTransmission" Kind="TypedefComponent">
+            <ddProperty Name="Description">Transmission status of frame StateEcu02 (1040, 0x410)</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="TypedefComponent">
+            <ddProperty Name="Description">This inner struct contains the actual signals of frame StateEcu02 (1040, 0x410)</ddProperty>
+            <ddProperty Name="Type">winSampleIntegration/pck_PT_StateEcu02_1040_t</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_PT_StateEcu02_1040_t" Kind="Typedef">
+        <ddProperty Name="Description">This inner typedef describes the actual signals of frame StateEcu02 (1040, 0x410)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">off</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="checksum" Kind="TypedefComponent">
+            <ddProperty Name="Description">Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="sequenceCounter" Kind="TypedefComponent">
+            <ddProperty Name="Description">Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 15</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="torque" Kind="TypedefComponent">
+            <ddProperty Name="Description">Current engine torque as estimated by the ECU</ddProperty>
+            <ddProperty Name="Type">Int16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_API_PT_UserLimits_2032_t" Kind="Typedef">
+        <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame UserLimits (2032, 0x7f0)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">on</ddProperty>
+        <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="stsTransmission" Kind="TypedefComponent">
+            <ddProperty Name="Description">Transmission status of frame UserLimits (2032, 0x7f0)</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="TypedefComponent">
+            <ddProperty Name="Description">This inner struct contains the actual signals of frame UserLimits (2032, 0x7f0)</ddProperty>
+            <ddProperty Name="Type">winSampleIntegration/pck_PT_UserLimits_2032_t</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_PT_UserLimits_2032_t" Kind="Typedef">
+        <ddProperty Name="Description">This inner typedef describes the actual signals of frame UserLimits (2032, 0x7f0)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">off</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="sequenceCounter" Kind="TypedefComponent">
+            <ddProperty Name="Description">Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around from 14 to 1</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="minSpeedOfRotation" Kind="TypedefComponent">
+            <ddProperty Name="Description">User set minimum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the speed falls below this limit</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="maxSpeedOfRotation" Kind="TypedefComponent">
+            <ddProperty Name="Description">User set maximum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="checksum" Kind="TypedefComponent">
+            <ddProperty Name="Description">Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="minPower" Kind="TypedefComponent">
+            <ddProperty Name="Description">User set minimum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the power falls below this limit</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="maxPower" Kind="TypedefComponent">
+            <ddProperty Name="Description">User set maximum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_API_PT_InfoPowerDisplay_1536_t" Kind="Typedef">
+        <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame InfoPowerDisplay (1536, 0x600)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">on</ddProperty>
+        <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="stsTransmission" Kind="TypedefComponent">
+            <ddProperty Name="Description">Transmission status of frame InfoPowerDisplay (1536, 0x600)</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="TypedefComponent">
+            <ddProperty Name="Description">This inner struct contains the actual signals of frame InfoPowerDisplay (1536, 0x600)</ddProperty>
+            <ddProperty Name="Type">winSampleIntegration/pck_PT_InfoPowerDisplay_1536_t</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_PT_InfoPowerDisplay_1536_t" Kind="Typedef">
+        <ddProperty Name="Description">This inner typedef describes the actual signals of frame InfoPowerDisplay (1536, 0x600)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">off</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="checksum" Kind="TypedefComponent">
+            <ddProperty Name="Description">Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="sequenceCounter" Kind="TypedefComponent">
+            <ddProperty Name="Description">Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="power" Kind="TypedefComponent">
+            <ddProperty Name="Description">The computed, current output power of the engine</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="state" Kind="TypedefComponent">
+            <ddProperty Name="Description">The status of the power computation. If the input information is invalid or suspicious or if there is an overflow in the computation then the computed power is unreliable. This status information will indicate whether the power information is reliabale or not and why not</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_API_PT_StatusPowerDisplay_1537_t" Kind="Typedef">
+        <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame StatusPowerDisplay (1537, 0x601)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">on</ddProperty>
+        <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="stsTransmission" Kind="TypedefComponent">
+            <ddProperty Name="Description">Transmission status of frame StatusPowerDisplay (1537, 0x601)</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="TypedefComponent">
+            <ddProperty Name="Description">This inner struct contains the actual signals of frame StatusPowerDisplay (1537, 0x601)</ddProperty>
+            <ddProperty Name="Type">winSampleIntegration/pck_PT_StatusPowerDisplay_1537_t</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_PT_StatusPowerDisplay_1537_t" Kind="Typedef">
+        <ddProperty Name="Description">This inner typedef describes the actual signals of frame StatusPowerDisplay (1537, 0x601)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">off</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="noDlcErrors" Kind="TypedefComponent">
+            <ddProperty Name="Description">Number of recognized DLC errors in CAN input</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="noCheckSumErrors" Kind="TypedefComponent">
+            <ddProperty Name="Description">Number of recognized checksum errors in CAN input</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="noSqcErrors" Kind="TypedefComponent">
+            <ddProperty Name="Description">Number of recognized sequence errors in CAN input</ddProperty>
+            <ddProperty Name="Type">UInt16</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="sequenceCounter" Kind="TypedefComponent">
+            <ddProperty Name="Description">Sequence counter of message. The counter is incremented prior to sending the frame. The counter wraps around from 126 to 1. 0 and 127 are invalid values</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="checksum" Kind="TypedefComponent">
+            <ddProperty Name="Description">Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_API_PT_LimitsPowerDisplay_1538_t" Kind="Typedef">
+        <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame LimitsPowerDisplay (1538, 0x602)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">on</ddProperty>
+        <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="stsTransmission" Kind="TypedefComponent">
+            <ddProperty Name="Description">Transmission status of frame LimitsPowerDisplay (1538, 0x602)</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+            </ddObj>
+            <ddObj Name="signals" Kind="TypedefComponent">
+            <ddProperty Name="Description">This inner struct contains the actual signals of frame LimitsPowerDisplay (1538, 0x602)</ddProperty>
+            <ddProperty Name="Type">winSampleIntegration/pck_PT_LimitsPowerDisplay_1538_t</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="pck_PT_LimitsPowerDisplay_1538_t" Kind="Typedef">
+        <ddProperty Name="Description">This inner typedef describes the actual signals of frame LimitsPowerDisplay (1538, 0x602)</ddProperty>
+        <ddProperty Name="IsBaseType">off</ddProperty>
+        <ddProperty Name="BaseType">Struct</ddProperty>
+        <ddProperty Name="Width"></ddProperty>
+        <ddProperty Name="CreateTypedef">off</ddProperty>
+        <ddObj Name="Components" Kind="DSDDEmbedded">
+          <ddObj Name="sequenceCounter" Kind="TypedefComponent">
+            <ddProperty Name="Description">Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 6</ddProperty>
+            <ddProperty Name="Type">UInt8</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="belowMinSpeedOfRotation" Kind="TypedefComponent">
+            <ddProperty Name="Description">Boolean: True if and only if the speed of rotation is currently below the user set minimum</ddProperty>
+            <ddProperty Name="Type">Bool</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="aboveMaxSpeedOfRotation" Kind="TypedefComponent">
+            <ddProperty Name="Description">Boolean: True if and only if the speed of rotation is currently above the user set maximum</ddProperty>
+            <ddProperty Name="Type">Bool</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="belowMinPower" Kind="TypedefComponent">
+            <ddProperty Name="Description">Boolean: True if and only if the engine power is currently below the user set minimum</ddProperty>
+            <ddProperty Name="Type">Bool</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+          <ddObj Name="aboveMaxPower" Kind="TypedefComponent">
+            <ddProperty Name="Description">Boolean: True if and only if the engine power is currently above the user set maximum</ddProperty>
+            <ddProperty Name="Type">Bool</ddProperty>
+            <ddProperty Name="Width"></ddProperty>
+            <ddProperty Name="Volatile">off</ddProperty>
+            <ddProperty Name="Const">off</ddProperty>
+          </ddObj>
+        </ddObj>
+      </ddObj>
+    </ddObj>
+  </ddObj>
+  <ddObj Name="Modules" Kind="ModuleGroup">
+    <ddObj Name="pck_packCanFrame" Kind="Module">
+      <ddObj Name="ModuleInfo" Kind="DSDDEmbedded">
+        <ddProperty Name="NameTemplate">$D</ddProperty>
+        <ddProperty Name="CodeGenerationBasis">ModelBased</ddProperty>
+        <ddProperty Name="Responsibility">Default</ddProperty>
+      </ddObj>
+      <ddObj Name="FileSpecifications" Kind="DSDDEmbedded">
+        <ddObj Name="FileSpecification" Kind="FileSpecification">
+          <ddProperty Name="EmitFile">off</ddProperty>
+          <ddProperty Name="FileKind">HeaderFile</ddProperty>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="IncludedFiles" Kind="DSDDEmbedded"></ddObj>
+    </ddObj>
+  </ddObj>
+</ddObj>

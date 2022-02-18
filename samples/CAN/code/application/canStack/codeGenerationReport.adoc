@@ -1,5 +1,5 @@
 = Code Generation Report for CAN Network DEVKIT-MPC5775G
-:Author:    comFramework - codeGenerator version 1.10.4 (http://sourceforge.net/projects/comframe/)
+:Author:    comFramework - codeGenerator version 1.10.6 (http://sourceforge.net/projects/comframe/)
 :toc:
 :toclevels: 4
 :xrefstyle: short

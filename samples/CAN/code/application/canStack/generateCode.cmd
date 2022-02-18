@@ -20,14 +20,14 @@ call codeGenerator ^
   --output-file-name cap_precoCheck.h ^
     --template-file-name cap_precoCheck.h.stg ^
     --template-name precoCheck ^
-  --output-file-name cde_canStatistics.h ^
-    --template-file-name cde_canStatistics.h.stg ^
+  --output-file-name cst_canStatistics.h ^
+    --template-file-name cst_canStatistics.h.stg ^
     --template-name canStatistics_h ^
-  --output-file-name cde_canDataTables.c ^
-    --template-file-name cde_canDataTables.c.stg ^
+  --output-file-name cdt_canDataTables.c ^
+    --template-file-name cdt_canDataTables.c.stg ^
     --template-name dataTables_c ^
-  --output-file-name cde_canDataTables.h ^
-    --template-file-name cde_canDataTables.c.stg ^
+  --output-file-name cdt_canDataTables.h ^
+    --template-file-name cdt_canDataTables.c.stg ^
     --template-name dataTables_h ^
   --output-file-name cap_canApi.h ^
     --template-file-name cap_canApi.c.stg ^

@@ -5,23 +5,23 @@
  * layers of the CAN stack. The global data structure is initialized with the initial
  * signal values from the CAN network database.\n
  *   The integration of the API with the CAN stack is supported by a set of pack and unpack
- * functions; one such pair of functions is available for each CAN frame. The pack function
- * composes the binary frame contents from the set of signal values found in the API and
- * the counterpart function (unpack) decomposes received binary frame content data into
+ * functions; one such pair of functions is available for each CAN message. The pack function
+ * composes the binary message contents from the set of signal values found in the API and
+ * the counterpart function (unpack) decomposes received binary message content data into
  * distinct signal values, which are placed into the API.\n
  *   The functions are globally accessible; their names are composed such that name clashes
- * across different buses won't appear even if frames of same name and ID are
+ * across different buses won't appear even if messages of same name and ID are
  * transmitted.\n
  *   Note, concurrency is not handled here. Particularly for CAN input, data reception and
- * decomposition of the frame contents into signals might be an asynchronous event. If so,
+ * decomposition of the message contents into signals might be an asynchronous event. If so,
  * the caller of the unpack function would have to add appropriate code to implement mutual
  * exclusion with the Embedded Coder generated APSW code, which also accesses the API data.
  * Although less likely may the same hold for CAN output.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.4,
+ * This file has been created with comFramework - codeGenerator version 1.10.6,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -52,7 +52,7 @@
  * Defines
  */
 
-/* Check the values of the frame and special signal related #define's. Compilation errors
+/* Check the values of the message and special signal related #define's. Compilation errors
    can occur due to incompatibilites between the code generation templates and the actual
    network databases. */
 #define CAP_INCLUDES_PRECO_CHECKS
@@ -94,7 +94,7 @@ cap_canBus_PWM_t cap_canBus_PWM =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_okay,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -122,7 +122,7 @@ cap_canBus_PWM_t cap_canBus_PWM =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_neverReceived,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -149,7 +149,7 @@ cap_canBus_PT_t cap_canBus_PT =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_neverReceived,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -168,7 +168,7 @@ cap_canBus_PT_t cap_canBus_PT =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_neverReceived,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -190,7 +190,7 @@ cap_canBus_PT_t cap_canBus_PT =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_neverReceived,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -210,7 +210,7 @@ cap_canBus_PT_t cap_canBus_PT =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_okay,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -231,7 +231,7 @@ cap_canBus_PT_t cap_canBus_PT =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_okay,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -252,7 +252,7 @@ cap_canBus_PT_t cap_canBus_PT =
         .infoTransmission =
         {
             .stsTransmission = cap_stsTransm_okay,
-            .noTransmittedFrames = 0,
+            .noTransmittedMsgs = 0,
             .isEvent = false,
         },
     },
@@ -280,7 +280,7 @@ void cap_packApi_PWM_PWM_in(uint8_t m[])
 {
     cap_pack_PWM_PWM_in
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PWM_PWM_in_1000()
+            , /* pMsgStruct */ &cap_getMsg_PWM_PWM_in_1000()
             );
 } /* End of cap_packApi_PWM_PWM_in */
 
@@ -290,17 +290,17 @@ void cap_packApi_PWM_PWM_in(uint8_t m[])
 /**
  * Pack the signals of outbound PDU PWM_in (1000, 0x3e8) on bus PWM
  * into a byte array of 8 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame PWM_in.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message PWM_in.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PWM_PWM_in
                     ( uint8_t m[]
-                    , const cap_PWM_PWM_in_1000_t *pFrameStruct
+                    , const cap_PWM_PWM_in_1000_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -312,7 +312,7 @@ void cap_pack_PWM_PWM_in
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->PA2_J3_pin3_periodTime;
+        uint16_t s = (uint16_t)pMsgStruct->PA2_J3_pin3_periodTime;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] = (uint8_t)s;
@@ -325,7 +325,7 @@ void cap_pack_PWM_PWM_in
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->PA2_J3_pin3_isNew << 7;
+        uint8_t s = (uint8_t)pMsgStruct->PA2_J3_pin3_isNew << 7;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x80;
@@ -336,7 +336,7 @@ void cap_pack_PWM_PWM_in
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->PA6_J2_pin1_isNew;
+        uint8_t s = (uint8_t)pMsgStruct->PA6_J2_pin1_isNew;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[2] &= (uint8_t)~0x01;
@@ -347,7 +347,7 @@ void cap_pack_PWM_PWM_in
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->PA6_J2_pin1_dutyTime << 1;
+        uint16_t s = (uint16_t)pMsgStruct->PA6_J2_pin1_dutyTime << 1;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[2] &= (uint8_t)~0xfe;
@@ -360,7 +360,7 @@ void cap_pack_PWM_PWM_in
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->PA2_PA6_dutyCycle << 1;
+        uint16_t s = (uint16_t)pMsgStruct->PA2_PA6_dutyCycle << 1;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[5] &= (uint8_t)~0xfe;
@@ -373,7 +373,7 @@ void cap_pack_PWM_PWM_in
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint32_t s = (uint32_t)pFrameStruct->PA2_J3_pin3_frequency << 2;
+        uint32_t s = (uint32_t)pMsgStruct->PA2_J3_pin3_frequency << 2;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[7] &= (uint8_t)~0xfc;
@@ -392,14 +392,14 @@ void cap_pack_PWM_PWM_in
  * Unpack the signals of outbound PDU PWM_in (1000, 0x3e8) on bus PWM
  * from a byte array of 8 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PWM.PWM_PWM_in_1000_sts, which models frame PWM_in.
+ * cap_canBus_PWM.PWM_PWM_in_1000_sts, which models message PWM_in.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PWM_PWM_in(const uint8_t m[])
 {
     cap_unpack_PWM_PWM_in
-            ( /* pFrameStruct */ &cap_getFrame_PWM_PWM_in_1000()
+            ( /* pMsgStruct */ &cap_getMsg_PWM_PWM_in_1000()
             , &m[0]
             );
 } /* End of cap_unpackApi_PWM_PWM_in */
@@ -409,29 +409,29 @@ void cap_unpackApi_PWM_PWM_in(const uint8_t m[])
 /**
  * Unpack the signals of outbound PDU PWM_in (1000, 0x3e8) on bus PWM
  * from a byte array of 8 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame PWM_in.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message PWM_in.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PWM_PWM_in
-                    ( cap_PWM_PWM_in_1000_t *pFrameStruct
+                    ( cap_PWM_PWM_in_1000_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->PA2_J3_pin3_periodTime =
+    pMsgStruct->PA2_J3_pin3_periodTime =
         (uint16_t)((((uint16_t)(m[0] & 0x7f)) << 8) | m[1]);
-    pFrameStruct->PA2_J3_pin3_isNew =
+    pMsgStruct->PA2_J3_pin3_isNew =
         (boolean_t)(((uint8_t)(m[0] & 0x80)) >> 7);
-    pFrameStruct->PA6_J2_pin1_isNew =
+    pMsgStruct->PA6_J2_pin1_isNew =
         (boolean_t)((uint8_t)(m[2] & 0x01));
-    pFrameStruct->PA6_J2_pin1_dutyTime =
+    pMsgStruct->PA6_J2_pin1_dutyTime =
         (uint16_t)(((((uint16_t)m[3]) << 8) | m[2]) >> 1);
-    pFrameStruct->PA2_PA6_dutyCycle =
+    pMsgStruct->PA2_PA6_dutyCycle =
         (uint16_t)(((((uint16_t)m[4]) << 8) | m[5]) >> 1);
-    pFrameStruct->PA2_J3_pin3_frequency =
+    pMsgStruct->PA2_J3_pin3_frequency =
         (uint16_t)(((((((uint32_t)(m[5] & 0x01)) << 8) | m[6]) << 8) | m[7]) >> 2);
 
 } /* End of cap_unpack_PWM_PWM_in */
@@ -454,7 +454,7 @@ void cap_packApi_PWM_PWM_out(uint8_t m[])
 {
     cap_pack_PWM_PWM_out
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PWM_PWM_out_1001()
+            , /* pMsgStruct */ &cap_getMsg_PWM_PWM_out_1001()
             );
 } /* End of cap_packApi_PWM_PWM_out */
 
@@ -464,17 +464,17 @@ void cap_packApi_PWM_PWM_out(uint8_t m[])
 /**
  * Pack the signals of inbound PDU PWM_out (1001, 0x3e9) on bus PWM
  * into a byte array of 8 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame PWM_out.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message PWM_out.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PWM_PWM_out
                     ( uint8_t m[]
-                    , const cap_PWM_PWM_out_1001_t *pFrameStruct
+                    , const cap_PWM_PWM_out_1001_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -486,7 +486,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->LED_2_DS10_inhibit;
+        uint8_t s = (uint8_t)pMsgStruct->LED_2_DS10_inhibit;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x01;
@@ -497,7 +497,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->LED_4_DS11_inhibit << 1;
+        uint8_t s = (uint8_t)pMsgStruct->LED_4_DS11_inhibit << 1;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x02;
@@ -508,7 +508,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->LED_5_DS5_inhibit << 2;
+        uint8_t s = (uint8_t)pMsgStruct->LED_5_DS5_inhibit << 2;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x04;
@@ -519,7 +519,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->PA1_J3_pin1_inhibit << 3;
+        uint8_t s = (uint8_t)pMsgStruct->PA1_J3_pin1_inhibit << 3;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x08;
@@ -530,7 +530,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->LED_2_DS10_frequency << 4;
+        uint16_t s = (uint16_t)pMsgStruct->LED_2_DS10_frequency << 4;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0xf0;
@@ -544,7 +544,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->LED_4_DS11_frequency << 6;
+        uint16_t s = (uint16_t)pMsgStruct->LED_4_DS11_frequency << 6;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] &= (uint8_t)~0xc0;
@@ -557,7 +557,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->LED_5_DS5_frequency;
+        uint16_t s = (uint16_t)pMsgStruct->LED_5_DS5_frequency;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[3] = (uint8_t)s;
@@ -570,7 +570,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->PA1_J3_pin1_frequency << 2;
+        uint16_t s = (uint16_t)pMsgStruct->PA1_J3_pin1_frequency << 2;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[4] &= (uint8_t)~0xfc;
@@ -584,7 +584,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->LED_2_DS10_dutyCycle << 4;
+        uint16_t s = (uint16_t)pMsgStruct->LED_2_DS10_dutyCycle << 4;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[5] &= (uint8_t)~0xf0;
@@ -598,7 +598,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->LED_4_DS11_dutyCycle << 1;
+        uint8_t s = (uint8_t)pMsgStruct->LED_4_DS11_dutyCycle << 1;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[6] &= (uint8_t)~0x3e;
@@ -609,7 +609,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->LED_5_DS5_dutyCycle << 6;
+        uint16_t s = (uint16_t)pMsgStruct->LED_5_DS5_dutyCycle << 6;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[6] &= (uint8_t)~0xc0;
@@ -623,7 +623,7 @@ void cap_pack_PWM_PWM_out
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->PA1_J3_pin1_dutyCycle << 3;
+        uint8_t s = (uint8_t)pMsgStruct->PA1_J3_pin1_dutyCycle << 3;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[7] &= (uint8_t)~0xf8;
@@ -638,14 +638,14 @@ void cap_pack_PWM_PWM_out
  * Unpack the signals of inbound PDU PWM_out (1001, 0x3e9) on bus PWM
  * from a byte array of 8 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PWM.PWM_PWM_out_1001_sts, which models frame PWM_out.
+ * cap_canBus_PWM.PWM_PWM_out_1001_sts, which models message PWM_out.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PWM_PWM_out(const uint8_t m[])
 {
     cap_unpack_PWM_PWM_out
-            ( /* pFrameStruct */ &cap_getFrame_PWM_PWM_out_1001()
+            ( /* pMsgStruct */ &cap_getMsg_PWM_PWM_out_1001()
             , &m[0]
             );
 } /* End of cap_unpackApi_PWM_PWM_out */
@@ -655,41 +655,41 @@ void cap_unpackApi_PWM_PWM_out(const uint8_t m[])
 /**
  * Unpack the signals of inbound PDU PWM_out (1001, 0x3e9) on bus PWM
  * from a byte array of 8 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame PWM_out.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message PWM_out.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PWM_PWM_out
-                    ( cap_PWM_PWM_out_1001_t *pFrameStruct
+                    ( cap_PWM_PWM_out_1001_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->LED_2_DS10_inhibit =
+    pMsgStruct->LED_2_DS10_inhibit =
         (boolean_t)((uint8_t)(m[0] & 0x01));
-    pFrameStruct->LED_4_DS11_inhibit =
+    pMsgStruct->LED_4_DS11_inhibit =
         (boolean_t)(((uint8_t)(m[0] & 0x02)) >> 1);
-    pFrameStruct->LED_5_DS5_inhibit =
+    pMsgStruct->LED_5_DS5_inhibit =
         (boolean_t)(((uint8_t)(m[0] & 0x04)) >> 2);
-    pFrameStruct->PA1_J3_pin1_inhibit =
+    pMsgStruct->PA1_J3_pin1_inhibit =
         (boolean_t)(((uint8_t)(m[0] & 0x08)) >> 3);
-    pFrameStruct->LED_2_DS10_frequency =
+    pMsgStruct->LED_2_DS10_frequency =
         (uint16_t)(((((uint16_t)(m[1] & 0x3f)) << 8) | m[0]) >> 4);
-    pFrameStruct->LED_4_DS11_frequency =
+    pMsgStruct->LED_4_DS11_frequency =
         (uint16_t)(((((uint16_t)m[2]) << 8) | m[1]) >> 6);
-    pFrameStruct->LED_5_DS5_frequency =
+    pMsgStruct->LED_5_DS5_frequency =
         (uint16_t)((((uint16_t)(m[4] & 0x03)) << 8) | m[3]);
-    pFrameStruct->PA1_J3_pin1_frequency =
+    pMsgStruct->PA1_J3_pin1_frequency =
         (uint16_t)(((((uint16_t)(m[5] & 0x0f)) << 8) | m[4]) >> 2);
-    pFrameStruct->LED_2_DS10_dutyCycle =
+    pMsgStruct->LED_2_DS10_dutyCycle =
         (uint8_t)(((((uint16_t)(m[6] & 0x01)) << 8) | m[5]) >> 4);
-    pFrameStruct->LED_4_DS11_dutyCycle =
+    pMsgStruct->LED_4_DS11_dutyCycle =
         (uint8_t)(((uint8_t)(m[6] & 0x3e)) >> 1);
-    pFrameStruct->LED_5_DS5_dutyCycle =
+    pMsgStruct->LED_5_DS5_dutyCycle =
         (uint8_t)(((((uint16_t)(m[7] & 0x07)) << 8) | m[6]) >> 6);
-    pFrameStruct->PA1_J3_pin1_dutyCycle =
+    pMsgStruct->PA1_J3_pin1_dutyCycle =
         (uint8_t)(((uint8_t)(m[7] & 0xf8)) >> 3);
 
 } /* End of cap_unpack_PWM_PWM_out */
@@ -710,7 +710,7 @@ void cap_packApi_PT_StateEcu01(uint8_t m[])
 {
     cap_pack_PT_StateEcu01
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PT_StateEcu01_1024()
+            , /* pMsgStruct */ &cap_getMsg_PT_StateEcu01_1024()
             );
 } /* End of cap_packApi_PT_StateEcu01 */
 
@@ -720,17 +720,17 @@ void cap_packApi_PT_StateEcu01(uint8_t m[])
 /**
  * Pack the signals of inbound PDU StateEcu01 (1024, 0x400) on bus PT
  * into a byte array of 4 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame StateEcu01.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message StateEcu01.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PT_StateEcu01
                     ( uint8_t m[]
-                    , const cap_PT_StateEcu01_1024_t *pFrameStruct
+                    , const cap_PT_StateEcu01_1024_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -743,7 +743,7 @@ void cap_pack_PT_StateEcu01
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->checksum;
+        uint8_t s = (uint8_t)pMsgStruct->checksum;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] = (uint8_t)s;
@@ -753,7 +753,7 @@ void cap_pack_PT_StateEcu01
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint32_t s = (uint32_t)pFrameStruct->speedOfRotation << 4;
+        uint32_t s = (uint32_t)pMsgStruct->speedOfRotation << 4;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[3] &= (uint8_t)~0xf0;
@@ -769,7 +769,7 @@ void cap_pack_PT_StateEcu01
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->sequenceCounter << 4;
+        uint8_t s = (uint8_t)pMsgStruct->sequenceCounter << 4;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] &= (uint8_t)~0xf0;
@@ -784,14 +784,14 @@ void cap_pack_PT_StateEcu01
  * Unpack the signals of inbound PDU StateEcu01 (1024, 0x400) on bus PT
  * from a byte array of 4 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PT.PT_StateEcu01_1024_sts, which models frame StateEcu01.
+ * cap_canBus_PT.PT_StateEcu01_1024_sts, which models message StateEcu01.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PT_StateEcu01(const uint8_t m[])
 {
     cap_unpack_PT_StateEcu01
-            ( /* pFrameStruct */ &cap_getFrame_PT_StateEcu01_1024()
+            ( /* pMsgStruct */ &cap_getMsg_PT_StateEcu01_1024()
             , &m[0]
             );
 } /* End of cap_unpackApi_PT_StateEcu01 */
@@ -801,23 +801,23 @@ void cap_unpackApi_PT_StateEcu01(const uint8_t m[])
 /**
  * Unpack the signals of inbound PDU StateEcu01 (1024, 0x400) on bus PT
  * from a byte array of 4 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame StateEcu01.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message StateEcu01.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PT_StateEcu01
-                    ( cap_PT_StateEcu01_1024_t *pFrameStruct
+                    ( cap_PT_StateEcu01_1024_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->checksum =
+    pMsgStruct->checksum =
         (uint8_t)((uint8_t)m[0]);
-    pFrameStruct->speedOfRotation =
+    pMsgStruct->speedOfRotation =
         (uint16_t)(((((((uint32_t)(m[1] & 0x0f)) << 8) | m[2]) << 8) | m[3]) >> 4);
-    pFrameStruct->sequenceCounter =
+    pMsgStruct->sequenceCounter =
         (uint8_t)(((uint8_t)(m[1] & 0xf0)) >> 4);
 
 } /* End of cap_unpack_PT_StateEcu01 */
@@ -838,7 +838,7 @@ void cap_packApi_PT_StateEcu02(uint8_t m[])
 {
     cap_pack_PT_StateEcu02
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PT_StateEcu02_1040()
+            , /* pMsgStruct */ &cap_getMsg_PT_StateEcu02_1040()
             );
 } /* End of cap_packApi_PT_StateEcu02 */
 
@@ -848,17 +848,17 @@ void cap_packApi_PT_StateEcu02(uint8_t m[])
 /**
  * Pack the signals of inbound PDU StateEcu02 (1040, 0x410) on bus PT
  * into a byte array of 4 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame StateEcu02.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message StateEcu02.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PT_StateEcu02
                     ( uint8_t m[]
-                    , const cap_PT_StateEcu02_1040_t *pFrameStruct
+                    , const cap_PT_StateEcu02_1040_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -872,7 +872,7 @@ void cap_pack_PT_StateEcu02
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->checksum;
+        uint8_t s = (uint8_t)pMsgStruct->checksum;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] = (uint8_t)s;
@@ -882,7 +882,7 @@ void cap_pack_PT_StateEcu02
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->sequenceCounter;
+        uint8_t s = (uint8_t)pMsgStruct->sequenceCounter;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] &= (uint8_t)~0x0f;
@@ -893,7 +893,7 @@ void cap_pack_PT_StateEcu02
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->torque << (5-1);
+        uint16_t s = (uint16_t)pMsgStruct->torque << (5-1);
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[3] &= (uint8_t)~0xf0;
@@ -911,14 +911,14 @@ void cap_pack_PT_StateEcu02
  * Unpack the signals of inbound PDU StateEcu02 (1040, 0x410) on bus PT
  * from a byte array of 4 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PT.PT_StateEcu02_1040_sts, which models frame StateEcu02.
+ * cap_canBus_PT.PT_StateEcu02_1040_sts, which models message StateEcu02.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PT_StateEcu02(const uint8_t m[])
 {
     cap_unpack_PT_StateEcu02
-            ( /* pFrameStruct */ &cap_getFrame_PT_StateEcu02_1040()
+            ( /* pMsgStruct */ &cap_getMsg_PT_StateEcu02_1040()
             , &m[0]
             );
 } /* End of cap_unpackApi_PT_StateEcu02 */
@@ -928,21 +928,21 @@ void cap_unpackApi_PT_StateEcu02(const uint8_t m[])
 /**
  * Unpack the signals of inbound PDU StateEcu02 (1040, 0x410) on bus PT
  * from a byte array of 4 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame StateEcu02.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message StateEcu02.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PT_StateEcu02
-                    ( cap_PT_StateEcu02_1040_t *pFrameStruct
+                    ( cap_PT_StateEcu02_1040_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->sequenceCounter =
+    pMsgStruct->sequenceCounter =
         (uint8_t)((uint8_t)(m[1] & 0x0f));
-    pFrameStruct->torque =
+    pMsgStruct->torque =
         (int16_t)((int16_t)(((((uint16_t)m[2]) << 8) | m[3]) << 1) >> 5);
 
 } /* End of cap_unpack_PT_StateEcu02 */
@@ -963,7 +963,7 @@ void cap_packApi_PT_UserLimits(uint8_t m[])
 {
     cap_pack_PT_UserLimits
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PT_UserLimits_2032()
+            , /* pMsgStruct */ &cap_getMsg_PT_UserLimits_2032()
             );
 } /* End of cap_packApi_PT_UserLimits */
 
@@ -973,17 +973,17 @@ void cap_packApi_PT_UserLimits(uint8_t m[])
 /**
  * Pack the signals of inbound PDU UserLimits (2032, 0x7f0) on bus PT
  * into a byte array of 8 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame UserLimits.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message UserLimits.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PT_UserLimits
                     ( uint8_t m[]
-                    , const cap_PT_UserLimits_2032_t *pFrameStruct
+                    , const cap_PT_UserLimits_2032_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -995,7 +995,7 @@ void cap_pack_PT_UserLimits
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->sequenceCounter << 2;
+        uint8_t s = (uint8_t)pMsgStruct->sequenceCounter << 2;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x3c;
@@ -1006,7 +1006,7 @@ void cap_pack_PT_UserLimits
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint32_t s = (uint32_t)pFrameStruct->minSpeedOfRotation << 6;
+        uint32_t s = (uint32_t)pMsgStruct->minSpeedOfRotation << 6;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0xc0;
@@ -1022,7 +1022,7 @@ void cap_pack_PT_UserLimits
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->maxSpeedOfRotation << 2;
+        uint16_t s = (uint16_t)pMsgStruct->maxSpeedOfRotation << 2;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[2] &= (uint8_t)~0xfc;
@@ -1036,7 +1036,7 @@ void cap_pack_PT_UserLimits
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->checksum;
+        uint8_t s = (uint8_t)pMsgStruct->checksum;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[4] = (uint8_t)s;
@@ -1046,7 +1046,7 @@ void cap_pack_PT_UserLimits
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->minPower << 7;
+        uint16_t s = (uint16_t)pMsgStruct->minPower << 7;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[6] &= (uint8_t)~0x80;
@@ -1059,7 +1059,7 @@ void cap_pack_PT_UserLimits
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->maxPower << 5;
+        uint16_t s = (uint16_t)pMsgStruct->maxPower << 5;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[7] &= (uint8_t)~0xe0;
@@ -1077,14 +1077,14 @@ void cap_pack_PT_UserLimits
  * Unpack the signals of inbound PDU UserLimits (2032, 0x7f0) on bus PT
  * from a byte array of 8 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PT.PT_UserLimits_2032_sts, which models frame UserLimits.
+ * cap_canBus_PT.PT_UserLimits_2032_sts, which models message UserLimits.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PT_UserLimits(const uint8_t m[])
 {
     cap_unpack_PT_UserLimits
-            ( /* pFrameStruct */ &cap_getFrame_PT_UserLimits_2032()
+            ( /* pMsgStruct */ &cap_getMsg_PT_UserLimits_2032()
             , &m[0]
             );
 } /* End of cap_unpackApi_PT_UserLimits */
@@ -1094,29 +1094,29 @@ void cap_unpackApi_PT_UserLimits(const uint8_t m[])
 /**
  * Unpack the signals of inbound PDU UserLimits (2032, 0x7f0) on bus PT
  * from a byte array of 8 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame UserLimits.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message UserLimits.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PT_UserLimits
-                    ( cap_PT_UserLimits_2032_t *pFrameStruct
+                    ( cap_PT_UserLimits_2032_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->sequenceCounter =
+    pMsgStruct->sequenceCounter =
         (uint8_t)(((uint8_t)(m[0] & 0x3c)) >> 2);
-    pFrameStruct->minSpeedOfRotation =
+    pMsgStruct->minSpeedOfRotation =
         (uint16_t)(((((((uint32_t)(m[2] & 0x03)) << 8) | m[1]) << 8) | m[0]) >> 6);
-    pFrameStruct->maxSpeedOfRotation =
+    pMsgStruct->maxSpeedOfRotation =
         (uint16_t)(((((uint16_t)(m[3] & 0x3f)) << 8) | m[2]) >> 2);
-    pFrameStruct->checksum =
+    pMsgStruct->checksum =
         (uint8_t)((uint8_t)m[4]);
-    pFrameStruct->minPower =
+    pMsgStruct->minPower =
         (uint16_t)(((((uint16_t)m[5]) << 8) | m[6]) >> 7);
-    pFrameStruct->maxPower =
+    pMsgStruct->maxPower =
         (uint16_t)(((((uint16_t)(m[6] & 0x3f)) << 8) | m[7]) >> 5);
 
 } /* End of cap_unpack_PT_UserLimits */
@@ -1135,7 +1135,7 @@ void cap_packApi_PT_InfoPowerDisplay(uint8_t m[])
 {
     cap_pack_PT_InfoPowerDisplay
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PT_InfoPowerDisplay_1536()
+            , /* pMsgStruct */ &cap_getMsg_PT_InfoPowerDisplay_1536()
             );
 } /* End of cap_packApi_PT_InfoPowerDisplay */
 
@@ -1145,17 +1145,17 @@ void cap_packApi_PT_InfoPowerDisplay(uint8_t m[])
 /**
  * Pack the signals of outbound PDU InfoPowerDisplay (1536, 0x600) on bus PT
  * into a byte array of 6 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame InfoPowerDisplay.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message InfoPowerDisplay.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PT_InfoPowerDisplay
                     ( uint8_t m[]
-                    , const cap_PT_InfoPowerDisplay_1536_t *pFrameStruct
+                    , const cap_PT_InfoPowerDisplay_1536_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -1167,7 +1167,7 @@ void cap_pack_PT_InfoPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->checksum;
+        uint8_t s = (uint8_t)pMsgStruct->checksum;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] = (uint8_t)s;
@@ -1177,7 +1177,7 @@ void cap_pack_PT_InfoPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->sequenceCounter;
+        uint8_t s = (uint8_t)pMsgStruct->sequenceCounter;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] &= (uint8_t)~0x0f;
@@ -1188,7 +1188,7 @@ void cap_pack_PT_InfoPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint32_t s = (uint32_t)pFrameStruct->power << 5;
+        uint32_t s = (uint32_t)pMsgStruct->power << 5;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] &= (uint8_t)~0xe0;
@@ -1204,7 +1204,7 @@ void cap_pack_PT_InfoPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->state << 7;
+        uint16_t s = (uint16_t)pMsgStruct->state << 7;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[5] &= (uint8_t)~0x80;
@@ -1221,14 +1221,14 @@ void cap_pack_PT_InfoPowerDisplay
  * Unpack the signals of outbound PDU InfoPowerDisplay (1536, 0x600) on bus PT
  * from a byte array of 6 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PT.PT_InfoPowerDisplay_1536_sts, which models frame InfoPowerDisplay.
+ * cap_canBus_PT.PT_InfoPowerDisplay_1536_sts, which models message InfoPowerDisplay.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PT_InfoPowerDisplay(const uint8_t m[])
 {
     cap_unpack_PT_InfoPowerDisplay
-            ( /* pFrameStruct */ &cap_getFrame_PT_InfoPowerDisplay_1536()
+            ( /* pMsgStruct */ &cap_getMsg_PT_InfoPowerDisplay_1536()
             , &m[0]
             );
 } /* End of cap_unpackApi_PT_InfoPowerDisplay */
@@ -1238,25 +1238,25 @@ void cap_unpackApi_PT_InfoPowerDisplay(const uint8_t m[])
 /**
  * Unpack the signals of outbound PDU InfoPowerDisplay (1536, 0x600) on bus PT
  * from a byte array of 6 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame InfoPowerDisplay.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message InfoPowerDisplay.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PT_InfoPowerDisplay
-                    ( cap_PT_InfoPowerDisplay_1536_t *pFrameStruct
+                    ( cap_PT_InfoPowerDisplay_1536_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->checksum =
+    pMsgStruct->checksum =
         (uint8_t)((uint8_t)m[0]);
-    pFrameStruct->sequenceCounter =
+    pMsgStruct->sequenceCounter =
         (uint8_t)((uint8_t)(m[1] & 0x0f));
-    pFrameStruct->power =
+    pMsgStruct->power =
         (uint16_t)(((((((uint32_t)(m[3] & 0x0f)) << 8) | m[2]) << 8) | m[1]) >> 5);
-    pFrameStruct->state =
+    pMsgStruct->state =
         (uint8_t)(((((uint16_t)(m[4] & 0x03)) << 8) | m[5]) >> 7);
 
 } /* End of cap_unpack_PT_InfoPowerDisplay */
@@ -1277,7 +1277,7 @@ void cap_packApi_PT_StatusPowerDisplay(uint8_t m[])
 {
     cap_pack_PT_StatusPowerDisplay
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PT_StatusPowerDisplay_1537()
+            , /* pMsgStruct */ &cap_getMsg_PT_StatusPowerDisplay_1537()
             );
 } /* End of cap_packApi_PT_StatusPowerDisplay */
 
@@ -1287,17 +1287,17 @@ void cap_packApi_PT_StatusPowerDisplay(uint8_t m[])
 /**
  * Pack the signals of outbound PDU StatusPowerDisplay (1537, 0x601) on bus PT
  * into a byte array of 6 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame StatusPowerDisplay.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message StatusPowerDisplay.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PT_StatusPowerDisplay
                     ( uint8_t m[]
-                    , const cap_PT_StatusPowerDisplay_1537_t *pFrameStruct
+                    , const cap_PT_StatusPowerDisplay_1537_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -1311,7 +1311,7 @@ void cap_pack_PT_StatusPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->noDlcErrors;
+        uint16_t s = (uint16_t)pMsgStruct->noDlcErrors;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] = (uint8_t)s;
@@ -1324,7 +1324,7 @@ void cap_pack_PT_StatusPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint16_t s = (uint16_t)pFrameStruct->noCheckSumErrors << 3;
+        uint16_t s = (uint16_t)pMsgStruct->noCheckSumErrors << 3;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[1] &= (uint8_t)~0xf8;
@@ -1338,7 +1338,7 @@ void cap_pack_PT_StatusPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint32_t s = (uint32_t)pFrameStruct->noSqcErrors << 6;
+        uint32_t s = (uint32_t)pMsgStruct->noSqcErrors << 6;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[2] &= (uint8_t)~0xc0;
@@ -1354,7 +1354,7 @@ void cap_pack_PT_StatusPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->sequenceCounter << 1;
+        uint8_t s = (uint8_t)pMsgStruct->sequenceCounter << 1;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[4] &= (uint8_t)~0xfe;
@@ -1365,7 +1365,7 @@ void cap_pack_PT_StatusPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->checksum;
+        uint8_t s = (uint8_t)pMsgStruct->checksum;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[5] = (uint8_t)s;
@@ -1378,14 +1378,14 @@ void cap_pack_PT_StatusPowerDisplay
  * Unpack the signals of outbound PDU StatusPowerDisplay (1537, 0x601) on bus PT
  * from a byte array of 6 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PT.PT_StatusPowerDisplay_1537_sts, which models frame StatusPowerDisplay.
+ * cap_canBus_PT.PT_StatusPowerDisplay_1537_sts, which models message StatusPowerDisplay.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PT_StatusPowerDisplay(const uint8_t m[])
 {
     cap_unpack_PT_StatusPowerDisplay
-            ( /* pFrameStruct */ &cap_getFrame_PT_StatusPowerDisplay_1537()
+            ( /* pMsgStruct */ &cap_getMsg_PT_StatusPowerDisplay_1537()
             , &m[0]
             );
 } /* End of cap_unpackApi_PT_StatusPowerDisplay */
@@ -1395,27 +1395,27 @@ void cap_unpackApi_PT_StatusPowerDisplay(const uint8_t m[])
 /**
  * Unpack the signals of outbound PDU StatusPowerDisplay (1537, 0x601) on bus PT
  * from a byte array of 6 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame StatusPowerDisplay.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message StatusPowerDisplay.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PT_StatusPowerDisplay
-                    ( cap_PT_StatusPowerDisplay_1537_t *pFrameStruct
+                    ( cap_PT_StatusPowerDisplay_1537_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->noDlcErrors =
+    pMsgStruct->noDlcErrors =
         (uint16_t)((((uint16_t)(m[1] & 0x07)) << 8) | m[0]);
-    pFrameStruct->noCheckSumErrors =
+    pMsgStruct->noCheckSumErrors =
         (uint16_t)(((((uint16_t)(m[2] & 0x3f)) << 8) | m[1]) >> 3);
-    pFrameStruct->noSqcErrors =
+    pMsgStruct->noSqcErrors =
         (uint16_t)(((((((uint32_t)(m[4] & 0x01)) << 8) | m[3]) << 8) | m[2]) >> 6);
-    pFrameStruct->sequenceCounter =
+    pMsgStruct->sequenceCounter =
         (uint8_t)(((uint8_t)(m[4] & 0xfe)) >> 1);
-    pFrameStruct->checksum =
+    pMsgStruct->checksum =
         (uint8_t)((uint8_t)m[5]);
 
 } /* End of cap_unpack_PT_StatusPowerDisplay */
@@ -1436,7 +1436,7 @@ void cap_packApi_PT_LimitsPowerDisplay(uint8_t m[])
 {
     cap_pack_PT_LimitsPowerDisplay
             ( &m[0]
-            , /* pFrameStruct */ &cap_getFrame_PT_LimitsPowerDisplay_1538()
+            , /* pMsgStruct */ &cap_getMsg_PT_LimitsPowerDisplay_1538()
             );
 } /* End of cap_packApi_PT_LimitsPowerDisplay */
 
@@ -1446,17 +1446,17 @@ void cap_packApi_PT_LimitsPowerDisplay(uint8_t m[])
 /**
  * Pack the signals of outbound PDU LimitsPowerDisplay (1538, 0x602) on bus PT
  * into a byte array of 1 Byte.\n
- *   The signal values are read from a frame struct by reference.
- *   @param pFrameStruct
- * The signal values to pack are read from the interface struct * \a pFrameStruct, which
- * models frame LimitsPowerDisplay.
+ *   The signal values are read from a message struct by reference.
+ *   @param pMsgStruct
+ * The signal values to pack are read from the interface struct * \a pMsgStruct, which
+ * models message LimitsPowerDisplay.
  *   @param m
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
 void cap_pack_PT_LimitsPowerDisplay
                     ( uint8_t m[]
-                    , const cap_PT_LimitsPowerDisplay_1538_t *pFrameStruct
+                    , const cap_PT_LimitsPowerDisplay_1538_t *pMsgStruct
                     )
 {
     /* The further commands will partly use bit clear and set commands to write the signal
@@ -1468,7 +1468,7 @@ void cap_pack_PT_LimitsPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->sequenceCounter;
+        uint8_t s = (uint8_t)pMsgStruct->sequenceCounter;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x07;
@@ -1479,7 +1479,7 @@ void cap_pack_PT_LimitsPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->belowMinSpeedOfRotation << 3;
+        uint8_t s = (uint8_t)pMsgStruct->belowMinSpeedOfRotation << 3;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x08;
@@ -1490,7 +1490,7 @@ void cap_pack_PT_LimitsPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->aboveMaxSpeedOfRotation << 4;
+        uint8_t s = (uint8_t)pMsgStruct->aboveMaxSpeedOfRotation << 4;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x10;
@@ -1501,7 +1501,7 @@ void cap_pack_PT_LimitsPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->belowMinPower << 5;
+        uint8_t s = (uint8_t)pMsgStruct->belowMinPower << 5;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x20;
@@ -1512,7 +1512,7 @@ void cap_pack_PT_LimitsPowerDisplay
     {
         /* Assign the signal value to a temporary variable, where the signal value's bits
            have the same byte-relative position as in the final, packed PDU. */
-        uint8_t s = (uint8_t)pFrameStruct->aboveMaxPower << 6;
+        uint8_t s = (uint8_t)pMsgStruct->aboveMaxPower << 6;
 
         /* Transfer all bytes of the temporary variable into the PDU. */
         m[0] &= (uint8_t)~0x40;
@@ -1526,14 +1526,14 @@ void cap_pack_PT_LimitsPowerDisplay
  * Unpack the signals of outbound PDU LimitsPowerDisplay (1538, 0x602) on bus PT
  * from a byte array of 1 Byte.\n
  *   The unpacked signal values are written into the global interface struct
- * cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts, which models frame LimitsPowerDisplay.
+ * cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts, which models message LimitsPowerDisplay.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpackApi_PT_LimitsPowerDisplay(const uint8_t m[])
 {
     cap_unpack_PT_LimitsPowerDisplay
-            ( /* pFrameStruct */ &cap_getFrame_PT_LimitsPowerDisplay_1538()
+            ( /* pMsgStruct */ &cap_getMsg_PT_LimitsPowerDisplay_1538()
             , &m[0]
             );
 } /* End of cap_unpackApi_PT_LimitsPowerDisplay */
@@ -1543,27 +1543,27 @@ void cap_unpackApi_PT_LimitsPowerDisplay(const uint8_t m[])
 /**
  * Unpack the signals of outbound PDU LimitsPowerDisplay (1538, 0x602) on bus PT
  * from a byte array of 1 Byte.\n
- *   @param pFrameStruct
- * The unpacked signal values are written into the interface struct * \a pFrameStruct,
- * which models frame LimitsPowerDisplay.
+ *   @param pMsgStruct
+ * The unpacked signal values are written into the interface struct * \a pMsgStruct,
+ * which models message LimitsPowerDisplay.
  *   @param m
  * The byte array. The signal values are extracted from this array.
  */
 void cap_unpack_PT_LimitsPowerDisplay
-                    ( cap_PT_LimitsPowerDisplay_1538_t *pFrameStruct
+                    ( cap_PT_LimitsPowerDisplay_1538_t *pMsgStruct
                     , const uint8_t m[]
                     )
 {
     /* Decode all normal, not multiplexed signals. */
-    pFrameStruct->sequenceCounter =
+    pMsgStruct->sequenceCounter =
         (uint8_t)((uint8_t)(m[0] & 0x07));
-    pFrameStruct->belowMinSpeedOfRotation =
+    pMsgStruct->belowMinSpeedOfRotation =
         (boolean_t)(((uint8_t)(m[0] & 0x08)) >> 3);
-    pFrameStruct->aboveMaxSpeedOfRotation =
+    pMsgStruct->aboveMaxSpeedOfRotation =
         (boolean_t)(((uint8_t)(m[0] & 0x10)) >> 4);
-    pFrameStruct->belowMinPower =
+    pMsgStruct->belowMinPower =
         (boolean_t)(((uint8_t)(m[0] & 0x20)) >> 5);
-    pFrameStruct->aboveMaxPower =
+    pMsgStruct->aboveMaxPower =
         (boolean_t)(((uint8_t)(m[0] & 0x40)) >> 6);
 
 } /* End of cap_unpack_PT_LimitsPowerDisplay */

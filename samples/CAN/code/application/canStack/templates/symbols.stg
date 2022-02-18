@@ -80,7 +80,7 @@ symbol ::= [ "signal": {<signal><if(signal.isMuxedSignal)>_m<signal.muxValue><en
            , "fieldSignals": "signals"
            , "fieldInfoTransmission": "infoTransmission"
            , "fieldStsTransmission": "stsTransmission"
-           , "fieldNoTransmitted": "noTransmittedFrames"
+           , "fieldNoTransmitted": "noTransmittedMsgs"
            , "fieldIsEvent": "isEvent"
            , "stsTransmission_t": {<file.mnmApi>_stsTransmission_t}
            , "stsTransmission": {<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldStsTransmission>}
@@ -89,7 +89,7 @@ symbol ::= [ "signal": {<signal><if(signal.isMuxedSignal)>_m<signal.muxValue><en
            , default: "codeGenerationError_unknownSymbol"
            ]
 
-// The repeatedly used frame and signal related #define's are access through a map, which
+// The repeatedly used message and signal related #define's are access through a map, which
 // improves maintainability and readability of the templates.
 define ::= [ "busId": {CAN_BUS_<bus.name; format="upper">}
            , "signalBinToDbl": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_BIN_TO_DBL}
@@ -98,10 +98,10 @@ define ::= [ "busId": {CAN_BUS_<bus.name; format="upper">}
            , "signalOffset": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_OFFSET}
            , "signalMin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_MIN}
            , "signalMax": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name>_MAX}
-           , "isFramePresent": {<file.mnmApi; format="upper">_FRAME_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>}
+           , "isFramePresent": {<file.mnmApi; format="upper">_MSG_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>}
            , "aliasOfStructFrame": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>}
-           , "referenceStructFrame": {<file.mnmApi>_getFrame_<bus>_<frame>_<frame.id>}
-           , "referenceStructFrameSts": {<file.mnmApi>_getFrameSts_<bus>_<frame>_<frame.id>}
+           , "referenceStructFrame": {<file.mnmApi>_getMsg_<bus>_<frame>_<frame.id>}
+           , "referenceStructFrameSts": {<file.mnmApi>_getMsgSts_<bus>_<frame>_<frame.id>}
            , "referenceSignalOfStructFrame": {<file.mnmApi>_getSignal_<bus>_<frame>_<frame.id>}
            , "pduSize": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_DLC}
            , "checksumLength": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_CHECKSUM_LENGTH}
