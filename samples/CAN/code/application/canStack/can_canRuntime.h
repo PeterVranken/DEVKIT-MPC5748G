@@ -67,10 +67,6 @@
 /** The index of the dispatcher that serves the 10ms APSW task with CAN related events. */
 #define CAN_IDX_DISPATCHER_10MS             0
 
-/** The length of the queue of the dispatcher that serves the 10ms APSW task with CAN
-    related events. */
-#define CAN_DISPATCHER_10MS_QUEUE_LEN       10u
-
 /** This value extends the enumeration of CAN related events. It means a bus-off
     notification. */ 
 #define CAN_EV_BUS_OFF                      (CDE_EV_FIRST_CUSTOM_EVENT+1)
@@ -109,7 +105,6 @@ extern volatile unsigned long can_noEvRxTimeout;
 
 /** The total number of lost Tx messages because of send buffer full events. */
 extern volatile unsigned long can_noEvTxSendBufFull;
-
 
 /*
  * Global prototypes

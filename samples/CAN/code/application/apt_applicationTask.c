@@ -26,7 +26,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   bsw_onRxCan
  *   bsw_taskUserInit
  *   bsw_taskUser1ms
  *   bsw_taskUser10ms

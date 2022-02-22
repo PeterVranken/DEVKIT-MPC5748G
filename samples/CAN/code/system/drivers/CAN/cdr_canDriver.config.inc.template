@@ -2,7 +2,7 @@
  *   @file cdr_canDriver.config.inc
  * Application dependent configuration of CAN I/O driver.
  *   @remark
- * This file actually is a hybrid from C header and source file. Therefore, it's is neither
+ * This file actually is a hybrid from C header and source file. Therefore, it's is not
  * named as those and got the extension *.inc. A copy of this template is what you will
  * edit in order to configure the CAN driver according to your application's needs. Please
  * find more details in cdr_canDriverAPI.h.
@@ -10,7 +10,7 @@
  * Never include this file or your copy directly from your application and never try to
  * compile it.
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

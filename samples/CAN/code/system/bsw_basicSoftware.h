@@ -82,8 +82,8 @@ typedef enum bsw_pid_t
 /** CAN interface: The notification of a received message as used in bsw_onRxCan(). */
 typedef struct bsw_rxCanMessage_t
 {
-    /** The index of the CAN bus. The value is one out of #BSW_CAN_BUS_TYSON_0 ..
-        #BSW_CAN_BUS_TYSON_3. */
+    /** The zero based index of the CAN bus. The value is always #BSW_CAN_BUS_0, since only
+        a single CAN bus is configured in this sample BSW. */
     unsigned int idxCanBus;
 
     /** The index of the mailbox, which had received the message. It is in the range
@@ -152,10 +152,6 @@ extern int32_t bsw_taskSafety1ms(uint32_t PID, uintptr_t taskParam);
 /** Application provided regular 10ms task function, running in safety process
     bsw_pidSafety. */
 extern int32_t bsw_taskSafety10ms(uint32_t PID, uintptr_t taskParam);
-
-/** CAN interface: This is the notification callback for received messages. It is run in
-    user process \a bsw_pidUser and must execute very fast. The budget is 200us. */
-int32_t bsw_onRxCan(uint32_t PID, const bsw_rxCanMessage_t *pRxCanMsg);
 
 /*
  * Global inline functions

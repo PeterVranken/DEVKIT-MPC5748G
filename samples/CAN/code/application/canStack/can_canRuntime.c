@@ -35,7 +35,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   bsw_onRxCan
  *   can_initCanStack
  * Local functions
  *   onMsgReception
@@ -61,14 +60,12 @@
 #include "cap_canApi.h"
 #include "cdr_canDriverAPI.h"
 #include "mem_malloc.h"
-#include "vsq_dispatcherPortInterface.h"
-#include "ede_eventSender.h"
 #include "mpo_mapOffsetOnly.h"
 #include "ede_eventDispatcherEngine.h"
 #include "cst_canStatistics.h"
 #include "cdt_canDataTables.h"
 #include "cmd_canCommand.h"
-
+#include "bsw_canInterface.h"
 
 /*
  * Defines
@@ -80,23 +77,6 @@
     greater than the former: CAN bus timing always requires a tolerance and the time
     measurement is done only with the resolution of the tick of the CAN interface engine. */
 #define TIMEOUT(tiCycle) (assert((int)(3*(tiCycle)+1)>0),((signed int)(3*(tiCycle)+1)))
-
-/** Our data tables with message decriptions are separated in Rx and Tx messages. The interface
-    engine has one solid handle space for all messages. This macro computes the array index of
-    a received message from the handle used by the engine. The returned index relates to array
-    \a cdt_canRxMsgAry. */
-#define MAP_HANDLE_RX_MSG_CAN_IF_TO_IDX_RX(idxFrCde)                                      \
-            (assert((idxFrCde) < sizeOfAry(cdt_canRxMsgAry)),(idxFrCde))
-
-/** Our data tables with message decriptions are separated in Rx and Tx messages. The interface
-    engine has one solid handle space for all messages. This macro computes the array index of
-    a sent message from the handle used by the engine. The returned index relates to array \a
-    cdt_canTxMsgAry. */
-#define MAP_HANDLE_TX_MSG_CAN_IF_TO_IDX_TX(idxFrCde)                                      \
-            (assert((idxFrCde)-(CST_NO_CAN_MSGS_RECEIVED) < sizeOfAry(cdt_canTxMsgAry)),\
-             (idxFrCde)-(CST_NO_CAN_MSGS_RECEIVED)                                        \
-            )
-
 
 /* Check the number of processed messages against the HW constraints. Note, the condition
    is necessary but not sufficient; a bad distrubution of messages between user and safety
@@ -125,41 +105,6 @@ typedef struct hdlCtxDataOutMixed_t
 
 } hdlCtxDataOutMixed_t;
 
-/** The known kinds of event. The use of the pre-defined handle maps require a gapless,
-    zero based sequence of enumeration values. Here for Rx event queues. */
-typedef enum can_kindOfExtEvents_t
-{
-    /*
-     * External events should come first such that they get the zero based index space;
-     * this facilitates the implementation of the required handle maps.
-     */
-     
-    /** The kind-of-event for a CAN message reception event on bus 0. */
-    can_evt_newRxMsg_bus0,
-
-    /** The kind-of-event for a CAN message reception event on bus 1. */
-    can_evt_newRxMsg_bus1,
-
-    /** The kind-of-event for a CAN message reception event on bus 2. */
-    can_evt_newRxMsg_bus2,
-
-    /** The kind-of-event for a CAN message reception event on bus 3. */
-    can_evt_newRxMsg_bus3,
-
-    /** The total number of different kinds of external events, i.e.,events, which come
-        from a sender object and via a queue object to the dispatcher. */
-    can_evt_noKindsOfExternalEvents,
-    
-    /** The total number of different kinds of external events. */
-    can_evt_noKindsOfExtEvents,
-    
-} can_kindOfExtEvents_t;
-
-_Static_assert( can_evt_newRxMsg_bus1 == can_evt_newRxMsg_bus0 + 1
-                &&  can_evt_newRxMsg_bus2 == can_evt_newRxMsg_bus0 + 2
-                &&  can_evt_newRxMsg_bus3 == can_evt_newRxMsg_bus0 + 3
-              , "All bus related Rx events are expected to form a gapless sequence"
-              );
 
 /*
  * Local prototypes
@@ -174,9 +119,6 @@ _Static_assert( can_evt_newRxMsg_bus1 == can_evt_newRxMsg_bus0 + 1
     in the 100ms APSW tasks. */
 ede_handleDispatcherSystem_t SDATA_P1(can_hDispatcherSystem) = EDE_INVALID_DISPATCHER_SYSTEM_HANDLE;
 
-/** The sender of CAN events. It is connected to both dispatchers. */
-static ede_handleSender_t SDATA_P1(_hEventSender) = EDE_INVALID_SENDER_HANDLE;
-
 /** The handler for inbound messages requires local context data for regular and mixed mode
     messages. Here's an array of context data objects, one for each such message; the entries
     for regular messages precede those for mixed mode messages. */
@@ -188,12 +130,6 @@ static ede_handleTimer_t BSS_P1(_hTimerInTimeoutAry)[CST_NO_CAN_MSGS_RECEIVED_RE
     of context data objects, one for each such message. */
 static hdlCtxDataOutMixed_t BSS_P1(_hdlCtxDataOutMixedAry)[CST_NO_CAN_MSGS_SENT_MIXED];
 
-
-/** The total count of all ever received messages, including the lost one because of queue
-    full events. The counter is not saturated and will wrap at the implementation limit.
-    This public interface can be read by any context on any core at any time. */
-volatile unsigned long UNCACHED_P1(can_noRxMsgs) = 0;
-
 /** The total number of sent messages, including the lost one because of send buffer full
     events. The counter is not saturated and will wrap at the implementation limit. This
     public interface can be read by any context on any core at any time.*/
@@ -202,10 +138,6 @@ volatile unsigned long UNCACHED_P1(can_noTxMsgs) = 0;
 /** The total number of Rx timeout events. This public interface can be read by any context
     on any core at any time. */
 volatile unsigned long UNCACHED_P1(can_noEvRxTimeout) = 0;
-
-/** The total number of lost Rx messages because of queue full. This public interface can be
-    read by any context on any core at any time. */
-volatile unsigned long UNCACHED_P1(can_noEvRxQueueFull) = 0;
 
 /** The total number of lost Tx messages because of send buffer full events. This public
     interface can be read by any context on any core at any time. */
@@ -221,10 +153,9 @@ volatile unsigned long UNCACHED_P1(can_noEvTxSendBufFull) = 0;
  */
 static void onMsgReception(const ede_callbackContext_t *pContext)
 {
-    /* Double-check that this callback is called from an expected context. */
-    assert(ede_getKindOfEvent(pContext) >= (unsigned)can_evt_newRxMsg_bus0
-           &&  ede_getKindOfEvent(pContext) <= (unsigned)can_evt_newRxMsg_bus3
-          );
+    /* The kind of event is the bus index, which the message has been transmitted on. In
+       this sample only a single bus is configured. */
+    assert(ede_getKindOfEvent(pContext) <= (unsigned)BSW_CAN_BUS_0);
 
     /* Get the CDE index of the message, which is the index into the CDE data tables at the
        same time. This has been ensured by the message registration process. */
@@ -697,68 +628,9 @@ static void onInitSendMsgs(const ede_callbackContext_t *pContext)
 
 
 /**
- * The application owned part of the CAN reception interrupt, or the CAN reception
- * callback. In each integration, this callback will be used to feed received CAN messages
- * into the input queue of the appropriate dispatcher for (later) processing.\n
- *   This callback will always be executed in the interrupt CPU context. The later
- * processing of the message is done by the dispatcher in the context it has been started in
- * (i.e. the calling context of ede_dispatcherMain()). This is a normal application task
- * context, ideally the only task, which requires access to the message's contents. If so, no
- * further attention has to be drawn to inter-task communication and data exchange.\n
- *   In our operating system emulation this callback is invoked in the context of a
- * different thread, which makes no particular difference to the interrupt context on a
- * typical embedded platform.
- *   @param PID
- * The mechanism to run task in a user process, which is applied for the implementation of
- * this callback has the target PID as first argument. So this will always be bsw_pidUser.
- *   @param pRxCanMsg
- * A typical callback will pass some information about the received CAN message. Here, in
- * this sample, it is a struct containing message handle from the OS, CAN ID and, payload.
- * The information is passed in by reference.
- */
-int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
-                   , const bsw_rxCanMessage_t *pRxCanMsg
-                   )
-{
-    assert(PID == bsw_pidUser);
-
-    /* Note, this is a callback from the operating system and not a dispatcher callback.
-       The EDE API is not available here to access message properties. */
-
-    /* Having the CAN interface handle of the received message, we can post a message-received
-       event to the dispatcher. In this sample, we apply the internal mapping, which maps
-       bus and mailbox index onto the message index used in the CAN engine. */
-    const ede_kindOfEvent_t kindOfEvent = pRxCanMsg->idxCanBus + can_evt_newRxMsg_bus0;
-    assert(kindOfEvent <= can_evt_newRxMsg_bus3);
-    const boolean_t success = ede_postEvent( _hEventSender
-                                           , kindOfEvent
-                                           , /* senderHandleEvent */ pRxCanMsg->idxMailbox
-                                           , /* pData */ pRxCanMsg->payload
-                                           , /* sizeOfData */ pRxCanMsg->sizeOfPayload
-                                           );
-    if(!success)
-    {
-        /* Count all received messages, which are lost because of queue full. */
-        const unsigned long newVal = can_noEvRxQueueFull + 1;
-        if(newVal != 0)
-            can_noEvRxQueueFull = newVal;
-    }
-
-    /* Count all received messages. This counter is not saturated. */
-    ++ can_noRxMsgs;
-
-    /* This function can produce errors (queue full). This is however not that server that
-       we would report it as a (safety relevant) process error. */
-    return 0;
-
-} /* End of bsw_onRxCan */
-
-
-
-/**
  * Initialization of the CAN interface.
  *   @return
- * Get \a true if everythimg is alright, or \a false otherwise. \a false will mostly point
+ * Get \a true if everything is alright, or \a false otherwise. \a false will mostly point
  * to a lack of memory for the given number of messages and signals. Memory is allocated in
  * a static way and in this case the code needs recompilation with more memory; see
  * #CAN_SIZE_OF_HEAP_FOR_CAN_INTERFACE for details.\n
@@ -770,7 +642,6 @@ int32_t bsw_onRxCan( uint32_t PID ATTRIB_DBG_ONLY
  */
 bool can_initCanStack(void)
 {
-
     /* Initialize the global data of this module. */
     unsigned int u;
     for(u=0; u<sizeOfAry(_hTimerInTimeoutAry); ++u)
@@ -782,11 +653,9 @@ bool can_initCanStack(void)
     }
 
     /* Reset some global event counters, which form a public API. */
-    can_noRxMsgs        =
-    can_noTxMsgs        =
+    can_noTxMsgs          =
     can_noEvRxTimeout     =
-    can_noEvTxSendBufFull =
-    can_noEvRxQueueFull   = 0;
+    can_noEvTxSendBufFull = 0;
 
     /* Create the memory pool we use for all CAN stack objects. This memory needs to be
        accessible during the entire remaining runtime of the software. */
@@ -799,20 +668,6 @@ bool can_initCanStack(void)
                                     , /* sizeOfPoolMemory */ sizeof(heapMemoryForCanInterface)
                                     , mutualExclusionGuard
                                     );
-    
-    /* Create the required dispatcher queues. */
-    ede_eventSenderPort_t portSender;
-    ede_eventReceiverPort_t portDispatcher;
-    if(success)
-    {
-        success = vsq_createEventQueue( &portDispatcher
-                                      , &portSender
-                                      , /* maxQueueLength */ CAN_DISPATCHER_10MS_QUEUE_LEN
-                                      , /* sizeOfElement */ 8u /* max DLC */
-                                      , /* pMemPoolDispatchingProcess */ &memoryPool
-                                      , /* pMemPoolSenderOfEvents */     &memoryPool
-                                      );
-    }
     
     /* Create the required dispatcher systems. */
     if(success)
@@ -827,6 +682,11 @@ bool can_initCanStack(void)
         assert(!success ||  can_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
     }
 
+    /* Get the receiver port, which our dispatcher engine will connect to, from the BSW. */
+    ede_eventReceiverPort_t portDispatcher = EDE_INVALID_EVENT_RECEIVER_PORT;
+    if(success)
+        portDispatcher = bsw_getCanRxPort();
+    
     /* Create the required dispatchers with their associated handle maps.
          Suitable handle maps: In this application, we see a simple handle mapping.
        The sender handles of CAN Rx events are determined by the message registration
@@ -834,18 +694,15 @@ bool can_initCanStack(void)
        this map is that messages from different buses have their own dedicated instance of
        the map. We achieve this by defining a different kind of event for each supported
        bus. */
-    const bool isSenderHandleInUseAry[can_evt_noKindsOfExternalEvents] =
+    const bool isSenderHandleInUseAry[cdr_canDev_noCANDevicesEnabled] =
     {
-        [/* Kind of event */ can_evt_newRxMsg_bus0] = true,
-        [/* Kind of event */ can_evt_newRxMsg_bus1] = true,
-        [/* Kind of event */ can_evt_newRxMsg_bus2] = true,
-        [/* Kind of event */ can_evt_newRxMsg_bus3] = true,
+        [/* Kind of event */ cdr_canDev_CAN_0] = true,
     };
     ede_mapSenderEvHandleToIdx_t handleMap;
     if(success)
     {
         success = mpo_createMapOffsetOnly( &handleMap
-                                         , can_evt_noKindsOfExternalEvents
+                                         , cdr_canDev_noCANDevicesEnabled
                                          , isSenderHandleInUseAry
                                          , &memoryPool
                                          );
@@ -859,18 +716,6 @@ bool can_initCanStack(void)
                                       , /* noPorts */ 1u
                                       , /* mapSdrEvHdlToEdeEvSrcIdx */ handleMap
                                       );
-    }
-
-    /* Create the senders. We have one instance with one port. */
-    if(success)
-    {
-        success = ede_createSender( &_hEventSender
-                                  , &portSender
-                                  , /* noPorts */ 1u
-                                  , /* pMapSenderEvHandleToPortIndex */ NULL
-                                  , &memoryPool
-                                  );
-        assert(!success ||  _hEventSender != EDE_INVALID_SENDER_HANDLE);
     }
 
     /* Handle mapping: The CAN interface engines deals out its handles as sequence 0, 1, 2,
@@ -897,7 +742,6 @@ bool can_initCanStack(void)
         /* Processing bus after bus is simplified by the fact that the CAN datatables are
            generally ordered in this way. We just look for the change of bus index in the
            sequence. */
-/// @todo We need to have a safe and transparent identity between pRxFrDesc->idxCanBus and the Rx event enumeration
         if(pRxFrDesc->idxCanBus == idxBusLast)
         {
             /* Same CAN bus as before, address to next available mailbox. */
@@ -911,7 +755,7 @@ bool can_initCanStack(void)
         }
         idxBusLast = pRxFrDesc->idxCanBus;
 
-        /// @todo The BSW should wrap this API from the CAN driver: The argument doNotify is in now way relevant to the APSW but handled internally to the BSW. Maybe, the wrapping API in the BSW could also hide some aspects from the handle mapping and/or it could offer polled safety mailbox vs. queued QM mailboxes. However, the safety concept should not be touched by seeing the argument doNotify here
+        /// @todo A true BSW would wrap this API from the CAN driver: The argument doNotify is in no way relevant to the APSW but handled internally to the BSW. Maybe, the wrapping API in the BSW could also hide some aspects from the handle mapping and/or it could offer polled safety mailbox vs. queued QM mailboxes. However, the safety concept should not be touched by seeing the argument doNotify here
         assert(hOsMsg >= BSW_IDX_FIRST_RX_MAILBOX  &&  hOsMsg <= BSW_IDX_LAST_RX_MAILBOX);
         success = cdr_makeMailboxReservation( pRxFrDesc->idxCanBus
                                             , /* hMB */ hOsMsg
@@ -930,7 +774,7 @@ bool can_initCanStack(void)
         if(success)
         {
             unsigned int idxEde ATTRIB_DBG_ONLY;
-            const ede_kindOfEvent_t kindOfEvent = pRxFrDesc->idxCanBus+can_evt_newRxMsg_bus0;
+            const ede_kindOfEvent_t kindOfEvent = pRxFrDesc->idxCanBus;
             idxEde = ede_registerExternalEventSource
                                 ( can_hDispatcherSystem
                                 , CAN_IDX_DISPATCHER_10MS

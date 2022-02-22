@@ -7,7 +7,7 @@
  * supervisor mode and has the highest quality assurance level defined for the parts of the
  * aimed software.
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -55,6 +55,7 @@
 #include "stm_systemTimer.h"
 #include "cdr_canDriverAPI.h"
 #include "pwm_pwmIODriver.h"
+#include "bsw_canInterface.h"
 
 /*
  * Defines
@@ -158,7 +159,7 @@ unsigned int UNCACHED_OS(bsw_cpuLoad) = 1000;
  * the CAN driver. It receives the Rx data and forwards it to the application code in user
  * process \a bsw_pidUser.
  *   @param idxCanBus
- * The zeror based index of the receiving bus among all configured buses.
+ * The zero based index of the receiving bus among all configured buses.
  *   @param hMB
  * The handle of the message as agreed on at message registration time is returned to
  * support a simple association of the Rx event with the transmitted data content.
@@ -190,16 +191,7 @@ static void cbOnCANRx( unsigned int idxCanBus
                                             , .sizeOfPayload = sizeOfPayload
                                             };
 
-    /* Propagate the information into the user code in a way, which cannot violate the
-       execution of the OS code. We catch all exceptions and we limit the execution time to
-       avoid deadlocks. The time budget needs to consider preemptions b interrupts of
-       higher priority and should not be too narrow. */
-    static const rtos_taskDesc_t RODATA(userTaskConfig) =
-                                            { .addrTaskFct = (uintptr_t)bsw_onRxCan
-                                            , .tiTaskMax = RTOS_TI_US2TICKS(200u /* us */)
-                                            , .PID = bsw_pidUser
-                                            };
-    rtos_osRunTask(&userTaskConfig, /* taskParam */ (uintptr_t)&rxCanMessage);
+    bsw_osOnRxCan(&rxCanMessage);
 
 } /* End of cbOnCANRx */
 
@@ -333,8 +325,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Initialize the serial output channel as prerequisite of using printf. */
     sio_osInitSerialInterface(/* baudRate */ 115200);
 
-    /* Initialize the CAN driver. */
+    /* Initialize the CAN driver and the interface with the application code. */
+    bool initOk = true;
     cdr_osInitCanDriver();
+    if(!bsw_osInitCanInterface())
+    {
+        initOk = false;
+        assert(false);
+    }
 
     /* Initialize the PWM driver. */
     pwm_osInitIODriver();
@@ -368,7 +366,6 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 #endif
 
     /* Register the process initialization tasks. They are located in the application code. */
-    bool initOk = true;
     if(rtos_osRegisterInitTask( bsw_taskUserInit
                               , bsw_pidUser
                               , /* tiTaskMaxInUS */ BSW_TI_INIT_TASK_MAX_IN_US
