@@ -1013,6 +1013,16 @@ static rtos_taskFctResult_t apt_taskInit()
 {
     bool initOk ATTRIB_DBG_ONLY;
 
+    /* Initialize the global data of this module. */
+    unsigned int u;
+    for(u=0; u<sizeOfAry(_hTimerInTimeoutAry); ++u)
+        _hTimerInTimeoutAry[u] = EDE_INVALID_TIMER_HANDLE;
+    for(u=0; u<sizeOfAry(_hdlCtxDataOutMixedAry); ++u)
+    {
+        _hdlCtxDataOutMixedAry[u].hTimerDueCheck = EDE_INVALID_TIMER_HANDLE;
+        _hdlCtxDataOutMixedAry[u].hTimerTimeout = EDE_INVALID_TIMER_HANDLE;
+    }
+
     /* Even if it is entirely useless in the given Windows environment: We demonstrate the
        use of distinct memory pools for sending events (by simulated OS) and for receiving
        events (by APSW). */
@@ -1032,15 +1042,15 @@ static rtos_taskFctResult_t apt_taskInit()
                                  );
     assert(initOk);
 
-    /* Initialize the global data of this module. */
-    unsigned int u;
-    for(u=0; u<sizeOfAry(_hTimerInTimeoutAry); ++u)
-        _hTimerInTimeoutAry[u] = EDE_INVALID_TIMER_HANDLE;
-    for(u=0; u<sizeOfAry(_hdlCtxDataOutMixedAry); ++u)
-    {
-        _hdlCtxDataOutMixedAry[u].hTimerDueCheck = EDE_INVALID_TIMER_HANDLE;
-        _hdlCtxDataOutMixedAry[u].hTimerTimeout = EDE_INVALID_TIMER_HANDLE;
-    }
+    /* Create the required dispatcher systems. */
+    initOk = ede_createDispatcherSystem
+                        ( &_hDispatcherSystem
+                        , /* noEventDispatcherEngines */ APT_NO_DISPATCHERS
+                        , /* maxNoEventSourcesExt */ CST_NO_CAN_FRAMES_RECEIVED
+                        , /* maxNoEventSourcesInt */ CST_NO_CAN_FRAMES_SENT
+                        , &apt_memoryPoolAPSW
+                        );
+    assert(initOk &&  _hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
 
     /* Create the required dispatcher queues. */
     ede_eventSenderPort_t portSender10ms;
@@ -1065,15 +1075,6 @@ static rtos_taskFctResult_t apt_taskInit()
                         , /* pMemPoolSenderOfEvents */     &apt_memoryPoolOS
                         );
     assert(initOk);
-
-    /* Create the required dispatcher systems. */
-    _hDispatcherSystem = ede_createDispatcherSystem
-                                ( /* noEventDispatcherEngines */ APT_NO_DISPATCHERS
-                                , /* maxNoEventSourcesExt */ CST_NO_CAN_FRAMES_RECEIVED
-                                , /* maxNoEventSourcesInt */ CST_NO_CAN_FRAMES_SENT
-                                , &apt_memoryPoolAPSW
-                                );
-    assert(_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
 
     /* Create the required dispatchers with their associated handle maps.
          Suitable handle maps: In this application, we see a nearly trivial handle mapping:
@@ -1127,12 +1128,13 @@ static rtos_taskFctResult_t apt_taskInit()
         .getValue = mapSenderEvHandleToSenderPortIndex,
         .hInstance = 0u, /* doesn't care, we only have one implicit instance */
     };
-    _hOsEventSender = ede_createSender( portAry
-                                      , /* noPorts */ 2u
-                                      , &mapSdrEvHdlToEdePortIdx
-                                      , &apt_memoryPoolOS
-                                      );
-    assert(_hOsEventSender != EDE_INVALID_SENDER_HANDLE);
+    initOk = ede_createSender( &_hOsEventSender
+                             , portAry
+                             , /* noPorts */ 2u
+                             , &mapSdrEvHdlToEdePortIdx
+                             , &apt_memoryPoolOS
+                             );
+    assert(!initOk ||  _hOsEventSender != EDE_INVALID_SENDER_HANDLE);
 
     /* Register all messages at the dispatcher engines. */
     unsigned int hOsMessage, idxCdt;

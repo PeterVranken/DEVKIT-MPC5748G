@@ -532,7 +532,6 @@ static bool getIsInboundAndIdx( const ede_callbackContext_t * const pContext
 } /* getIsInboundAndIdx */
 
 
-
 /**
  * Get the CAN ID of a message from a callback invoked by message or timer event. If it is a
  * timer event then the operation relates to the parent message of the timer.
@@ -569,6 +568,7 @@ static cdt_canId_t getCanId(const ede_callbackContext_t *pContext)
 
 
 
+#ifdef DEBUG
 /**
  * Get the transmission direction of the message related to the callback, which calls this
  * method. The affected message is the one, which caused the invocation of the callback. If
@@ -590,7 +590,7 @@ static bool isInboundTransmission(const ede_callbackContext_t *pContext)
     return getIsInboundAndIdx(pContext, &dummy);
 
 } /* isInboundTransmission */
-
+#endif
 
 
 
@@ -1047,26 +1047,25 @@ static boolean_t initCANBusSimulation()
     ede_eventReceiverPort_t portDispatcherAry[sizeOfAry(_hEventSenderAry)];
     for(unsigned int idxCnctPt=0u; idxCnctPt<sizeOfAry(_hEventSenderAry); ++idxCnctPt)
     {
-        const bool initOk ATTRIB_DBG_ONLY =
-                vsq_createEventQueue
-                    ( &portDispatcherAry[idxCnctPt]
-                    , &portSenderAry[idxCnctPt]
-                    , /* maxQueueLength */ DISPATCHER_TX_QUEUE_LEN /* no msgs */
-                    , /* sizeOfPayload */ 8u /* max DLC */
-                    , /* memPoolDispatchingProcess */ &_memoryPoolOS
-                    , /* memPoolSenderOfEvents */     &_memoryPoolAPSW
-                    );
-        assert(initOk);
+        success = vsq_createEventQueue
+                                 ( &portDispatcherAry[idxCnctPt]
+                                 , &portSenderAry[idxCnctPt]
+                                 , /* maxQueueLength */ DISPATCHER_TX_QUEUE_LEN /* no msgs */
+                                 , /* sizeOfPayload */ 8u /* max DLC */
+                                 , /* memPoolDispatchingProcess */ &_memoryPoolOS
+                                 , /* memPoolSenderOfEvents */     &_memoryPoolAPSW
+                                 );
+        assert(success);
     }
 
     /* Create the required dispatcher system. */
-    _hDispatcherSystem = ede_createDispatcherSystem
-                                    ( /* noEventDispatcherEngines */ 1u
-                                    , /* maxNoEventSourcesExt */ CST_NO_CAN_FRAMES_SENT
-                                    , /* maxNoEventSourcesInt */ CST_NO_CAN_FRAMES_RECEIVED
-                                    , &_memoryPoolOS
-                                    );
-    assert(_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
+    success = ede_createDispatcherSystem( &_hDispatcherSystem
+                                        , /* noEventDispatcherEngines */ 1u
+                                        , /* maxNoEventSourcesExt */ CST_NO_CAN_FRAMES_SENT
+                                        , /* maxNoEventSourcesInt */ CST_NO_CAN_FRAMES_RECEIVED
+                                        , &_memoryPoolOS
+                                        );
+    assert(!success ||  _hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
 
     /* Create the required dispatchers with their associated handle maps.
          Suitable handle maps: Here, we see a trivial handle mapping. We have a single
@@ -1097,13 +1096,13 @@ static boolean_t initCANBusSimulation()
     {
         /* _memoryPoolAPSW: The sender object is run in the context of the ASPW, in an OSE
            offered API, which is invoked by the APSW. */
-        _hEventSenderAry[idxCnctPt] = ede_createSender
-                                            ( &portSenderAry[idxCnctPt]
-                                            , /* noPorts */ 1u
-                                            , /* pMapSenderEvHandleToPortIndex */ NULL
-                                            , &_memoryPoolAPSW
-                                            );
-        assert(_hEventSenderAry[idxCnctPt] != EDE_INVALID_SENDER_HANDLE);
+        success = ede_createSender( &_hEventSenderAry[idxCnctPt]
+                                  , &portSenderAry[idxCnctPt]
+                                  , /* noPorts */ 1u
+                                  , /* pMapSenderEvHandleToPortIndex */ NULL
+                                  , &_memoryPoolAPSW
+                                  );
+        assert(success &&  _hEventSenderAry[idxCnctPt] != EDE_INVALID_SENDER_HANDLE);
     }
 
     /* All frames, which have been specified to the operating system in its configuration

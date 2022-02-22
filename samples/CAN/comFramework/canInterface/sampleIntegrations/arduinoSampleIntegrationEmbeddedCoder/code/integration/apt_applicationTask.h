@@ -40,16 +40,16 @@
       @remark Consider to begin with a large value and then use the function \a
     mem_getNbrOfAllocatedChunks in DEBUG compilation in order to get the optimal setting
     for this define. */
-#define APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE	1000u /* Byte */
+#define APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE  1000u /* Byte */
 
 /** The index of the dispatcher that serves the APSW task with CAN frame related events. */
 #define APT_IDX_DISPATCHER_FRAME_EVENTS 0u
 
 /** The index of the dispatcher that serves the APSW task with CAN bus related events. */
-#define APT_IDX_DISPATCHER_BUS_EVENTS 	1u
+#define APT_IDX_DISPATCHER_BUS_EVENTS   1u
 
 /** The number of dispatchers in use. */
-#define APT_NO_DISPATCHERS          	2u
+#define APT_NO_DISPATCHERS              2u
 
 /** The kind-of-event for a bus-off. In this simple example, it is at the same time the
     event source index as internally used by the processing dispatcher engine (which needs

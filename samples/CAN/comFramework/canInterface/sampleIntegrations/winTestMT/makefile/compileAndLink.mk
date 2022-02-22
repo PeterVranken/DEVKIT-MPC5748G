@@ -194,7 +194,10 @@ cFlags += $(cDefines) -Wall -Wextra -Wstrict-overflow=4 -Wmissing-declarations  
 ifeq ($(CONFIG),DEBUG)
 	cFlags += -ggdb3 -O0
 else
-	cFlags += -g -Ofast
+	# Using mingw-w64-x86_64-8.1.0-posix-seh-rt_v6-rev0, the very large generated CAN stack
+	# files make as.exe abort the compilation with out-of-memory error if we try an
+	# optimization higher than -O2
+	cFlags += -g -O2
 endif
 #$(info cFlags := $(cFlags))
 

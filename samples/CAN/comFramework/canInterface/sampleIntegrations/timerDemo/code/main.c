@@ -240,14 +240,14 @@ signed int main( signed int argc ATTRIB_UNUSED
     };
 
     /* Create the required dispatcher systems. */
-    ede_handleDispatcherSystem_t const hDispatcherSystem =
-                                            ede_createDispatcherSystem
-                                                        ( /* noEventDispatcherEngines */ 1u
-                                                        , /* maxNoEventSourcesExt */ 0u
-                                                        , /* maxNoEventSourcesInt */ 1u
-                                                        , &memPool
-                                                        );
-    assert(hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
+    ede_handleDispatcherSystem_t hDispatcherSystem = EDE_INVALID_DISPATCHER_SYSTEM_HANDLE;
+    success = ede_createDispatcherSystem( &hDispatcherSystem
+                                        , /* noEventDispatcherEngines */ 1u
+                                        , /* maxNoEventSourcesExt */ 0u
+                                        , /* maxNoEventSourcesInt */ 1u
+                                        , &memPool
+                                        );
+    assert(!success  || hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
     
 
     /* Create the required dispatchers. */

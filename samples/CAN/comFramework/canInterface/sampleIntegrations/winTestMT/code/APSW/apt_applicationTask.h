@@ -89,7 +89,7 @@ typedef enum apt_kindOfEventsRx_t
     
 /// @todo Technically spoken, we don't need the internals in the enumeration. Does it make  sense with respect to readability/design of the code? Or better to kick them out here?
     /*
-     * Purel internal events follow down here.
+     * Purely internal events follow down here.
      */
      
     /** The kind-of-event for a CAN message sent event. In this application, we don't have
@@ -101,19 +101,6 @@ typedef enum apt_kindOfEventsRx_t
     apt_evt_noKindsOfEvents,
     
 } apt_kindOfEventsRx_t;
-
-
-///** The known kinds of event. The use of the pre-defined handle maps require a gapless,
-//    zero based sequence of enumeration values. Here for Tx event queues. */
-//typedef enum apt_kindOfEventsTx_t
-//{
-//    /** The kind-of-event for a CAN message sent event. */
-////    apt_evtTx_sendMsg = 0u,
-//
-//    /** The total number of different kinds of events. */
-//    apt_evtTx_noKindsOfEvent
-//    
-//} apt_kindOfEventsTx_t;
 
 
 /*

@@ -486,13 +486,14 @@ void apt_taskInit()
 
     /* Create the required dispatcher systems.
          +2: The two bus related events. */
-    apt_hDispatcherSystem = ede_createDispatcherSystem
-                                ( /* noEventDispatcherEngines */ APT_NO_DISPATCHERS
+    initOk = ede_createDispatcherSystem
+                                ( &apt_hDispatcherSystem
+                                , /* noEventDispatcherEngines */ APT_NO_DISPATCHERS
                                 , /* maxNoEventSourcesExt */ CST_NO_CAN_FRAMES_RECEIVED + 2u
                                 , /* maxNoEventSourcesInt */ CST_NO_CAN_FRAMES_SENT
                                 , &apt_memoryPool
                                 );
-    ASSERT(apt_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
+    ASSERT(!initOk ||  apt_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
 
     /* The CAN CAN shield addresses the MTOs by linear, zero based index. We get the
        similar index values as handle for the messages, when registering them in the
@@ -568,12 +569,13 @@ void apt_taskInit()
         [APT_IDX_DISPATCHER_FRAME_EVENTS]  = portSenderMsgRxEvents,
         [APT_IDX_DISPATCHER_BUS_EVENTS] = portSenderBusEvents,
     };
-    _hOsEventSender = ede_createSender( portAry
-                                      , /* noPorts */ 2u
-                                      , /* &mapSdrEvHdlToEdePortIdx */ NULL
-                                      , &apt_memoryPool
-                                      );
-    ASSERT(_hOsEventSender != EDE_INVALID_SENDER_HANDLE);
+    initOk = ede_createSender( &_hOsEventSender
+                             , portAry
+                             , /* noPorts */ 2u
+                             , /* &mapSdrEvHdlToEdePortIdx */ NULL
+                             , &apt_memoryPool
+                             );
+    ASSERT(!initOk ||  _hOsEventSender != EDE_INVALID_SENDER_HANDLE);
 
     /* If all callbacks regard the recommendation not to use dynamic creation of timer
        objects (but they allocate all timers in their init callback and reuse them all time

@@ -389,23 +389,28 @@ void apt_taskInit()
     assert(initOk);
 
     /* Create the required dispatcher systems. */
-    apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_10MS] =
-                    ede_createDispatcherSystem( /* noEventDispatcherEngines */ 1u
-                                              , APT_NO_EXT_EV_DISPATCHER_10MS
-                                              , APT_NO_INT_EV_DISPATCHER_10MS
-                                              , &apt_memoryPoolAPSW
-                                              );
-    assert(apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_10MS]
-           != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE
+    
+    initOk = ede_createDispatcherSystem
+                                ( &apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_10MS]
+                                , /* noEventDispatcherEngines */ 1u
+                                , APT_NO_EXT_EV_DISPATCHER_10MS
+                                , APT_NO_INT_EV_DISPATCHER_10MS
+                                , &apt_memoryPoolAPSW
+                                );
+    assert(!initOk
+           ||  apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_10MS]
+               != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE
           );
-    apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_100MS] =
-                    ede_createDispatcherSystem( /* noEventDispatcherEngines */ 1u
-                                              , APT_NO_EXT_EV_DISPATCHER_100MS
-                                              , APT_NO_INT_EV_DISPATCHER_100MS
-                                              , &apt_memoryPoolAPSW
-                                              );
-    assert(apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_100MS]
-           != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE
+    initOk = ede_createDispatcherSystem
+                                ( &apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_100MS]
+                                , /* noEventDispatcherEngines */ 1u
+                                , APT_NO_EXT_EV_DISPATCHER_100MS
+                                , APT_NO_INT_EV_DISPATCHER_100MS
+                                , &apt_memoryPoolAPSW
+                                );
+    assert(!initOk
+           ||  apt_hDispatcherSystemAry[APT_IDX_DISPATCHER_SYSTEM_100MS]
+               != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE
           );
     
     /* Create a handle map. A true lookup map is required as we use two distinct dispatcher
@@ -499,12 +504,13 @@ void apt_taskInit()
         .getValue = mhn_mapSenderEvHandleToSenderPortIndex,
         .hInstance = 0u, /* doesn't care, we only have one implicit instance */
     };
-    _hOsEventSender = ede_createSender( portAry
-                                      , /* noPorts */ 2u
-                                      , &mapSdrEvHdlToEdePortIdx
-                                      , &apt_memoryPoolOS
-                                      );
-    assert(_hOsEventSender != EDE_INVALID_SENDER_HANDLE);
+    initOk = ede_createSender( &_hOsEventSender
+                             , portAry
+                             , /* noPorts */ 2u
+                             , &mapSdrEvHdlToEdePortIdx
+                             , &apt_memoryPoolOS
+                             );
+    assert(!initOk ||  _hOsEventSender != EDE_INVALID_SENDER_HANDLE);
 
 } /* End of apt_taskInit */
 
