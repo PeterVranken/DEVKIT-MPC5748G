@@ -1,6 +1,6 @@
 [TOC]
 
-# comFramework 1.5 (r378, 09.04.2021) #
+# comFramework 1.6 alpha (r432, 07.03.2022) #
 
 ## About this project ##
 
@@ -125,33 +125,23 @@ The project is ready for productive use.
 
 - The CAN interface with its dispatcher engine is distributed as source
   code; concept and how-to-use are documented in this [Wiki page](https://sourceforge.net/p/comframe/wiki/The%20CAN%20Interface/)
-- Several compilable and runnable sample integrations of the CAN interface
-  are distributed with source code and makefiles together with the
-  dispatcher engine. There are integrations for Windows, there's an
-  Arduino ATmega 2560 real time integration and an integration with the
-  MathWorks Embedded Coder. A complete runnable real-time application for
-  MPC5748G with CAN driver and integrated CAN interface can be found at
-  [GitHub](https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN)
+- Three compilable and runnable sample integrations of the CAN interface are
+  distributed with source code and makefiles together with the dispatcher
+  engine. There's a Windows integration, an Arduino ATmega 2560 real time
+  integration and an integration with the MathWorks Embedded Coder
 - The code generators are distributed as Java application. A number of
   samples for the [DBC code generator](https://sourceforge.net/p/comframe/code/HEAD/tree/codeGenerator/trunk/samples/) and for [excelExporter](https://sourceforge.net/p/comframe/code/HEAD/tree/excelExporter/trunk/samples/) demonstrate
   how templates can look like, which do the transformations mentioned above
 - The [download page](https://sourceforge.net/p/comframe/files) at SourceForge provides a ZIP archive for download,
   which bundles all needed tools, files and samples in a ready-to-use
-  folder structure. The archive contains the files of revision r378
-  (09.04.2021 19:20:58) of the SourceForge [SVN repository](https://sourceforge.net/p/comframe/code/HEAD/tree)
-- More recent revisions of the software are distributed as source code in
-  this repository and, as far as the code generation tools are concerned,
-  as compiled Java \*_.jar_ files. Get for example the last recent DBC code
-  generator by replacing the files _dist/_\*_.jar_ and _dist/_\*_.cmd_ in your
-  installation by the jar files and command files from
-  <https://sourceforge.net/p/comframe/code/HEAD/tree/codeGenerator/trunk/dist/>.
-  excelExporter files would be found [here](https://sourceforge.net/p/comframe/code/HEAD/tree/excelExporter/trunk/dist/), respectively
+  folder structure. The archive contains the files of revision r432
+  (07.03.2022 21:18:54) of the SourceForge [SVN repository](https://sourceforge.net/p/comframe/code/HEAD/tree)
 
 Support of the project is appreciated to support more kinds of network
 databases. For now, we are restricted to the DBC format. However, this
-format looses importance. New formats like arxml or FIBEX will probably
-supersede DBC in the future. Furthermore, different physical bus systems
-have different network database files, like *_.ldf_ for LIN communication.
+format looses importance. New formats like FIBEX will probably supersede
+DBC in the future. Furthermore, different physical bus systems have
+different network database files, like *_.ldf_ for LIN communication.
 Parsers for these input formats are required and - what's more difficult -
 a common data model for all of these buses and network files needs to be
 developed so that the parser becomes a configurable choice but the
@@ -187,7 +177,7 @@ please refer to <https://sourceforge.net/p/comframe/wiki/browse_pages/>.
 The Wiki pages shade a light at some most relevant, selected issues; a
 comprehensive, self-contained (printable) manual is not planned.
 
-As of today, March 2021, we have the following discussions in the Wiki
+As of today, March 2022, we have the following discussions in the Wiki
 pages:
 
 - [Installation of distributed ZIP archive](https://sourceforge.net/p/comframe/wiki/Installation/)
