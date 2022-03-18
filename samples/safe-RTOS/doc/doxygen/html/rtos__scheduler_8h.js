@@ -2,7 +2,7 @@ var rtos__scheduler_8h =
 [
     [ "rtos_eventDesc_t", "structrtos__event_desc__t.html", "structrtos__event_desc__t" ],
     [ "RTOS_SYSCALL_TRIGGER_EVENT", "rtos__scheduler_8h.html#a55b40fe48f3cd0222a446f0f6b559bbd", null ],
-    [ "rtos_eventDesc_t", "rtos__scheduler_8h.html#a33633faf5c804dc89a8dd4060940a354", null ],
+    [ "rtos_eventDesc_t", "rtos__scheduler_8h.html#a0ae07212c7583303a7e7ed73d2ae2909", null ],
     [ "rtos_osGetCurrentInterruptPriority", "rtos__scheduler_8h.html#a5e6e4c34e1b55dccfd5ddd75fe0d7af3", null ],
     [ "rtos_osIsInterrupt", "rtos__scheduler_8h.html#a1a7570c639d852a572a5d24c2b05e369", null ],
     [ "rtos_osCreateEvent", "rtos__scheduler_8h.html#a3b8a72b75ad042fe88206066a4c05869", null ],

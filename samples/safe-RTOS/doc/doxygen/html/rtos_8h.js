@@ -26,10 +26,9 @@ var rtos_8h =
     [ "RTOS_CORE_Z4A", "rtos_8h.html#a83cb2901c9810c8c160a1b0d8cf7fa2b", null ],
     [ "RTOS_CORE_Z4B", "rtos_8h.html#a7728701da34558de9c44cad1f8ff7bda", null ],
     [ "RTOS_CORE_Z2", "rtos_8h.html#a4bdfa60bad6565f0e56183f260550e60", null ],
-    [ "RTOS_SPR_PIR", "rtos_8h.html#a4679400d0f8b946b562d7efd20d09573", null ],
-    [ "rtos_interruptServiceRoutine_t", "rtos_8h.html#a671a05cb46411e64b58a457394c3e749", null ],
-    [ "rtos_errorCode_t", "rtos_8h.html#ab0180bfcbb98cc099bb6b00999a488ba", null ],
-    [ "rtos_taskDesc_t", "rtos_8h.html#a594b547ccdf2a1d473ea55ef612d7558", null ],
+    [ "rtos_interruptServiceRoutine_t", "rtos_8h.html#aa9ea5e791ee7404aad7ae37ef35cde7d", null ],
+    [ "rtos_errorCode_t", "rtos_8h.html#acb6b370f441999d9f539d81ac6118f9e", null ],
+    [ "rtos_taskDesc_t", "rtos_8h.html#a140a5125319655d63a8a353a6c29ba90", null ],
     [ "rtos_errorCode_t", "rtos_8h.html#ae6a79bdc418d571b34528a8d2c9f49d1", [
       [ "rtos_err_noError", "rtos_8h.html#ae6a79bdc418d571b34528a8d2c9f49d1a66ef2905f883c6175b342d416fec2caf", null ],
       [ "rtos_err_tooManyEventsCreated", "rtos_8h.html#ae6a79bdc418d571b34528a8d2c9f49d1a19304aaba258a01530cb891f69fa78dc", null ],

@@ -5,7 +5,6 @@ var structrtos__event_desc__t =
       [ "evState_triggered", "structrtos__event_desc__t.html#ab9ac4eff2194d06cb7136bb2085e4ecea718658817e390db0c80f3efcb7d6d7f0", null ],
       [ "evState_inProgress", "structrtos__event_desc__t.html#ab9ac4eff2194d06cb7136bb2085e4eceaf14eac760dfde9f5252d5bfe79413a95", null ]
     ] ],
-    [ "state", "structrtos__event_desc__t.html#a97258f77547c39379f4d870f52344fac", null ],
     [ "minPIDForTrigger", "structrtos__event_desc__t.html#a50ce118358a0ae1ddec39e25d4bdcf16", null ],
     [ "noTasks", "structrtos__event_desc__t.html#a3714ee3bd9de9a853fc4795e140d80b1", null ],
     [ "taskAry", "structrtos__event_desc__t.html#af54f2583ff5ce13a9503e9df25474cd1", null ],

@@ -1,28 +1,6 @@
 var rtos__system_memory_protection_unit_8c =
 [
     [ "RTOS_DISARM_RAM_MPU", "rtos__system_memory_protection_unit_8c.html#ab14ed9a2a11721c1eb41ca41d205ed9c", null ],
-    [ "WORD3_ACCESS_SET_RAM", "rtos__system_memory_protection_unit_8c.html#a92fe363d847a1cd39a4a512557814235", null ],
-    [ "WORD3_ACCESS_SET_RAM_CI", "rtos__system_memory_protection_unit_8c.html#aabb5738928483f101fd213a726ec58a4", null ],
-    [ "WORD2_ALL_RAM", "rtos__system_memory_protection_unit_8c.html#ab1eb5684ba453389021795fda5a9feb0", null ],
-    [ "WORD2_PROCESS_RAM", "rtos__system_memory_protection_unit_8c.html#a7283b1f802469e9e5c5c95cfab9d21dd", null ],
-    [ "WORD2_SHARED_RAM", "rtos__system_memory_protection_unit_8c.html#a65b9398e80ebb29dc941a13e403c8cf1", null ],
-    [ "WORD3_ACCESS_SET_ROM_PERIPHRALS", "rtos__system_memory_protection_unit_8c.html#ac944b9cf29aec7a17c04d3ef38808c3f", null ],
-    [ "WORD2_ALL_ROM", "rtos__system_memory_protection_unit_8c.html#a5bd7599fec2cce6482f4ed5627d2e50d", null ],
-    [ "WORD2_PERIPHRALS", "rtos__system_memory_protection_unit_8c.html#a5af2f25c3468060b79a40301abce7ce8", null ],
-    [ "WORD2_RESERVED_BLOCK", "rtos__system_memory_protection_unit_8c.html#ac2cefe315e9770d6a1d68e4ba15dc070", null ],
-    [ "RGD_WRD2", "rtos__system_memory_protection_unit_8c.html#a2ec6e2e8a4466f1607e96d997f360200", null ],
-    [ "RGD_WRD3", "rtos__system_memory_protection_unit_8c.html#a35c5ce45170b09355a1d7e988a43a60b", null ],
-    [ "WORD4_PIT_AWARE", "rtos__system_memory_protection_unit_8c.html#af66ab9bcc6fda95661cdc82113194ded", null ],
-    [ "WORD4_NO_PID_COMPARISON", "rtos__system_memory_protection_unit_8c.html#a3330522e342654622808f51ae37d420a", null ],
-    [ "WORD5_LOCK_AND_ENABLE", "rtos__system_memory_protection_unit_8c.html#a1b8c92d1da134eaee6b90bd3a6d12c79", null ],
-    [ "CONFIG_REGIONS_PROC_RAM", "rtos__system_memory_protection_unit_8c.html#a48449e3c7f5a302914fa2359b0f1d499", null ],
-    [ "CONFIG_REGION_DESC_PROC_RAM", "rtos__system_memory_protection_unit_8c.html#a22f18df80ca97d1ee72313364f55ffa0", null ],
-    [ "from", "rtos__system_memory_protection_unit_8c.html#a4ea2cafb6afb46293c8aecba2e261973", null ],
-    [ "to", "rtos__system_memory_protection_unit_8c.html#af6c611b6312d83f13b18d70d156aab8f", null ],
-    [ "SDA", "rtos__system_memory_protection_unit_8c.html#a6890442e1cc24a0d61597a13576b8727", null ],
-    [ "SDA2", "rtos__system_memory_protection_unit_8c.html#a02c7209e41a40542f1caff8b7284dbda", null ],
-    [ "DATA", "rtos__system_memory_protection_unit_8c.html#aad9ae913bdfab20dd94ad04ee2d5b045", null ],
-    [ "addrPrcAryAry", "rtos__system_memory_protection_unit_8c.html#aa2361ca51795854813d69ee274b326e8", null ],
     [ "rtos_osInitMPU", "rtos__system_memory_protection_unit_8c.html#a237ec8ef4e592440f07488b7a97f27a1", null ],
     [ "rtos_checkUserCodeWritePtr", "rtos__system_memory_protection_unit_8c.html#a4f1f4dbf31cbe5dd7c48a1f4ea2d594f", null ]
 ];

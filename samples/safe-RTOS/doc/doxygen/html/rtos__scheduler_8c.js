@@ -2,8 +2,8 @@ var rtos__scheduler_8c =
 [
     [ "GET_CORE_VALUE", "rtos__scheduler_8c.html#a267ce3a89ec2f69b6a29643a33c01a28", null ],
     [ "rtos_osProcessTriggeredEvents", "rtos__scheduler_8c.html#a6df3cc99cb0ded5e70c194d61ffcafea", null ],
-    [ "getEventByID", "rtos__scheduler_8c.html#ac7021bd19346a72c3aca8a64218821d8", null ],
-    [ "getEventByIdx", "rtos__scheduler_8c.html#a2616e7008443d2acabaa337a4b0ab37f", null ],
+    [ "getEventByID", "rtos__scheduler_8c.html#a0b8b270ae2a19ca6696fb81933622040", null ],
+    [ "getEventByIdx", "rtos__scheduler_8c.html#ac41b8d3074c9361da58b94359f38b45b", null ],
     [ "osTriggerEvent", "rtos__scheduler_8c.html#aca47528d03257cac7674c4127734867a", null ],
     [ "checkEventDue", "rtos__scheduler_8c.html#a8df7dcfd985b3ab2261eb3d506b1d7dd", null ],
     [ "launchAllTasksOfEvent", "rtos__scheduler_8c.html#abf2f8a8976a2557ca47b7049b355d460", null ],
