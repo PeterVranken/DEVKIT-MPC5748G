@@ -54,7 +54,7 @@ The configuration for this project is:
 |Evaluation board|https://www.nxp.com/design/development-boards/automotive-development-platforms/mpc57xx-mcu-platforms/mpc5748g-development-board-for-secure-gateway:DEVKIT-MPC5748G[NXP DEVKIT-MPC5748G]
 |Host|Windows 10
 |C compiler footnote:[
-  The same compiler is element of the NXP S32 Design Studio installation. You don't need to download the compiler separately.]|https://drive.google.com/open?id=0B_3zBh2c7LroNEFIOVlJcUVKRWc[MinGW-powerpc-eabivle-4.9.4]
+  The same compiler is element of the NXP S32 Design Studio installation. You don't need to download the compiler separately.]|https://drive.google.com/drive/folders/0B_3zBh2c7LroNEFIOVlJcUVKRWc[powerpc-eabivle-4.9.4-BLD-1607]
 |IDE|https://www.nxp.com/design/software/development-software/s32-design-studio-ide/s32-design-studio-for-power-architecture:S32DS-PA[NXP S32 Design Studio for Power Architecture v2.1]
 |Flash tool|(GNU debugger contained in S32 Design Studio)
 |Debugger|(same as flash tool)
