@@ -4,7 +4,7 @@
  * @file bsw_basicSoftware.h
  * Definition of global interface of module bsw_basicSoftware.c
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -31,6 +31,14 @@
  * Defines
  */
 
+/** The MCU core, which most of the BSW is executed on. The I/O drivers are executed on
+    this core and many of the APIs, which they offer, are only available to code running on
+    this core. In the API documentation, this core is often referred toas the "main core".
+    Note, this is a reporting macro, not a configuration item. It is not possible to choose
+    the core just by changing the macro. */
+#define BSW_MAIN_CORE   0u  /* Z7_0 or Z7A */
+
+
 /** The process initialization tasks, which are provided by the application code, must not
     execute longer than this time budget. Otherwise the system won't start up. */
 #define BSW_TI_INIT_TASK_MAX_IN_US          5000
@@ -51,7 +59,7 @@
 #define BSW_IDX_FIRST_RX_MAILBOX            0u
 #define BSW_IDX_LAST_RX_MAILBOX             71u
 #define BSW_IDX_FIRST_TX_MAILBOX            82u
-#define BSW_IDX_LAST_TX_MAILBOX             143u
+#define BSW_IDX_LAST_TX_MAILBOX             111u
 
 /** A few mailboxes are reserverd for use by the safety supervision process. The Rx
     mailboxes can be used by polling only (which is a typical safety requirement).

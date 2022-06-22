@@ -357,22 +357,22 @@ tcx_testContext:
     se_stw      r0, (SIZE_OF_STACKFRAME+4)(sp)
     
     /* Initialize cycle counter and wait time per cycle for this task invocation. */
-    e_stw       r3, tcx_cntLoopsPerTask@sda21(%r0)
-    e_stw       r4, tcx_waitTimePerCycleInUS@sda21(%r0)
+    e_stw       r3, tcx_cntLoopsPerTask@sda21(0)
+    e_stw       r4, tcx_waitTimePerCycleInUS@sda21(0)
 
     /* To give time for a context switch we use del_delayMicroseconds() as an external
        funtion. It clobbers the volatile GPR 0 and 3, the LR and CR0. These registers must
        therefore not be tested. We can use them as work registers, too.
          Note that the test implementation needs to be double-checked whenever the
        implementation of del_delayMicroseconds() changes. */
-    e_lwz       r3, txt_startValue@sda21(%r0)
+    e_lwz       r3, txt_startValue@sda21(0)
     se_stw      r3, O_R3(sp)
     
 tc_mainLoop:
     se_lwz      r3, O_R3(sp)
     e_bl        fillRegisters
                 
-    e_lwz       r3, tcx_waitTimePerCycleInUS@sda21(%r0)
+    e_lwz       r3, tcx_waitTimePerCycleInUS@sda21(0)
     e_bl        del_delayMicroseconds
                 
     se_lwz      r3, O_R3(sp)
@@ -395,23 +395,23 @@ tc_mainLoop:
 #endif
 
     /* Cycle completed, ok, count it as success report. */
-    e_lwz       r3, tcx_cntTestLoops@sda21(%r0)
+    e_lwz       r3, tcx_cntTestLoops@sda21(0)
     se_addi     r3, 1
-    e_stw       r3, tcx_cntTestLoops@sda21(%r0)
+    e_stw       r3, tcx_cntTestLoops@sda21(0)
     
     /* Count cycles in this call of the task function. */
-    e_lwz       r3, tcx_cntLoopsPerTask@sda21(%r0)
+    e_lwz       r3, tcx_cntLoopsPerTask@sda21(0)
     se_cmpli    r3, 1
     se_subi     r3, 1 
-    e_stw       r3, tcx_cntLoopsPerTask@sda21(%r0)
+    e_stw       r3, tcx_cntLoopsPerTask@sda21(0)
     se_bgt      tc_mainLoop
     
     /* Continue in next invocation with subsequent test patterns. */
     se_lwz      r3, O_R3(sp)
-    e_stw       r3, txt_startValue@sda21(%r0)
+    e_stw       r3, txt_startValue@sda21(0)
 
     /* Total number of cycles since startup is function result. */
-    e_lwz       r3, tcx_cntTestLoops@sda21(%r0)
+    e_lwz       r3, tcx_cntTestLoops@sda21(0)
     
     /* Destroy stack frame and return. */
     se_lwz      r0, (SIZE_OF_STACKFRAME+4)(sp)

@@ -95,10 +95,7 @@ incDirList :=
 # instructions to the Z4 cores. As a matter of experience, if the Z2 doesn't do any
 # floating point operations, it's still safe to link against the Z4 libraries to the
 # benefit of the floating point performance of the two Z4 cores.
-#   LINK_IN_RAM: If given, the linker will place all code and all data in RAM. The program
-# under development can be loaded by the debugger without erasing and re-programming the
-# flash, which reduces the turnaround time and which saves flash programming cycles.
-defineList := USE_NEWLIB #LINK_IN_RAM
+defineList := USE_NEWLIB
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

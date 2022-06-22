@@ -279,7 +279,6 @@
 			<resource resourceType="PROJECT" workspacePath="/CAN"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="com.freescale.s32ds.cross.gnu.e200.exe.release.654452846;com.freescale.s32ds.cross.gnu.e200.exe.release.654452846.;com.freescale.s32ds.cross.gnu.e200.tool.c.compiler.1966734260;cdt.managedbuild.tool.gnu.c.compiler.input.1012024710">
@@ -291,5 +290,25 @@
 		<scannerConfigBuildInfo instanceId="com.freescale.s32ds.cross.gnu.e200.exe.debug.933051862.1588261809;com.freescale.s32ds.cross.gnu.e200.exe.debug.933051862.1588261809.;com.freescale.s32ds.cross.gnu.e200.tool.c.compiler.1784188903;cdt.managedbuild.tool.gnu.c.compiler.input.1825956263">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="versionGCC" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>mingw32-make</buildCommand>
+				<buildArguments>-s SAVE_TMP=1 CONFIG=DEBUG</buildArguments>
+				<buildTarget>versionGCC</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="helpGCC" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>mingw32-make</buildCommand>
+				<buildArguments>-s SAVE_TMP=1 CONFIG=DEBUG</buildArguments>
+				<buildTarget>helpGCC</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
 	</storageModule>
 </cproject>

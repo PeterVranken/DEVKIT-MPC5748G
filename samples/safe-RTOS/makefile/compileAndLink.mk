@@ -1,12 +1,12 @@
 #
-# Generic Makefile for GNU Make 3.81
+# Generic Makefile for GNU Make 3.82 (MinGW port only)
 #
-# Compilation and linkage of C(++) code.
+# Core of build: Compilation and run of assembler. Linkage of C(++) code.
 #
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -21,47 +21,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-# Preconditions
-# =============
-#
-# The makefile is intended to be executed by the GNU make utility 3.81.
-#   The name of the project needs to be assigned to the makefile macro projectName, see
-# heading part of the code section of this makefile.
-# The system search path needs to contain the location of the GNU compiler/linker etc. This
-# is the folder containing e.g. gcc or gcc.exe.
-#   For your convenience, the Windows path should contain the location of the GNU make
-# processor. If you name this file either makefile or GNUmakefile you will just have to
-# type "make" in order to get your make process running.
-#   This makefile does not handle blanks in any paths or file names. Please rename your
-# paths and files accordingly prior to using this makefile.
-#
-# Targets
-# =======
-#
-# The makefile provides several targets, which can be combined on the command line. Get
-# some help on the available targets by invoking the makefile using
-#   make help
-#
-# Options
-# =======
-#
-# Options may be passed on the command line.
-#   The follow options may be used:
-#   CONFIG: The compile configuration is one out of DEBUG (default) or PRODUCTION. By
-# means of defining or undefining macros for the C compiler, different code configurations
-# can be produced. Please refer to the comments below to get an explanation of the meaning
-# of the supported configurations and which according #defines have to be used in the C
-# source code files.
-#
-# Input Files
-# ===========
-#
-# The makefile compiles and links all source files which are located in a given list of
-# source directories. The list of directories is a variable set in the calling makefile,
-# please look the variable srcDirList below.
-#   A second list of files is found as cFileListExcl. These C/C++ or assembler files are
-# excluded from build.
-
+ifndef COMPILE_AND_LINK_INCLUDED
+COMPILE_AND_LINK_INCLUDED := 1
 
 # General settings for the makefile.
 #$(info Makeprocessor in use is $(MAKE) $(MAKECMDGOALS))
@@ -139,13 +100,13 @@ h help targets usage:
 #
 CONFIG ?= DEBUG
 ifeq ($(CONFIG),PRODUCTION)
-    ifeq ($(MAKELEVEL),1)
-        $(info Making $(target)$(if $(filter LINK_IN_RAM,$(defineList)), in RAM, for flashing) for production)
+    ifeq ($(MAKELEVEL),0)
+        $(info Making $(target)$(if $(call isDefined,LINK_IN_RAM), in RAM, for flashing) for production)
     endif
     cDefines := -DPRODUCTION -DNDEBUG
 else ifeq ($(CONFIG),DEBUG)
-    ifeq ($(MAKELEVEL),1)
-        $(info Making $(target) for debugging$(if $(filter LINK_IN_RAM,$(defineList)), in RAM, for flashing))
+    ifeq ($(MAKELEVEL),0)
+        $(info Making $(target) for debugging$(if $(call isDefined,LINK_IN_RAM), in RAM, for flashing))
     endif
     cDefines := -DDEBUG
 else
@@ -256,9 +217,9 @@ VPATH := $(srcDirListExpanded) $(targetDir)
 # disabling the mode you should first try to reduce the size limit to 4 or 2 Byte.
 targetFlagsZ2 := -mcpu=e200z2
 targetFlagsZ4 := -mcpu=e200z4
-targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8 -mregnames          \
+targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8                     \
                -fshort-double -fsingle-precision-constant
-ifeq ($(filter USE_FP_EMULATION_CLIB,$(defineList)),USE_FP_EMULATION_CLIB)
+ifeq ($(call isDefined,USE_FP_EMULATION_CLIB),true)
     targetFlags += -msoft-float
 else
     targetFlagsZ2 += -msoft-float
@@ -279,14 +240,14 @@ endif
 productionCodeOptimization := -Ofast
 
 # Choose C library.
-ifeq ($(filter USE_EWL2,$(defineList)),USE_EWL2)
+ifeq ($(call isDefined,USE_EWL2),true)
     cClibSpec := -specs=ewl_c9x_noio.specs                                                  \
                  --sysroot=$(call w2u,$(S32DS_HOME))/S32DS/build_tools/e200_ewl2
     ifeq ($(MAKELEVEL),0)
         incDirList += $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include)   \
                       $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include/pa)
     endif
-else ifeq ($(filter USE_NEWLIB,$(defineList)),USE_NEWLIB)
+else ifeq ($(call isDefined,USE_NEWLIB),true)
     # The switch -specs=nosys.specs links the generically implemented C library against a
     # stub library that satisfies the low level I/O routines without providing true
     # functionality. We must not use this switch if we want to have the printf
@@ -300,7 +261,7 @@ else
 endif
 
 # Pattern rules for assembler language source files.
-asmFlags = $(targetFlags)                                                                   \
+asmFlags = $(targetFlags) -mregnames                                                        \
            $(if $(call isTargetArchitectureZ4,$<),$(targetFlagsZ4),$(targetFlagsZ2))        \
            -Wall                                                                            \
            -MMD -Wa,-a=$(patsubst %.o,%.lst,$@)                                             \
@@ -333,7 +294,7 @@ cFlags = $(targetFlags)                                                         
          -Werror=missing-declarations -Werror=implicit-function-declaration                 \
          -Wno-nested-externs -Werror=int-to-pointer-cast -Werror=pointer-sign               \
          -Werror=pointer-to-int-cast -Werror=return-local-addr -Werror=missing-prototypes   \
-         -Werror=missing-field-initializers                                                 \
+         -Werror=missing-field-initializers -Werror=overflow                                \
          $(cClibSpec) -MMD -Wa,-a=$(patsubst %.o,%.lst,$@) -std=gnu11                       \
          $(foreach path,$(call noTrailingSlash,$(APP) $(incDirList) $(srcDirListExpanded)),-I$(path))\
          $(cDefines) $(foreach def,$(defineList),-D$(def))
@@ -385,12 +346,17 @@ $(targetDir)obj/%.o: %.c
 #                    ../shared/makefile/parallelJobs.mk
 
 
+# Note, it looks as if we finally wouldn't need this any longer with Windows 10! Set
+# variable to empty value if patch should not be applied.
+patchWindowsBug := #true
+ifneq ($(patchWindowsBug),)
 # More than 30 Years of DOS & Windows but the system still fails to handle long command
 # lines. We write the names of all object files line by line into a simple text file and
 # will only pass the name of this file to the linker.
 $(targetDir)obj/listOfObjFiles.txt: $(objListWithPath)
 	$(info Create linker input file $@)
 	$(file >$@,$(sort $^))
+endif
 
 # Let the linker create the flashable binary file.
 #   CAUTION: An unsolved problem with GCC 4.9.4 is the switch -fshort-double, which is
@@ -418,16 +384,19 @@ $(targetDir)obj/listOfObjFiles.txt: $(objListWithPath)
 # given then the linker won't link the related files from the clib but the compiler still
 # calls __eabi() so that we need to offer a stub then. The clib is not initialized and it
 # can be that elements from it won't work.
-lFlags = -Wl,-Tmakefile/linkerControlFile.ld -Wl,--gc-sections $(targetFlags)               \
+lFlags = -Wl,--gc-sections $(targetFlags)                                                   \
+         -Wl,-Tmakefile/$(if $(call isDefined,LINK_IN_RAM),memoryMapRAM.ld,memoryMapROM.ld) \
+         -Wl,-Tmakefile/linkerControlFile.ld                                                \
          -Wl,-sort-common -Wl,-Map="$(targetDir)$(target).map" -Wl,--cref                   \
          -Wl,--warn-common,--warn-once,--orphan-handling=warn -Wl,-g                        \
-         $(if $(filter USE_Z2_CLIB,$(defineList)),$(targetFlagsZ2),$(targetFlagsZ4))        \
-         -Wl,--defsym=ld_linkInRAM=$(if $(filter LINK_IN_RAM,$(defineList)),1,0)            \
+         $(if $(call isDefined,USE_Z2_CLIB),$(targetFlagsZ2),$(targetFlagsZ4))              \
+         -Wl,--defsym=ld_linkInRAM=$(if $(call isDefined,LINK_IN_RAM),1,0)                  \
          $(cClibSpec)
 
-$(targetDir)$(target).elf: $(targetDir)obj/listOfObjFiles.txt makefile/linkerControlFile.ld
+$(targetDir)$(target).elf: $(if $(patchWindowsBug),$(targetDir)obj/listOfObjFiles.txt,$(objListWithPath)) \
+                           makefile/linkerControlFile.ld
 	$(info Linking project. Mapfile is $(targetDir)$(target).map)
-	$(gcc) $(lFlags) -o $@ @$< -lm
+	$(gcc) $(lFlags) -o $@ $(if $(patchWindowsBug),@$<,$(objListWithPath)) -lm
 
 # Create hex file from linker output.
 $(targetDir)$(target).s19: $(targetDir)$(target).elf
@@ -444,5 +413,9 @@ cleanDep:
 # existing files.
 .PHONY: clean
 clean:
-	-$(rm) -f $(targetDir)obj/*
+	-$(rm) -rf $(targetDir)obj
 	-$(rm) -f $(targetDir)$(target).*
+
+else
+$(error This makefile shouldn't be called twice. There's a problem in your makefile structure)
+endif # COMPILE_AND_LINK_INCLUDED

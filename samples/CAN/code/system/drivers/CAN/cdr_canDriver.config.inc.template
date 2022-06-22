@@ -10,6 +10,12 @@
  * Never include this file or your copy directly from your application and never try to
  * compile it.
  *
+ * @note References "RM48" (reference manual) in this module refer to "MPC5748G Reference
+ * Manual", document number: MPC5748GRM, Rev. 6, 10/2017.
+ *
+ * @note References "RM75" in this module refer to "MPC5775E/MPC5775B Reference Manual",
+ * document number: MPC5775E, Rev. 1, 05/2018.
+ *
  * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -127,7 +133,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         /** Select the Baud rate. Supported are 250 kBd, 500 kBd and 1 MBd. The unit is
             10000 Bd. */
         .baudRate = 50 /* *10^4 Bd */,
-        
+
         /** Enable the FIFO for Rx messages. This will normally increase the number of
             different processable CAN IDs with the need for a SW queue concept. */
         .isFIFOEnabled = true,
@@ -144,27 +150,32 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             IDs and another 90-2*(RFFN+1) mailboxes for either Rx or Tx messages. So we can
             process a maximum of N_max=90+6*(RFFN+1) different CAN messages, whereof at
             minimum N_rx_min=8*(RFFN+1) and at maximum N_tx_max=90-2*(RFFN+1) Tx messages.
-            See RM 43.4.14, p.1740, for additional information. Examples:\n
+            See RM48 43.4.14, p.1740, for additional information. Examples:\n
               RFFN= 0, N_max= 96, N_rx_min=  8, N_tx_max=88 (widely useless, no MB extension)\n
               RFFN= 3, N_max=114, N_rx_min= 32, N_tx_max=82\n
               RFFN= 8, N_max=144, N_rx_min= 72, N_tx_max=72 (pretty balanced)\n
               RFFN=15, N_max=186, N_rx_min=128, N_tx_max=58\n
+              See RM75 37.4.14, pp.1699ff, for according information for the MPC5775B/E.
+            The N_rx_min as f(RFFN) are identical but N_max and N_tx_max are lesser by 32.
+            Example:\n
+              RFFN= 5, N_max= 94, N_rx_min=48, N_tx_max=46 (best balance)\n
+              RFFN= 8, N_max=112, N_rx_min=72, N_tx_max=40\n
               Another important aspect is polling. N_tx_max is the number of normal
             mailboxes, which can be used for either Rx or Tx. If they are used for Rx then
             the SW can use polling to receive the messages. The N_rx_min Rx messages can be
             received by interrupt only.\n
               Note, all mentioned maximum numbers are yielded only with a maximum number of
-            active mailboxes, i.e. noMailboxes=96.\a
+            active mailboxes, i.e. noMailboxes = #CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE.\n
               This setting doesn't care if \a isFIFOEnabled is \a false. */
         .CTRL2_RFFN = 8,
 
         /** This is an element of the CAN timing but it depends on the chosen number of
             mailboxes in use. Don't change it without adjustment of the dependent settings.
-            See RM 43.5.9.9, Tx Arbitration start delay, for details. */
+            See RM48 43.5.9.9, Tx Arbitration start delay, for details. */
         .CTRL2_TASD = 22,
-        
+
         /** The interrupts from the CAN device can be handled on any core; the HW is widely
-            paralel and different mailboxes can be accessed without conflicts or race
+            parallel and different mailboxes can be accessed without conflicts or race
             conditions from different cores. For the same reason, it is possible to have
             preempting ISRs -- serving a mailbox can be preempted by serving another
             mailbox of higher priority. Therefore we allow to configure individually for

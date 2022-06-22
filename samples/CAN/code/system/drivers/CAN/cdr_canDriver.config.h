@@ -5,9 +5,11 @@
  * Type definitions of application dependent configuration data objects of CAN I/O
  * driver.\n
  *   Don't edit this file but take it as source of documentation when doing the
- * configuration of the driver for your intended application.
+ * configuration of the driver for your intended application. The actual configuration is
+ * made in file cdr_canDriver.config.inc and a prototype of the configuation is provides as
+ * cdr_canDriver.config.inc.template.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -116,7 +118,7 @@ typedef void (*cdr_osCallbackOnError_t)(bool isCanFD, uint32_t ESR1);
  * (configuration items \a irqGroup*IrqPrio and -- related -- \a irqGroup*TargetCore in
  * struct \a cdr_canDeviceConfig_t).
  *   @param hMB
- * The handle of the notifying mailbox as agreed on at messge registration time is returned
+ * The handle of the notifying mailbox as agreed on at message registration time is returned
  * to support a simple association of the Rx event with the data content.
  *   @param isExtId
  * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
@@ -211,7 +213,7 @@ typedef struct cdr_irqConfig_t
         group (or the FIFO). Range is 0..#RTOS_NO_CORES: Any core can handle the IRQ, even
         a bare-metal core. */
     uint8_t idxTargetCore;
-    
+
     /** Here, we have the interrupt priority in INTC for the the interrupt of the given
         interrupt group.\n
           For mailbox interrupts, the range is 1..15 if the interrupt is enabled for at
@@ -236,7 +238,7 @@ typedef struct cdr_irqConfig_t
             error condition. It needs to be NULL if the entire interrupt group is disabled
             by configuring a priority of zero. */
         cdr_osCallbackOnError_t osCallbackOnError;
-        
+
         /** Callback for bus off events. This callback into external client code is invoked
             on entry into a bus-off state or after successful recovery fom a bus-off
             state.\n
@@ -245,7 +247,7 @@ typedef struct cdr_irqConfig_t
             maintain the current bus-off state for the device. The pointer needs to be NULL
             if the entire interrupt group is disabled by configuring a priority of zero. */
         cdr_osCallbackOnBusOff_t osCallbackOnBusOff;
-        
+
         /** Callback for Rx events. This callback into external client code is invoked on
             message reception in any of the mailboxes belonging to the given group.\n
               While the FIFO will always notify Rx events by interrupt, it depends for normal
@@ -313,7 +315,7 @@ typedef struct cdr_mailboxAccessConfig_t
 
     /** Use of the mailboxes is allowed either for Rx or for Tx. */
     bool useAsRxMailbox;
-    
+
     /** The index of the API buffer to be used for Rx messages. All
         user-polling-enabled Rx mailboxes need to specify a unique API buffer and the
         indexes in use must not skip possible values. Note, the index space is shared
@@ -328,7 +330,7 @@ typedef struct cdr_mailboxAccessConfig_t
         time by cdr_checkDriverConfiguration(), so that configuration errors can't do
         any harm. */
     uint16_t idxAPIBuffer;
-    
+
 } cdr_mailboxAccessConfig_t;
 
 
@@ -336,7 +338,7 @@ typedef struct cdr_mailboxAccessConfig_t
 /** An instance of this type collects all constant cnfiguration data for one CAN device. */
 typedef struct cdr_canDeviceConfig_t
 {
-    /** Select the Baud rate. Supported are 250 kBd, 500 kBd and 1 MBd. The unit is 
+    /** Select the Baud rate. Supported are 250 kBd, 500 kBd and 1 MBd. The unit is
         10000 Bd. */
     uint8_t baudRate;
 
@@ -433,7 +435,7 @@ typedef struct cdr_canDeviceConfig_t
           Configure the PID of the process, which may do or configure 0 if only the
         operating system may. */
     uint8_t pidMakeMailboxReservation;
-    
+
     /** The user process API provides access to Tx mailboxes and Rx mailboxes by polling.
         (Primarily, IRQ based Rx and Tx notifications go only into OS code. The OS needs to
         decide whether/how to propagte these events to the user processes. safe-RTOS offers

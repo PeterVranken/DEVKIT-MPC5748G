@@ -1,7 +1,7 @@
 /*
  * GNU GCC Memory map for Freescale MPC5748G
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -46,26 +46,9 @@ ld_stackSizeP4Core0 = 0;
 ld_stackSizeP4Core1 = 0;
 ld_stackSizeP4Core2 = 0;
 
-
-/* We use the simple conditional operator the linker script syntax offers for switching
-   from normal build of a flashable binary to an equivalent binary that can be loaded into
-   RAM by the debugger. Using RAM can have these advantages:
-   - We save flash ROM programming cycles, which are limited
-   - It reduces the turnaround time between code changes. Loading RAM is faster than
-     erasing and re-flashing
-   - The risk of bricking the CPU is lower if we work on code, which is critical in this
-     respect; e.g. self-tests, security, reset logic, reset escalation
-   The major drawback is the software size; code and data need to fit into RAM. We use a
-   hardcoded distribution of both, 67% for code, 33% for data.
-     Note, the switch ld_linkInRAM is set by the makefile using the linker command line
-   option --defsym. */
-ld_textSegStartAddr = ld_linkInRAM==1? 0x40000000 : 0x00f90000;
-ld_textSegSize      = ld_linkInRAM==1? 2*256k : 0x01580000 - 0x00f90000;
-ld_dataSegStartAddr = ld_linkInRAM==1? ld_textSegStartAddr + ld_textSegSize : 0x40000000;
-ld_dataSegSize      = ld_linkInRAM==1? 3*256k - ld_textSegSize : 3*256k ;
-
-
-/* Definition of memory regions using absolute addresses of physical memories. */
+/* Definition of memory regions using absolute addresses of physical memories. The symbols
+   with segment start addresses and sizes have already been defined in another linker
+   script and depending on the build target, RAM or flash ROM. */
 MEMORY
 {
     /* RM, sec. 3.2: f8c000 is the first inspected boot sector. However, this area
@@ -122,6 +105,8 @@ SECTIONS
         *(.rela.got2.*)
         *(.rela.text)
         *(.rela.text.*)
+        *(.branch_lt)
+        *(.branch_lt.*)
 
     } > memFlash
 

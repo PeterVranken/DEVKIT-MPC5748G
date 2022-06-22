@@ -195,7 +195,8 @@ rtos_errorCode_t rtos_osInitProcesses(bool isProcessConfiguredAry[1+RTOS_NO_PROC
                , maxPIDInUse = 0;
     for(idxP=0; idxP<RTOS_NO_PROCESSES; ++idxP)
     {
-        /* Disable the process by default. */
+        /* Disable the process by default. Even if configured well, it stays for now in
+           state disabled. The scheduler will release the process later. */
         pIData->processAry[idxP].state = 0;
         isProcessConfiguredAry[idxP+1] = false;
 
@@ -221,7 +222,6 @@ rtos_errorCode_t rtos_osInitProcesses(bool isProcessConfiguredAry[1+RTOS_NO_PROC
                 stackStartAry[idxP][sizeOfStack/4 - 2] = 0xffffffffu;
                 stackStartAry[idxP][sizeOfStack/4 - 1] = 0xffffffffu;
                 pIData->processAry[idxP].userSP = (uint32_t)stackEndAry[idxP] - 16;
-                pIData->processAry[idxP].state = 1;
 
                 /* Stack alright, process may be used. */
                 isProcessConfiguredAry[idxP+1] = true;
@@ -570,8 +570,9 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
  *   @remark
  * This function can be called from both, the OS context and a user task.
  *   @remark
- * This function my be called even from a core, which is not running safe-RTOS. Hoever, the
- * use is restricted to PID 0, the OS stack, which is the only one is use on such a core.
+ * This function may be called even from a core, which is not running safe-RTOS. However,
+ * then, the use is restricted to PID 0, the OS stack, which is the only one in use on such
+ * a core.
  */
 unsigned int rtos_getStackReserve(unsigned int PID)
 {

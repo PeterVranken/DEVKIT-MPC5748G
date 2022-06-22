@@ -13,5 +13,5 @@ function endWithError { write-host $usage; exit; }
 # Prepare required environment variables and system search path.
 .\setEnv.ps1
 
-# The Eclipse based Code Warrior IDE is started with a local, project owned workspace.
+# The Eclipse based IDE S32 Design Studio is started with a local, project owned workspace.
 ."$env:S32DS_HOME\eclipse\s32ds.exe" -data .\workspaceS32DS

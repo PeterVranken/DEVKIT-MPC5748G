@@ -1016,7 +1016,7 @@ rtos_scBscHdlr_terminateUserTask:
     /* Here we get from the common part of the IVOR #8 handler (system call). */
     mfspr       sp, SPR_G0_SVSP     /* Restore SV sp */
     e_lwz       r6, RUT_O_pPDESC(sp)/* r6: Retrieved address of process descriptor */
-    se_cmpi     r4, 0               /* Arg of sys call < 0: User reported errore */
+    se_cmpi     r4, 0               /* Arg of sys call < 0: User reported error */
     se_bge      rut_endWithoutErr   /* Skip counting cause of termination: Normal situation */
     se_li       r3, RTOS_CAUSE_TASK_ABBORTION_USER_ABORT    /* Array idx for err counter */
     e_li        r4, ~RTOS_CAUSE_TASK_ABBORTION_USER_ABORT /* r4: ret code of osRunUserTask() */

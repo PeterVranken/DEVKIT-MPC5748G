@@ -1,12 +1,38 @@
 # 
-# Makefile for GNU Make 3.81
+# Generic Makefile for GNU Make 3.82 (MinGW port only)
 #
-# Collection of definitions of general purpose helper functions.
+# Some common purpose makefile functions, which are accessible from all makefiles.
 #
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+ifndef COMMON_FUNCTIONS_INCLUDED
+COMMON_FUNCTIONS_INCLUDED := 1
 
+# Return a non-empty string ("true") if the makefile executes on a Windows system. On
+# Linux, the macro will return the empty string.
+isWin = $(if (or $(call eq,$(OS),WINDOWS),$(call eq,$(OS),Windows_NT)),true,)
+# Example:
+ifeq ($(call isWin),true)
+    $(warn We are executing on Windows)
+else
+    $(warn We are executing on Linux)
+endif
 
 # Return a end of line character. No parameters, can be called without $(call).
 define EOL
@@ -16,29 +42,33 @@ endef
 # Example:
 # $(info first line$(EOL)second line)
 
-# Function isInDefineList
+
+# Function isDefined
 #   The main makefile offers a variable "defineList", with user configurable settings for
 # the build. This function supports the use of the list in conditional parts of the
 # makfile, i.e. using ifeq/ifneq/ifdef/ifndef.
 #   The call of this function returns the word true if $(1) is element of $(defineList) and
-# the word false otherwise. Note, "true" and "false" are symbols but no Boolean constants.
-# The use of these particular result values has no technical significance but supports
-# having readable conditional makefile code. See example.
+# nothing otherwise. Note, "true" is a symbol but not a Boolean constant. The use of this
+# particular result value has no technical significance but supports having readable
+# conditional makefile code. See example. Returning either a word or nothing enables the
+# use of the function as condition in an expression like $(if cond,..,..), too, where
+# "nothing" has the meaning of a Boolean false. See example.
 #   $(1): The name of a define to be checked for presence in $(defineList).
-isInDefineList = $(if $(filter $(1),$(defineList)),true,false)
+isDefined = $(if $(filter $(1),$(defineList)),true,)
 # Example:
-#ifeq ($(call isInDefineList,DEFINE_OF_INTEREST),true)
+#ifeq ($(call isDefined,DEFINE_OF_INTEREST),true)
 #$(info DEFINE_OF_INTEREST is element of $(defineList))
 #else
 #$(info DEFINE_OF_INTEREST isn't element of $(defineList))
 #endif
+#$(info DEFINE_OF_INTEREST: $(if $(call isDefined,DEFINE_OF_INTEREST),is defined,is undefined))
 
 
 # Function binFolder
 #   Determine the name of the root folder of all build products. The name should
 # distinguish between all supported target systems. Furthermore, under Windows it should if
 # possible distinguish between 32 or 64 Bit systems.
-ifeq ($(call isInDefineList,LINK_IN_RAM),true)
+ifeq ($(call isDefined,LINK_IN_RAM),true)
 binFolder = bin/ppc/$(notdir $(call noTrailingSlash,$(APP)))/$(CONFIG)-RAM/
 else
 binFolder = bin/ppc/$(notdir $(call noTrailingSlash,$(APP)))/$(CONFIG)/
@@ -123,3 +153,5 @@ eq = $(if $(1)$(2),$(and $(findstring $(1),$(2)),$(findstring $(2),$(1)),true),t
 #   $(2): The list of file names to test. Only provide raw file names with extension.
 isFileInList = $(if $(filter $(2), $(notdir $(1))),1,)
 #$(info "$(call isFileInList, a/x/test.c path/c, a b xtest.c)")
+
+endif # COMMON_FUNCTIONS_INCLUDED

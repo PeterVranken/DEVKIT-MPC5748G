@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -54,12 +54,12 @@ target := $(project)
 #
 ifeq ($(CONFIG),PRODUCTION)
     ifeq ($(MAKELEVEL),0)
-        $(info Making $(target)$(if $(filter LINK_IN_RAM,$(defineList)), in RAM, for flashing) for production)
+        $(info Making $(target)$(if $(call isDefined,LINK_IN_RAM), in RAM, for flashing) for production)
     endif
     cDefines := -DPRODUCTION -DNDEBUG
 else ifeq ($(CONFIG),DEBUG)
     ifeq ($(MAKELEVEL),0)
-        $(info Making $(target) for debugging$(if $(filter LINK_IN_RAM,$(defineList)), in RAM, for flashing))
+        $(info Making $(target) for debugging$(if $(call isDefined,LINK_IN_RAM), in RAM, for flashing))
     endif
     cDefines := -DDEBUG
 else
@@ -123,9 +123,9 @@ targetArchitecture = $(if $(call isTargetArchitectureZ4,$(1)),Z4,Z2)
 # disabling the mode you should first try to reduce the size limit to 4 or 2 Byte.
 targetFlagsZ2 := -mcpu=e200z2
 targetFlagsZ4 := -mcpu=e200z4
-targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8 -mregnames          \
+targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8                     \
                -fshort-double -fsingle-precision-constant
-ifeq ($(filter USE_FP_EMULATION_CLIB,$(defineList)),USE_FP_EMULATION_CLIB)
+ifeq ($(call isDefined,USE_FP_EMULATION_CLIB),true)
     targetFlags += -msoft-float
 else
     targetFlagsZ2 += -msoft-float
@@ -133,12 +133,14 @@ else
 endif
 
 # Choose C library.
-ifeq ($(filter USE_EWL2,$(defineList)),USE_EWL2)
+ifeq ($(call isDefined,USE_EWL2),true)
     cClibSpec := -specs=ewl_c9x_noio.specs                                                  \
                  --sysroot=$(call w2u,$(S32DS_HOME))/S32DS/build_tools/e200_ewl2
-    incDirList += $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include)       \
-                  $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include/pa)
-else ifeq ($(filter USE_NEWLIB,$(defineList)),USE_NEWLIB)
+    ifeq ($(MAKELEVEL),0)
+        incDirList += $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include)   \
+                      $(call w2u,$(S32DS_HOME)/S32DS/build_tools/e200_ewl2/EWL_C/include/pa)
+    endif
+else ifeq ($(call isDefined,USE_NEWLIB),true)
     # The switch -specs=nosys.specs links the generically implemented C library against a
     # stub library that satisfies the low level I/O routines without providing true
     # functionality. We must not use this switch if we want to have the printf
@@ -158,7 +160,7 @@ $(objDirList):
 	-$(mkdir) -pv $@
 
 # Pattern rules for assembler language source files.
-asmFlags = $(targetFlags)                                                                   \
+asmFlags = $(targetFlags) -mregnames                                                        \
            $(if $(call isTargetArchitectureZ4,$<),$(targetFlagsZ4),$(targetFlagsZ2))        \
            -Wall                                                                            \
            -MMD -Wa,-a=$(patsubst %.o,%.lst,$@)                                             \
@@ -281,11 +283,13 @@ endif
 # given then the linker won't link the related files from the clib but the compiler still
 # calls __eabi() so that we need to offer a stub then. The clib is not initialized and it
 # can be that elements from it won't work.
-lFlags = -Wl,-Tmakefile/linkerControlFile.ld -Wl,--gc-sections $(targetFlags)               \
+lFlags = -Wl,--gc-sections $(targetFlags)                                                   \
+         -Wl,-Tmakefile/$(if $(call isDefined,LINK_IN_RAM),memoryMapRAM.ld,memoryMapROM.ld) \
+         -Wl,-Tmakefile/linkerControlFile.ld                                                \
          -Wl,-sort-common -Wl,-Map="$(targetDir)$(target).map" -Wl,--cref                   \
          -Wl,--warn-common,--warn-once,--orphan-handling=warn -Wl,-g                        \
-         $(if $(filter USE_Z2_CLIB,$(defineList)),$(targetFlagsZ2),$(targetFlagsZ4))        \
-         -Wl,--defsym=ld_linkInRAM=$(if $(filter LINK_IN_RAM,$(defineList)),1,0)            \
+         $(if $(call isDefined,USE_Z2_CLIB),$(targetFlagsZ2),$(targetFlagsZ4))              \
+         -Wl,--defsym=ld_linkInRAM=$(if $(call isDefined,LINK_IN_RAM),1,0)                  \
          $(cClibSpec)
 
 $(targetDir)$(target).elf: $(if $(patchWindowsBug),$(targetDir)obj/listOfObjFiles.txt,$(objFileList)) \

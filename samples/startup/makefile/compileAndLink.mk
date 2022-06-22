@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -181,8 +181,7 @@ targetArchitecture = $(if $(call isTargetArchitectureZ4,$(1)),Z4,Z2)
 # directories and nor must the directories listed in srcDirList be included
 #   sharedMakefilePath: The path to the common makefile fragments like this one
 
-# Include directories common to all sub-projects are merged with the already set project
-# specific ones.
+# Unification of writing of include directories: Trailing slash, right path separator.
 incDirList := $(call w2u,$(call trailingSlash,$(incDirList)))
 #$(info incDirList := $(incDirList))
 
@@ -242,7 +241,7 @@ VPATH := $(srcDirListExpanded) $(targetDir)
 # disabling the mode you should first try to reduce the size limit to 4 or 2 Byte.
 targetFlagsZ2 := -mcpu=e200z2
 targetFlagsZ4 := -mcpu=e200z4
-targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8 -mregnames          \
+targetFlags := -mbig-endian -mvle -misel=yes -meabi -msdata=default -G8                     \
                -fshort-double -fsingle-precision-constant
 ifeq ($(filter USE_FP_EMULATION_CLIB,$(defineList)),USE_FP_EMULATION_CLIB)
     targetFlags += -msoft-float
@@ -286,7 +285,7 @@ else
 endif
 
 # Pattern rules for assembler language source files.
-asmFlags = $(targetFlags)                                                                   \
+asmFlags = $(targetFlags) -mregnames                                                        \
            $(if $(call isTargetArchitectureZ4,$<),$(targetFlagsZ4),$(targetFlagsZ2))        \
            -Wall                                                                            \
            -MMD -Wa,-a=$(patsubst %.o,%.lst,$@)                                             \

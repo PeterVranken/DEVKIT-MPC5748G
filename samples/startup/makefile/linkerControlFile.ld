@@ -45,7 +45,7 @@ ld_memRamEnd = ld_memRamStart + ld_memRamSize;
 
 SECTIONS
 {
-    /* The boot sector contains a few memory word specifying the core to be started and its
+    /* The boot sector contains a few memory words specifying the core to be started and its
        reset vectors. */
     .bafData :
     {
@@ -64,6 +64,8 @@ SECTIONS
         *(.rela.text)
         *(.rela.text.*)
         *(.rela.rodata.*)
+        *(.branch_lt)
+        *(.branch_lt.*)
 
         /* The IVOR vector table and the main IVOR handler, external Interrupts, #4, are
            ordered such that we have little loss of memory due to alignments constraints
@@ -144,6 +146,7 @@ SECTIONS
     .sdata : ALIGN(8)
     {
         ld_sdataStart = ABSOLUTE(.);
+        _SDA_BASE_ = ABSOLUTE(ld_sdataStart) + 0x8000 ;
 
         /* Some empty fragments from the C library go here. */
         *(.rela.sdata)
@@ -173,6 +176,7 @@ SECTIONS
     .sdata2 : ALIGN(8)
     {
         ld_sdata2Start = ABSOLUTE(.);
+        _SDA2_BASE_ = ABSOLUTE(ld_sdata2Start) + 0x8000 ;
 
         *(.sdata2)
         *(.sdata2.*)
