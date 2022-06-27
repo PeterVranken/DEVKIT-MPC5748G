@@ -45,7 +45,7 @@
  * file. However, no CAN device will then be enabled and the compiler will issue several
  * warnings because of zero-sized arrays and data structures.
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -82,10 +82,10 @@
 /** Index of system call for making an association between a mailbox and a CAN ID. */
 #define CDR_SYSCALL_MAKE_MB_RESERVATION 40
 
-/** Index of system call for sending a CAN mesage. */
+/** Index of system call for sending a CAN message. */
 #define CDR_SYSCALL_SEND_MSG            41
 
-/** Index of system call for reading a CAN mesage from a mailbox. */
+/** Index of system call for reading a CAN message from a mailbox. */
 #define CDR_SYSCALL_READ_MSG            42
 
 

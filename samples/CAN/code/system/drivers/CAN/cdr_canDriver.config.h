@@ -137,10 +137,6 @@ typedef void (*cdr_osCallbackOnError_t)(bool isCanFD, uint32_t ESR1);
  * to the callback. The absolute value has not meaning, time-base is a free running 16 Bit
  * counter. The frequency of the timer is the CAN bit rate; having a bus with 500 kBd the
  * unit of the timer would be 2µs. The timer wraps around at 2^16-1.
- *   @remark
- * The callback is invoked from one of the CAN device's interrupt contexts. It is executed
- * in supervisor mode. All Rx interrupts share this callback, so it needs to be reentrant
- * if two of them should be configured not to have the same interrupt priority.
  */
 typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMB
                                     , bool isExtId
@@ -187,10 +183,6 @@ typedef void (*cdr_osCallbackOnRx_t)( unsigned int hMB
  * value is forwarded to the callback. The absolute value has not meaning, time-base is a
  * free running 16 Bit counter. The frequency of the timer is the CAN bit rate; having a
  * bus with 500 kBd the unit of the timer would be 2µs. The timer wraps around at 2^16-1.
- *   @remark
- * The callback is invoked from one of the CAN device's interrupt contexts. It is executed
- * in supervisor mode. All Tx interrupts share this callback, so it needs to be reentrant
- * if two of them should be configured not to have the same interrupt priority.
  */
 typedef void (*cdr_osCallbackOnTx_t)( unsigned int hMB
                                     , bool isExtId
@@ -321,7 +313,7 @@ typedef struct cdr_mailboxAccessConfig_t
         indexes in use must not skip possible values. Note, the index space is shared
         between all enabled CAN devices.\n
           In other words, the ordered set of all indexes specified for all
-        user-polling-enabled mailboxes of all enbaled CAN devices needs to form a
+        user-polling-enabled mailboxes of all enabled CAN devices needs to form a
         contiguous series of integers, starting with zero. Moreover, the highest
         specified index needs to be #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES - 1.\n
           User code access enabled Tx mailboxes don't require an API buffer and the

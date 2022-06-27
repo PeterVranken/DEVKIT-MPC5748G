@@ -7,7 +7,7 @@
  * driver. The functions and data objects declared in this file must not be accessed by
  * driver client code.
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -61,7 +61,7 @@ typedef struct cdr_idCanDevice_t
 
 /** Identification of a particular HW mailbox in terms of CAN device and index of the
     mailbox in the HW array. This way to address to a mailbox is used only internally. The
-    driver's public API uses a mailbox handle instaed. Both are not equivalent because of
+    driver's public API uses a mailbox handle instead. Both are not equivalent because of
     the additionally receivable message by FIFO. */
 typedef struct cdr_idMailbox_t
 {
@@ -346,7 +346,7 @@ static inline bool cdr_mapMailboxHandleToId( cdr_idMailbox_t * const pIdMB
                      , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig)
                      , idxMB = hMB - additionalCapaFIFO;
     
-    /* hMB needs a simple transformation to become the index of the mailbox in the
+    /* hMB needs a simple transformation to become the index of the mailboxes in the
        device. */
     if(hMB >= noFIFOMsgs  &&  idxMB < pDeviceConfig->noMailboxes)
     {

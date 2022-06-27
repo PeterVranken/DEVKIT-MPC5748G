@@ -18,9 +18,10 @@
  * document number: MPC5775E, Rev. 1, 05/2018.
  *
  * @note References "PM75" in this module refer to file
- * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", which is an attachment of RM75.
+ * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", V1.14, which is an attachment of
+ * RM75.
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -73,7 +74,6 @@
 #include "cdr_checkConfig.h"
 #include "cdr_interruptServiceHandlers.h"
 #include "cdr_canDriverAPI.h"
-
 
 /*
  * Defines
@@ -343,7 +343,8 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
     /* Configuration of CAN Tx port: See PM75, tab "IO Signal Table", row 663, for port
        CNTXA. Column B gives us the index of the PCR. Column C gives us as "Source Signal
        Select" for function CAN Tx of device 0 (aka A).
-         SIU->PCR: See RM75, 8.2.13 Pad Configuration Register (SIU_PCRn), p. 241ff. */
+         See RM75, 8.2.13 Pad Configuration Register (SIU_PCRn), p. 241ff, for details on
+       the made settings. */
     const siu_portOutCfg_t outputCfg =
         {
           .idxPortSource_PA = 1u, /* Source signal is FlexCAN A Transmit */
@@ -363,9 +364,9 @@ static void configSIUForUseWithMPC5775BE_416DS(void)
 
     /* CAN Rx: See file PM75, tab "Input Muxing", row 33, for port CNRXA. We find
        multiplexer register no 1, MUXSEL=0, MUXSEL Value=1.
-         See 8.2.67 Input Multiplexing Register1 (SIU_IMUX1), pp.375f, for setting of the
-       multiplexer. The register description confirms the right understanding of the Excel
-       table. */
+         See RM75, 8.2.67 Input Multiplexing Register1 (SIU_IMUX1), pp.375f, for setting of
+       the multiplexer. The register description confirms the right understanding of the
+       Excel table. */
 
     /* The Rx output of external transceiver chip is connected to pin AE19 (GPIO84) of the
        MCU. Configure this pin as input.*/
@@ -1092,7 +1093,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
            configuration. Macro #CHECK_GROUP_IRQ returns true if there's no implausibility
            for IRQ group [from, to].
              (int)idxMB: The type cast in the condition has no impact on the result of the
-           possible decisions but hinders the compiler from issuing a warning becasue of
+           possible decisions but hinders the compiler from issuing a warning because of
            otherwise comparing an unsigned value on greater or equal to zero (always true,
            -Wtype-limits). */
         #define CHECK_GROUP_IRQ(from, to)                                                   \
@@ -1191,7 +1192,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
 
         const unsigned int CODE = isReceived
                                   ? 4   /* 0, EMPTY, makes it an empty, enabled Rx mailbox */
-                                  : 8   /* 0, INACTIVE, makes it an empty, enable Tx mailbox */
+                                  : 8   /* 0, INACTIVE, makes it an empty, enabled Tx mailbox */
                                   ;
 
         /* See RM48 43.4.40, p. 1771, for the fields of the mailbox. See Table 43-8, p.
@@ -1224,7 +1225,7 @@ cdr_errorAPI_t cdr_osMakeMailboxReservation( unsigned int idxCanDevice
  * yet.
  *   @return
  * The pointer to the affected mailbox if function succeeds, else \a NULL. The latter can
- * happen, if the buffer in the hardware is still occupied by the preceeding message, which
+ * happen, if the buffer in the hardware is still occupied by the preceding message, which
  * has not yet serialized on the CAN bus.\n
  *   If the function returns \a NULL then the caller must not proceed with sending.
  *   @param pIdMB
@@ -1251,7 +1252,7 @@ static volatile cdr_mailbox_t *osPrepareSendMessage(const cdr_idMailbox_t * cons
     {
         /* The MB is basically free. There's still an important consideration. Sending may
            be done with or without IRQ notification and in either case we need to
-           acknowledge the interrupt from the preceeding Tx - otherwise the MB is blocked
+           acknowledge the interrupt from the preceding Tx - otherwise the MB is blocked
            (RM48 43.5.1, p. 1789). If notification is enabled then there are possible race
            conditions: Will the ISR or do we here reset the flag?
              The normal usecase of Tx notifications is virtualization of MBs by buffering:
@@ -1337,8 +1338,8 @@ cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
         assert(DLC <= 8);
         memcpy((void*)&pTxMB->payload[0], payload, DLC);
 
-        /* Changeing the C/S word in the MB initiates the transmission. See RM48, Table 43-9, p.
-           1775, for the Tx mailbox status and command CODEs.
+        /* Changeing the C/S word in the MB initiates the transmission. See RM48, Table
+           43-9, p. 1775, for the Tx mailbox status and command CODEs.
              A read-modify-write is required as we must not alter the bit IDE. */
         pTxMB->csWord = csWord | CAN_MBCS_CODE(12); /* CODE doesn't need masking: 8->12 */
 
@@ -1365,7 +1366,7 @@ cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
  * completed. See cdr_osMakeMailboxReservation() for details.)
  *   @return
  * \a cdr_errApi_noError, if function succeeded, \a cdr_errApi_txMailboxBusy, if the buffer
- * in the hardware is still occupied by the preceeding message, which iss not serialized on
+ * in the hardware is still occupied by the preceding message, which iss not serialized on
  * the CAN bus yet or \a cdr_errApi_handleOutOfRange if the device index or mailbox
  * handle was invalid.\n
  *   If the function doesn't return \a cdr_errApi_noError then it had no effect.
@@ -1425,7 +1426,7 @@ cdr_errorAPI_t cdr_osSendMessage( unsigned int idxCanDevice
  * completed. See cdr_osMakeMailboxReservation() for details.)
  *   @return
  * \a cdr_errApi_noError, if function succeeded, \a cdr_errApi_txMailboxBusy, if the buffer
- * in the hardware is still occupied by the preceeding message, which iss not serialized on
+ * in the hardware is still occupied by the preceding message, which iss not serialized on
  * the CAN bus yet or \a cdr_errApi_handleOutOfRange if the device index or mailbox
  * handle was invalid.\n
  *   If the function doesn't return \a cdr_errApi_noError then it had no effect.
@@ -1528,7 +1529,7 @@ cdr_errorAPI_t cdr_osSendMessageEx( unsigned int idxCanDevice
  * caller.\n
  *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
  * indicates that the call of the function came too late to read all incoming messages; at
- * least one preceeding message had been lost and overwritten by it successor.\n
+ * least one preceding message had been lost and overwritten by it successor.\n
  *   If no new data is available (no message had been received since the previous call of
  * this function for the same mailbox or the mailbox is instantly blocked by a
  * coincidental reception event) then the function returns \a cdr_errApi_rxMailboxEmpty.\n
@@ -1682,7 +1683,7 @@ cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
  * caller.\n
  *   \a cdr_errApi_noError should be the normal case, while \a cdr_errApi_warningRxOverflow
  * indicates that the call of the function came too late to read all incoming messages; at
- * least one preceeding message had been lost and overwritten by it successor.\n
+ * least one preceding message had been lost and overwritten by it successor.\n
  *   If no new data is available (no message had been received since the previous call of
  * this function for the same mailbox or the mailbox is instantly blocked by a
  * coincidental reception event) then the function returns \a cdr_errApi_rxMailboxEmpty.

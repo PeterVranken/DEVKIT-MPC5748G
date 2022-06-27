@@ -91,7 +91,7 @@ static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
 
 
 /**
- * System call handler for making an assocation of a particluar mailbox with a specific CAN
+ * System call handler for making an assocation of a particular mailbox with a specific CAN
  * ID.\n
  *   Application dependent initialization of CAN communication: The driver will react only
  * on CAN messages, it has agreed on with the application SW. This API is intended for
@@ -217,7 +217,7 @@ uint32_t cdr_scFullHdlr_makeMailboxReservation( uint32_t PID
        call argument and raise an exception. The next function call doesn't return. */
     rtos_osSystemCallBadArgument();
 
-} /* End of cdr_osMakeMailboxReservation */
+} /* cdr_scFullHdlr_makeMailboxReservation */
 
 
 
@@ -249,7 +249,7 @@ uint32_t cdr_scFullHdlr_makeMailboxReservation( uint32_t PID
  * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
  * situation raises an exception.
  *   @param payload
- * The message content bytes to send this time. The number f bytes has been agrred on at
+ * The message content bytes to send this time. The number of bytes has been agreed on at
  * mailbox registration time and can't be altered. It may be 0..8 Byte. Regardless of the
  * actual number, the passed memory address needs to allow read access to 8 Byte for the
  * user process. An exception would be raised otherwise.
@@ -289,7 +289,7 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
        return. */
     rtos_osSystemCallBadArgument();
 
-} /* End of cdr_scSmplHdlr_sendMessage */
+} /* cdr_scSmplHdlr_sendMessage */
 
 
 

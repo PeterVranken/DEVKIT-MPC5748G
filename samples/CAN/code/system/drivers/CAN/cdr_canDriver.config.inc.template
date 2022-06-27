@@ -450,7 +450,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
               Note, the index used here is the HW mailbox index not the user visible
             mailbox handle.\n
               Note, the total number of enabled Rx mailboxes in all enabled devices needs
-            to match #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES.
+            to match #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES.\n
               Note, the sort order of API buffers doesn't matter. Particularly, no run-time
             penalty is involved with having a zig-zag-pattern. */
         .userAccessMailboxAry = 
@@ -489,6 +489,10 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
     {},
 #endif
 };
+
+_Static_assert( sizeOfAry(cdr_canDriverConfig) == CDR_NO_CAN_DEVICES_ENABLED
+              , "CAN configuration table has wrong number of entries"
+              );
 
 
 /*
