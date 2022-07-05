@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -80,7 +80,7 @@ ifneq ($(useFlatObjectFileStructure),)
 # relate object file paths to the source files paths in the pattern rules and we need to
 # rely on searching the files.
 VPATH := $(srcDirInUseList)
-$(info VPATH: $(VPATH))
+#$(info VPATH: $(VPATH))
 endif
 
 # Export computed or modified variables.

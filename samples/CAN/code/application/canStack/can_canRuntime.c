@@ -739,7 +739,7 @@ bool can_initCanStack(void)
     {
         const cdt_canMessage_t *const pRxFrDesc = &cdt_canRxMsgAry[idxRxFr];
 
-        /* Processing bus after bus is simplified by the fact that the CAN datatables are
+        /* Processing bus after bus is simplified by the fact that the CAN data tables are
            generally ordered in this way. We just look for the change of bus index in the
            sequence. */
         if(pRxFrDesc->idxCanBus == idxBusLast)
@@ -796,7 +796,7 @@ bool can_initCanStack(void)
     {
         const cdt_canMessage_t *const pTxFrDesc = &cdt_canTxMsgAry[idxTxFr];
 
-        /* Processing bus after bus is simplified by the fact that the CAN datatables are
+        /* Processing bus after bus is simplified by the fact that the CAN data tables are
            generally ordered in this way. We just look for the change of bus index in the
            sequence. */
         if(pTxFrDesc->idxCanBus == idxBusLast)

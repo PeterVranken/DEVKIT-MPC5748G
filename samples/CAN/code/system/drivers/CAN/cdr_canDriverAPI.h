@@ -401,7 +401,7 @@ static inline cdr_errorAPI_t cdr_makeMailboxReservation( unsigned int idxCanDevi
  */
 static inline cdr_errorAPI_t cdr_sendMessage( unsigned int idxCanDevice
                                             , unsigned int hMB
-                                            , uint8_t payload[8]
+                                            , const uint8_t payload[8]
                                             )
 {
     return (cdr_errorAPI_t)rtos_systemCall(CDR_SYSCALL_SEND_MSG, idxCanDevice, hMB, payload);
