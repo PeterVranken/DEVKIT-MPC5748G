@@ -27,18 +27,6 @@
 #include <assert.h>
 
 
-/* The software is written as portable as possible. This requires the awareness of the C
-   language standard it is compiled with. */
-#if defined(__STDC_VERSION__)
-# if (__STDC_VERSION__)/100 == 2011
-#  define _STDC_VERSION_C11
-# elif (__STDC_VERSION__)/100 == 1999
-#  define _STDC_VERSION_C99
-# endif
-#endif
-
-
-
 /*
  * Configuration.
  *   The defines and typedefs found in this section are the configuration of the CAN
@@ -84,9 +72,9 @@ typedef unsigned int ede_kindOfEvent_t;
 
 /** The data type of an event handle. The handle is needed to distinguish all events in the
     context of a dispatcher system. Use case CAN: The CAN API of the operating system
-    mostly uses some kind of handle for messages, e.g. the index of a MTO (message transfer
-    object), and this handle is used by the OS' notification callback (e.g. ISR) in order
-    to identify the notified message.
+    mostly uses some kind of handle for messages, e.g. the index of an MTO (message
+    transfer object), and this handle is used by the OS' notification callback (e.g. ISR)
+    in order to identify the notified message.
       @todo Use the typedef to make our internally used \a ede_senderHandleEvent_t
     identical to the operating system's given handle or identifier type. */
 typedef unsigned int ede_senderHandleEvent_t;
@@ -120,7 +108,7 @@ typedef unsigned int ede_atomicUnsignedInt_t;
     registered it at the system. (See ede_registerExternalEventSource() for details). Only
     this dispatcher will be able to properly decode the event data. The integration code
     can easily contain programming errors, which make a sender post its event to the wrong
-    dispatcher, which would lead to servere run-time errors. The implementation of the
+    dispatcher, which would lead to severe run-time errors. The implementation of the
     dispatcher can do a run-time check if a sender posts its events always to the right
     dispatcher, but on cost of a significant portion of additional RAM. (Each registered
     source now has an ID of the registering dispatcher, which can sum up to a kByte or even
@@ -137,7 +125,7 @@ typedef unsigned int ede_atomicUnsignedInt_t;
 
 /** Tailoring of the API: The timer context data is not always required and can be switched
     off at compile time. This will safe \a sizeof(uintptr_t) Byte per created timer. An
-    alternative to applying user provided data can be quering the timer handle to identify
+    alternative to applying user provided data can be querying the timer handle to identify
     it, please refer to ede_getHandleTimer().\n
       The define is set to either 1 or 0. */
 #define EDE_ENABLE_TIMER_CONTEXT_DATA               1

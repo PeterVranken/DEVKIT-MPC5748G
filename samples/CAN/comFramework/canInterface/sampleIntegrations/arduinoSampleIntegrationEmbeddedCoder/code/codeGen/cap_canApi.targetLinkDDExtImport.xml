@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!-- This is an interface specification for the dSPACE TargetLink C code generator -->
-<!-- Created with comFramework - codeGenerator version 1.10.6, see http://sourceforge.net/projects/comframe/ -->
+<!-- Created with comFramework - codeGenerator version 1.11.2, see http://sourceforge.net/projects/comframe/ -->
 <!-- The interface is generated from these network database files: -->
 <!-- sampleCanBus.dbc -->
 <ddObj Name="Pool" Kind="Pool">

@@ -8,7 +8,7 @@
  * event dispatchers will access the tables to implement the frame-indvidual behavior like
  * different timing patterns, different checksum protections, different size, etc.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -49,7 +49,7 @@
 
 /** Helper to get CAN IDs: Get CAN ID object from raw number and Boolean \a isExt. */
 #define CDT_CAN_ID(ID, isExt)           ((cdt_canId_t){.isExtId=(isExt), .id=(ID)})
- 
+
 
 /*
  * Type definitions
@@ -94,7 +94,7 @@ typedef struct cdt_canFrame_t
     boolean_t isReceived;
 
     /** The size of the frame contents in Byte. */
-    unsigned int DLC;
+    unsigned int size;
 
     /** An external function, which is called to unpack a received CAN frame into the
         global CAN API and to run the E2E validation on the received contents. */
@@ -129,7 +129,7 @@ typedef struct cdt_canFrame_t
     unsigned int tiMinDistance;
 
 } cdt_canFrame_t;
- 
+
 
 /*
  * Data declarations
@@ -139,10 +139,15 @@ typedef struct cdt_canFrame_t
     implementation of their send/receive behavior in the callbacks of the event
     dispatchers. */
 extern const cdt_canFrame_t cdt_canFrameAry[CST_NO_CAN_FRAMES];
- 
+
 
 /*
  * Function declarations
+ */
+
+
+/*
+ * Inline function definitions
  */
 
 #endif // !defined(CDT_CANDATATABLES_DEFINED)

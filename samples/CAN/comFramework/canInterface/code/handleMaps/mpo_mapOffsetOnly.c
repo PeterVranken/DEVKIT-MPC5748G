@@ -1,7 +1,7 @@
 /**
  * @file mpo_mapOffsetOnly.c
  * This module provides a simple handle map, suitable for many applications of the event
- * dispatcher mechnism. It can be used as mapping from some OS event handles (e.g. Rx CAN
+ * dispatcher mechanism. It can be used as mapping from some OS event handles (e.g. Rx CAN
  * frame handles) to the zero based index space of a dispatcher object.\n
  *   The implementation supports the interfaces defined by the event sender and dispatcher
  * engine and the map is therefore most easy to use in this context. Just create a map
@@ -56,10 +56,16 @@
  */
 
 /* The software is written as portable as reasonably possible. This requires the awareness
-   of the C language standard it is compiled with. */
+   of the C language standard it is compiled with.
+     With respect to the language feature C11 and C17 are identical. We combine them in one
+   switch. */
 #if defined(__STDC_VERSION__)
-# if (__STDC_VERSION__)/100 == 2011
+# if (__STDC_VERSION__)/100 == 2017
+#  define _STDC_VERSION_C17
+#  define _STDC_VERSION_C17_C11
+# elif (__STDC_VERSION__)/100 == 2011
 #  define _STDC_VERSION_C11
+#  define _STDC_VERSION_C17_C11
 # elif (__STDC_VERSION__)/100 == 1999
 #  define _STDC_VERSION_C99
 # endif
@@ -67,30 +73,60 @@
 
 /** The map value type. One bit is required to distinguish handle offset mapping from
     simple mapping. The representable range of map values is accordingly smaller. */
-typedef unsigned short uintMapConstant_t;
+typedef uint16_t uintMapConstant_t;
 
-/** A range calculations are done in the native integer size of the platform. This limits
+/** All range calculations are done in the native integer size of the platform. This limits
     the configurable types for the map constant. */
 _Static_assert( sizeof(uintMapConstant_t) <= sizeof(unsigned int)
               , "The type of the map constant needs to fit into type (un)signed int"
               );
               
+#ifdef _STDC_VERSION_C17_C11
+
 /** Empty map entry. Used for recognition of ambiguous mapping definitions. */
 #define INVALID_OFFSET_VALUE    (_Generic( (uintMapConstant_t)0                         \
-                                         , uint8_t:  0x80                               \
-                                         , uint16_t: 0x8000                             \
-                                         , uint32_t: 0x80000000                         \
+                                         , uint8_t:  0x80u                              \
+                                         , uint16_t: 0x8000u                            \
+                                         , uint32_t: 0x80000000u                        \
                                          )                                              \
                                 )
 
 /** The reserved value "uninitialized" for those kinds of events, which don't make use of
     of a sender handle. */
 #define INVALID_MAP_VALUE       (_Generic( (uintMapConstant_t)0                         \
-                                         , uint8_t:  0xFF                               \
-                                         , uint16_t: 0xFFFF                             \
-                                         , uint32_t: 0xFFFFFFFF                         \
+                                         , uint8_t:  0xFFu                              \
+                                         , uint16_t: 0xFFFFu                            \
+                                         , uint32_t: 0xFFFFFFFFu                        \
                                          )                                              \
                                 )
+
+#else
+
+/* Not having the _Generic keyword means independent definition of the mask values - which
+   has to be made consistently with the configured data type though. Consistency is
+   double-checked by assertion. */
+_Static_assert( sizeof(uintMapConstant_t) == 2u
+              , "Inconsistent definition of map value type and related masks"
+              );
+
+/** Empty map entry. Used for recognition of ambiguous mapping definitions. */
+#define INVALID_OFFSET_VALUE    (0x8000u)
+
+/** The reserved value "uninitialized" for those kinds of events, which don't make use of
+    of a sender handle. */
+#define INVALID_MAP_VALUE       (0xFFFFu)
+
+#endif
+
+/** Sign extension operation from map value type to signed int. */
+#define INT(x) (sizeof(x)==1u? (int)(int8_t)x                                           \
+                             : (sizeof(x)==2u? (int)(int16_t)x: (int)x)                 \
+               )
+
+_Static_assert( sizeof(uint16_t) == sizeof(unsigned short)
+              , "Assumption failed, which has been made for the definition of "
+                " INVALID_OFFSET_VALUE and INVALID_MAP_VALUE"
+              );
 
 /** Mask for bit "is simple mapping". */
 #define BIT_MASK_MAP_CONSTANT_IS_SIMPLE_MAPPING     1u
@@ -139,7 +175,7 @@ typedef struct map_t
  *   May be NULL. In many environments, the required map is trivial (e.g. the
  * identity) or known (and generated as ROM table) and no code is required to built-up
  * the map.\n
- *   2. Use case mapping external evemts to a sender's port:\n
+ *   2. Use case mapping external events to a sender's port:\n
  *   The function is currently not called by the dispatcher engine or sender
  * implementation. The integration code is in charge of providing the map contents and
  * it may or may not make use of this function to buildup the map.\n
@@ -196,8 +232,8 @@ static bool addKeyValuePair( uintptr_t hMap
            itself. This map implementation supports those events by simply storing the
            related index in bits 1..n of the constant. */
            
-        /* The largest unsigned value is unused and has the meaning of "mapping not yet
-           set". */
+        /* -1: The largest representable value is unused as offset but has the meaning of
+           "mapping not yet set". */
         const uintMapConstant_t maxMapValue = (INVALID_MAP_VALUE >> 1u) - 1u;
         
         /* Reject the key-value pair if the map value doesn't fit into our representation. */
@@ -213,8 +249,8 @@ static bool addKeyValuePair( uintptr_t hMap
         else
         {
             /* The mapping result had already been determined and this is a (somewhat
-               unexpected) re-definition. We need to check whether it identical and reject
-               the pair if not. */
+               unexpected) re-definition. We need to check if identical and reject the pair
+               if not. */
             if(mapConstant != newMapConstant)
             {
                 EDE_ASSERT(false);
@@ -230,7 +266,7 @@ static bool addKeyValuePair( uintptr_t hMap
            1..n of the constant. */
            
         /* The offset required to represent the given key-value pair. */
-        const signed int offset = mapValue - (int)senderHandleEvent;
+        const signed int offset = (int)mapValue - INT(senderHandleEvent);
         
         /* The range of representable mappings. */
         const signed int minOffset =
@@ -242,7 +278,7 @@ static bool addKeyValuePair( uintptr_t hMap
             return false;
 
         /* The new value of the constant can be safely calculated. */
-        const uintMapConstant_t newMapConstant = (unsigned)(offset << 1u) + 0u;
+        const uintMapConstant_t newMapConstant = ((unsigned)offset << 1u) + 0u;
         
         /* The largest negative value is unused and has the meaning of "offset not yet
            set". */
@@ -283,7 +319,7 @@ static bool addKeyValuePair( uintptr_t hMap
  *   The requested index is that of an event source as internally used by the
  * dispatcher engine. The map query function is called as sub-routine of the
  * dispatching operation, ede_dispatcherMain().\n
- *   2. Use case mapping external evemts to a sender's port:\n
+ *   2. Use case mapping external events to a sender's port:\n
  *   The requested index is that of a port of the querying sender. The map query
  * function is called as sub-routine of sending an event, ede_postEvent().\n
  *   Must not be NULL.
@@ -299,7 +335,7 @@ static bool addKeyValuePair( uintptr_t hMap
  *   1. Use case mapping external events to registered event sources:\n
  *   Each dispatcher has its own index space for event sources and will apply a
  * dedicated map.\n
- *   2. Use case mapping external evemts to a sender's port:\n
+ *   2. Use case mapping external events to a sender's port:\n
  *   Each sender has its own index space for its individual ports and it'll use a
  * dedicated, related map instance.
  *   @param pValue
@@ -365,7 +401,7 @@ static bool getValue( uintptr_t hMap
         {
             /* We don't need signed/unsigned overflow checks here. They may occur,
                depending on the added key-value pairs. */
-            const signed int offset = (int)mapConstant >> 1u;
+            const signed int offset = INT(mapConstant) >> 1u;
             *pValue = (unsigned)((int)senderHandleEvent + offset);
         }
         else
@@ -384,7 +420,7 @@ static bool getValue( uintptr_t hMap
 
 /**
  * Create new map object. It has \a noKindsOfEv independently operating instances, which
- * relate to the same number of supported kinds of events. The map is capabale of key-value
+ * relate to the same number of supported kinds of events. The map is capable of key-value
  * pairs, which all have the simple relation value = key + const, where "const" is a fixed,
  * known offset value, which may be individual per map instance.\n
  *   Despite of its simplicity, this map is most useful. It can be applied in a majority of

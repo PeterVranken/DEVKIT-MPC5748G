@@ -22,7 +22,7 @@ The sample code comes along with all source files and build scripts
 search path, then the build command would be (Windows, other systems
 accordingly):
 
-    cd <...>\comFramework\canInterface\components\winSampleIntegration
+    cd <...>\comFramework\canInterface\sampleIntegrations\winSampleIntegration
     make -s build
 
 To start the sample application you may type:

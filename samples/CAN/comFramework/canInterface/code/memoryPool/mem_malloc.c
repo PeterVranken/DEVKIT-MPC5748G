@@ -83,9 +83,10 @@ typedef struct mem_memoryPool_t
     /** The pointer to the free upper part of the complete chunk of memory. */
     char *pNextChunk;
 
-    /** A critical section function to apply if atomicity of mem_malloc() needs to be
-        ensured. NULL if this doesn't matter. */
-    mem_fctCriticalSection_t mutualExclusionGuard;
+    /** A critical section object to apply if atomicity of method malloc() needs to be
+        ensured. The object's methods enter() and leave() will be NULL if this doesn't
+        matter. */
+    mem_criticalSection_t mutualExclusionGuard;
 
 #if MEM_DIAGNOSTIC_INTERFACE == 1
     /** The number of exhausted bytes of memory. */
@@ -130,9 +131,9 @@ static void *mallocChunk( uintptr_t hInstance
     /* Just an alias: Resolve the instance handle back into a pointer. */
     mem_memoryPool_t * const pMemPool = (mem_memoryPool_t*)hInstance;
 
-    const mem_fctCriticalSection_t guard = pMemPool->mutualExclusionGuard;
-    if(guard != NULL)
-        guard(mem_critSecDir_entry);
+    void (* const enter)(uintptr_t*) = pMemPool->mutualExclusionGuard.enter;
+    if(enter != NULL)
+        enter(&pMemPool->mutualExclusionGuard.hInstance);
 
     /* Simply return the subsequent block of bytes. */
     char *pChunk = pMemPool->pNextChunk;
@@ -157,8 +158,8 @@ static void *mallocChunk( uintptr_t hInstance
         pChunk = NULL;
     }
 
-    if(guard != NULL)
-        guard(mem_critSecDir_exit);
+    if(enter != NULL)
+        pMemPool->mutualExclusionGuard.leave(&pMemPool->mutualExclusionGuard.hInstance);
 
     EDE_ASSERT(pChunk == ALIGN_PTR(pChunk));
     return (void*)pChunk;
@@ -241,9 +242,10 @@ static unsigned int getNbrOfAllocatedBytes(uintptr_t hInstance)
  *   A memory pool requires a minimum number of Bytes to host the administrative data. In
  * pathologic situations, where \a sizeOfPoolMemory promises only a few Byte, the function
  * may fail.\n
- *   The function will fail only in case of lack of memory. Since all memory allocation is
- * static and deterministic an appropriate and recommended failure handling concept is to
- * check the return value by assertion only.
+ *   The function will fail only in case of lack of memory or if a bad critical section
+ * object \a mutualExclusionGuard is specified. Since all memory allocation is static and
+ * deterministic an appropriate and recommended failure handling concept is to check the
+ * return value by assertion only.
  *   @param pNewMemPool
  * The newly created object by reference. The caller has to provide the space for the new
  * object.
@@ -259,12 +261,21 @@ static unsigned int getNbrOfAllocatedBytes(uintptr_t hInstance)
  * If the same memory is partitioned and distributed to clients running in different task
  * (or interrupt) contexts then the entry into method mem_malloc() needs to be
  * serialized.\n
- *   If \a mutualExclusionGuard is not \a NULL then it is invoked before and after the
- * actual operation of memory allocation to ensure atomicity of the operation (and if
- * requested, see mem_malloc()). The specified guard function needs to be suitable to
- * mutually exclude all contexts competing for the given memory pool.\n
- *   One should pass \a NULL in a single threaded environment or if the newly created
- * memory pool object won't ever be used in concurrent contexts.
+ *   If optional method enter() of \a mutualExclusionGuard is not \a NULL then it is
+ * invoked before the actual operation of memory allocation to ensure atomicity of the
+ * operation.\n
+ *   Accordingly, if optional method leave() of \a mutualExclusionGuard is not \a NULL then
+ * it is invoked after the actual operation of memory allocation. Note, it is not allowed
+ * to pass an object, where enter() is \a NULL but leave() isn't \a NULL or vice versa.\n
+ *   The specified guard object needs to be suitable to mutually exclude all contexts
+ * competing for the given memory pool.\n
+ *   In a single threaded environment or if the newly created memory pool object won't ever
+ * be used in concurrent contexts one should pass an object with methods enter() and leave()
+ * both being \a NULL.\n
+ *   Note, the critical section object is copied by value into the newly created memory
+ * pool. All of its memory is therefore owned by the owner of the pool. If the methods
+ * write to or read from field \a hInstance then they need to be aware that they access
+ * some memory owned by owner of the pool, which normally is the caller of the methods.
  *   @remark
  * The function writes (only) to the specified new pool memory. Therefore, it needs to be
  * called from the context, which owns the new pool or from a super-ordinated context,
@@ -273,7 +284,7 @@ static unsigned int getNbrOfAllocatedBytes(uintptr_t hInstance)
 bool mem_createMemoryPool( ede_memoryPool_t * const pNewMemPool
                          , void *pPoolMemory
                          , unsigned int sizeOfPoolMemory
-                         , mem_fctCriticalSection_t const mutualExclusionGuard
+                         , mem_criticalSection_t mutualExclusionGuard
                          )
 {
     void * const pEndOfAllMemory = &((char*)pPoolMemory)[sizeOfPoolMemory];
@@ -285,6 +296,14 @@ bool mem_createMemoryPool( ede_memoryPool_t * const pNewMemPool
     mem_memoryPool_t * const pMemPool = (mem_memoryPool_t*)pAllMemory;
     pMemPool->pNextChunk = pNextChunk;
     pMemPool->pEndOfAllMemory = pEndOfAllMemory;
+    
+    if(mutualExclusionGuard.enter != NULL  &&  mutualExclusionGuard.leave == NULL
+       ||  mutualExclusionGuard.enter == NULL  &&  mutualExclusionGuard.leave != NULL
+      )
+    {
+        return false;
+    }
+    
     pMemPool->mutualExclusionGuard = mutualExclusionGuard;
 
 #if MEM_DIAGNOSTIC_INTERFACE == 1

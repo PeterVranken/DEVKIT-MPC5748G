@@ -49,23 +49,23 @@
 /*
  * Defines
  */
- 
+
 
 /*
  * Local type definitions
  */
- 
- 
+
+
 /*
  * Local prototypes
  */
- 
- 
+
+
 /*
  * Data definitions
  */
- 
- 
+
+
 /*
  * Function implementation
  */
@@ -79,7 +79,7 @@
  * the first one. It assumes strictly alternating use of both methods.
  *   @return
  * The returned pointer points to some memory space, capable of holding an event with
- * \a sizeOfPayload Bytes of payload, i.e. at least (sizeof(ede_externalEvent_t) + \a
+ * \a sizeOfPayload Byte of payload, i.e. at least (sizeof(ede_externalEvent_t) + \a
  * sizeOfPayload) Byte of space.\n
  *   @param hInstance
  * This handle is the identification of the port instance to use.
@@ -206,10 +206,11 @@ bool vsq_createEventQueueHead( ede_eventReceiverPort_t *pPortHead
     vsq_queueHead_t * const pQHead = vsq_createQueueHead(pMemChunkHead);
 
     /* Create a port object for the queue's head. */
-    pPortHead->readBuffer   = edePortDisp_readBuffer;
-    pPortHead->freeBuffer   = edePortDisp_freeBuffer;
-    pPortHead->hInstance    = (uintptr_t)pQHead;
-    
+    pPortHead->providesDataByReference = false;
+    pPortHead->readBuffer              = edePortDisp_readBuffer;
+    pPortHead->freeBuffer              = edePortDisp_freeBuffer;
+    pPortHead->hInstance               = (uintptr_t)pQHead;
+
     return true;
 
 } /* vsq_createEventQueueHead */
@@ -232,7 +233,7 @@ bool vsq_createEventQueueHead( ede_eventReceiverPort_t *pPortHead
  * possible about the actually storable number.\n
  *   A queue length of zero is considered an error in the client code. This is caught by
  * assertion and \a false is returned.
- *   @param sizeOfPayload
+ *   @param maxPayloadSize
  * The size of the payload of a queued standard event, which should be storable \a
  * maxQueueLength times in the queue. This size is just used for specification of the
  * queue's capacity but has no meaning at run-time any more.
@@ -255,7 +256,7 @@ bool vsq_createEventQueueTail( ede_eventSenderPort_t *pPortTail
                              )
 {
     const unsigned int maxEventObjSize = sizeof(ede_externalEvent_t) + maxPayloadSize;
-    
+
     /* The queue implementation module doesn't do any memory allocation. We need to
        first reserve a chunk of required size and then let the constructor fill it. */
     const unsigned int sizeOfEvQueueTail = vsq_getSizeOfQueueTail
@@ -279,10 +280,11 @@ bool vsq_createEventQueueTail( ede_eventSenderPort_t *pPortTail
                                           );
 
     /* Create a port objects for the queue's tail. */
-    pPortTail->allocBuffer  = edePortSdr_allocBuffer;
-    pPortTail->submitBuffer = edePortSdr_submitBuffer;
-    pPortTail->hInstance    = (uintptr_t)pQTail;
-    
+    pPortTail->allocBuffer             = edePortSdr_allocBuffer;
+    pPortTail->submitBuffer            = edePortSdr_submitBuffer;
+    pPortTail->hInstance               = (uintptr_t)pQTail;
+    pPortTail->requiresDataByReference = false;
+
     return true;
 
 } /* vsq_createEventQueueTail */
@@ -315,7 +317,7 @@ void vsq_linkEventQueueHeadWithTail( const ede_eventReceiverPort_t portHead
     vsq_queueHead_t * const pQHead = (vsq_queueHead_t*)portHead.hInstance;
     vsq_queueTail_t * const pQTail = (vsq_queueTail_t*)portTail.hInstance;
     vsq_linkQueueHeadWithTail(pQHead, pQTail);
-    
+
 } /* vsq_linkEventQueueHeadWithTail */
 
 
@@ -347,7 +349,7 @@ void vsq_linkEventQueueTailWithHead( const ede_eventSenderPort_t portTail
     vsq_queueHead_t * const pQHead = (vsq_queueHead_t*)portHead.hInstance;
     vsq_queueTail_t * const pQTail = (vsq_queueTail_t*)portTail.hInstance;
     vsq_linkQueueTailWithHead(pQTail, pQHead);
-    
+
 } /* vsq_linkEventQueueTailWithHead */
 
 
@@ -371,7 +373,7 @@ void vsq_linkEventQueueTailWithHead( const ede_eventSenderPort_t portTail
  * possible about the actually storable number.\n
  *   A queue length of zero is considered an error in the client code. This is caught by
  * assertion and \a false is returned.
- *   @param sizeOfPayload
+ *   @param maxPayloadSize
  * The size of the payload of a queued standard event, which should be storable \a
  * maxQueueLength times in the queue. This size is just used for specification of the
  * queue's capacity but has no meaning at run-time any more.
@@ -409,7 +411,7 @@ bool vsq_createEventQueue( ede_eventReceiverPort_t *pPortHead
     {
         return false;
     }
-                             
+
     /* Mutually link head and tail object in order to get a queue. */
     vsq_linkEventQueueHeadWithTail(*pPortHead, *pPortTail);
     vsq_linkEventQueueTailWithHead(*pPortTail, *pPortHead);

@@ -56,7 +56,7 @@ typedef struct ede_eventSender_t *ede_handleSender_t;
 
 /** Create an event sender object. */
 bool ede_createSender( ede_handleSender_t * const pHandleSender
-                     , ede_eventSenderPort_t portAry[]
+                     , const ede_eventSenderPort_t portAry[]
                      , unsigned int noPorts
                      , const ede_mapSenderEvHandleToIdx_t *pMapSenderEvHandleToPortIndex
                      , ede_memoryPool_t * const pMemPoolSender

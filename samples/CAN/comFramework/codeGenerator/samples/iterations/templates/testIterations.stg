@@ -48,6 +48,6 @@ All Frames in order of parsing:
 
 renderBus(bus) ::= "<bus> with <bus.noFrames> frames and <bus.noAttribDefs> attribute definitions<\n>"
 renderFrame(frame) ::= <<
-<frame>, <frame.id> (<frame.id; format="0x%03x">) on bus <bus><\\>
+<frame>, <frame.id><if(frame.isExtId)>x<endif> (<frame.id; format="0x%03x"><if(frame.isExtId)>x<endif>) on bus <bus><\\>
 <if(!frame.isReceived && !frame.isSent)> (CAUTION: foreign frame)<endif><\n>
 >>

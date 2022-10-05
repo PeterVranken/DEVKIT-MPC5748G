@@ -130,7 +130,7 @@ Outbound multiplexed signals:
 >>
 
 renderBus(bus) ::= "<bus> with <bus.noFrames> frames and <bus.noAttribDefs> attribute definitions<\n>"
-renderFrame(frame) ::= "<frame>, <frame.id> (<frame.id; format=\"0x%03x\">) on bus <bus><\n>"
+renderFrame(frame) ::= "<frame>, <frame.id> (<frame.id; format=\"0x%03x\"><if(frame.isExtId)>x<endif>) on bus <bus><\n>"
 renderPdu(pdu) ::= "<pdu>, in: <pdu.isReceived>, out: <pdu.isSent>, no signals: <pdu.noSignals><\n>"
 renderMuxSSet(muxSSet) ::= <<
 PDU: <pdu>, selector: <pdu.muxSelector>, switch value: <muxSSet.muxValue>, <\\>

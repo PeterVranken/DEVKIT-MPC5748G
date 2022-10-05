@@ -10,7 +10,7 @@
 // group files in order to ensure consistent naming of symbols in different parts of the
 // generated code.
 //
-// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -35,14 +35,13 @@ symbol ::= [ "enumIdxBus_t": {<mnm()>idxCanBus_t}
            , "enumIdxFrame_t": {idxFrameInCanInterfaceEngine_t}
            , "idxBus": {<mnm()>idxBus_<bus.name>}
            , "noBuses": {<mnm()>noBuses}
-           , "idxFrame"
-             : {idxFr_<bus.name>_<frame.name; format="cap">_<frame.id; format="%03x">}
-           , "pairIdAndIdx_t": {<mnm()>pairIdAndIdx_t}
-           , "lookupTableFrameIdxByBusAndId": {_lookupTableFrameIdxByBusAndStdId}
+           , "enumFrame": {mci_idxFr_<bus.name>_<frame.name>_<frameId()>}
+           , "pairIdAndIdx_t": {<mnm()>pairCanIdAndIdx_t}
+           , "lookupTableFrameIdxByBusAndId": {<mnm()>lookupTableFrameIdxByBusAndStdId}
            , "mapFrameIdxByBusAndId": {<mnm()>mapFrameIdxByBusAndId}
            , "rowLengthAry": {<symbol.mapFrameIdxByBusAndId>_rowLengthAry}
            , "mapFrameIdxByBusAndId": {<mnm()>mapFrameIdxByBusAndId}
-           , "mapFrameIdxById": {mapFrameIdxById_<bus>}
+           , "mapFrameIdxById": {_mapFrameIdxById_<bus>}
            , "fctLookupFrIdxByStdId": {<mnm()>getFrameIdxByCanBusAndStdId}
            , default: "codeGenerationError_badKindOfSymbol"
            ]
@@ -52,6 +51,12 @@ symbol ::= [ "enumIdxBus_t": {<mnm()>idxCanBus_t}
 define ::= [ "swSupportExtCanIds": {<MNM()>SUPPORT_EXTENDED_CAN_IDS}
            , "swSupportExtCanIds": {<MNM()>SUPPORT_EXTENDED_CAN_IDS}
            , "useDirectLookup": {<MNM()>USE_DIRECT_LOOKUP_FOR_STD_ID}
+           , "supportSentFrames": {<MNM()>USE_MAP_FOR_SENT_FRAMES}
+           , "isEnumFrameDefExtern": {<MNM()>ENUM_FRAMES_IS_DEFINED}
            , default: "codeGenerationError_badDefine"
            ]
 
+// Some helper templates disambiguate 11 and 29 Bit CAN IDs.
+frameId() ::= "<frame.id><if(frame.isExtId)>x<endif>"
+FRAME_ID() ::= "<frame.id><if(frame.isExtId)>X<endif>"
+pduId() ::= "<pdu.id><if(pdu.isExtId)>x<endif>"

@@ -150,7 +150,7 @@ void <fct.e2eProtectFrame>(<symbol.structFrame_t> *pFrameStruct<if(!pdu.specialS
          CRC computation starts with a frame individual start value and the CAN ID as a 4
        Byte word, low byte first. */
     <bt("uint8_t")> serializedData[5+sizeof(<symbol.structFrame_t>)] =
-        { [0] = <frame.attribMap.crcStartValue>
+        { [0] = <if(isEmpty.(attribVal.chksumDataId))>0 /** @todo There's no CRC start value attribute defined yet in the DBC file */<else><attribVal.chksumDataId><endif>
         , [1] = (<frame.id>ul \>>  0) & 0xff
         , [2] = (<frame.id>ul \>>  8) & 0xff
         , [3] = (<frame.id>ul \>> 16) & 0xff
@@ -158,7 +158,7 @@ void <fct.e2eProtectFrame>(<symbol.structFrame_t> *pFrameStruct<if(!pdu.specialS
         };
 
     /* Copy the binary value of each signal into the serialization buffer. There's no gap
-       between two values, i.e. machine alignment constraints are disregarded; this
+       between two values, i.e., machine alignment constraints are disregarded; this
        requires the use of memcpy. */
     <bt("uint8_t")> *pData = &serializedData[5];
     <iterateSignalsOfFrame(frame,"normal","all","serializeSignal")><\\>
@@ -220,7 +220,7 @@ void <fct.e2eProtectApiFrame>()
          CRC computation starts with a frame individual start value and the CAN ID as a 4
        Byte word, low byte first. */
     <bt("uint8_t")> serializedData[6+sizeof(<symbol.structFrame_t>)] =
-        { [0] = <frame.attribMap.crcStartValue>
+        { [0] = <if(isEmpty.(attribVal.chksumDataId))>0 /** @todo There's no CRC start value attribute defined yet in the DBC file */<else><attribVal.chksumDataId><endif>
         , [1] = (<frame.id>ul \>>  0) & 0xff
         , [2] = (<frame.id>ul \>>  8) & 0xff
         , [3] = (<frame.id>ul \>> 16) & 0xff
@@ -228,7 +228,7 @@ void <fct.e2eProtectApiFrame>()
         };
 
     /* Copy the binary value of each signal but the checksum signal into the serialization
-       buffer. There's no gap between two values, i.e. machine alignment constraints are
+       buffer. There's no gap between two values, i.e., machine alignment constraints are
        disregarded; this requires the use of memcpy. */
     <bt("uint8_t")> *pData = &serializedData[5];
     <iterateSignalsOfFrame(frame,"normal","all","serializeSignal")><\\>
@@ -263,7 +263,7 @@ void <fct.e2eProtectApiFrame>()
  * The function returns \a true if and only if the expected check value of the CRC is seen.
  * If so, E2E protection approves the correct data contents of the frame.
  *   @param frameContent
- * The frame contents, i.e. the still packed frame as received on the bus.
+ * The frame contents, i.e., the still packed frame as received on the bus.
 <if(!pdu.specialSignalMap.checksum)>
  *   @remark
  * Frame <frame> doesn't have a checksum defined. The function will 

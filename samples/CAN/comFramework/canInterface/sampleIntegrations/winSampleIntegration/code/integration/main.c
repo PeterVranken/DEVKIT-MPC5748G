@@ -3,7 +3,7 @@
  * Main function of this application. This file shows how to integrate
  * the CAN interface with an under Windows simulated operating system.
  *
- * Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -201,7 +201,7 @@ signed int main(signed int argc, char *argv[])
     const char * const greeting =
            "-----------------------------------------------------------------------------\n"
            " " MAIN_APP_GREETING "\n"
-           " Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)\n"
+           " Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)\n"
            " This is free software; see the source for copying conditions. There is NO\n"
            " warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
            "-----------------------------------------------------------------------------";

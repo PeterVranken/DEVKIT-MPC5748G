@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -25,8 +25,8 @@
 # practice, we mainly modify the templates so this is the major dependency.
 .PHONY: generateCode
 genDir := code/codeGen/
-templateList := $(rwildcard $(genDir)templates/, *.stg)
-databaseList := $(rwildcard $(genDir)dbcFiles/, *.dbc)
+templateList := $(call rwildcard, $(genDir)templates/, *.stg)
+databaseList := $(call rwildcard, $(genDir)dbcFiles/, *.dbc)
 #$(info List of StringTemplate V4 templates: $(templateList), DBC files: $(databaseList))
 generateCode: $(genDir)makeTag_generateCode
 

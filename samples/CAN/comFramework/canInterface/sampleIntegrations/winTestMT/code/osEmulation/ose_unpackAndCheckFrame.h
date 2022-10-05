@@ -6,7 +6,7 @@
  * This module contains the set of functions for the end-to-end validation of the CAN
  * frames. A CRC checking function is generated for each CAN frame.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -37,19 +37,16 @@
  * Defines
  */
 
- 
 
 /*
  * Type definitions
  */
 
- 
 
 /*
  * Data declarations
  */
 
- 
 
 /*
  * Function declarations
@@ -539,5 +536,10 @@ extern boolean_t ose_unpackAndCheck_B10_frame_26_26(const uint8_t frameContent[7
 extern boolean_t ose_unpackAndCheck_B10_frame_515_515(const uint8_t frameContent[4]);
 /** Unpack a frame and run E2E validation. */
 extern boolean_t ose_unpackAndCheck_B10_frame_677_677(const uint8_t frameContent[4]);
+
+
+/*
+ * Inline function definitions
+ */
 
 #endif // !defined(OSE_UNPACKANDCHECKFRAME_DEFINED)

@@ -351,15 +351,15 @@ void loop()
 
     /* Compute the CPU load and write the result into a global variable. No
        access synchronization is needed here since writing and reading a uint8 is atomic. */
-    uint8_t cpuLoad = gsl_getSystemLoad();
+    const uint8_t cpuLoad = gsl_getSystemLoad();
 
 #if ENABLE_PRINTF_FOR_IDLE_TASK
     printf("CPU load: %.1f %%\n", (double)cpuLoad/2.0);
 #ifdef DEBUG
     cli();
-    volatile unsigned long cntOnCanReceive = _cntOnCanReceive
-                         , cnt10ms = _cnt10ms
-                         , cnt100ms = _cnt100ms;
+    const unsigned long cntOnCanReceive = _cntOnCanReceive
+                      , cnt10ms = _cnt10ms
+                      , cnt100ms = _cnt100ms;
     sei();    
     printf("Task counts: CAN reception: %lu, 10ms: %lu, 100ms: %lu\n"    
           , cntOnCanReceive
@@ -367,7 +367,6 @@ void loop()
           , cnt100ms
           );
 #endif
-
     uint8_t u;
     for(u=0; u<RTOS_NO_TASKS; ++u)
     {
@@ -378,10 +377,10 @@ void loop()
               );
     }
     cli();
-    cbk_stsTransmission_t stsTransmission_1024 = pck_API_PT_StateEcu01_1024.stsTransmission
-                        , stsTransmission_1040 = pck_API_PT_StateEcu02_1040.stsTransmission
-                        , stsTransmission_2032 = pck_API_PT_UserLimits_2032.stsTransmission;
-    uint16_t noQueueFullEvents = apt_noLostFrameEvents;
+    const cbk_stsTransmission_t stsTransmission_1024 = pck_API_PT_StateEcu01_1024.stsTransmission
+                              , stsTransmission_1040 = pck_API_PT_StateEcu02_1040.stsTransmission
+                              , stsTransmission_2032 = pck_API_PT_UserLimits_2032.stsTransmission;
+    const uint16_t noQueueFullEvents = apt_noLostFrameEvents;
     sei();
     printf( "Can status: StateEcu01, 1024: %u, StateEcu01, 1040: %u, UserLimits, 2032: %u,"
             " lost events: %u\n"
@@ -394,13 +393,13 @@ void loop()
     /* The results are computed in the 10ms task. We need mutual exclusion, when accessing
        the data. */
     cli();
-    pck_PT_InfoPowerDisplay_1536_t PT_InfoPowerDisplay_1536 = pck_API_PT_InfoPowerDisplay_1536
+    const pck_PT_InfoPowerDisplay_1536_t PT_InfoPowerDisplay_1536 = pck_API_PT_InfoPowerDisplay_1536
                                                               .signals;
-    signed int torque = (int)PCK_PT_1040_TORQUE_BIN_TO_FLT
-                                        (pck_API_PT_StateEcu02_1040.signals.torque)
-             , speedOfRotation = (int)PCK_PT_1024_SPEEDOFROTATION_BIN_TO_FLT
+    const signed int torque = (int)PCK_PT_1040_TORQUE_BIN_TO_FLT
+                                            (pck_API_PT_StateEcu02_1040.signals.torque)
+                   , speedOfRotation = (int)PCK_PT_1024_SPEEDOFROTATION_BIN_TO_FLT
                                         (pck_API_PT_StateEcu01_1024.signals.speedOfRotation);
-    signed long power = (long)PCK_PT_1536_POWER_BIN_TO_FLT(PT_InfoPowerDisplay_1536.power);
+    const signed long power = (long)PCK_PT_1536_POWER_BIN_TO_FLT(PT_InfoPowerDisplay_1536.power);
     sei();
     if(PT_InfoPowerDisplay_1536.state != 1 /* valid or (saturated) overflow */)
     {

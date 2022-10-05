@@ -9,7 +9,7 @@
 // The functions are globally accessible, so their names are composed such that name
 // clashes across different buses won't appear.
 //
-// Copyright (C) 2015-2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -41,6 +41,9 @@ canIfDef(cluster, info) ::= <<
 <! First put a file header with the reusable library template modC !>
 <modC(["Implementation of CAN interface for cluster ", cluster.name, "."])>
 <! The list of functions is put after the file frame shaped by modC !>
+<if(cluster.hasFloatingPointSignals)><floatingPointSignalHelpers()>
+
+<endif>
 <cluster.busAry:renderBus(false,rest(cluster.busAry))>
 >>
 
@@ -50,7 +53,6 @@ canIfDecl(cluster, info) ::= <<
 <! All code is shaped by overloading the regions of the template modH, see below !>
 <modH(["Global interface of CAN pack/unpack functions for cluster ", cluster.name, "."])>
 >>
-
 
 
 // Configure the template mod.stg:modC, which shapes the file frame contents: The included
@@ -130,6 +132,48 @@ signalDefDecl(signal, isDef) ::= <<
 <if(!isDef)>extern <endif><bt(signal.type)> <cSigName()><if(isDef)> = 0<endif>;<\\>
 <if(info.optionMap.suppressUnaffectedSignals && !signal.isReceived && !pdu.isSent)> /* Signal is not used. */<endif><\n>
 >>
+
+
+// Some conditionally generated helper functions for handling (very rare) floating point
+// signals.
+floatingPointSignalHelpers() ::= <<
+/**
+ * Reinterpret cast, which delivers the interpretation of an integral 32 Bit expression as
+ * IEEE 754 32 Bit floating point value.
+ * @return
+ *   Get the floating point interpretation of the value \a fAsU32.
+ * @param fAsU32
+ *   A 32 Bit binary object, which is considered an IEEE 754 floating point object despite
+ * of its formal data type.
+ * @warning
+ *   The implementation of the function requires that the underlaying runtime environment
+ * uses IEEE 754 floating point arithmetics.
+ */
+static inline <bt("float32_t")> reinterpret_cast_f32(<bt("uint32_t")> fAsU32)
+{
+    return *(const <bt("float32_t")>*)&fAsU32;
+}
+
+
+/**
+ * Reinterpret cast, which delivers the interpretation of an integral 64 Bit expression as
+ * IEEE 754 64 Bit floating point value.
+ * @return
+ *   Get the floating point interpretation of the value \a fAsU64.
+ * @param fAsU64
+ *   A 64 Bit binary object, which is considered an IEEE 754 floating point object despite
+ * of its formal data type.
+ * @warning
+ *   The implementation of the function requires that the underlaying runtime environment
+ * uses IEEE 754 floating point arithmetics.
+ */
+static inline <bt("float64_t")> reinterpret_cast_f64(<bt("uint64_t")> fAsU64)
+{
+    return *(const <bt("float64_t")>*)&fAsU64;
+}
+
+>>
+
 
 
 // A (un)pack function pair of prototypes.

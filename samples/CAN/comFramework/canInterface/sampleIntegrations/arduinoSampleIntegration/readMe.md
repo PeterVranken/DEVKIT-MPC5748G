@@ -22,22 +22,30 @@ regularly to the console window of the Arduino IDE. (Serial connection
 must be opened at the IDE.) Please note, status information is printed
 only in DEBUG compilation.
 
-The build requires an Arduino 1.0.6 installation and additionally the
-environment variable ARDUINO_HOME needs to point to this installation. The
-reason is that the GNU avr-gcc tools and the Arduino libraries are located
-by the makefile via this variable. GNU make 3.81 should be in the system
-search path, then the build command would be (Windows, other systems
-accordingly):
+The build requires an Arduino 1.8.x installation. Additionally, two
+environment variables need to be set. (It's double-checked by the
+makefile.) The GNU avr-gcc tools, the Arduino libraries and basic file
+operations are located by the makefile via these variables:
+
+- ARDUINO_HOME: Needs to point to the Arduino installation, i.e., to
+  the parent folder of folders drivers, examples, hardware, etc.
+- UNIX_TOOLS_HOME: Needs to point to a folder containing UNIX
+  executables like cp, mv, mkdir 
+
+GNU make 3.81 or higher should be in the system search path.
+
+Once these pre-conditions are fullfilled, the build command would be
+(Windows, other systems accordingly):
 
 ~~~~~~~~~~~~~~~~~~~
-cd <...>\comFramework\canInterface\components\arduinoSampleIntegration
+cd <...>\comFramework\canInterface\sampleIntegrations\arduinoSampleIntegration
 make build
 ~~~~~~~~~~~~~~~~~~~
 
 to build the flashable hex file or 
 
 ~~~~~~~~~~~~~~~~~~~
-cd <...>\comFramework\canInterface\components\arduinoSampleIntegration
+cd <...>\comFramework\canInterface\sampleIntegrations\arduinoSampleIntegration
 make -s COM_PORT=COM10 upload
 ~~~~~~~~~~~~~~~~~~~
 
@@ -167,6 +175,6 @@ code generator.
 Last but not least we have folder RTOS. A popular open source real time
 operating system for Arduino has been placed here. Nothing special about
 this, maybe with the exception of file
-comFramework\\canInterface\\components\\arduinoSampleIntegration\\code\\RTOS\\rtosConfig\\rtos.config.h,
+comFramework\\canInterface\\sampleIntegrations\\arduinoSampleIntegration\\code\\RTOS\\rtosConfig\\rtos.config.h,
 which configures the RTOS at compile time (number of tasks, required task
 communication objects, etc.).

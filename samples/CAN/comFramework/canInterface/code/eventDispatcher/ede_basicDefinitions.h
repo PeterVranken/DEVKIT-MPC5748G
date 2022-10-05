@@ -33,7 +33,27 @@
  * Defines
  */
 
-#ifdef __GNUC__
+/* The software is written as portable as possible. This requires the awareness of the C
+   language standard it is compiled with - particularly the new stuff from the C11 standard
+   strongly supports portability. (Effectively, not using C11 means that GCC will be
+   required for a lower degree of portability.)
+     If your environment supports C11 then you should use it and make this #define on the
+   compiler's command line.
+     With respect to the language feature C11 and C17 are identical. We combine the in one
+   switch. */
+#if defined(__STDC_VERSION__)
+# if (__STDC_VERSION__)/100 == 2017
+#  define _STDC_VERSION_C17
+#  define _STDC_VERSION_C17_C11
+# elif (__STDC_VERSION__)/100 == 2011
+#  define _STDC_VERSION_C11
+#  define _STDC_VERSION_C17_C11
+# elif (__STDC_VERSION__)/100 == 1999
+#  define _STDC_VERSION_C99
+# endif
+#endif
+
+#if defined(__GNUC__) || defined(__arm__)
 
 /** Intentionally unused objects in the C code can be marked using this define. A compiler
     warning is avoided. */

@@ -136,26 +136,6 @@
  * Local type definitions
  */
 
-/** A CAN frame send event. A dispatcher queue is used to propagate this event thread-safe
-    from the sending APSW funtion to the simulation of CAN sending in this OS emulation.\n
-      The event contains all required frame data like bus index, ID and data contents. */
-typedef struct eventSendFrame_t
-{
-    /** The CAN bus to send the frame on. */
-    unsigned int idxCanBus;
-
-    /** The CAN ID. */
-    uint32_t canId;
-
-    /** The number of bytes to send. */
-    unsigned int noBytes;
-
-    /** The data contents. */
-    uint8_t frameContents[8];
-
-} eventSendFrame_t;
-
-
 
 /*
  * Local prototypes
@@ -1025,20 +1005,19 @@ static boolean_t initCANBusSimulation()
     /* Even if it is entirely useless in the given Windows environment: We demonstrate the
        use of distinct memory pools for sending events (by simulated OS) and for receiving
        events (by APSW). */
-    mem_fctCriticalSection_t const mutualExclusionGuard = NULL;
     static char heapMemoryOS[SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     static char heapMemoryAPSW[SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     bool success ATTRIB_DBG_ONLY = mem_createMemoryPool
                                             ( &_memoryPoolOS
                                             , /* pPoolMemory */ heapMemoryOS
                                             , /* sizeOfPoolMemory */ sizeof(heapMemoryOS)
-                                            , mutualExclusionGuard
+                                            , MEM_VOID_CRITICAL_SECTION_OBJECT
                                             );
     assert(success);
     success = mem_createMemoryPool( &_memoryPoolAPSW
                                   , /* pPoolMemory */ heapMemoryAPSW
                                   , /* sizeOfPoolMemory */ sizeof(heapMemoryAPSW)
-                                  , mutualExclusionGuard
+                                  , MEM_VOID_CRITICAL_SECTION_OBJECT
                                   );
     assert(success);
 
@@ -1092,7 +1071,7 @@ static boolean_t initCANBusSimulation()
     /* Create the senders. Here, we demonstrate the use of one sender per queue (instead of
        a single sender with n ports), which saves us the map that associates a message
        handle with a port index. */
-    for(unsigned int idxCnctPt=0u; idxCnctPt<sizeOfAry(_hEventSenderAry); ++idxCnctPt)
+    for(unsigned int idxCnctPt=0u; success && idxCnctPt<sizeOfAry(_hEventSenderAry); ++idxCnctPt)
     {
         /* _memoryPoolAPSW: The sender object is run in the context of the ASPW, in an OSE
            offered API, which is invoked by the APSW. */
@@ -1124,7 +1103,6 @@ static boolean_t initCANBusSimulation()
        registration, in- and outbound, but not inside such a block. (Reason: The complete
        registration phase is single-threaded, race-condition free, thus strictly
        sequentially executed.) */
-    success = true;
     unsigned int hOsMsg;
     for(hOsMsg=0; success && hOsMsg<ose_noSentCanFrames; ++hOsMsg)
     {
@@ -1493,23 +1471,23 @@ ose_irqHandlerCanRx_t ose_installIrqHandlerCanRx(ose_irqHandlerCanRx_t irqHandle
  * processed.
  *   @param pData
  * The frame contents, already byte encoded.
- *   @param DLC
+ *   @param sizeOfData
  * The number of bytes to send out.
  */
 bool ose_sendCanMessage( unsigned int idxConnectionPoint
                        , unsigned int idxMessageOs
                        , uint8_t *pData
-                       , unsigned int DLC
+                       , unsigned int sizeOfData
                        )
 {
-    assert(DLC <= 8  &&  idxMessageOs < ose_noSentCanFrames);
+    assert(sizeOfData <= 8  &&  idxMessageOs < ose_noSentCanFrames);
     if(idxConnectionPoint < sizeOfAry(_hEventSenderAry))
     {
         return ede_postEvent( _hEventSenderAry[idxConnectionPoint]
                             , /* kindOfEvent */ 0u
                             , /* senderHandleEvent */ idxMessageOs
                             , pData
-                            , DLC
+                            , sizeOfData
                             );
     }
     else

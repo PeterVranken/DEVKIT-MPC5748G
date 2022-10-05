@@ -324,14 +324,13 @@ void apt_taskInit()
     bool initOk EDE_DBG_ONLY;
     
     /* Initialize the memory pool. Since we create all objects, and particularly timer
-       objects at single-threaded initialization time, we don't need a pool with mutula
+       objects at single-threaded initialization time, we don't need a pool with mutual
        exclusion. */
-    mem_fctCriticalSection_t const mutualExclusionGuard = NULL;
     static char heapMemoryForCanInterface[APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     initOk = mem_createMemoryPool( &apt_memoryPool
                                  , /* pPoolMemory */ heapMemoryForCanInterface
                                  , /* sizeOfPoolMemory */ sizeof(heapMemoryForCanInterface)
-                                 , mutualExclusionGuard
+                                 , MEM_VOID_CRITICAL_SECTION_OBJECT
                                  );
     ASSERT(initOk);
 

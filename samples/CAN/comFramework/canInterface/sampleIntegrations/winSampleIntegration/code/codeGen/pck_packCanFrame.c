@@ -2,7 +2,7 @@
  * @file pck_packCanFrame.c
  * Implementation of pack/unpack functions for the CAN frames of cluster winSampleIntegration.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)

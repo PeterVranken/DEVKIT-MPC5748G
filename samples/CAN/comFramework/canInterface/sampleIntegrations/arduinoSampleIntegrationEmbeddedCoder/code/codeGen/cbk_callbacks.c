@@ -110,7 +110,7 @@
  * message buffer full or bus-off. This bit is written into the status word in the API to
  * the APSW.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)

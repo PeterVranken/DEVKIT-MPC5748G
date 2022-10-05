@@ -4,7 +4,7 @@
  * @file cst_canStatistics.h
  * Some useful statistics about the CAN frames of cluster canInterfaceMTTest.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -384,22 +384,25 @@
 #define CST_NO_CAN_FRAMES_SENT_MIXED_B10 1u
 
 
- 
+
 
 /*
  * Type definitions
  */
 
- 
 
 /*
  * Data declarations
  */
 
- 
 
 /*
  * Function declarations
+ */
+
+
+/*
+ * Inline function definitions
  */
 
 #endif // !defined(CST_CANSTATISTICS_DEFINED)

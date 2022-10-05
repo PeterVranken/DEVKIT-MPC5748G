@@ -39,6 +39,7 @@
  *   apt_task100ms
  *   apt_taskShutdown
  * Local functions
+ *   getMsgDescription
  *   getCanId
  *   isInboundTransmission
  *   getIdxMessage
@@ -248,7 +249,7 @@ static inline const cdt_canFrame_t *getMsgDescription(const ede_callbackContext_
  * This function may be called from an external event or a timer callback.
  *   @remark
  * This is a helper function for smooth migration of client code made for elder revisions
- * of the event dispatcher: It emulates the CAN specific API cde_isInboundTransmission from
+ * of the event dispatcher: It emulates the CAN specific API cde_getCanId from
  * the dispatcher engine in revision <= 1.5.
  */
 static cdt_canId_t getCanId(const ede_callbackContext_t *pContext)
@@ -286,34 +287,6 @@ static bool isInboundTransmission(const ede_callbackContext_t *pContext)
 
 
 
-///**
-// * A callback may invoke this method to get the index into the APSW's tables with message
-// * definitions. For timer callbacks, it relates to the message, which is the parent event
-// * of the timer.
-// *   @return
-// * The index of the related message in table \a cdt_canFrameAry.
-// *   @param pContext
-// * The dispatcher context this callback is invoked from.
-// *   @remark
-// * This function may be called from all callbacks.
-// *   @remark
-// * This function may be called from an external event or a timer callback.
-// *   @remark
-// * This is a helper function for smooth migration of client code made for elder revisions
-// * of the event dispatcher: It emulates the CAN specific API cde_isInboundTransmission from
-// * the dispatcher engine in revision <= 1.5.
-// */
-//static unsigned int getIdxMessage(const ede_callbackContext_t *pContext)
-//{
-//    const cdt_canFrame_t * const pMsgDescCde = getMsgDescription(pContext);
-//    const unsigned int idxMsgCde = pMsgDescCde - cdt_canFrameAry;
-//    assert(idxMsgCde < sizeOfAry(cdt_canFrameAry));
-//    return idxMsgCde;
-//    
-//} /* getIdxMessage */
-
-
-
 /**
  * A callback may invoke this method to get the operating system handle of the related bus.
  * For timer callbacks, this is the bus of the message, which is the parent event of the
@@ -329,7 +302,7 @@ static bool isInboundTransmission(const ede_callbackContext_t *pContext)
  * This function may be called from an external event or a timer callback.
  *   @remark
  * This is a helper function for smooth migration of client code made for elder revisions
- * of the event dispatcher: It emulates the CAN specific API cde_isInboundTransmission from
+ * of the event dispatcher: It emulates the CAN specific API cde_getIdxBus from
  * the dispatcher engine in revision <= 1.5.
  */
 static unsigned int getIdxBus(const ede_callbackContext_t *pContext)
@@ -443,7 +416,7 @@ static void onMessageReception(const ede_callbackContext_t *pContext)
 
     } /* if(Do we have a timeout timer for the given transmission pattern?) */
 
-    /* For event kind EDE_EV_FRAME_RECEPTION the event's data is the message contents. */
+    /* For event kind apt_evt_newRxMsg the event's data is the message contents. */
     unsigned int sizeOfEvData;
     const uint8_t * const messageContents = ede_getEventData(pContext, &sizeOfEvData);
     assert(sizeOfEvData <= 8);
@@ -600,7 +573,7 @@ static void onInitReceivedMessages(const ede_callbackContext_t *pContext)
  * The implementation of this callback needs to be reentrant. It can be called coincidently
  * from different dispatchers clocked in different threads.
  */
-static void protectAndSendMessage(const ede_callbackContext_t *pContext)
+static void protectAndSendMessage(const ede_callbackContext_t * const pContext)
 {
     const cdt_canFrame_t * const pMsgDescCde = getMsgDescription(pContext);
     assert(!pMsgDescCde->isReceived);
@@ -611,7 +584,7 @@ static void protectAndSendMessage(const ede_callbackContext_t *pContext)
         pMsgDescCde->fctProtectApiFrame();
 
     /* Pack the message. */
-    uint8_t messageContent[pMsgDescCde->DLC];
+    uint8_t messageContent[pMsgDescCde->size];
     pMsgDescCde->fctPackApiFrame(&messageContent[0]);
 
 #if 0
@@ -646,7 +619,7 @@ static void protectAndSendMessage(const ede_callbackContext_t *pContext)
     if(ose_sendCanMessage( idxConnectionPoint
                          , hOsMessage
                          , &messageContent[0]
-                         , pMsgDescCde->DLC
+                         , pMsgDescCde->size
                          )
       )
     {
@@ -731,7 +704,8 @@ static void onDueCheckEventMessage(const ede_callbackContext_t *pContext)
 
         /* The time when the timer should fire the next time depends. We had an event in
            this tick, so we need to regard the minimum distance. */
-        tiNewFromNow = pMsgDescCde->tiMinDistance;
+        tiNewFromNow = (int)pMsgDescCde->tiMinDistance;
+        assert(tiNewFromNow > 0);
     }
     else
     {
@@ -792,10 +766,11 @@ static void onDueCheckMixedMessage(const ede_callbackContext_t *pContext)
         /* The time when the due check should be done again depends. We had a sent event in
            this tick, so we need to regard the minimum distance.
              The timeout timer is retriggered. */
-        tiNewFromNowDueCheck = pMsgDescCde->tiMinDistance;
+        tiNewFromNowDueCheck = (int)pMsgDescCde->tiMinDistance;
+        assert(tiNewFromNowDueCheck > 0  &&  (int)pMsgDescCde->tiCycle > 0);
         ede_retriggerSingleShotTimer( pContext
                                     , hTimerTimeout
-                                    , /* tiNewFromNow */ pMsgDescCde->tiCycle
+                                    , /* tiNewFromNow */ (int)pMsgDescCde->tiCycle
                                     );
     }
     else
@@ -837,11 +812,12 @@ static void onInitSentMessages(const ede_callbackContext_t *pContext)
         case cap_enumSendMode_regular:
         {
             /* Regular messages are most simple. We apply a regular timer. */
+            assert((int)pMsgDescCde->tiCycle > 0);
 #ifdef DEBUG
             ede_handleTimer_t hTimer =
 #endif
             ede_createPeriodicTimer( pContext
-                                   , /* tiPeriod */ pMsgDescCde->tiCycle
+                                   , /* tiPeriod */ (int)pMsgDescCde->tiCycle
                                    , /* callback */ onSendRegularMessage
                                    , /* refUserContextData */ 0
                                    );
@@ -897,9 +873,10 @@ static void onInitSentMessages(const ede_callbackContext_t *pContext)
                    != EDE_INVALID_TIMER_HANDLE
                   );
 
+            assert((int)pMsgDescCde->tiCycle > 0);
             _hdlCtxDataOutMixedAry[idxCtxData].hTimerTimeout =
             ede_createSingleShotTimer( pContext
-                                     , /* tiPeriod */ pMsgDescCde->tiCycle
+                                     , /* tiPeriod */ (int)pMsgDescCde->tiCycle
                                      , /* callback */ onDueCheckMixedMessage
                                      , /* refUserContextData */ 0
                                      , /* killAtDueTime */ false
@@ -915,7 +892,7 @@ static void onInitSentMessages(const ede_callbackContext_t *pContext)
 
     } /* switch(Transmission pattern of message) */
 
-} /* onInitSentMessages */
+} /* End of onInitSentMessages */
 
 
 
@@ -1026,26 +1003,25 @@ static rtos_taskFctResult_t apt_taskInit()
     /* Even if it is entirely useless in the given Windows environment: We demonstrate the
        use of distinct memory pools for sending events (by simulated OS) and for receiving
        events (by APSW). */
-    mem_fctCriticalSection_t const mutualExclusionGuard = NULL;
     static char heapMemoryOS[APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     static char heapMemoryAPSW[APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     initOk = mem_createMemoryPool( &apt_memoryPoolOS
                                  , /* pPoolMemory */ heapMemoryOS
                                  , /* sizeOfPoolMemory */ sizeof(heapMemoryOS)
-                                 , mutualExclusionGuard
+                                 , MEM_VOID_CRITICAL_SECTION_OBJECT
                                  );
     assert(initOk);
     initOk = mem_createMemoryPool( &apt_memoryPoolAPSW
                                  , /* pPoolMemory */ heapMemoryAPSW
                                  , /* sizeOfPoolMemory */ sizeof(heapMemoryAPSW)
-                                 , mutualExclusionGuard
+                                 , MEM_VOID_CRITICAL_SECTION_OBJECT
                                  );
     assert(initOk);
 
     /* Create the required dispatcher systems. */
     initOk = ede_createDispatcherSystem
                         ( &_hDispatcherSystem
-                        , /* noEventDispatcherEngines */ APT_NO_DISPATCHERS
+                        , APT_NO_DISPATCHERS
                         , /* maxNoEventSourcesExt */ CST_NO_CAN_FRAMES_RECEIVED
                         , /* maxNoEventSourcesInt */ CST_NO_CAN_FRAMES_SENT
                         , &apt_memoryPoolAPSW

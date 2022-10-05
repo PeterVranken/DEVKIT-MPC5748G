@@ -27,18 +27,6 @@
 #include <assert.h>
 
 
-/* The software is written as portable as possible. This requires the awareness of the C
-   language standard it is compiled with. */
-#if defined(__STDC_VERSION__)
-# if (__STDC_VERSION__)/100 == 2011
-#  define _STDC_VERSION_C11
-# elif (__STDC_VERSION__)/100 == 1999
-#  define _STDC_VERSION_C99
-# endif
-#endif
-
-
-
 /*
  * Configuration.
  *   The defines and typedefs found in this section are the configuration of the CAN

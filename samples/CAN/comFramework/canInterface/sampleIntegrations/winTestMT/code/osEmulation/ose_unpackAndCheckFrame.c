@@ -4,7 +4,7 @@
  * This module contains the set of functions for the end-to-end validation of the CAN
  * frames. A CRC checking function is generated for each CAN frame.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -42,25 +42,21 @@
  * Defines
  */
 
- 
 
 /*
  * Local type definitions
  */
 
- 
 
 /*
  * Local prototypes
  */
 
- 
 
 /*
  * Data definitions
  */
 
- 
 
 /*
  * Function implementation

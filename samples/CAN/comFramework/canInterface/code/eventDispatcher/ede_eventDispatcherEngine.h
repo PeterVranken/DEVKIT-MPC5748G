@@ -109,16 +109,16 @@ bool ede_createDispatcherSystem( ede_handleDispatcherSystem_t * const pHandleDis
                                );
 
 /** Create a dispatcher object. */
-bool ede_createDispatcher( ede_handleDispatcherSystem_t dispatcherSystem
+bool ede_createDispatcher( ede_handleDispatcherSystem_t hDispatcherSystem
                          , unsigned int idxDispatcher
                          , signed int tiTick
-                         , ede_eventReceiverPort_t portAry[]
+                         , const ede_eventReceiverPort_t portAry[]
                          , unsigned int noPorts
                          , ede_mapSenderEvHandleToIdx_t mapSdrEvHdlToEdeEvSrcIdx
                          );
 
 /** Register an event source for processing of external events by the engine. */
-unsigned int ede_registerExternalEventSource( ede_handleDispatcherSystem_t hSystem
+unsigned int ede_registerExternalEventSource( ede_handleDispatcherSystem_t hDispatcherSystem
                                             , unsigned int idxDispatcher
                                             , ede_kindOfEvent_t kindOfEvent
                                             , ede_senderHandleEvent_t senderHandleEvent
@@ -127,7 +127,7 @@ unsigned int ede_registerExternalEventSource( ede_handleDispatcherSystem_t hSyst
                                             );
 
 /** Register an internal event source. */
-unsigned int ede_registerInternalEventSource( ede_handleDispatcherSystem_t hSystem
+unsigned int ede_registerInternalEventSource( ede_handleDispatcherSystem_t hDispatcherSystem
                                             , unsigned int idxDispatcher
                                             , ede_callback_t callback
                                             , uintptr_t refEventSourceData

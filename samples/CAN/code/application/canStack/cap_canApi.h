@@ -5,7 +5,7 @@
  * Declaration of API and pack/unpack functions for the CAN messages of cluster
  * DEVKIT-MPC5775G.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)

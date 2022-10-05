@@ -2,9 +2,9 @@
 // cap_canApi.c.stg
 // This is a template group file for StringTemplate V4, see www.stringtemplate.org.
 //
-// The templates describe the generation of the data oriented CAN API with the Embedded
-// Coder generated APSW code. The integration of the API is supported by also generated
-// pack and unpack functions, one such pair for each frame.
+// The templates describe the generation of the data oriented CAN API with the APSW code.
+// The integration of the API is supported by also generated pack and unpack functions, one
+// such pair for each frame.
 //
 // See template moduleDescription for more details.
 //
@@ -40,9 +40,9 @@ import "symbols.stg"
 import "globalInterface.stg"
 
 moduleDescription() ::= <<
- * This file implements the data oriented CAN API between the Embedded Coder generated APSW
- * code and the upper layers of the CAN stack. The global data structure is initialized
- * with the initial signal values from the CAN network database.\n
+ * This file implements the data oriented CAN API between the APSW code and the upper
+ * layers of the CAN stack. The global data structure is initialized with the initial
+ * signal values from the CAN network database.\n
  *   The integration of the API with the CAN stack is supported by a set of pack and unpack
  * functions; one such pair of functions is available for each CAN frame. The pack function
  * composes the binary frame contents from the set of signal values found in the API and
@@ -143,8 +143,9 @@ canApiDecl(cluster, info) ::= <<
 
 /** The enumeration of supported message send patterns. */
 typedef enum <symbol.enumSendMode_t>
-    { <first(cluster.busAry).attribDefMap.(attribName.sendMode).enumValAry:{val|<symbol.enumSendMode>_<val.name> = <val.i0>}; separator=", ", wrap="\n      ">
-    } <symbol.enumSendMode_t>;
+{
+    <first(cluster.busAry).attribDefMap.(attribName.sendMode).enumValAry:{val|<symbol.enumSendMode>_<val.name> = <val.i0>}; separator=", ", wrap="\n      ">
+} <symbol.enumSendMode_t>;
 
 <typedefStsTransmission()>
 <listOfTypedefsStructFrameAndBus(cluster)>
@@ -324,7 +325,6 @@ packUnpackFct(pdu) ::= <<
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[])
 {
     <fct.packFrame>
@@ -347,7 +347,6 @@ void <fct.packApiFrame>(<bt("uint8_t")> <msgAry()>[])
  * The byte array. The packed signal values will be found in this array after return.
  * Unused bits will be set to zero.
  */
-
 void <fct.packFrame>
                     ( <bt("uint8_t")> <msgAry()>[]
                     , const <symbol.structFrame_t> *pFrameStruct
@@ -383,7 +382,6 @@ void <fct.packFrame>
  *   @param <msgAry()>
  * The byte array. The signal values are extracted from this array.
  */
-
 void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[])
 {
     <fct.unpackFrame>
@@ -403,7 +401,6 @@ void <fct.unpackApiFrame>(const <bt("uint8_t")> <msgAry()>[])
  *   @param <msgAry()>
  * The byte array. The signal values are extracted from this array.
  */
-
 void <fct.unpackFrame>
                     ( <symbol.structFrame_t> *pFrameStruct
                     , const <bt("uint8_t")> <msgAry()>[]

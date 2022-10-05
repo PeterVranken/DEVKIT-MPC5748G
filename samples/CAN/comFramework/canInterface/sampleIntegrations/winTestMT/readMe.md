@@ -37,7 +37,7 @@ The sample code comes along with all source files and build scripts
 search path, then the build command would be (Windows, other systems
 accordingly):
 
-    cd <...>\comFramework\canInterface\components\winTestMT
+    cd <...>\comFramework\canInterface\sampleIntegrations\winTestMT
     make -s build
 
 To start the sample application you may type:
@@ -206,7 +206,7 @@ byte boundaries as much as possible. This is beneficial for testing.
 The transmission timing patterns of the messages and the way these patterns
 are specified by attributes in the network databases is identical to the
 other sample integrations, see e.g.
-<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/winSampleIntegration/doc/specificationNetworkDatabase.html#attributes>.
+<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/sampleIntegrations/winSampleIntegration/doc/specificationNetworkDatabase.html#attributes>.
 
 #### Folder code/APSW
 

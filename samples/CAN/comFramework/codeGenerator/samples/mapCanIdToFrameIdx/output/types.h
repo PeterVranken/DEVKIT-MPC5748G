@@ -12,7 +12,7 @@
  * generate shift operations on Booleans, which is unacceptable for the abstract concept of
  * a Boolean but technically alright as long as the rule above is obeyed.
  *
- * Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,6 +32,7 @@
  * Include files
  */
 
+#include <stdbool.h>
 
 /*
  * Defines
@@ -41,13 +42,6 @@
 /*
  * Global type definitions
  */
-
-/** The definition of the Boolean type.
-      @remark The primitive Boolean type needs to resolve to an unsigned integer. The
-    code generator handles signals of all target types - which includes Bool - uniquely by
-    masking and shifting. Therefore, it'll generate shift operations on Booleans, which is
-    technically alright as long as this rule is obeyed. */
-typedef unsigned char Bool;
 
 typedef unsigned char UInt8;
 typedef unsigned short UInt16;

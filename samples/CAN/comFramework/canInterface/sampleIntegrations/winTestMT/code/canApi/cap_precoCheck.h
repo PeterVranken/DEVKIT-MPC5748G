@@ -23,7 +23,7 @@
  * file about most of the tests! Error code will show up only if the error has been
  * detected in the network file.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -47,6 +47,7 @@
  */
 
 #include "cap_canApi.h"
+#include "cst_canStatistics.h"
 
 /*
  * Defines
@@ -77,6 +78,87 @@
 
 
 
+
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B1
+              , "No single message from canBus_01.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B2
+              , "No single message from canBus_02.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B3
+              , "No single message from canBus_03.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B4
+              , "No single message from canBus_04.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B5
+              , "No single message from canBus_05.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B6
+              , "No single message from canBus_06.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B7
+              , "No single message from canBus_07.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B8
+              , "No single message from canBus_08.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B9
+              , "No single message from canBus_09.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_B10
+              , "No single message from canBus_10.dbc is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );
 
 /** Check the definition of the checksum of frame frame_1706 (1706, 0x6aa)
     on bus B1.\n
@@ -9658,22 +9740,25 @@
        )
 # error Input file canBus_10.dbc, frame frame_677 (677, 0x2a5): Checksums are supported only as an eight Bit integer on byte boundary
 #endif
- 
+
 
 /*
  * Type definitions
  */
 
- 
 
 /*
  * Data declarations
  */
 
- 
 
 /*
  * Function declarations
+ */
+
+
+/*
+ * Inline function definitions
  */
 
 #endif // !defined(CAP_PRECOCHECK_DEFINED)

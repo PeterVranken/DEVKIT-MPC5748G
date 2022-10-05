@@ -2,20 +2,21 @@ Installation of binary distribution of Java application comFramework codeGenerat
 ----------------------------------------------------------------------------------
 
 The code generator belonging to project comFramework is a stand-alone Java
-8 application. An installed Java 8 (version 1.8) or higher is a
-prerequisite of running the code generator. The Java runtime environment
-suffices. You can get the Java JRE at
-http://www.oracle.com/technetwork/java/javase/downloads/index.html (Apr
-2021).
+application. An installed Java 18 or higher is a prerequisite of running
+the code generator. You can get the Java Open JDK at
+https://jdk.java.net/18/ (May 2022). Download the archive (e.g.
+https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_windows-x64_bin.zip
+for Windows x64 users).
 
-Either the Java executable, java.exe, needs to be in the Windows search
-path or the Java installation path -- where bin\java.exe is located in --
-is assigned to a new environment variable COMFRAMEWORK_JAVA_HOME. Given,
-you're Java executable would be
-c:\ProgramFiles\jdk1.8.0_144_win32\jre\bin\java.exe, then you could issue
-the command
+Unzip the archive to a location of your choice and consider adding this
+location to the operating system's search path. Either the Java
+executable, java.exe, needs to be in the Windows search path or the Java
+installation path -- where bin\java(.exe) is located in -- is assigned to
+a new environment variable COMFRAMEWORK_JAVA_HOME. Given, you're Java
+executable would be c:\ProgramFiles\jdk18.0.1.1\bin\java.exe, then you
+could issue the command
 
-    setx COMFRAMEWORK_JAVA_HOME c:\ProgramFiles\jdk1.8.0_144_win32\jre
+    setx COMFRAMEWORK_JAVA_HOME c:\ProgramFiles\jdk18.0.1.1
 
 from a Command Prompt window. (Now you need to open another shell window
 to proceed; the current one will not take the new setting.) Please note,

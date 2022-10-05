@@ -67,7 +67,7 @@ The DBC file used in this sample is the same as in the same integrations
 of comFramework's CAN interface. Hence, the specification of the
 functionality of the Simulink model can be found in form of the hand coded
 APSW in the sample integration of the CAN interface. See
-http://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/winSampleIntegration/code/APSW.
+http://svn.code.sf.net/p/comframe/code/canInterface/trunk/sampleIntegrations/winSampleIntegration/code/APSW.
 
 Note, the pack and unpack functions as essential part of the code generation
 process are not included in the demo application. This sample focuses on

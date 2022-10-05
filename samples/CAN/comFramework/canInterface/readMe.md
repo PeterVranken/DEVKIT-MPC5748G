@@ -1,64 +1,88 @@
-This folder contains the implementation of the comFramework CAN interface and
-some sample integrations on true platforms.
-
-Please refer to the project Wiki, the documentation of the CAN interface
-and the readMe files of the available sample integrations for details:
-
-General Wiki pages:
-
--   [SourceForge project home](<https://sourceforge.net/p/comframe/wiki/Home/>)
--   [SourceForge, installation](<https://sourceforge.net/p/comframe/wiki/Installation/>)
-
-Root documentation of the CAN interface:
-
--   [SourceForge, CAN interface - concept and usage](<https://sourceforge.net/p/comframe/wiki/The%20CAN%20Interface/>)
--   [SourceForge, CAN interface - Doxygen pages](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/canInterface/doc/doxygen/html/index.html)
--   [CAN interface, readMe](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/canInterface/readMe.html>)
--   [**CAN interface, what's new**](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/canInterface/readMe.html#whats-new>)
-
-Sample integrations:
-
--   [Sample integration for Windows](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/winSampleIntegration/readMe.html>)
--   [Sample integration on Arduino](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/arduinoSampleIntegration/readMe.html>)
--   [Sample integration with MathWorks Embedded Coder on Arduino](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/arduinoSampleIntegrationEmbeddedCoder/readMe.html>)
--   [Sample integration with POSIX multi-threading platform](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/winTestMT/readMe.html>)
--   [Sample integration on DEVKIT-MPC5748G](<https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN>)
-
 # The CAN interface #
 
-This is the implementation of the comFramework CAN interface engine. There
-are no other files, particularly no build scripts as the interface engine
-is intended for integration into a real project as source code.
+This is the implementation of the comFramework CAN interface engine. 
+
+Folder `code` contains the source code of the engine. There are no other
+files, particularly no build scripts as the interface engine is intended
+for integration into a real project as source code. The files from this
+folder are typically added to an existing build project for the aimed
+target platform.
+
+Folder `sampleIntegrations` contains source code and build scripts for
+several demo applications of the CAN interface. The reproduction of the
+build requires a particular build tool chain; out of the box we use
+Arduino 1.8 and MinGW GCC for Windows.
 
 Please refer to the project Wiki with the documentation of the CAN interface
 and the readMe files of the available sample integrations for details:
 
 Most relevant Wiki pages:
 
--   [SourceForge project home](<https://sourceforge.net/p/comframe/wiki/Home/>)
--   [SourceForge, installation](<https://sourceforge.net/p/comframe/wiki/Installation/>)
--   [SourceForge, CAN interface - concept and usage](<https://sourceforge.net/p/comframe/wiki/The%20CAN%20Interface/>)
--   [SourceForge, CAN interface - Doxygen pages](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/canInterface/doc/doxygen/html/index.html)
+-   [SourceForge project home](https://sourceforge.net/p/comframe/wiki/Home/)
+-   [SourceForge, installation](https://sourceforge.net/p/comframe/wiki/Installation/)
+-   [SourceForge, CAN interface - concept and usage](https://sourceforge.net/p/comframe/wiki/The%20CAN%20Interface/)
+-   [SourceForge, CAN interface - Doxygen pages](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/doc/doxygen/html/index.html)
 
 Sample integrations:
 
--   [Sample integration for Windows](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/winSampleIntegration/readMe.html>)
--   [Sample integration on Arduino](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/arduinoSampleIntegration/readMe.html>)
--   [Sample integration with MathWorks Embedded Coder on Arduino](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/arduinoSampleIntegrationEmbeddedCoder/readMe.html>)
--   [Sample integration with POSIX multi-threading platform](<https://svn.code.sf.net/p/comframe/code/canInterface/trunk/components/winTestMT/readMe.html>)
+-   [Sample integration for Windows](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/sampleIntegrations/winSampleIntegration/readMe.html)
+-   [Sample integration on Arduino](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/sampleIntegrations/arduinoSampleIntegration/readMe.html)
+-   [Sample integration with MathWorks Embedded Coder on Arduino](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/sampleIntegrations/arduinoSampleIntegrationEmbeddedCoder/readMe.html)
+-   [Sample integration with POSIX multi-threading platform](https://svn.code.sf.net/p/comframe/code/canInterface/trunk/sampleIntegrations/winTestMT/readMe.html)
+-   [Sample integration on DEVKIT-MPC5748G](https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN)
 
 # What's new #
 
-## Release 1.6 ##
+## Release 2.0 ##
 
-Under development:
+An redesign of the software's class model has been made. It targets at
+enlarging the number of supported integration use cases. It's now straight
+forward to integrate into fully memory protected or managed systems or to
+operated closer to the CAN hardware, with leaner software buffering
+strategies.
 
-- Architectural redesign
-  - Concept of allocating objects to specific, well-defined memories
-  - Support of memory protected environments
-  - Better support of different environments with respect to ISR, task,
-    process, multi-core architectures 
-- Little functional changes
+Let's first have a look at revision 1.x. There is a single global (and
+implicit) instance of the whole. It has any number of event dispatchers
+and each dispatcher has one event queue and one handle map, which
+associates the external events got via the queue with the internally
+registered event sources.
+
+In revision 2.0, the "whole" thing of 1.x becomes the new dispatcher
+system. Any number of such systems can be created. A system has any number
+of dispatchers.
+
+Revision 2.0 introduces interfaces and implementations of those. A
+dispatcher no longer has an event queue. Instead, it now has any number of
+event receiver ports and these ports can connect to an arbitrary
+implementation of the event receiver interface.
+
+The additional definition of an event sender interface allows the
+implementation of "connectors", which have both types of ports: Events can
+be submitted via the connector's sender port and the dispatcher can
+consume the submitted events if one of its ports is connected to the
+connector's receiver port. The event queue implementation known from
+revision 1.x is now available as such a connector object.
+
+The new sender object has a sender port and provides an API, which
+strongly resembles the event posting API of the 1.x dispatcher: Creating a
+sender, a connector-queue and a dispatcher and connecting them in chain
+yields a configuration, which is compatible with the monolithic construct
+of revision 1.x.
+
+The malloc API of 1.x has been substituted by a memory pool interface. The
+different objects can be created from the same or from different memory
+pool instances - which is the concept to support memory protected or
+managed systems.
+
+Of course, to facilitate the code migration, the malloc API implementation
+known from 1.x is now available as an implementation of the memory pool
+interface.
+
+Handle mapping has always been a major issue in integrating the CAN
+interface. Already 1.x had used an interface to connect to a map instance
+in order to allow arbitrary mapping strategies. This has been even more
+generalized and a number of map implementations is provided, which should
+cover all existing use cases.
 
 ## Release 1.5 ##
 

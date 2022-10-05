@@ -165,7 +165,7 @@ bool bsw_osInitCanInterface(void)
        entire remaining runtime of the software. */
     static char DATA_OS(heapMemoryOSForCanInterface)[SIZE_OF_HEAP_OS_FOR_CAN_INTERFACE];
     ede_memoryPool_t memoryPoolOS = EDE_INVALID_MEMORY_POOL;
-    const mem_fctCriticalSection_t mutualExclusionGuard = NULL;
+    const mem_criticalSection_t mutualExclusionGuard = MEM_VOID_CRITICAL_SECTION_OBJECT;
     boolean_t success = mem_createMemoryPool
                                     ( &memoryPoolOS
                                     , /* pPoolMemory */ heapMemoryOSForCanInterface
@@ -176,11 +176,11 @@ bool bsw_osInitCanInterface(void)
     ede_memoryPool_t memoryPoolP1 = EDE_INVALID_MEMORY_POOL;
     if(success)
     {
-        /* Create a minimalistic memory pool for the QM process, which allows to create justthe
+        /* Create a minimalist memory pool for the QM process, which allows to create just the
            queue head object. */
-        #define SIZE_OF_HEAP_P1_FOR_CAN_INTERFACE   (28u)
+        #define SIZE_OF_HEAP_P1_FOR_CAN_INTERFACE   (36u)
         static char DATA_P1(heapMemoryP1ForCanInterface)[SIZE_OF_HEAP_P1_FOR_CAN_INTERFACE];
-        const mem_fctCriticalSection_t mutualExclusionGuard = NULL;
+        const mem_criticalSection_t mutualExclusionGuard = MEM_VOID_CRITICAL_SECTION_OBJECT;
         success = mem_createMemoryPool
                                 ( &memoryPoolP1
                                 , /* pPoolMemory */ heapMemoryP1ForCanInterface
@@ -202,7 +202,7 @@ bool bsw_osInitCanInterface(void)
         #define MAX_DLC                     8u
         #define INTERNAL_OVERHEAD_VSQ_ELEM  4u
         #define INTERNAL_OVERHEAD_VSQ_QUEUE 48u
-        #define INTERNAL_OVERHEAD_MEM_POOL  20u
+        #define INTERNAL_OVERHEAD_MEM_POOL  28u
         #define MARGIN                      40u /* Uncertainty alignment and sender object */
         #define SIZE_OF_QUEUED_ELEMENT      (sizeof(ede_externalEvent_t)+MAX_DLC    \
                                              +INTERNAL_OVERHEAD_VSQ_ELEM            \
@@ -247,10 +247,11 @@ bool bsw_osInitCanInterface(void)
     }
 
 #ifdef DEBUG
-    bsw_canIf_noUnusedBytesInOSHeap =
-                                memoryPoolOS.getNbrOfAvailableBytes(memoryPoolOS.hInstance);
-    bsw_canIf_noUnusedBytesInP1Heap =
-                                memoryPoolP1.getNbrOfAvailableBytes(memoryPoolP1.hInstance);
+    if(success)
+    {
+        bsw_canIf_noUnusedBytesInOSHeap = MEM_GET_NBR_OF_AVAILABLE_BYTES(memoryPoolOS);
+        bsw_canIf_noUnusedBytesInP1Heap = MEM_GET_NBR_OF_AVAILABLE_BYTES(memoryPoolP1);
+    }
 #endif
 
     return success;

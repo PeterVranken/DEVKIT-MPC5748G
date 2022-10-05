@@ -42,7 +42,7 @@ Script `renderTable.cmd` is typically used in two steps:
 
 The generated StringTemplate V4 template group file is organized such that the
 framing text blocks and the template for the basic pattern for a single
-data item (i.e. Excel row) can be easily identified and customized to your
+data item (i.e., Excel row) can be easily identified and customized to your
 particular needs. It contains TODO tags, how to elaborate if for your needs.
 
 Before you start your work, you should type:
@@ -59,7 +59,7 @@ normally require to develop an _excelExporter_ application:
 - The Javadoc documentation of the internal data model of _excelExporter_
 - It prints the command line documentation ("usage") of _excelExporter_
 
-An valid installation of _excelExporter_ is prerequisite, in particular, 
+A valid installation of _excelExporter_ is prerequisite; in particular, 
 environment variable EXCELEXPORTER_HOME needs to be set and point to the
 installation of the tool.
 

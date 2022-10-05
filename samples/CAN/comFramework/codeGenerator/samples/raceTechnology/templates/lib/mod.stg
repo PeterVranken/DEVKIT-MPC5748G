@@ -7,7 +7,7 @@
 //   Caution: A prerequiste of these templates is that the general information
 // is available under the default template attribute name "info".
 //
-// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -23,6 +23,8 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 delimiters "<", ">"
+
+import "lib/templateErr.stg"
 
 // The module name mnemonic is used over and over during code generation and therefore we
 // provide a short alias. This template returns it as prefix for global symbols, i.e.
@@ -43,7 +45,7 @@ modC(desc) ::= <<
  * see http://sourceforge.net/projects/comframe/
  *
 <@copyright>
- * Copyright (C) <info.year> Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-<info.year> Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -66,16 +68,16 @@ modC(desc) ::= <<
 
 <endif>
 <if(!info.isVersionDataModel.v1010)>
-# error This code is generated from a template designed for data model revision 1010 but run with data model revision <info.versionDataModel>
-<info.error.({This code is generated from a template designed for data model revision 1010 but run with data model revision <info.versionDataModel>})>
+# error This code is generated from template mod.stg designed for data model revision 1010 but run with data model revision <info.versionDataModel>
+<warning({This code is generated from template mod.stg designed for data model revision 1010 but run with data model revision <info.versionDataModel>})>
 <endif>
 /*
  * Include files
  */
 
-<@includes()><\\>
 #include "<info.output.rawName>.h"
 
+<@includes()><\\>
 
 /*
  * Defines
@@ -123,7 +125,7 @@ modH(desc) ::= <<
  * see http://sourceforge.net/projects/comframe/
  *
 <@copyright>
- * Copyright (C) <info.year> Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-<info.year> Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

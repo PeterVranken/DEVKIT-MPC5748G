@@ -2,7 +2,7 @@
 setlocal
 set CLASSPATH="templates"
 if "%COMFRAMEWORK_CODEGENERATOR_HOME%" == "" (
-    set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\..\..\..\..\codeGenerator\trunk
+    set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\..\..\codeGenerator
 )
 echo Running code generator at %COMFRAMEWORK_CODEGENERATOR_HOME%
 set PATH=%COMFRAMEWORK_CODEGENERATOR_HOME%\dist;%PATH%

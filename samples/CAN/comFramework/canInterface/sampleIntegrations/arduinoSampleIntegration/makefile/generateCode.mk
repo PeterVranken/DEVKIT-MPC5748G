@@ -25,8 +25,8 @@
 # practice, we mainly modify the templates so this is the major dependency.
 .PHONY: generateCode
 genDir := code/codeGen/
-templateList := $(rwildcard $(genDir)templates/, *.stg)
-databaseList := $(rwildcard $(genDir)dbcFiles/, *.dbc)
+templateList := $(call rwildcard, $(genDir)templates/, *.stg)
+databaseList := $(call rwildcard, $(genDir)dbcFiles/, *.dbc)
 #$(info List of StringTemplate V4 templates: $(templateList), DBC files: $(databaseList))
 generateCode: $(genDir)makeTag_generateCode
 

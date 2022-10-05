@@ -7,7 +7,7 @@
  * generates then from the CAN databases. This way the simulation knowns, which CAN frames
  * to simulate and how to.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -48,25 +48,22 @@
  * Defines
  */
 
- 
 
 /*
  * Local type definitions
  */
 
- 
 
 /*
  * Local prototypes
  */
 
- 
 
 /*
  * Data definitions
  */
 
-/** This is the external instatiation of the data table of module \a
+/** This is the external instantiation of the data table of module \a
     ose_operatingSystemEmulation, which is required by that module to do the
     implementation of the simulation of CAN reception. */
 const ose_receivedCanFrame_t ose_receivedCanFrameAry[] =
@@ -5027,7 +5024,7 @@ const ose_receivedCanFrame_t ose_receivedCanFrameAry[] =
 const unsigned int ose_noReceivedCanFrames = sizeof(ose_receivedCanFrameAry)
                                              / sizeof(ose_receivedCanFrameAry[0]);
 
-/** This is the external instatiation of the data table of module \a
+/** This is the external instantiation of the data table of module \a
     ose_operatingSystemEmulation, which is required by that module to do the
     implementation of CAN output. Particularly some information is required to do the E2E
     validation for these frames. */
@@ -7216,7 +7213,7 @@ const ose_sentCanFrame_t ose_sentCanFrameAry[] =
 /** The number of entries in the external data table \a ose_sentCanFrameAry. */
 const unsigned int ose_noSentCanFrames = sizeof(ose_sentCanFrameAry)
                                          / sizeof(ose_sentCanFrameAry[0]);
- 
+
 
 /*
  * Function implementation

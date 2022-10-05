@@ -1,7 +1,7 @@
 /**
  * @file mu8_mapDirectLookupU8.c
  * This module provides a simple handle map, suitable for many applications of the event
- * dispatcher mechnism. It can be used as mapping from some OS event handles (e.g. Rx CAN
+ * dispatcher mechanism. It can be used as mapping from some OS event handles (e.g. Rx CAN
  * frame handles) to the zero based index space of a dispatcher object.\n
  *   The implementation supports the interfaces defined by the event sender and dispatcher
  * engine and the map is therefore most easy to use in this context. Just create a map
@@ -144,7 +144,7 @@ typedef struct map_t
  *   May be NULL. In many environments, the required map is trivial (e.g. the
  * identity) or known (and generated as ROM table) and no code is required to built-up
  * the map.\n
- *   2. Use case mapping external evemts to a sender's port:\n
+ *   2. Use case mapping external events to a sender's port:\n
  *   The function is currently not called by the dispatcher engine or sender
  * implementation. The integration code is in charge of providing the map contents and
  * it may or may not make use of this function to buildup the map.\n
@@ -189,8 +189,8 @@ static bool addKeyValuePair( uintptr_t hMap
     mapInstance_t * const pMapInst = &pMap->mapInstanceAry[kindOfEvent];
     if((unsigned)pMapInst->maxTableIdx > 0u)
     {
-        const unsigned int idxLookup = (unsigned int)senderHandleEvent
-                                       + pMapInst->offsetInp;
+        const unsigned int idxLookup = (unsigned)senderHandleEvent
+                                       + (unsigned)pMapInst->offsetInp;
 
         /* Check if the sender handle is in the range, which had been specified at map
            creation time. The lower boundary is only checked in DEBUG, as it is much
@@ -250,7 +250,7 @@ static bool addKeyValuePair( uintptr_t hMap
  *   The requested index is that of an event source as internally used by the
  * dispatcher engine. The map query function is called as sub-routine of the
  * dispatching operation, ede_dispatcherMain().\n
- *   2. Use case mapping external evemts to a sender's port:\n
+ *   2. Use case mapping external events to a sender's port:\n
  *   The requested index is that of a port of the querying sender. The map query
  * function is called as sub-routine of sending an event, ede_postEvent().\n
  *   Must not be NULL.
@@ -290,8 +290,8 @@ static bool getValue( uintptr_t hMap
     const mapInstance_t * const pMapInst = &pMap->mapInstanceAry[kindOfEvent];
     if(pMapInst->maxTableIdx > 0)
     {
-        const unsigned int idxLookup = (unsigned int)senderHandleEvent
-                                       + pMapInst->offsetInp;
+        const unsigned int idxLookup = (unsigned)senderHandleEvent
+                                       + (unsigned)pMapInst->offsetInp;
 
         /* Check if the sender handle is in the range, which had been specified at map
            creation time. The lower boundary is only checked in DEBUG, as it is much less
@@ -368,7 +368,8 @@ bool mu8_createMapDirectLookupU8( ede_mapSenderEvHandleToIdx_t * const pNewMap
     for(idxInstance=0u; idxInstance<noKindsOfEv; ++idxInstance)
     {
         const unsigned int sizeOfInstTableArea = sizeof(uintMapVal_t)
-                                                 * (rangeSenderHandleEvAry[idxInstance][1u]
+                                                 * (unsigned)
+                                                   (rangeSenderHandleEvAry[idxInstance][1u]
                                                     - rangeSenderHandleEvAry[idxInstance][0u]
                                                    );
         if(sizeOfInstTableArea >= MAX_BYTE_PER_TABLE_INSTANCE)

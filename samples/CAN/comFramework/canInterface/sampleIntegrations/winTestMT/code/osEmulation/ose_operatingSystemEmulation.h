@@ -51,8 +51,8 @@
 /** The OS offers a fixed but configurable number of connection points for sending a CAN
     message. A connection point is a buffered input, which is available to just one context
     in the APSW. If the APSW wants to send messages from different competing contexts, e.g.
-    from two or more tasks or from some tasks and soem interrupts, then each context needs
-    to use its own connection poit. */
+    from two or more tasks or from some tasks and some interrupts, then each context needs
+    to use its own connection point. */
 #define OSE_CAN_TX_NO_CONNECTION_POINTS     2u
 
 
@@ -205,7 +205,7 @@ void ose_restartCanBus(ose_handleCanBus_t osHandleBus);
 bool ose_sendCanMessage( unsigned int idxConnectionPoint
                        , unsigned int idxFrameOs
                        , uint8_t *pData
-                       , unsigned int DLC
+                       , unsigned int sizeOfData
                        );
 
 #endif  /* OSE_OPERATINGSYSTEMSIMULATION_INCLUDED */

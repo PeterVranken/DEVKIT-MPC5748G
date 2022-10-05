@@ -93,3 +93,6 @@ isFalse ::= [ "true": false
             , "": true
             , default: {<info.error.("isFalse got invalid argument. Check your template code")>}
             ]
+isEmpty ::= [ "": true
+            , default: false
+            ]

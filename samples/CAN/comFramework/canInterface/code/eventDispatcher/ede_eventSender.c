@@ -26,6 +26,12 @@
  * Local functions
  */
 
+/** @todo The API of a sender port splits sending a data packet into buffer allocation and
+    submission. There are a lot of use cases, where this two-step paradigm saves us payload
+    copying. (Data can instead be directly produced inside the allocated buffer.) This
+    advantage is lost when using the sender object, which offers just the one-step "post".
+    The two-step approach should become an optionally applied additional sender API. */
+    
 /*
  * Include files
  */
@@ -120,8 +126,6 @@ typedef struct ede_eventSender_t
  * of the constructor.
  *   @param noPorts
  * The number of supported ports and the number of elements in portAry at the same time.
- *   @param maxSizeOfDataElement
- * The maximum size of the content data of any later event in Byte.
  *   @param pMapSenderEvHandleToPortIndex
  * The (externally implemented) map by reference, which associates the abstract handle of
  * an external event with the output port to use for th given event(by index).\n
@@ -145,7 +149,7 @@ typedef struct ede_eventSender_t
  * initialization task for this purpose.
  */
 bool ede_createSender( ede_handleSender_t * const pHandleSender
-                     , ede_eventSenderPort_t portAry[]
+                     , const ede_eventSenderPort_t portAry[]
                      , unsigned int noPorts
                      , const ede_mapSenderEvHandleToIdx_t *pMapSenderEvHandleToPortIndex
                      , ede_memoryPool_t * const pMemPoolSender
@@ -160,7 +164,7 @@ bool ede_createSender( ede_handleSender_t * const pHandleSender
 
     /* Flexible array member: The size of the sender object depends on the number of ports. */
     const unsigned int sizeOfSenderObj = sizeof(ede_eventSender_t) 
-                                         + noPorts * sizeof(portAry[0]);
+                                         + noPorts * sizeof((*pHandleSender)->portAry[0]);
 
     /* The sender object is created in the specified memory pool. */
     ede_eventSender_t * const pSender = pMemPoolSender->malloc( pMemPoolSender->hInstance
@@ -277,7 +281,7 @@ bool ede_postEvent( ede_eventSender_t * const hSender
             /* The external map doesn't know the event. This is normally an implementation
                error in the external code and we could even have an assertion here.
                However, the mapping has been specified tolerant, only the event is lost. */
-            /// @todo Should this be counted like a lost event due to queue full?
+            /// @todo Should this be counted like a lost event due to buffer full?
             //EDE_ASSERT(false);
             return false;
         }
@@ -323,8 +327,8 @@ bool ede_postEvent( ede_eventSender_t * const hSender
  * be greater or equal to argument \a noPorts of the constructor call, which yielded \a
  * hSender.
  *   @param kindOfEvent
- * The kind of event. It is an enumeration, which is meaningless to the dispatcher engine
- * or queue.
+ * The kind of event. It is an enumeration, which is meaningless to connector element and
+ * dispatcher engine.
  *   @param senderHandleEvent
  * The event's handle as used (and issued) by the external integration code system. In the
  * case of CAN communication, this will e.g. be the operating system's handle of a
@@ -352,14 +356,22 @@ bool ede_postEventToPort( ede_eventSender_t * const hSender
 
     ede_eventSenderPort_t const *pPort = &hSender->portAry[idxPort].port;
     
-    /* Check if there's still room in the queue. */
+    /* Check if there's still room in the connector element. */
     ede_externalEvent_t * const pEvent = pPort->allocBuffer(pPort->hInstance, sizeOfData);
     if(pEvent != NULL)
     {
         /* Create the event by coying the data. */
         pEvent->kindOfEvent = kindOfEvent;
         pEvent->senderHandleEvent = senderHandleEvent;
-        memcpy(&pEvent->dataAry[0], pData, sizeOfData);
+        
+        void *pDest = &pEvent->dataAry[0];
+        if(pPort->requiresDataByReference)
+        {
+            /* The port tells us by a pointer returned in field dataAry in the event, where
+               to put the payload data. */
+            pDest = *(void**)pDest;
+        }
+        memcpy(pDest, pData, sizeOfData);
 
         /* Signal the new event to the receiver. pEvent is invalid from now on. */
         pPort->submitBuffer(pPort->hInstance);
@@ -367,9 +379,9 @@ bool ede_postEventToPort( ede_eventSender_t * const hSender
     }
     else
     {
-        /* Queue is full this time. Count this error event. The counter is specified to
-           wrap around in order to facilitate the evaluation (e.g. error rates by regular
-           delta calculation). */
+        /* Connector element is blocked this time. Count this error event. The counter is
+           specified to wrap around in order to facilitate the evaluation (e.g. error rates
+           by regular delta calculation). */
         ++ hSender->portAry[idxPort].noErrorsPortBlocked;
         return false;
     }

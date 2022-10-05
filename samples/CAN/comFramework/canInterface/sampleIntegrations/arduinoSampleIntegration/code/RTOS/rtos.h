@@ -4,7 +4,7 @@
  * @file rtos.h
  * Definition of global interface of module rtos.c
  *
- * Copyright (C) 2012-2013 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -37,7 +37,7 @@
 
 /** Startup message for RTuinOS applications. */
 #define RTOS_RTUINOS_STARTUP_MSG                                                        \
-    "RTuinOS " RTOS_RTUINOS_VERSION " for Arduino 1.8.3\n"                              \
+    "RTuinOS " RTOS_RTUINOS_VERSION " for Arduino 1.8.19\n"                             \
     "Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)\n"           \
     "This is free software; see the source for copying conditions. There is NO\n"       \
     "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."

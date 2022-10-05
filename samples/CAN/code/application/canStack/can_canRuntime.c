@@ -661,7 +661,7 @@ bool can_initCanStack(void)
        accessible during the entire remaining runtime of the software. */
     static char DATA_P1(heapMemoryForCanInterface)[CAN_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     ede_memoryPool_t memoryPool = EDE_INVALID_MEMORY_POOL;
-    mem_fctCriticalSection_t const mutualExclusionGuard = NULL;
+    const mem_criticalSection_t mutualExclusionGuard = MEM_VOID_CRITICAL_SECTION_OBJECT;
     boolean_t success = mem_createMemoryPool
                                     ( &memoryPool
                                     , /* pPoolMemory */ heapMemoryForCanInterface

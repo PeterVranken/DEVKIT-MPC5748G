@@ -6,7 +6,7 @@
  * event dispatchers will access the tables to implement the message-indvidual behavior like
  * different timing patterns, different checksum protections, different size, etc.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)

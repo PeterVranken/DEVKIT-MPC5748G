@@ -8,6 +8,8 @@ call codeGenerator ^
   --node-name ECU ^
   --bus-name RT_simplified ^
     -dbc ../dbcFiles/CAN_RT_simplified.dbc ^
+  --bus-name DUP ^
+    -dbc ../dbcFiles/duplicatedCanIDs.dbc ^
   --output-file-name output/demoIterations.txt ^
     --template-file-name templates/demoIterations.stg ^
     --template-name demoIterations ^

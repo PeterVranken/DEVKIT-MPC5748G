@@ -347,19 +347,18 @@ void apt_taskInit()
     /* Even if it is entirely useless in the given Windows environment: We demonstrate the
        use of distinct memory pools for sending events (by simulated OS) and for receiving
        events (by APSW). */
-    mem_fctCriticalSection_t const mutualExclusionGuard = NULL;
     static char heapMemoryOS[APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     static char heapMemoryAPSW[APP_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     initOk = mem_createMemoryPool( &apt_memoryPoolOS
                                  , /* pPoolMemory */ heapMemoryOS
                                  , /* sizeOfPoolMemory */ sizeof(heapMemoryOS)
-                                 , mutualExclusionGuard
+                                 , MEM_VOID_CRITICAL_SECTION_OBJECT
                                  );
     assert(initOk);
     initOk = mem_createMemoryPool( &apt_memoryPoolAPSW
                                  , /* pPoolMemory */ heapMemoryAPSW
                                  , /* sizeOfPoolMemory */ sizeof(heapMemoryAPSW)
-                                 , mutualExclusionGuard
+                                 , MEM_VOID_CRITICAL_SECTION_OBJECT
                                  );
     assert(initOk);
 

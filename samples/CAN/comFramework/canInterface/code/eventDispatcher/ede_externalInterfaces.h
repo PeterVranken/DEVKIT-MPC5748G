@@ -35,9 +35,13 @@
  * Defines
  */
 
-/** Standard call of an interface function. Can be applied to make such a call look like a
-    normal function call. */
-#define EDE_CALL_INTERFACE(iObj, method, ...) ((iObj).method((iObj).hInstance, __VA_ARGS__))
+/** Standard call of an interface function, which has one or more arguments. Can be applied
+    to make such a call look like a normal function call. */
+#define EDE_CALL_INTERFACE_VA_ARGS(iObj, method, ...) ((iObj).method((iObj).hInstance, __VA_ARGS__))
+
+/** Standard call of an interface function, which has no arguments. Can be applied to make
+    such a call look like a normal function call. */
+#define EDE_CALL_INTERFACE_NO_ARGS(iObj, method) ((iObj).method((iObj).hInstance))
 
 /** An initializer expression for a still uninitialized object of type \a
     ede_memoryPool_t. */
@@ -53,19 +57,21 @@
                                        .getValue = NULL,        \
                                        .hInstance = 0u,         \
                                      }
-                                     
+
 /** An initializer expression for a still uninitialized object of type \a
     ede_eventSenderPort_t. */
-#define EDE_INVALID_EVENT_SENDER_PORT { .allocBuffer = NULL,    \
-                                        .submitBuffer = NULL,   \
-                                        .hInstance = 0u,        \
+#define EDE_INVALID_EVENT_SENDER_PORT { .allocBuffer = NULL,                \
+                                        .submitBuffer = NULL,               \
+                                        .hInstance = 0u,                    \
+                                        .requiresDataByReference = false,   \
                                       }
 
 /** An initializer expression for a still uninitialized object of type \a
     ede_eventReceiverPort_t. */
-#define EDE_INVALID_EVENT_RECEIVER_PORT { .readBuffer = NULL,   \
-                                          .freeBuffer = NULL,   \
-                                          .hInstance = 0u,      \
+#define EDE_INVALID_EVENT_RECEIVER_PORT { .readBuffer = NULL,               \
+                                          .freeBuffer = NULL,               \
+                                          .hInstance = 0u,                  \
+                                          .providesDataByReference = false, \
                                         }
 
 /*
@@ -91,14 +97,12 @@ typedef struct ede_memoryPool_t
      * The value of field \a hInstance from the same interface object will be passed in.
      *   @param sizeOfChunk
      * The number of requested bytes.
-     *   @param mutualExclusionOfClients
-     * If the memory of this pool is partitioned and distributed to clients running in
-     * different task (or interrupt) contexts the entry into this method needs to be
-     * serialized. If \a mutualExclusionOfClients is \a true the mutual exclusion guard is
-     * applied, which had been specified for this memory pool at its initialization. One should
-     * pass \a false in a single threaded environment.\n
-     *   The argument doesn't care if no guard had been specified for the pool in the call of
-     * \a mem_initMemoryPool().
+     *   @remark
+     * The memory interface definition doesn't contain a counterpart for malloc(), e.g.,
+     * free(). Even if a given implementation knows a free operation it would matter to the
+     * event dispatcher environment. All of its code follows the concept of one-time memory
+     * allocation and pooling in case of object reuse. There's no need for ever returning
+     * some memory. (Which is a typical embedded requirement.)
      */
     void * (*malloc)(uintptr_t hInstance, unsigned int sizeOfChunk);
 
@@ -110,7 +114,7 @@ typedef struct ede_memoryPool_t
      *   @param hInstance
      * The handle of the memory pool, which the request relates to. The value of field \a
      * hInstance from the same interface object will be passed in.
-     *   @param
+     *   @remark
      * This method is optional. It is meant mainly for diagnosis purposes. May be set to
      * NULL if not supported by an implementation.
      */
@@ -124,7 +128,7 @@ typedef struct ede_memoryPool_t
      *   @param hInstance
      * The handle of the memory pool, which the request relates to. The value of field \a
      * hInstance from the same interface object will be passed in.
-     *   @param
+     *   @remark
      * This method is optional. It is meant mainly for diagnosis purposes. May be set to
      * NULL if not supported by an implementation.
      */
@@ -154,7 +158,7 @@ typedef struct ede_memoryPool_t
       The map's function getValue() is internally called by the dispatcher engine on
     reception of an external event in order to associate the received event data with the
     causing, registered event source.\n
-      2. Use case mapping external evemts to a sender's port:\n
+      2. Use case mapping external events to a sender's port:\n
     The map associates an abstract event handle with a sender's port (addressed by index),
     which the event is posted to. Using an externally defined map to decide the port to
     use, allows the external code to control/define the communication structure. (The
@@ -172,7 +176,7 @@ typedef struct ede_mapSenderEvHandleToIdx_t
      * ede_registerEventSource().\n
      *   May be NULL. In many environments, the required map is trivial (e.g. the identity)
      * or known (and generated as ROM table) and no code is required to built-up the map.\n
-     *   2. Use case mapping external evemts to a sender's port:\n
+     *   2. Use case mapping external events to a sender's port:\n
      *   The function is currently not called by the dispatcher engine or sender
      * implementation. The integration code is in charge of providing the map contents and
      * it may or may not make use of this function to buildup the map.\n
@@ -188,9 +192,9 @@ typedef struct ede_mapSenderEvHandleToIdx_t
      * such that the implementation of the map can hide an index into an array of objects
      * or a pointer to an object behind this value. See field \a hInstance, too.\n
      *   1. Use case mapping external events to registered event sources:\n
-     *   Each dispatcher has its own index space for event sources and will apply a
+     *   Each dispatcher system has its own index space for event sources and will apply a
      * dedicated map.\n
-     *   2. Use case mapping external evemts to a sender's port:\n
+     *   2. Use case mapping external events to a sender's port:\n
      *   Each sender has its own index space for its individual ports and it'll use a
      * dedicated, related map instance.
      *   @param kindOfEvent
@@ -218,8 +222,8 @@ typedef struct ede_mapSenderEvHandleToIdx_t
     /**
      * The map lookup operation. The index associated with an external event is queried.\n
      *   1. Use case mapping external events to registered event sources:\n
-     *   The requested index is that of an event source as internally used by the
-     * dispatcher engine. The map query function is called as sub-routine of the
+     *   The requested index is that of an event source as internally used in the
+     * dispatcher system. The map query function is called as sub-routine of the
      * dispatching operation, ede_dispatcherMain().\n
      *   2. Use case mapping external events to a sender's port:\n
      *   The requested index is that of a port of the querying sender. The map query
@@ -236,7 +240,7 @@ typedef struct ede_mapSenderEvHandleToIdx_t
      *   1. Use case mapping external events to registered event sources:\n
      *   Each dispatcher has its own index space for event sources and will apply a
      * dedicated map.\n
-     *   2. Use case mapping external evemts to a sender's port:\n
+     *   2. Use case mapping external events to a sender's port:\n
      *   Each sender has its own index space for its individual ports and it'll use a
      * dedicated, related map instance.
      *   @param pValue
@@ -302,8 +306,10 @@ typedef struct ede_externalEvent_t
         #EDE_COMMON_MACHINE_ALIGNMENT.\n
           The flexible array member must not be touched if the user specified a length of
         zero. */
-#if defined(_STDC_VERSION_C11)
+#if defined(_STDC_VERSION_C17_C11)
     _Alignas(EDE_COMMON_MACHINE_ALIGNMENT) uint8_t dataAry[];
+#elif defined(__GNUC__) ||  defined(__arm__)
+    uint8_t dataAry[] __attribute__((aligned(EDE_COMMON_MACHINE_ALIGNMENT)));
 #elif defined(_STDC_VERSION_C99)
     uintptr_t dataAry[];
 #else
@@ -371,6 +377,20 @@ typedef struct ede_eventSenderPort_t
         cast. */
     uintptr_t hInstance;
 
+    /**
+     * Static property of a port object: It may expect its payload data either as
+     * sequence of bytes in field \a dataAry of the allocated event or by reference, in
+     * which case, and on exit from allocBuffer(), the first \a n bytes of field \a dataAry
+     * contain a pointer to where the payload is expected. \a n is sizeof(void*),
+     * which may vary platform dependent.\n
+     *   The property is static, i.e., decided at port creation time and thus not dependent
+     * on the events it may process; either all sent events are by value or all sent events
+     * are by reference.\n
+     *   The value is \a true if the port expects its event data by reference and \a false
+     * if the delivered data is expected in \a dataAry[],
+     */
+    bool requiresDataByReference;
+
 } ede_eventSenderPort_t;
 
 
@@ -395,9 +415,9 @@ typedef struct ede_eventReceiverPort_t
      * allowed to reorder elements but this will have a significant impact on the behavior
      * of the event dispatching mechanism and depent on the intended use cases.\n
      *   The data, the returned pointer points to shall be valid for reading until the
-     * other method freeBuffer() is invoked. The implementation may assume, that readBuffer
-     * and freeBuffer() are called strictly alternatingly; it may but don't need to allow
-     * fetching several buffer before freeing the first of them.\n
+     * other method freeBuffer() is invoked. The implementation may assume, that readBuffer()
+     * and freeBuffer() are called strictly alternatingly; it don't need to allow fetching
+     * several buffers before freeing the first of them.\n
      *   The method returns NULL if there is currently no event to deliver. In this case
      * freeBuffer() must not be used later.
      *   @param hInstance
@@ -406,7 +426,16 @@ typedef struct ede_eventReceiverPort_t
      *   @param pSizeOfPayload
      * The method will put the size of the payload of the returned event into * \a
      * pSizeOfPayload. The size is the number of bytes, which can be accessed through the
-     * event's field \a dataAry[].
+     * event's field \a dataAry[].\n
+     *   If providesDataByReference is \a false then * \a pSizeOfPayload is the
+     * number of payload bytes in \a dataAry[] otherwise it is the number of data bytes the
+     * pointer points to, which is found in the first bytes of \a dataAry[].
+     *   @note
+     * If the event data is delivered by reference then no statement can be made about the
+     * alignment of the data; this fully depends on the given port implementation. \a
+     * dataAry is guaranteed to have the alignment #EDE_COMMON_MACHINE_ALIGNMENT and,
+     * consequently, the reference itself can be safely read but no promise can be made for
+     * the address it points to.
      */
     const ede_externalEvent_t * (*readBuffer)( uintptr_t hInstance
                                              , unsigned int *pSizeOfPayload
@@ -431,6 +460,19 @@ typedef struct ede_eventReceiverPort_t
         The chosen type allows both and the implementation will do the appropriate type
         cast. */
     uintptr_t hInstance;
+
+    /**
+     * Static property of a port object: It may deliver the payload data either as sequence
+     * of bytes in field \a dataAry of the delivered event or by reference, in which case
+     * the first \a n bytes of dataAry contain a pointer to the actual payload. \a n is
+     * sizeof(const void*), which may vary platform dependent.\n
+     *   The property is static, i.e., decided at port creation time and thus not dependent
+     * on the events it delivers; either all events are by value or all delivered events
+     * are by reference.
+     *   The value is \a true if the port delivers its event data by reference and \a false
+     * if the delivered data is found in \a dataAry[],
+     */
+    bool providesDataByReference;
 
 } ede_eventReceiverPort_t;
 

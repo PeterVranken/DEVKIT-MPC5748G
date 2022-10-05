@@ -9,6 +9,8 @@ codeGenerator ^
   --node-name ECU ^
   --bus-name RT_simplified ^
     -dbc ../dbcFiles/CAN_RT_simplified.dbc ^
+  --bus-name DUP ^
+    -dbc ../dbcFiles/duplicatedCanIDs.dbc ^
   --bus-name CAN_RT_attributed ^
     -dbc ../dbcFiles/CAN_RT_attributed.dbc ^
     -id 9240610:9384482 ^

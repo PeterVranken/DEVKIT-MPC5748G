@@ -13,7 +13,7 @@ echo separated list of paths holding your project templates. (The local working 
 echo already is part of the class path.) Please note, setting the environment variable
 echo should be done only locally as it'll contain project specific paths!
 rem
-rem  Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+rem  Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 rem
 rem  This program is free software: you can redistribute it and/or modify it
 rem  under the terms of the GNU Lesser General Public License as published by the
@@ -48,6 +48,6 @@ if not "%COMFRAMEWORK_JAVA_HOME%" == "" set PATH=%COMFRAMEWORK_JAVA_HOME%\bin;%P
 :: Launch the Java application. Pass all script arguments to the application.
 ::   The folders with the required templates can by added by setting the variable
 :: CLASSPATH.
-java -cp "%EXCELEXPORTER_HOME%\dist\ST-4.3.1.jar;%EXCELEXPORTER_HOME%\dist\antlr-4.8-complete.jar;%EXCELEXPORTER_HOME%\dist\log4j-api-2.4.jar;%EXCELEXPORTER_HOME%\dist\log4j-core-2.4.jar;%EXCELEXPORTER_HOME%\dist\excelExporter-1.0.jar;%EXCELEXPORTER_HOME%\dist\poi-3.13-20150929.jar;%EXCELEXPORTER_HOME%\dist\poi-ooxml-3.13-20150929.jar;%EXCELEXPORTER_HOME%\dist\poi-ooxml-schemas-3.13-20150929.jar;%EXCELEXPORTER_HOME%\dist\xmlbeans-2.6.0.jar;.;%CLASSPATH%" ^
+java -cp "%EXCELEXPORTER_HOME%\dist\antlr-4.10.1-complete.jar;%EXCELEXPORTER_HOME%\dist\log4j-api-2.4.jar;%EXCELEXPORTER_HOME%\dist\log4j-core-2.4.jar;%EXCELEXPORTER_HOME%\dist\excelExporter-1.0.jar;%EXCELEXPORTER_HOME%\dist\poi-3.13-20150929.jar;%EXCELEXPORTER_HOME%\dist\poi-ooxml-3.13-20150929.jar;%EXCELEXPORTER_HOME%\dist\poi-ooxml-schemas-3.13-20150929.jar;%EXCELEXPORTER_HOME%\dist\xmlbeans-2.6.0.jar;.;%CLASSPATH%" ^
      -ea ^
      excelExporter.main.ExcelExporter %*

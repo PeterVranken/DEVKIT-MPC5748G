@@ -222,11 +222,15 @@ signed int main( signed int argc ATTRIB_UNUSED
 
     /* Create our only memory pool. */
     static char heapMemoryForCanInterface[SIZE_OF_HEAP_FOR_CAN_INTERFACE];
+    const mem_criticalSection_t mutualExclusionGuard = { .enter = NULL
+                                                       , .leave = NULL
+                                                       , .hInstance = 0u
+                                                       };
     ede_memoryPool_t memPool = EDE_INVALID_MEMORY_POOL;
     bool success ATTRIB_DBG_ONLY = mem_createMemoryPool( &memPool
                                                        , &heapMemoryForCanInterface[0u]
                                                        , sizeof(heapMemoryForCanInterface)
-                                                       , /* mutualExclusionGuard */ NULL
+                                                       , mutualExclusionGuard
                                                        );
     assert(success);
     
@@ -237,6 +241,7 @@ signed int main( signed int argc ATTRIB_UNUSED
         .readBuffer = dispatcherDummyPort_readBuffer,
         .freeBuffer = dispatcherDummyPort_freeBuffer,
         .hInstance = 0u,
+        .providesDataByReference = false,
     };
 
     /* Create the required dispatcher systems. */

@@ -69,6 +69,22 @@
  * Defines
  */
 
+/* The software is written as portable as reasonably possible. This requires the awareness
+   of the C language standard it is compiled with.
+     With respect to the language feature C11 and C17 are identical. We combine the in one
+   switch. */
+#if defined(__STDC_VERSION__)
+# if (__STDC_VERSION__)/100 == 2017
+#  define _STDC_VERSION_C17
+#  define _STDC_VERSION_C17_C11
+# elif (__STDC_VERSION__)/100 == 2011
+#  define _STDC_VERSION_C11
+#  define _STDC_VERSION_C17_C11
+# elif (__STDC_VERSION__)/100 == 1999
+#  define _STDC_VERSION_C99
+# endif
+#endif
+
 /* Some specific numeric values for the timer reload property, which have a special meaning
    other than the normal time designation. */
 #define TIMER_STATE_SINGLE_SHOT             (0)
@@ -98,7 +114,7 @@ typedef struct ede_eventDispatcher_t ede_eventDispatcher_t;
 
 
 /** The internal representation of a registered event source.\n
-      Note, this typedef relates to the internal events; see \ref eventSrcExt_t for
+      Note, this typedef relates to the internal events; see struct eventSrcExt_t for
     external events. The concept is, that the external source event class extends the
     internal source event class. This requires careful identical maintenance of both
     types, but correctness is double-checked by compile time assertions. */
@@ -113,7 +129,7 @@ typedef struct eventSrc_t
 
 
 /** The internal representation of a registered event source.\n
-      Note, this typedef relates to the external events; see \ref eventSrc_t for
+      Note, this typedef relates to the external events; see struct eventSrc_t for
     internal events. The concept is, that the external source event class extends the
     internal source event class. This requires careful identical maintenance of both
     types, but correctness is double-checked by compile time assertions. */
@@ -358,11 +374,18 @@ struct ede_dispatcherSystem_t
     /* The set of dispatcher engines, which belong to the system. The array is implemented
        as flexible array member; therefore, it needs to be the very last field. */
     ede_eventDispatcher_t * pDispatcherAry[];
-    
 };
 
+#ifdef _STDC_VERSION_C17_C11
 _Static_assert( EDE_COMMON_MACHINE_ALIGNMENT >= _Alignof(uintptr_t)
-                ||  EDE_COMMON_MACHINE_ALIGNMENT == 1u
+              , "Bad configuration of alignment"
+              );
+#elif !defined(__AVR__)
+_Static_assert( EDE_COMMON_MACHINE_ALIGNMENT >= sizeof(uintptr_t)
+              , "Suspicious configuration of alignment"
+              );
+#endif
+_Static_assert( EDE_COMMON_MACHINE_ALIGNMENT == 1u
                 ||  EDE_COMMON_MACHINE_ALIGNMENT == 2u
                 ||  EDE_COMMON_MACHINE_ALIGNMENT == 4u
                 ||  EDE_COMMON_MACHINE_ALIGNMENT == 8u
@@ -532,21 +555,21 @@ static void invokeCallback(const event_t *pEvent)
  * The identification requires access to the dispatcher system, which owns the references
  * event source.
  *   @param pEventSrc
- * The reference to an event source, which could be either internalor external.
+ * The reference to an event source, which could be either internal or external.
  */
 static inline bool isExtEventSrc( const ede_dispatcherSystem_t * const pSystem
                                 , const ptrToEvtSrc_t pEventSrc
                                 )
 {
     const eventSrcExt_t * const pFrom = &pSystem->eventSrcExtAry[0];
-    const eventSrcExt_t * const pTo   = pFrom + pSystem->noEventSrcsExt;;
+    const eventSrcExt_t * const pTo   = pFrom + pSystem->noEventSrcsExt;
     if(pEventSrc.ext >= pFrom  &&  pEventSrc.ext < pTo)
         return true;
     else
     {
 #ifdef DEBUG
         const eventSrc_t * const pFrom = &pSystem->eventSrcIntAry[0];
-        const eventSrc_t * const pTo   = pFrom + pSystem->noEventSrcsInt;;
+        const eventSrc_t * const pTo   = pFrom + pSystem->noEventSrcsInt;
         EDE_ASSERT(pEventSrc.base >= pFrom  &&  pEventSrc.base < pTo);
 #endif
         return false;
@@ -607,26 +630,15 @@ static inline ede_handleTimer_t getTimerObject( const ede_callbackContext_t * co
 
 
 /**
- * Create a dispatcher.\n
- *   The dispatcher delivers events to the client code, which is completely organized as
- * set of callbacks, which implement the reaction on the events. The root of all is the
- * initialization call(back), which is made for each registered event source.\n
- *   Events can be external events (their meaning is fully determined by the integration
- * code) or internal timer events.\n
- *   A dispatcher is single-threaded. There are no race conditions between callbacks, which
- * makes the design of the event handling code easy and safe. If events are logically
- * connected to several application tasks then one would create an according number of
- * dispatchers and each events goes to the dispatcher in the appropriate, associated
- * application task. For use case CAN communication, this could mean to process fast
- * regular messages with one dispatcher in a fast application task and all other messages
- * in a slower task.\n
- *   Events can carry data of variable size. For use case CAN communication, this could be
- * the message payload in case of message reception events or some fault status information
- * for message send acknowledge events.\n
- *   In general, the data elements are opaque to the dispatcher engine. Filling the
- * contents is done as part of the integration code and evaluating the data elements, too.
- * The engine will just ensure proper delivery of the event together with the data it
- * carries.
+ * Create a dispatcher system.\n
+ *   The dispatcher system is the space, which a set of dispatcher engines acts in. The
+ * system owns up to \a noEventDispatcherEngines engines. All of these reside in the same
+ * memory space with same access rights and they share the index spaces for external and
+ * internal event sources. However, they do not necessarily (and not normally) share the
+ * same execution contexts; the different engines in a system can be operated in different
+ * tasks or ISRs. Although unlikely to happen, even running the engines on different cores
+ * would be possible even if the chosen memory space supports this (e.g. being shared and
+ * unchached or cache-synchronized).
  *   @return
  * Get \a true if the new system could be created and \a false otherwise.\n
  *   The function will fail only in case of lack of memory. Since all memory allocation is
@@ -635,37 +647,32 @@ static inline ede_handleTimer_t getTimerObject( const ede_callbackContext_t * co
  * development and test phase then it won't in the production code. Anyhow, the dispatcher
  * system must never be used if this function returns \a false.
  *   @param pHandleDispSystem
- * Get the handle of the newly created dispatcher object by reference. This handle is later
- * needed to use the dispatcher. If the function returns \a false then it'll return the
- * special handle #EDE_INVALID_DISPATCHER_SYSTEM_HANDLE in * \a pHandleDispSystem.\n
- *   @param tiTick
- * The processing of the queue needs to be done on a regular time base using function \a
- * ede_dispatcherMain(). The time distance between two calls of this function
- * needs to be known for the timer operations and is passed in as \a
- * tiTick.\n
- *   The value needs to be a positive integer and should not be too large: No timing
- * operation shorter or faster than the value passed in here will become possible. This
- * relates to raising events and checking timeouts of operations.\n
- *   The unit is arbitrary but the chosen unit defines the unit of all other timer
- * operations at the same time. Usually it'll be a Millisecond.
+ * Get the handle of the newly created dispatcher system object by reference. This handle
+ * is later needed to create and use the dispatchers. If the function returns \a false then
+ * it'll return the special handle #EDE_INVALID_DISPATCHER_SYSTEM_HANDLE in * \a
+ * pHandleDispSystem.
+ *   @param noEventDispatcherEngines
+ * The new system will have space for this number of dispatcher engines. All of these
+ * engines will share the index spaces for registering external and internal event sources
+ * and they will all belong to the same memory space.
  *   @param maxNoEventSourcesExt
  * The maximum number of different sources of external events, that will be received through
- * the ports. This number of event sources can be registered for the new dispatcher and
- * using ede_registerExternalEventSource().
- *   @param maxNoEventSourcesExt
- * The maximum number of different sources of external events, that will be received through
- * the ports. This number of event sources can be registered fot the new dispatcher and
- * using ede_registerExternalEventSource().
- *   @param mapSdrEvHdlToEdeEvSrcIdx
- * The (externally implemented) map, which associates the abstract handle of an external
- * event with the internally used event source index. See data type \a
- * ede_mapSenderEvHandleToIdx_t for more details.
+ * the ports. This number of event sources can be registered in sum by all dispatcher owned
+ * by the new system and using ede_registerExternalEventSource().
+ *   @param maxNoEventSourcesInt
+ * The maximum number of different sources of internal events. This number of event sources
+ * can be registered in sum by all dispatcher owned by the new system and using
+ * ede_registerInternalEventSource().
  *   @param pMemPoolDispatchingProcess
  * A memory pool by reference, which provides the memory needed for construction of the
  * dispatcher object.\n
  *   The memory dealt out by this pool needs to grant write-access to the context that runs
  * the dispatching process, i.e. which is going to regularly call ede_dispatcherMain() for
- * the here created dispatcher object. All other contexts don't need access to the memory.
+ * the dispatcher engine objects owned by this system. All other contexts don't need access
+ * to the memory.\n
+ *   Note, the memory pool is internally stored and later inherited by the created
+ * dispatcher engines. Most typically, it needs to stay alive for all the remaining
+ * software run-time.
  *   @remark
  * The call of this function is assumed to be done in a race condition free environment,
  * prior to entering the multi-tasking phase of the application. Most platforms will offer
@@ -741,14 +748,14 @@ bool ede_createDispatcherSystem( ede_handleDispatcherSystem_t * const pHandleDis
         pSys->pDispatcherAry[idxDisp] = INVALID_DISPATCHER_HANDLE;
 
     *pHandleDispSystem = pSys;
-    return pSys;
+    return true;
 
 } /* End of ede_createDispatcherSystem */
 
 
 
 /**
- * Create a dispatcher.\n
+ * Create a dispatcher engine in a given system.\n
  *   The dispatcher delivers events to the client code, which is completely organized as
  * set of callbacks, which implement the reaction on the events. The root of all is the
  * initialization call(back), which is made for each registered event source.\n
@@ -779,12 +786,16 @@ bool ede_createDispatcherSystem( ede_handleDispatcherSystem_t * const pHandleDis
  * assertion only. If the assertion doesn't fire throughout the development and test phase
  * then it won't in the production code. Anyhow, the dispatcher must never be used if this
  * function returns \a false.
- *   @param pSys
- * The dispatcher system by reference, which owns the dispatcher. At creation time of a
- * system, the number of contained dispatchers is specified and one out of these is now
+ *   @param hDispatcherSystem
+ * The handle of the dispatcher system, which owns the new dispatcher. At creation time of
+ * a system, the number of contained dispatchers is specified and one out of these is now
  * initialized. All of these dispatchers share the same memory space and access rights and
  * they share the index spaces of external and internal event sources. (Although not the
  * event sources themselves.)
+ *   @param idxDispatcher
+ * System * \a pSys has space for a given number of independently acting dispatcher engines
+ * (see ede_createDispatcherSystem()). They are all addressed by a zero based index. \a
+ * idxDispatcher specifies the dispacther engine to create this time.
  *   @param tiTick
  * The processing of the received and timer events needs to be done on a regular time base
  * using function \a ede_dispatcherMain(). The time distance between two calls of this
@@ -800,11 +811,15 @@ bool ede_createDispatcherSystem( ede_handleDispatcherSystem_t * const pHandleDis
  * in \a portAry is the same as later used at run-time, it is e.g. visible as origin of an
  * event in the callback.
  *   @param noPorts
- * The number of input ports of this dispatcher.
+ * The number of input ports of this dispatcher. May be zero for dispatchers, which are
+ * applied solely generate internal events.
  *   @param mapSdrEvHdlToEdeEvSrcIdx
  * The (externally implemented) map, which associates the abstract handle of an external
  * event with the internally used event source index. See data type \a
- * ede_mapSenderEvHandleToIdx_t for more details.
+ * ede_mapSenderEvHandleToIdx_t for more details.\n
+ *   May be (ede_mapSenderEvHandleToIdx_t)EDE_INVALID_EVENT_HANDLE_MAP for dispatchers, which
+ * are applied solely generate internal events, i.e.,
+ * if and only if \a noPorts is zero.
  *   @remark
  * The call of this function is assumed to be done in a still race condition free
  * environment, prior to entering the multi-tasking phase of the application. Most
@@ -816,15 +831,19 @@ bool ede_createDispatcherSystem( ede_handleDispatcherSystem_t * const pHandleDis
  * memory pool. If both use the same one (and if it doesn't do the mutual exclusion
  * internally), then the statement before holds for the union of both systems.
  */
-bool ede_createDispatcher( ede_dispatcherSystem_t * const pSys
+bool ede_createDispatcher( ede_handleDispatcherSystem_t const hDispatcherSystem
                          , unsigned int idxDispatcher
                          , signed int tiTick
-                         , ede_eventReceiverPort_t portAry[]
+                         , const ede_eventReceiverPort_t portAry[]
                          , unsigned int noPorts
                          , ede_mapSenderEvHandleToIdx_t mapSdrEvHdlToEdeEvSrcIdx
                          )
 {
-    if(noPorts < 1u  ||  tiTick <= 0  ||  idxDispatcher >= pSys->noDispatchers)
+    ede_dispatcherSystem_t * const pSystem = hDispatcherSystem;
+    if(tiTick <= 0
+       ||  idxDispatcher >= pSystem->noDispatchers
+       ||  noPorts > 0u  &&  mapSdrEvHdlToEdeEvSrcIdx.getValue == NULL
+      )
     {
         /* Invalid configuration of dispatcher. */
         EDE_ASSERT(false);
@@ -832,7 +851,7 @@ bool ede_createDispatcher( ede_dispatcherSystem_t * const pSys
     }
 
     /* A dispatcher must not be created twice. */
-    ede_eventDispatcher_t *pDisp = pSys->pDispatcherAry[idxDispatcher];
+    ede_eventDispatcher_t *pDisp = pSystem->pDispatcherAry[idxDispatcher];
     if(pDisp != NULL)
     {
         EDE_ASSERT(false);
@@ -845,13 +864,11 @@ bool ede_createDispatcher( ede_dispatcherSystem_t * const pSys
                                        + noPorts * sizeof(portAry[0]);
 
     /* The dispatcher object is created in the memory pool of the dispatching process. */
-    pDisp = pSys->memPool.malloc( pSys->memPool.hInstance
-                                , sizeOfDispObj
-                                );
+    pDisp = pSystem->memPool.malloc(pSystem->memPool.hInstance, sizeOfDispObj);
     if(pDisp == NULL)
         return false;
 
-    pDisp->pSystem = pSys;
+    pDisp->pSystem = pSystem;
     pDisp->listOfTimerObjects = NULL;
     pDisp->listOfNewTimerObjects = NULL;
     pDisp->pLastNewTimerObject = NULL;
@@ -864,7 +881,7 @@ bool ede_createDispatcher( ede_dispatcherSystem_t * const pSys
         pDisp->portAry[idxPort] = portAry[idxPort];
 
     /* Put the ready dispatcher object into the owning system object. */
-    pSys->pDispatcherAry[idxDispatcher] = pDisp;
+    pSystem->pDispatcherAry[idxDispatcher] = pDisp;
 
     return true;
 
@@ -893,8 +910,8 @@ bool ede_createDispatcher( ede_dispatcherSystem_t * const pSys
  *   #EDE_INVALID_EVENT_SOURCE_INDEX is returned if more external event sources are
  * registered as had been declared in ede_createDispatcher().
  *   @param hDispatcherSystem
- * The event dispatcher system, which owns the dispatcher engine to use with the registered
- * event source.
+ * The dispatcher system, which owns the dispatcher engine, which is going to process the
+ * events of the now registered source.
  *   @param idxDispatcher
  * The dispatcher object that is associated with the registered event source and which is
  * going process its events. The dispatcher is identified by the index in the owning
@@ -1037,20 +1054,12 @@ unsigned int ede_registerExternalEventSource
  *   #EDE_INVALID_EVENT_SOURCE_INDEX is returned if more internal event sources are
  * registered as had been declared in ede_createDispatcher().
  *   @param hDispatcherSystem
- * The event dispatcher system, which owns the dispatcher engine to use with the registered
- * event source.
+ * The dispatcher system, which owns the dispatcher engine, which is going to process the
+ * events of the now registered source.
  *   @param idxDispatcher
  * The dispatcher object that is associated with the registered event source and which is
  * going process its events. The dispatcher is identified by the index in the owning
  * system, the index which had been specified in ede_createDispatcher(), too.\n
- *   All existing dispatchers are functionally identical but the integration code can
- * configure them differently and assign them to different use cases, and most often to
- * different application task contexts. The appropriate dispatcher for the registered event
- * source is passed in.
- *   @param hDispatcher
- * The handle of the dispatcher object that is associated with the registered event source
- * and which is going process its event. The dispatcher is identified by the index in the
- * owning system, the index which had been specified in ede_createDispatcher(), too.\n
  *   All existing dispatchers are functionally identical but the integration code can
  * configure them differently and assign them to different use cases, and most often to
  * different application task contexts. The appropriate dispatcher for the registered event
@@ -1076,12 +1085,14 @@ unsigned int ede_registerExternalEventSource
  *   See ede_createDispatcher() for more details on race conditions and use in concurrent
  * environments.
  */
-unsigned int ede_registerInternalEventSource( ede_dispatcherSystem_t * const pSystem
-                                            , unsigned int idxDispatcher
-                                            , ede_callback_t callback
-                                            , uintptr_t refEventSourceData
-                                            )
+unsigned int ede_registerInternalEventSource
+                            ( ede_handleDispatcherSystem_t const hDispatcherSystem
+                            , unsigned int idxDispatcher
+                            , ede_callback_t callback
+                            , uintptr_t refEventSourceData
+                            )
 {
+    ede_dispatcherSystem_t * const pSystem = hDispatcherSystem;
     if(pSystem == EDE_INVALID_DISPATCHER_SYSTEM_HANDLE  ||  callback == NULL
        ||  idxDispatcher >= pSystem->noDispatchers
       )
@@ -1153,6 +1164,7 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
     for(event.idxPort=0u; event.idxPort<pDisp->noPorts; ++event.idxPort)
     {
         ede_eventReceiverPort_t * const pPort = &pDisp->portAry[event.idxPort];
+        const bool portProvidesDataByRef = pPort->providesDataByReference;
         while(true)
         {
             /* Check the dispatcher port for a received event. If any, return it by
@@ -1165,7 +1177,11 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
                 break;
 
             event.kindOfEvent = pExternalEvent->kindOfEvent;
-            event.pData = (const void*)&pExternalEvent->dataAry[0];
+
+            if(portProvidesDataByRef)
+                event.pData = *(const void**)&pExternalEvent->dataAry[0];
+            else
+                event.pData = (const void*)&pExternalEvent->dataAry[0];
 
             /* The sender's event handle is mapped to the internally used index of the
                related event source. */
@@ -1671,7 +1687,7 @@ ede_callback_t ede_installCallback( const ede_callbackContext_t * const pContext
  *   @param pContext
  * The dispatcher context this callback is invoked from.
  *   @param pIsExternalEventSrc
- * Registered event sources has separate index spaces for internal and external sources. It
+ * Registered event sources have separate index spaces for internal and external sources. It
  * is returned by reference, whether the returned index relates to an external source (\a
  * true) or an internal one (\a false).
  */

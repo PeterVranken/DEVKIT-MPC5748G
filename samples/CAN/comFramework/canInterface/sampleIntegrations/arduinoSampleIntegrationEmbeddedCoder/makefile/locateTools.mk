@@ -24,14 +24,15 @@ ifndef LOCATE_TOOLS_INCLUDED
 LOCATE_TOOLS_INCLUDED := 1
 
 # Use the Windows standard shell to execute commands.
-ifeq ($(call os),win)
+ifeq ($(osName),win)
     #$(info Use Command Prompt as shell for Windows)
     SHELL = cmd
     .SHELLFLAGS = /c
 endif
 
-ifeq ($(call os),win)
-    # Under Windows we have to look for gcc.exe rather than for gcc.
+# Under Windows we have to look for gcc.exe rather than for gcc.
+ifeq ($(osName),win)
+
     dotExe := .exe
 else
     dotExe :=
@@ -55,14 +56,13 @@ ARDUINO_HOME := $(call trailingSlash,$(call w2u,$(ARDUINO_HOME)))
 # standard UNIX commands to a Windows system. We need them however for execution of this
 # makefile. By default the location of such files is not known. To run this makefile an
 # environment variable needs to point to the right location. This is checked now.
-ifeq ($(call os),win)
-  ifeq ($(strip $(UNIX_TOOLS_HOME)),)
-    $(error Environment variable UNIX_TOOLS_HOME is not set. Required UNIX commands like \
-            rm or mkdir can't be located. Environment variable UNIX_TOOLS_HOME needs to \
-            point to a directory, which contains rm.exe, mkdir.exe, etc. These executables \
-            are distributed in many ways. You may e.g. install Git \
-            (https://git-scm.com/downloads) - the installation contains all needed files)
-  endif
+ifeq ($(strip $(UNIX_TOOLS_HOME)),)
+  $(error Environment variable UNIX_TOOLS_HOME is not set. Required UNIX commands like \
+          rm or mkdir can't be located. Environment variable UNIX_TOOLS_HOME needs to \
+          point to a directory, which contains rm.exe, mkdir.exe, etc, or rm, mkdir on \
+          a Linux system, respectively. These executables are distributed in many ways. \
+          You may e.g. install Git (https://git-scm.com/downloads) - the installation \
+          contains all needed files)
 endif
 # Ensure a trailing slash at the end of this externally set variable.
 UNIX_TOOLS_HOME := $(call trailingSlash,$(call w2u,$(UNIX_TOOLS_HOME)))
@@ -76,8 +76,8 @@ cp := $(UNIX_TOOLS_HOME)cp$(dotExe)
 rm := $(UNIX_TOOLS_HOME)rm$(dotExe)
 gawk := $(UNIX_TOOLS_HOME)gawk$(dotExe)
 awk := $(gawk)
-touch := $(ARDUINO_HOME)hardware/tools/avr/utils/bin/touch$(dotExe)
-mv := $(ARDUINO_HOME)hardware/tools/avr/utils/bin/mv$(dotExe)
+touch := $(UNIX_TOOLS_HOME)touch$(dotExe)
+mv := $(UNIX_TOOLS_HOME)mv$(dotExe)
 avr-gcc := $(ARDUINO_HOME)hardware/tools/avr/bin/avr-gcc$(dotExe)
 avr-g++ := $(ARDUINO_HOME)hardware/tools/avr/bin/avr-g++$(dotExe)
 avr-ar := $(ARDUINO_HOME)hardware/tools/avr/bin/avr-ar$(dotExe)
@@ -101,7 +101,7 @@ helpGCC:
 	$(avr-gcc) -v --help
 builtinMacrosGCC:
 	$(avr-gcc) -dM -E - < nul
-    
+
 else
 $(error This makefile shouldn't be called twice. There's a problem in your makefile structure)
 endif # LOCATE_TOOLS_INCLUDED

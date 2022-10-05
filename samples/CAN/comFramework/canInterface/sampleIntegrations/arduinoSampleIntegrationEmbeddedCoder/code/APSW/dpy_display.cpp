@@ -120,7 +120,7 @@ void dpy_display_t::printGreeting()
        characters. Note, the effect of the moving text fragment is lost if the second line
        is longer than a few characters only. */
 #define TXT_FIRST_LINE  "comFramework"
-#define TXT_SECOND_LINE "1.6"
+#define TXT_SECOND_LINE "2.0"
 
     ASSERT((int)sizeof(TXT_FIRST_LINE)-1 <= 16  &&  (int)sizeof(TXT_SECOND_LINE)-1 <= 16);
 

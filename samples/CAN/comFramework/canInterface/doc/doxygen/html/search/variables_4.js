@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['kindofevent',['kindOfEvent',['../structede__external_event__t.html#a689904f9d6ef92e8fc0ee85e738fe2f8',1,'ede_externalEvent_t']]]
+  ['freebuffer_0',['freeBuffer',['../structede__event_receiver_port__t.html#a262ccb2e6eb795dab6803e342949d588',1,'ede_eventReceiverPort_t']]]
 ];

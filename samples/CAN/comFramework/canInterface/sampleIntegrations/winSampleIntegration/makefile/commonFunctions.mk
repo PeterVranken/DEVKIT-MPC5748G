@@ -26,9 +26,9 @@ COMMON_FUNCTIONS_INCLUDED := 1
 
 # Return a string indicating the operating system, the makefile executes on. Get "win" for
 # a Windows system or "linux" otherwise.
-os = $(if (or $(call eq,$(OS),WINDOWS),$(call eq,$(OS),Windows_NT)),win,linux)
+osName = $(if (or $(call eq,$(OS),WINDOWS),$(call eq,$(OS),Windows_NT)),win,linux)
 # Example:
-#ifeq ($(call os),win)
+#ifeq ($(osName),win)
 #    $(info We are executing on Windows)
 #else
 #    $(warning Is this well-prepared for Linux?)
@@ -47,7 +47,7 @@ endef
 #   Determine the name of the root folder of all build products. The name should
 # distinguish between all supported target systems. Furthermore, under Windows it should if
 # possible distinguish between 32 or 64 Bit systems.
-binFolder = bin/$(os)/
+binFolder = bin/$(osName)/
 # Example:
 # $(info Target folder for produced binaries is $(call binFolder))
 

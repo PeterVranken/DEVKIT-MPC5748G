@@ -2,7 +2,7 @@
 setlocal
 set CLASSPATH="templates"
 if "%COMFRAMEWORK_CODEGENERATOR_HOME%" == "" (
-    set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\..\..\..\codeGenerator\trunk
+    set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\..\..\codeGenerator
 )
 set PATH=%COMFRAMEWORK_CODEGENERATOR_HOME%\dist;%PATH%
 call codeGenerator ^

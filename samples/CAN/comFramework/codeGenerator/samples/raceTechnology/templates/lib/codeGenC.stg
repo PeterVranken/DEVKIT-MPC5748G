@@ -8,7 +8,7 @@
 //   If customization is needed you can easily override or modify the definition with the
 // genuine mechanism of StringTemplate V4. Do not alter this file!
 //
-// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -48,12 +48,13 @@ msgAry() ::= "m"
 //   The returned string is a C expression holding the signal value. It can e.g. be used as
 // LHS of an assignment.
 extractSignal(signal) ::= <<
-(<bt(signal.type)>)<\\>
+<if(signal.isFloat)>reinterpret_cast_f32(<elseif(signal.isFloat)>reinterpret_cast_f64(<else>(<bt(signal.type)>)<endif><\\>
 <if(signal.shiftRight)>(<if(signal.isSigned)>(<sbt(signal.accType)>)<endif><endif><\\>
 <if(signal.shiftLeft)>(<endif><\\>
 (<readWord(signal.byteAry,signal.maskAry)>)<\\>
 <if(signal.shiftLeft)> \<\< <signal.shiftLeft>)<endif><\\>
-<if(signal.shiftRight)> >\> <signal.shiftRight>)<endif>
+<if(signal.shiftRight)> >\> <signal.shiftRight>)<endif><\\>
+<if(signal.isFloat||signal.isDouble)>)<endif>
 >>
 
 
@@ -79,8 +80,16 @@ packSignal(signal, pdu, value) ::= <<
 {
     /* Assign the signal value to a temporary variable, where the signal value's bits
        have the same byte-relative position as in the final, packed PDU. */
+<if(signal.isFloat)>
+    <bt(signal.accType)> s = (<bt(signal.accType)>)*(const <bt("uint32_t")>*)&<value><packLeftShift(signal)>;
+
+<elseif(signal.isDouble)>
+    <bt(signal.accType)> s = (<bt(signal.accType)>)*(const <bt("uint64_t")>*)&<value><packLeftShift(signal)>;
+
+<else>
     <bt(signal.accType)> s = (<bt(signal.accType)>)<value><packLeftShift(signal)>;
 
+<endif>
     /* Transfer all bytes of the temporary variable into the PDU. */
     <writeWord("s",signal.byteAry,signal.maskAry)><\\>
 }<\n>

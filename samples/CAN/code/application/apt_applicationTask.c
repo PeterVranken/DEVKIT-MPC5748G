@@ -202,9 +202,14 @@ static void version()
     "Copyright (C) 2017-2022  Peter Vranken\r\n"
     "Version " VERSION
     #ifdef DEBUG
-    " (Configuration: DEBUG)"
+    " (Configuration: DEBUG"
     #else
-    " (Configuration: PRODUCTION)"
+    " (Configuration: PRODUCTION"
+    #endif
+    #ifdef LINK_IN_RAM
+    " in RAM)"
+    #else
+    " in flash ROM)"
     #endif
     "\r\n";
 

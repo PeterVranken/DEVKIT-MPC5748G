@@ -1,6 +1,6 @@
 excelExporter 1.0
-Copyright (C) 2015-2021, Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
-https://svn.code.sf.net/p/comframe/code/excelExporter/trunk?&r=378, 19:20:58 09.04.2021
+Copyright (C) 2015-2022, Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+https://svn.code.sf.net/p/comframe/code/excelExporter/trunk?&r=476, 11:54:21 04.10.2022
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by the

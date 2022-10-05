@@ -80,27 +80,27 @@ modC(desc) ::= <<
 /*
  * Defines
  */
- 
-<@defines()> 
+
+<@defines()>
 
 /*
  * Local type definitions
  */
- 
-<@typedefs()> 
+
+<@typedefs()>
 
 /*
  * Local prototypes
  */
- 
-<@prototypes()> 
- 
+
+<@prototypes()>
+
 /*
  * Data definitions
  */
- 
-<@data()> 
- 
+
+<@data()>
+
 /*
  * Function implementation
  */
@@ -155,25 +155,31 @@ modH(desc) ::= <<
 /*
  * Defines
  */
- 
-<@defines()> 
+
+<@defines()>
 
 /*
  * Type definitions
  */
- 
-<@typedefs()> 
+
+<@typedefs()>
 
 /*
  * Data declarations
  */
- 
-<@data()> 
- 
+
+<@data()>
+
 /*
  * Function declarations
  */
- 
+
 <@prototypes()>
+
+/*
+ * Inline function definitions
+ */
+
+<@inlines()>
 #endif // !defined(<info.output.rawName; format="upper">_DEFINED)
 >>

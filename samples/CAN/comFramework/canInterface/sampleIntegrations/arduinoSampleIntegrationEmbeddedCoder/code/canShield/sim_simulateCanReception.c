@@ -2,7 +2,7 @@
  * @file sim_simulateCanReception.c
  * Simulation of CAN frame reception.
  *
- * Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -381,8 +381,7 @@ static boolean_t clockMsgUserLimits(uint8_t msg[8], uint8_t *pDLC)
 
     /* This is just a simulation and demonstration. We ignore the counter overrun. After
        about 50 days the application will get stuck. */
-    static uint32_t tiReceive_ = 17534 /* ms, first reception */
-                  , tiLastReceive_ = 0;
+    static uint32_t tiReceive_ = 17534; /* ms, first reception */
     static unsigned int SQC_ = 1;
     if(_tiSim > tiReceive_)
     {
@@ -413,7 +412,6 @@ static boolean_t clockMsgUserLimits(uint8_t msg[8], uint8_t *pDLC)
 
         /* Compute new reception time. This is a pure (rare) random value for the purely
            data change triggered message. */
-        tiLastReceive_ = tiReceive_;
         tiReceive_ += (uint32_t)RAND(TI_MIN_MSG_MS, 2*TI_MEAN_MSG_MS - TI_MIN_MSG_MS);
 
         /* In state bus-off we are not going to send a frame and the next steps are skipped

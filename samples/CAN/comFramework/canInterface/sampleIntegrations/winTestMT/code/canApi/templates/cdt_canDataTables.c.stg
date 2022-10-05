@@ -3,7 +3,7 @@
 // This is a template group file for StringTemplate V4, see www.stringtemplate.org.
 //
 // Generate the data tables, which form the database for the callbacks of the dispatchers.
-// The information from the DBC files about frames is provided throughthese (constant)
+// The information from the DBC files about frames is provided through these (constant)
 // tables to the callback implementation.
 //
 // Copyright (C) 2017-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -133,7 +133,7 @@ typedef struct cdt_canFrame_t
     <bt("bool_t")> isReceived;
 
     /** The size of the frame contents in Byte. */
-    unsigned int DLC;
+    unsigned int size;
 
     /** An external function, which is called to unpack a received CAN frame into the
         global CAN API and to run the E2E validation on the received contents. */
@@ -157,10 +157,10 @@ typedef struct cdt_canFrame_t
         supports easy and efficient implementation of handler owned, frame related context
         data. */
     unsigned int idxHandlerCtxData;
-    
+
     /** The pointer to the transmission info of the given frame in the global CAN API. */
     <symbol.structInfoTransmission_t> *pInfoTransmission;
-    
+
     /** The nominal cycle time in ms if the frame is not purely event triggered. */
     unsigned int tiCycle;
 
@@ -223,15 +223,15 @@ idxHandlerContextData(pdu) ::= <<
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataInRegular><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataInEvent><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataInMixed><\\>
-<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
 <elseif(pdu.isSent)><\\>
 <if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataOutRegular><\\>
 <elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataOutEvent><\\>
 <elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataOutMixed><\\>
-<else><info.error.({Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
 <endif><\\>
-<else><info.error.({Unexpected transmission direction})><\\>
+<else><info.error.({<info.templateFile>: Unexpected transmission direction})><\\>
 <endif>
 >>
 
@@ -262,7 +262,7 @@ canFrameAryEntry(pdu) ::= <<
     , .canId = CDT_STD_CAN_ID(<frame.id>)
 <endif>
     , .isReceived = <frame.isReceived>
-    , .DLC = <frame.size>
+    , .size = <frame.size>
     , .fctUnpackApiFrameAndValidate = <fct.e2eUnpackAndCheckApiFrame>
     , .fctRandomFillApiFrame = <fct.e2eRndFillApiFrame>
     , .fctProtectApiFrame = <if(pdu.specialSignalMap.checksum)><fct.e2eProtectApiFrame><else>NULL<endif>
@@ -271,6 +271,6 @@ canFrameAryEntry(pdu) ::= <<
     , .idxHandlerCtxData = <idxHandlerContextData(pdu)>
     , .pInfoTransmission = &<define.referenceStructFrameSts>().<symbol.fieldInfoTransmission>
     , .tiCycle = <attribVal.sendPeriod>
-    , .tiMinDistance = <attribVal.eventMinDistance>
+    , .tiMinDistance = <if(isEmpty.(attribVal.eventMinDistance))>10 /** @todo There's no attribute for message minimum distance defined yet in the DBC file */<else><attribVal.eventMinDistance><endif>
     },<\n>
 >>

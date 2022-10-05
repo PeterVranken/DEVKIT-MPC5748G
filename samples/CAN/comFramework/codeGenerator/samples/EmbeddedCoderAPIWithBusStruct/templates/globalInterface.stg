@@ -171,7 +171,7 @@ structFrameSts(frame) ::= <<
 struct <symbol.structFrameSts_t>
 {
     /** The collection of signals of the frame. */
-    <symbol.structFrame_t> signals;
+    <symbol.structFrame_t> <symbol.fieldSignals>;
 
     /** The transmission status. */
     <symbol.stsTransmission_t> <symbol.fieldStsTransmission>;

@@ -1,0 +1,1156 @@
+/******************************************************************************
+ *
+ *  ASAP2 file:     pwr_computeEnginePower.a2l
+ *
+ * Code generation for model "pwr_computeEnginePower".
+ *
+ * Model version              : 1.4
+ * Simulink Coder version : 9.2 (R2019b) 18-Jul-2019
+ * C source code generated on : Fri Apr  9 10:31:36 2021
+ * 
+ * Target selection: ert.tlc
+ * Embedded hardware selection: Intel->x86-64 (Windows64)
+ * Code generation objectives: Unspecified
+ * Validation result: Not run
+ *
+ * (add additional file header information here)
+ *
+ ******************************************************************************/
+
+ASAP2_VERSION  1 31   /* Version 1.31 */
+
+/begin PROJECT ProjectName "Project Comment Goes Here"
+  
+  /begin HEADER "Header Comments go here"
+    
+  /end HEADER
+  
+  
+  /begin MODULE ModuleName  "Module Comment Goes Here"
+    
+    /begin MOD_PAR "MOD PAR Comment Goes Here"
+      
+    /end MOD_PAR
+    
+    /begin MOD_COMMON  "Mod Common Comment Here" 
+      BYTE_ORDER     MSB_LAST
+    /end MOD_COMMON
+    
+    /begin RECORD_LAYOUT Scalar_BOOLEAN
+      FNC_VALUES  1 UBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_UBYTE
+      FNC_VALUES  1 UBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_BYTE
+      FNC_VALUES  1 SBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_UWORD
+      FNC_VALUES  1 UWORD COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_SWORD
+      FNC_VALUES 1 SWORD COLUMN_DIR DIRECT
+    /end RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_ULONG
+      FNC_VALUES  1 ULONG COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_LONG
+      FNC_VALUES  1 SLONG COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_FLOAT32_IEEE
+      FNC_VALUES  1 FLOAT32_IEEE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Scalar_FLOAT64_IEEE
+      FNC_VALUES  1 FLOAT64_IEEE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    
+    /begin RECORD_LAYOUT Lookup1D_BOOLEAN
+      FNC_VALUES  1 UBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_BOOLEAN
+      AXIS_PTS_X  1 UBYTE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_BYTE
+      FNC_VALUES  1 SBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_BYTE
+      AXIS_PTS_X  1 SBYTE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_UBYTE
+      FNC_VALUES  1 UBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_UBYTE
+      AXIS_PTS_X  1 UBYTE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_UWORD
+      FNC_VALUES  1 UWORD COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_UWORD
+      AXIS_PTS_X  1 UWORD INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_WORD
+      FNC_VALUES  1 SWORD COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_WORD
+      AXIS_PTS_X  1 SWORD INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_ULONG
+      FNC_VALUES  1 ULONG COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_ULONG
+      AXIS_PTS_X  1 ULONG INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_SLONG
+      FNC_VALUES  1 SLONG COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_LONG
+      AXIS_PTS_X  1 SLONG INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_FLOAT32_IEEE
+      FNC_VALUES  1 FLOAT32_IEEE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_FLOAT32_IEEE
+      AXIS_PTS_X  1 FLOAT32_IEEE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_FLOAT64_IEEE
+      FNC_VALUES  1 FLOAT64_IEEE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup1D_X_FLOAT64_IEEE
+      AXIS_PTS_X  1 FLOAT64_IEEE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_BOOLEAN
+      FNC_VALUES  1 UBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_BOOLEAN
+      AXIS_PTS_X  1 UBYTE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT    
+    
+    /begin RECORD_LAYOUT Lookup2D_UBYTE
+      FNC_VALUES  1 UBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_UBYTE
+      AXIS_PTS_X  1 UBYTE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_BYTE
+      FNC_VALUES  1 SBYTE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_BYTE
+      AXIS_PTS_X  1 SBYTE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_UWORD
+      FNC_VALUES  1 UWORD COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_UWORD
+      AXIS_PTS_X  1 UWORD INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_WORD
+      FNC_VALUES  1 SWORD COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_WORD
+      AXIS_PTS_X  1 SWORD INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_ULONG
+      FNC_VALUES  1 ULONG COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_ULONG
+      AXIS_PTS_X  1 ULONG INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_LONG
+      FNC_VALUES  1 SLONG COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_LONG
+      AXIS_PTS_X  1 SLONG INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_FLOAT32_IEEE
+      FNC_VALUES  1 FLOAT32_IEEE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_FLOAT32_IEEE
+      AXIS_PTS_X 1 FLOAT32_IEEE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_FLOAT64_IEEE
+      FNC_VALUES  1  FLOAT64_IEEE COLUMN_DIR DIRECT
+    /end   RECORD_LAYOUT
+    
+    /begin RECORD_LAYOUT Lookup2D_X_FLOAT64_IEEE
+      AXIS_PTS_X 1 FLOAT64_IEEE INDEX_INCR DIRECT
+    /end   RECORD_LAYOUT
+    
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu01_1024_sts.signals.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu01_1024_sts.signals.checksum@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu01_1024_sts.signals.speedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_Sp1
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      6553.5
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu01_1024_sts.signals.speedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu01_1024_sts.signals.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu01_1024_sts.signals.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu01_1024_sts.stsTransmission
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu01_1024_sts.stsTransmission@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu02_1040_sts.signals.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu02_1040_sts.signals.checksum@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu02_1040_sts.signals.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu02_1040_sts.signals.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu02_1040_sts.signals.torque
+      /* Long identifier        */      ""
+      /* Data type              */      SWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_sfix16_En1
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      -16384.0
+      /* Upper limit            */      16383.5
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu02_1040_sts.signals.torque@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StateEcu02_1040_sts.stsTransmission
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StateEcu02_1040_sts.stsTransmission@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.signals.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.signals.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.signals.minSpeedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_S1p6
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      104856.0
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.signals.minSpeedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxSpeedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_S1p6
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      104856.0
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxSpeedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.signals.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.signals.checksum@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.signals.minPower
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_En1_Bn10
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      -10.0
+      /* Upper limit            */      32757.5
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.signals.minPower@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxPower
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_En1_Bn10
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      -10.0
+      /* Upper limit            */      32757.5
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxPower@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_UserLimits_2032_sts.stsTransmission
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_UserLimits_2032_sts.stsTransmission@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.checksum@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.power
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_E5_Bn500000
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      -500000.0
+      /* Upper limit            */      1.59712E+6
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.power@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.state
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.state@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.stsTransmission
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.stsTransmission@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noDlcErrors
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint16
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      65535
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noDlcErrors@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noCheckSumErrors
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint16
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      65535
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noCheckSumErrors@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noSqcErrors
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint16
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      65535
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noSqcErrors@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.checksum@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.stsTransmission
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.stsTransmission@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinSpeedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinSpeedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxSpeedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxSpeedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinPower
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinPower@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxPower
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxPower@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.stsTransmission
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.stsTransmission@ */
+    /end MEASUREMENT
+    
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      pwr_computeEnginePower_B.tqTimesSOR
+      /* Long identifier        */      ""
+      /* Data type              */      SLONG
+      /* Conversion method      */      pwr_computeEnginePower_CM_sfix32_En9
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      -3.27675E+6
+      /* Upper limit            */      3.27675E+6
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@pwr_computeEnginePower_B.tqTimesSOR@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      pwr_computeEnginePower_B.tqTimSORIsSaturated
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@pwr_computeEnginePower_B.tqTimSORIsSaturated@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_StatusPowerDisplay_1537.noDlcErrors
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint16
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      65535
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_StatusPowerDisplay_1537.noDlcErrors@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_StatusPowerDisplay_1537.noCheckSumErrors
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint16
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      65535
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_StatusPowerDisplay_1537.noCheckSumErrors@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_StatusPowerDisplay_1537.noSqcErrors
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint16
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      65535
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_StatusPowerDisplay_1537.noSqcErrors@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_StatusPowerDisplay_1537.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_StatusPowerDisplay_1537.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_StatusPowerDisplay_1537.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_StatusPowerDisplay_1537.checksum@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_LimitsPowerDisplay_1538.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_LimitsPowerDisplay_1538.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_LimitsPowerDisplay_1538.belowMinSpeedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_LimitsPowerDisplay_1538.belowMinSpeedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_LimitsPowerDisplay_1538.aboveMaxSpeedOfRotation
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_LimitsPowerDisplay_1538.aboveMaxSpeedOfRotation@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_LimitsPowerDisplay_1538.belowMinPower
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_LimitsPowerDisplay_1538.belowMinPower@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_LimitsPowerDisplay_1538.aboveMaxPower
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_LimitsPowerDisplay_1538.aboveMaxPower@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_InfoPowerDisplay_1536.checksum
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_InfoPowerDisplay_1536.checksum@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_InfoPowerDisplay_1536.sequenceCounter
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_InfoPowerDisplay_1536.sequenceCounter@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_InfoPowerDisplay_1536.power
+      /* Long identifier        */      ""
+      /* Data type              */      UWORD
+      /* Conversion method      */      pwr_computeEnginePower_CM_ufix16_E5_Bn500000
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      -500000.0
+      /* Upper limit            */      1.59712E+6
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_InfoPowerDisplay_1536.power@ */
+    /end MEASUREMENT
+    
+    /begin MEASUREMENT
+      /* Name                   */      cap_pPT_InfoPowerDisplay_1536.state
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_uint8
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      255
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@cap_pPT_InfoPowerDisplay_1536.state@ */
+    /end MEASUREMENT
+    
+    
+    /begin MEASUREMENT
+      /* Name                   */      pwr_transmissionErrAry
+      /* Long identifier        */      ""
+      /* Data type              */      UBYTE
+      /* Conversion method      */      pwr_computeEnginePower_CM_boolean
+      /* Resolution (Not used)  */      0
+      /* Accuracy (Not used)    */      0
+      /* Lower limit            */      0
+      /* Upper limit            */      1
+      /* Array Size             */
+      ARRAY_SIZE                        4
+      ECU_ADDRESS                       0x0000 /* @ECU_Address@pwr_transmissionErrAry@ */
+    /end MEASUREMENT
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_uint8
+      /* Long identifier        */      "Q = V"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%3.0"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 1 0 0 0 1
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_ufix16_Sp1
+      /* Long identifier        */      "Q = V*10.000000"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%0.6"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 10.000000 0.000000 0 0 1.000000
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_sfix16_En1
+      /* Long identifier        */      "Q = V*2.000000"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%6.1"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 2.000000 0.000000 0 0 1.000000
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_ufix16_S1p6
+      /* Long identifier        */      "Q = V/1.600000"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%0.6"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 1.000000 0.000000 0 0 1.600000
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_ufix16_En1_Bn10
+      /* Long identifier        */      "Q = (V+10.000000)*2.000000"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%0.6"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 2.000000 20.000000 0 0 1.000000
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_ufix16_E5_Bn500000
+      /* Long identifier        */      "Q = (V+500000.000000)/32.000000"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%0.6"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 1.000000 500000.000000 0 0 32.000000
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_uint16
+      /* Long identifier        */      "Q = V"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%5.0"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 1 0 0 0 1
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_boolean
+      /* Long identifier        */      "Q = V"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%1.0"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 1 0 0 0 1
+    /end COMPU_METHOD
+    
+    /begin COMPU_METHOD
+      /* Name of CompuMethod    */      pwr_computeEnginePower_CM_sfix32_En9
+      /* Long identifier        */      "Q = V*512.000000"
+      /* Conversion Type        */      RAT_FUNC
+      /* Format                 */      "%16.9"
+      /* Units                  */      ""
+      /* Coefficients           */      COEFFS 0 512.000000 0.000000 0 0 1.000000
+    /end COMPU_METHOD
+    
+    /begin GROUP 
+      /* Name                   */       pwr_computeEnginePower
+      /* Long identifier        */       "pwr_computeEnginePower"
+      /* Root                    */       ROOT
+      /begin SUB_GROUP
+        Root_powerComputation
+        Root_transmissionErrs
+        cap_canBus_PT
+        cap_pPT_InfoPowerDisplay_1536
+        cap_pPT_LimitsPowerDisplay_1538
+        cap_pPT_StatusPowerDisplay_1537
+      /end SUB_GROUP
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       Root_powerComputation
+      /* Long identifier        */       "pwr_computeEnginePower/powerComputation"
+      /begin SUB_GROUP
+        S3_normalOperation
+      /end SUB_GROUP
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       Root_transmissionErrs
+      /* Long identifier        */       "pwr_computeEnginePower/transmissionErrs"
+      /begin SUB_GROUP
+        S4_hold
+      /end SUB_GROUP
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       S3_normalOperation
+      /* Long identifier        */       "pwr_computeEnginePower/powerComputation/normalOperation"
+      /begin SUB_GROUP
+        S11_isSaturated
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        pwr_computeEnginePower_B.tqTimesSOR
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       S4_hold
+      /* Long identifier        */       "pwr_computeEnginePower/transmissionErrs/hold"
+      /begin REF_MEASUREMENT
+        pwr_transmissionErrAry
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       S11_isSaturated
+      /* Long identifier        */       "pwr_computeEnginePower/powerComputation/normalOperation/isSaturated"
+      /begin REF_MEASUREMENT
+        pwr_computeEnginePower_B.tqTimSORIsSaturated
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts
+        cap_canBus_PT.PT_StateEcu01_1024_sts
+        cap_canBus_PT.PT_StateEcu02_1040_sts
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts
+        cap_canBus_PT.PT_UserLimits_2032_sts
+      /end SUB_GROUP
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_StateEcu01_1024_sts
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_StateEcu01_1024_sts.signals
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_StateEcu01_1024_sts.stsTransmission
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_StateEcu01_1024_sts.signals
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_StateEcu01_1024_sts.signals.checksum
+        cap_canBus_PT.PT_StateEcu01_1024_sts.signals.sequenceCounter
+        cap_canBus_PT.PT_StateEcu01_1024_sts.signals.speedOfRotation
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_StateEcu02_1040_sts
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_StateEcu02_1040_sts.signals
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_StateEcu02_1040_sts.stsTransmission
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_StateEcu02_1040_sts.signals
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_StateEcu02_1040_sts.signals.checksum
+        cap_canBus_PT.PT_StateEcu02_1040_sts.signals.sequenceCounter
+        cap_canBus_PT.PT_StateEcu02_1040_sts.signals.torque
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_UserLimits_2032_sts
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_UserLimits_2032_sts.stsTransmission
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_UserLimits_2032_sts.signals
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals.checksum
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxPower
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxSpeedOfRotation
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals.minPower
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals.minSpeedOfRotation
+        cap_canBus_PT.PT_UserLimits_2032_sts.signals.sequenceCounter
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_InfoPowerDisplay_1536_sts
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.stsTransmission
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.checksum
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.power
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.sequenceCounter
+        cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.state
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_StatusPowerDisplay_1537_sts
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.stsTransmission
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.checksum
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noCheckSumErrors
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noDlcErrors
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noSqcErrors
+        cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.sequenceCounter
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts
+      /* Long identifier        */       ""
+      /begin SUB_GROUP
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals
+      /end SUB_GROUP
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.stsTransmission
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxPower
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxSpeedOfRotation
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinPower
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinSpeedOfRotation
+        cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.sequenceCounter
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_pPT_StatusPowerDisplay_1537
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_pPT_StatusPowerDisplay_1537.checksum
+        cap_pPT_StatusPowerDisplay_1537.noCheckSumErrors
+        cap_pPT_StatusPowerDisplay_1537.noDlcErrors
+        cap_pPT_StatusPowerDisplay_1537.noSqcErrors
+        cap_pPT_StatusPowerDisplay_1537.sequenceCounter
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_pPT_LimitsPowerDisplay_1538
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_pPT_LimitsPowerDisplay_1538.aboveMaxPower
+        cap_pPT_LimitsPowerDisplay_1538.aboveMaxSpeedOfRotation
+        cap_pPT_LimitsPowerDisplay_1538.belowMinPower
+        cap_pPT_LimitsPowerDisplay_1538.belowMinSpeedOfRotation
+        cap_pPT_LimitsPowerDisplay_1538.sequenceCounter
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    /begin GROUP 
+      /* Name                   */       cap_pPT_InfoPowerDisplay_1536
+      /* Long identifier        */       ""
+      /begin REF_MEASUREMENT
+        cap_pPT_InfoPowerDisplay_1536.checksum
+        cap_pPT_InfoPowerDisplay_1536.power
+        cap_pPT_InfoPowerDisplay_1536.sequenceCounter
+        cap_pPT_InfoPowerDisplay_1536.state
+      /end REF_MEASUREMENT
+    /end GROUP
+    
+    
+  /end MODULE
+  
+  
+/end PROJECT
+/* (add any file trailer comments here) */
+/* EOF pwr_computeEnginePower.a2l */

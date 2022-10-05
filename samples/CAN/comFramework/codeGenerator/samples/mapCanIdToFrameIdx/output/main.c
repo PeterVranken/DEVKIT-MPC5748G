@@ -2,7 +2,7 @@
  * @file main.c
  * The simple hnd-coded main function, which runs the other code in a few simple tests.
  *
- * Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -31,8 +31,7 @@
 #include <assert.h>
 
 #include "types.h"
-#include "mci_mapCanIdToFrameIdx.h"
-#include "mci_getIdxFrameByCanId.h"
+#include "mci_mapCanIdToIdx.h"
 
 
 /*
@@ -80,126 +79,151 @@ signed int main(signed int noArgs, const char *pargAry[])
        used as bus index. */
     const struct testCase_t
     {
-        mci_pairIdAndIdx_t pairCanIdAndBusIdx;
+        mci_pairCanIdAndIdx_t pairCanIdAndBusIdx;
         unsigned int expectedIdxFrame;
     } testCaseAry[] =
         {
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x000},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x000, .canId.u.isExtId = false},
              .expectedIdxFrame = 0xff
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x000},
-             .expectedIdxFrame = 40
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x000, .canId.u.isExtId = false},
+             .expectedIdxFrame = 36
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x000},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x000, .canId.u.isExtId = false},
              .expectedIdxFrame = 0xff
             },
             
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0xD7},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0xD7, .canId.u.isExtId = false},
              .expectedIdxFrame = 0
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0xD7},
-             .expectedIdxFrame = 5
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0xD7},
-             .expectedIdxFrame = 0xff
-            },
-            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x8e1722},
-             .expectedIdxFrame = 1
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x8e1722},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x8e1722},
-             .expectedIdxFrame = 0xff
-            },
-            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x8e1522},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x8e1522},
-             .expectedIdxFrame = 34
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x8e1522},
-             .expectedIdxFrame = 0xff
-            },
-            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x8d0022},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x8d0022},
-             .expectedIdxFrame = 39
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x8d0022},
-             .expectedIdxFrame = 0xff
-            },
-            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x8f3222},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x8f3222},
-             .expectedIdxFrame = 13
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x8f3222},
-             .expectedIdxFrame = 0xff
-            },
-            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x960a24},
-             .expectedIdxFrame = 4
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x960a24},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x960a24},
-             .expectedIdxFrame = 0xff
-            },
-            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x8c0124},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0xD7, .canId.u.isExtId = false},
              .expectedIdxFrame = 3
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x8c0124},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x8c0124},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 2047},
-             .expectedIdxFrame = 0xff
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 2047},
-             .expectedIdxFrame = 43
-            },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 2047},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0xD7, .canId.u.isExtId = false},
              .expectedIdxFrame = 0xff
             },
             
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 2048},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x8e1722, .canId.u.isExtId = true},
+             .expectedIdxFrame = 1
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x8e1722, .canId.u.isExtId = true},
              .expectedIdxFrame = 0xff
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 2048},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x8e1722, .canId.u.isExtId = true},
              .expectedIdxFrame = 0xff
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 2048},
+            
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x8e1522, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x8e1522, .canId.u.isExtId = true},
+             .expectedIdxFrame = 30
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x8e1522, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x8d0022, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x8d0022, .canId.u.isExtId = true},
+             .expectedIdxFrame = 35
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x8d0022, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x8f3222, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x8f3222, .canId.u.isExtId = true},
+             .expectedIdxFrame = 9
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x8f3222, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x960a24, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x960a24, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x960a24, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x8c0124, .canId.u.isExtId = true},
+             .expectedIdxFrame = 49
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x8c0124, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x8c0124, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 2047, .canId.u.isExtId = false},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 2047, .canId.u.isExtId = false},
+             .expectedIdxFrame = 39
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 2047, .canId.u.isExtId = false},
+             .expectedIdxFrame = 0xff
+            },
+            
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 2048, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 2048, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 2048, .canId.u.isExtId = true},
              .expectedIdxFrame = 0xff
             },
 
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = 0x1fffffff},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = 0x1fffffff, .canId.u.isExtId = true},
              .expectedIdxFrame = 0xff
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = 0x1fffffff},
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = 0x1fffffff, .canId.u.isExtId = true},
+             .expectedIdxFrame = 37
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = 0x1fffffff, .canId.u.isExtId = true},
+             .expectedIdxFrame = 0xff
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 100, .canId.u.isExtId = false},
              .expectedIdxFrame = 41
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = 0x1fffffff},
-             .expectedIdxFrame = 0xff
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 500, .canId.u.isExtId = false},
+             .expectedIdxFrame = 42
             },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 101, .canId.u.isExtId = false},
+             .expectedIdxFrame = 43
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 400, .canId.u.isExtId = false},
+             .expectedIdxFrame = 44
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 200, .canId.u.isExtId = false},
+             .expectedIdxFrame = 45
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 200, .canId.u.isExtId = true},
+             .expectedIdxFrame = 46
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 0, .canId.u.isExtId = true},
+             .expectedIdxFrame = 47
+            },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_DUP, .canId.u.id = 0, .canId.u.isExtId = false},
+             .expectedIdxFrame = 48
+            },
+
 #if 0            
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .id = },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_RT_simplified, .canId.u.id = , .canId.u.isExtId = },
              .expectedIdxFrame = 0xff
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .id = },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT_attributed, .canId.u.id = , .canId.u.isExtId = },
              .expectedIdxFrame = 0xff
             },
-            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .id = },
+            {.pairCanIdAndBusIdx = {.idx = mci_idxBus_CAN_RT, .canId.u.id = , .canId.u.isExtId = },
              .expectedIdxFrame = 0xff
             },
 #endif
@@ -211,23 +235,26 @@ signed int main(signed int noArgs, const char *pargAry[])
         const struct testCase_t *pTestCase = &testCaseAry[u];
         const unsigned int idxFrame = mci_getIdxFrameByCanId
                                             ( /* idxBus */ pTestCase->pairCanIdAndBusIdx.idx
-                                            , /* id */     pTestCase->pairCanIdAndBusIdx.id
+                                            , pTestCase->pairCanIdAndBusIdx.canId.u.id
+                                            , pTestCase->pairCanIdAndBusIdx.canId.u.isExtId
                                             );
         if(idxFrame == pTestCase->expectedIdxFrame)
         {
             printf( "%03u) Test case succeeded", u+1);
             if(idxFrame < 0xff)
             {
-                printf( ". CAN frame with ID %#x on bus %u has frame index %u\n"
-                      , (unsigned)pTestCase->pairCanIdAndBusIdx.id
+                printf( ". CAN frame with ID %s%#x on bus %u has frame index %u\n"
+                      , pTestCase->pairCanIdAndBusIdx.canId.u.isExtId? "x": ""
+                      , (unsigned)pTestCase->pairCanIdAndBusIdx.canId.u.id
                       , (unsigned)pTestCase->pairCanIdAndBusIdx.idx
                       , idxFrame
                       );
             }
             else
             {
-                printf( ". A CAN frame with ID %#x is not transmitted on bus %u\n"
-                      , (unsigned)pTestCase->pairCanIdAndBusIdx.id
+                printf( ". A CAN frame with ID %s%#x is not transmitted on bus %u\n"
+                      , pTestCase->pairCanIdAndBusIdx.canId.u.isExtId? "x": ""
+                      , (unsigned)pTestCase->pairCanIdAndBusIdx.canId.u.id
                       , (unsigned)pTestCase->pairCanIdAndBusIdx.idx
                       );
             }            
@@ -235,12 +262,13 @@ signed int main(signed int noArgs, const char *pargAry[])
         else
         {
             printf( "%03u) Test case failed"
-                    ". We got frame index %u instead of %u for CAN frame with ID %#x on"
+                    ". We got frame index %u instead of %u for CAN frame with ID %s%#x on"
                     " bus %u\n"
                   , u+1
                   , idxFrame
                   , pTestCase->expectedIdxFrame
-                  , (unsigned)pTestCase->pairCanIdAndBusIdx.id
+                  , pTestCase->pairCanIdAndBusIdx.canId.u.isExtId? "x": ""
+                  , (unsigned)pTestCase->pairCanIdAndBusIdx.canId.u.id
                   , (unsigned)pTestCase->pairCanIdAndBusIdx.idx
                   );
         }            

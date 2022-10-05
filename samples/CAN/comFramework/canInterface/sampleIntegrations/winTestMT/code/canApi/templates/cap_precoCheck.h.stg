@@ -4,9 +4,12 @@
 // A header file is generated, which contains a number of compile time checks of static
 // elements of the network database, which need to be fulfilled for successful compilation
 // and execution of the generated code.\n
+//   Some consistency tests can be done already at code generation time. In this case the
+// code generation process is aborted with error message and the build will immediately
+// fail.\n
 //   See template moduleDescription for more details.
 //
-// Copyright (C) 2015-2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -61,6 +64,7 @@ precoCheck(cluster, info) ::= <<
 // The included files.
 @modH.includes() ::= <<
 #include "<file.canApi_h>"
+#include "cst_canStatistics.h"
 >>
 
 
@@ -79,6 +83,7 @@ precoCheck(cluster, info) ::= <<
 <precoTestStringsEqual(mnm(),{<file.mnmApi>_},{Bad template configuration: Mismatch of module suffix, see <file.mnmApi>_ but require <mnm()>})>
 
 <iterateBusesOfCluster(cluster,"checkAttribs")><\\>
+<iterateBusesOfCluster(cluster,"checkAtLeastOneFrame")><\\>
 <iterateFramesOfCluster(cluster,"loopback","rejectLoopbackFrames")><\\>
 <iteratePdusOfCluster(cluster,"both","checkChksumDef")><\\>
 <iteratePdusOfCluster(cluster,"both","checkSqcDef")><\\>
@@ -109,16 +114,19 @@ checkAttribs(bus) ::= <<
 <checkAttribSignalInitVal(bus.attribDefMap.(attribName.sigInitVal))>
 <else>
 <! Don't generate a compilation error, the initial value of signals is not mandatory !>
-<info.warn.({Input file <bus.networkFile> doesn't contain signal attribute <\\>
-             <attribName.sigInitVal>. All initial values will be zero. Check code <\\>
-             generation configuration in template group file attributes.stg}
+<info.warn.({<info.templateFile>: Input file <bus.networkFile> doesn't contain signal <\\>
+             attribute <attribName.sigInitVal>. All initial values will be zero. Check <\\>
+             code generation configuration in template group file attributes.stg}
            )
 >
 <endif>
 <if(bus.attribDefMap.(attribName.sendMode))>
 <checkAttribFrameSendMode(bus.attribDefMap.(attribName.sendMode))>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.sendMode>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <\\>
+             <attribName.sendMode>}
+           )
+>
 #error Input file <bus.networkFile.Name>\
  does not contain frame attribute <attribName.sendMode>. Check code generation\
  configuration in template group file attributes.stg
@@ -130,7 +138,10 @@ checkAttribs(bus) ::= <<
  to be a frame related attribute of type integer
 <endif>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.sendPeriod>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <\\>
+             <attribName.sendPeriod>}
+           )
+>
 #error Input file <bus.networkFile.Name> does not contain frame attribute\
  <attribName.sendPeriod>. Check code generation configuration in template group file\
  attributes.stg
@@ -144,7 +155,7 @@ checkAttribs(bus) ::= <<
 #error Input file <bus.networkFile.Name>, <attribName.chksumDataId> needs to be a frame related attribute of type integer
 <endif>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.chksumDataId>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <attribName.chksumDataId>})>
 #error Input file <bus.networkFile.Name> does not contain frame attribute\
  <attribName.chksumDataId>. Check code generation configuration in template group file\
  attributes.stg
@@ -155,11 +166,26 @@ checkAttribs(bus) ::= <<
 #error Input file <bus.networkFile.Name>, <attribName.eventMinDistance> needs to be a frame related attribute of type integer
 <endif>
 <else>
-<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.eventMinDistance>})>
+<info.warn.({<info.templateFile>: Input file <bus.networkFile>: Missing attribute <\\>
+             <attribName.eventMinDistance>}
+           )
+>
 #error Input file <bus.networkFile.Name> does not contain frame attribute\
  <attribName.eventMinDistance>. Check code generation configuration in template group file\
  attributes.stg
 <endif>
+>>
+
+
+checkAtLeastOneFrame(bus) ::= <<
+/* For each bus, there should be at least one affected message, received or sent. There a
+   typical mistakes in configuration of the code generator, which lead to not considering
+   any message from the DBC file. These kind of mistakes are address by this check. */
+_Static_assert( CST_NO_CAN_FRAMES_<bus.name; format="upper">
+              , "No single message from <bus.networkFile> is considered by the"
+                " generated code. This is likely due to an error in the configuration"
+                " of the code generator. Did you set the node name correctly?"
+              );<\n>
 >>
 
 

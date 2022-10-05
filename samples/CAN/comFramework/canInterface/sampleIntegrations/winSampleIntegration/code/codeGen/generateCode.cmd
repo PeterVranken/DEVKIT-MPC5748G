@@ -1,7 +1,7 @@
 @echo off
 setlocal
 set CLASSPATH="templates"
-set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\..\..\..\..\codeGenerator\trunk
+set COMFRAMEWORK_CODEGENERATOR_HOME=..\..\..\..\..\codeGenerator
 set PATH=%COMFRAMEWORK_CODEGENERATOR_HOME%\dist;%PATH%
 call codeGenerator ^
   --cluster-name winSampleIntegration ^

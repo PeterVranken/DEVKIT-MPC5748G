@@ -77,11 +77,11 @@ i=7
 i=8
 i=9
 
-For convenience only, we permit to omit parts of the commands, e.g. the operand or we
-permit to read-refernce a number without explicit initialization with the operator set.
-Where a typical use case is seen this is permitted in other cases it is not permitted and
+For convenience only, we permit to omit parts of the commands, e.g., the operand or we
+permit to read-reference a number without explicit initialization with the operator set.
+Where a typical use case is seen, this is permitted. In other cases it is not permitted and
 the code generator will fail with some explanatory feedback. The usual assumption is that a
-templat erequires a linear counter. We can start a null based up counter by just
+template requires a linear counter. We can start a null based up counter by just
 referencing a never explicitly created number:
 neverUsedBefore=0
 neverUsedBefore=1
@@ -123,7 +123,7 @@ This works for a power-of-3 counter, too:
 9
 27
 Here, the concept reaches its limits. The implementation of a power-of-3 counter starting
-at 2 would become much more cumbersome and require a combination of scratch pad operations
+at 2 would become much more cumbersome and requires a combination of scratch pad operations
 and conditional template code. Or a sequence of scratch pad operations in each counting
 step.
 
@@ -169,7 +169,7 @@ This is what our example produces:
 Frame RT_DL1MK3_Measure_Time_10 is an outbound event frame
 
 With the exception of counter support, the scratch pad would be useless if we wouldn't have
-the possibility to operate on data from the CAN network database, i.e. on fields of the
+the possibility to operate on data from the CAN network database, i.e., on fields of the
 data model. This is possible using the StringTemplate V4 map operator map.(<attribute>).
 The name of the key into the map is computed by expanding <attribute>. We can easily use
 the template contructs to let the template engine build any of the scratch pad commands
@@ -182,19 +182,20 @@ for the scratch pad. To make this run, we have to place the attribute
 <info.calc.({noFrames_set_<cluster.noFrames>})> into our template. From now on a number
 called noFrames exists in the scratch pad and can be referenced.
 
-This pattern can be used for integer numbers and Boolean from the data model. It's still
+This pattern can be used for integer numbers and Booleans from the data model. It's still
 possible for fields of type double or Double and using the formatter expression
 format="%.0f" but this truncates the fraction of the number and won't be of much use.
 
 Please note the global name space in the scratch pad. Different to in the data model are
 numbers not related to a specific context or object. You might overcome this by building
-number names from object names; <info.calc.({<bus.name>_noFrames_set_<bus.noFrames>})>
+number names from object names; <info.calc.({<bus.name>NoFrames_set_<bus.noFrames>})>
 could for example be applied to get a bus related number of frames. While this is basically
 correct it can easily fail due to the different syntax rules for symbol names: The data
 model usually uses C style symbols, which may contain the underscore. The scratch pad can't
 tolerate the underscore as it needs it to separate the number name from operation and
 operand. It accepts any sequence beginning with a letter followed by letters and decimal
-digits as number name.
+digits as number name. The previous example will work correctly only if the actual bus name
+complies with this rule.
 
 Operating on numeric fields of the data model together with the new concept of having
 sub-templates as kind of sub-routines that compute and return data can be exploited to

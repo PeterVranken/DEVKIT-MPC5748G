@@ -8,10 +8,33 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
+# Copyright (C) 2013-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+ifndef LOCATE_TOOLS_INCLUDED
+LOCATE_TOOLS_INCLUDED := 1
 
 # Only uncomment the next line when running this fragment independently for maintenance
 # purpose.
 #include commonFunctions.mk
+
+# Use the Windows standard shell to execute commands.
+ifeq ($(osName),win)
+    #$(info Use Command Prompt as shell for Windows)
+    SHELL = cmd
+    .SHELLFLAGS = /c
+endif
 
 
 # The MinGW package comes along with a lot of application installers and so there may be
@@ -34,7 +57,7 @@ endif
 # PATH.
 #   CAUTION: Blanks in path designations found in the environment variable PATH can't be
 # processed. A search will not take place in those directories.
-ifeq ($(OS),Windows_NT)
+ifeq ($(osName),win)
 toolsSearchPath := $(subst ;, ,$(call w2u,$(PATH)))
 else
 toolsSearchPath := $(subst :, ,$(call w2u,$(PATH)))
@@ -43,7 +66,7 @@ toolsSearchPath := $(minGwSearchPath) $(toolsSearchPath)
 #$(info Search path for external tools: $(toolsSearchPath))
 
 # Under Windows we have to look for gcc.exe rather than for gcc.
-ifeq ($(OS),Windows_NT)
+ifeq ($(osName),win)
     dotExe := .exe
 else
     dotExe :=
@@ -67,7 +90,7 @@ touch := $(call pathSearch,$(toolsSearchPath),touch$(dotExe))
 
 # TODO The resource compiler is system specific. We've added the Windows variant only.
 # Extend code for other systems if applicable.
-ifeq ($(OS),Windows_NT)
+ifeq ($(osName),win)
     windres := $(call pathSearch,$(toolsSearchPath),windres$(dotExe))
 endif
 
@@ -93,3 +116,7 @@ ifeq ($(and $(make),$(gcc),$(echo),$(rm),$(touch)),)
             installation to the environment variable PATH and you didn't let environment \
             variable MINGW_HOME point to that directory)
 endif
+
+else
+$(error This makefile shouldn't be called twice. There's a problem in your makefile structure)
+endif # LOCATE_TOOLS_INCLUDED

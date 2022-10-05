@@ -6,8 +6,8 @@
  *   The implementation is lock-free. Mutual exclusion of threads is based on spatial
  * separation rather then on serialization (ordering in time). No two threads will ever
  * read or write to the same address space. The implementation is based on shared memory,
- * which can be read and written by both affected threads. In practice, this will almost
- * always mean some uncached memory area.\n
+ * which can be read and written by both affected threads. In practice, for a multi-core
+ * environment, this will almost always mean some uncached memory area.\n
  *   If the queue connects two processes with enabled memory protection, then the sender of
  * data (tail process) needs to belong to the trusted sphere of code in order not to
  * endanger the stability of the receiver process: If the queue data is potentially
@@ -106,6 +106,12 @@
  * Defines
  */
 
+/* Anonymous unions are a means to improve readability of the code. */
+#if defined(__GNUC__)
+#elif defined(__arm__)
+# pragma anon_unions
+#endif
+
 /** The thread-safe implementation of the dispatcher queue builds on defined memory
     ordering; machine operations are expected to happen in the order of C code statements.
     This is not easy to achieve in C as the language semantics doesn't have awareness of
@@ -117,6 +123,8 @@
 #if defined(_STDC_VERSION_C17_C11)
 # define MEMORY_BARRIER_FULL()  {atomic_thread_fence(memory_order_seq_cst);}
 #elif __GNUC__
+# define MEMORY_BARRIER_FULL()  __sync_synchronize()
+#elif __arm__
 # define MEMORY_BARRIER_FULL()  __sync_synchronize()
 #else  
 # error Macro MEMORY_BARRIER_FULL() needs to be defined for your target
@@ -143,7 +151,7 @@
     read from the queue is returned by reference. The got address will have at least this
     alignment.\n
       The value will normally be the largest natural alignment for the given architecture,
-    i.e. 4 Byte for 32 Bit systems and 8 Byte on 64 Bit systems. However, special
+    i.e., 4 Byte for 32 Bit systems and 8 Byte on 64 Bit systems. However, special
     architectures like TriCore can deviate. A 32 Bit TriCore could use 2 Byte if the payload
     doesn't contain double values.\n
       The specified value must not be less than #ALIGN_OF_HDR. This is checked by
@@ -622,10 +630,12 @@ static inline void *allocTailElement( vsq_queueTail_t * const pQueueTail
                                     )
 {
 #if VSQ_SUPPORT_MEMORY_PROTECTION == 1
-    /* The communication is broken. No further elements can be queued until the receiver
-       has re-synchronized. */
     if(pQueueTail->isHeadCorrupted)
+    {
+        /* The communication is broken. No further elements can be queued until the
+           receiver has re-synchronized. */
         return NULL;
+    }
 #endif
     const unsigned int idxHead = pQueueTail->pHead->idxHead
                      , idxTail = pQueueTail->idxTail
@@ -774,7 +784,7 @@ static inline void *allocTailElement( vsq_queueTail_t * const pQueueTail
 
 /**
  * Counterpart to void *allocTailElement(vsq_queue_t *, unsigned int *): Finalize appending
- * the previously allocated element to the queue, i.e. notify a consumer the availability
+ * the previously allocated element to the queue, i.e., notify a consumer the availability
  * of this element. The ownership of the reserved element, which was gained with
  * allocTailElement(), ends with entry into this method; the producer must not touch the
  * element any more.
@@ -1035,6 +1045,8 @@ vsq_queueHead_t *vsq_createQueueHead(void * const pMemoryChunk)
     # define ALIGN_OF_QUEUE_T 4
     #elif defined(__AVR__)
     # define ALIGN_OF_QUEUE_T 1
+    #elif defined(__arm__)
+    # define ALIGN_OF_QUEUE_T 4
     #else
     # error Define the alignment of struct queue_t for your compiler/target
     #endif
@@ -1136,6 +1148,8 @@ vsq_queueTail_t *vsq_createQueueTail( void *pMemoryChunk
     # define ALIGN_OF_QUEUE_T 4
     #elif defined(__AVR__)
     # define ALIGN_OF_QUEUE_T 1
+    #elif defined(__arm__)
+    # define ALIGN_OF_QUEUE_T 4
     #else
     # error Define the alignment of struct queue_t for your compiler/target
     #endif
@@ -1327,7 +1341,7 @@ bool vsq_writeToTail(vsq_queueTail_t * const pQueueTail, const void *pData, unsi
  *   The returned pointer is aligned as had been specified at compile-time using macro
  * #ALIGN_OF_PAYLOAD. The returned pointer can be safely casted to the element type and
  * access to the element (or its fields in case of a struct) can be done through this
- * pointer. There is no time limit in keeping the pointer (i.e. until data submission with
+ * pointer. There is no time limit in keeping the pointer (i.e., until data submission with
  * \a vsq_postTailElement) and using the pointer can avoid the need for an additional local
  * copy of the data during data production time.
  *   @param pQueueTail
@@ -1385,7 +1399,7 @@ void vsq_postTailElement(vsq_queueTail_t * const pQueueTail)
  * returned if no new element has been received since the previous invocation of this
  * method.\n
  *   The element, which is returned by reference is from now on owned by the data consumer,
- * i.e. the caller of this method. It may use the pointer to read the data. The ownership
+ * i.e., the caller of this method. It may use the pointer to read the data. The ownership
  * only ends by getting another pointer to another element with a future invocation of this
  * method. In particular, it does not end when a future call of this method returns \a
  * NULL. The access to the owned element is race condition free for the owner of the
@@ -1492,9 +1506,6 @@ bool vsq_getIsCommunicationBroken(const vsq_queueTail_t * const pQueueTail)
  * re-synchronization.
  *   @param pQueueTail
  * The tail object of the queue by reference, which is re-sychronized.
- *   @param keyForReSync
- * The key for resynchronization, which had been got from a call of
- * vsq_getIsCommunicationBroken() in the sender process.
  */
 void vsq_acknReSyncHead(vsq_queueTail_t * const pQueueTail)
 {

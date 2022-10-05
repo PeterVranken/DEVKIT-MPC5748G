@@ -13,7 +13,7 @@ echo separated list of paths holding your project templates. (The local working 
 echo already is part of the class path.) Please note, setting the environment variable
 echo should be done only locally as it'll contain project specific paths!
 rem
-rem  Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+rem  Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 rem
 rem  This program is free software: you can redistribute it and/or modify it
 rem  under the terms of the GNU Lesser General Public License as published by the
@@ -56,6 +56,6 @@ if not "%COMFRAMEWORK_JAVA_HOME%" == "" set PATH=%COMFRAMEWORK_JAVA_HOME%\bin;%P
 :: do not designate the actually loaded jars but those, which were used at application build
 :: time. The printed versions are correct only if the classpath defined here is identical
 :: to the one used for building.
-java -cp "%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\ST-4.3.1.jar;%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\antlr-4.8-complete.jar;%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\log4j-1.2.11.jar;%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\comFrameworkCodeGenerator-1.10.jar;%CLASSPATH%" ^
+java -cp "%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\antlr-4.10.1-complete.jar;%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\log4j-1.2.11.jar;%COMFRAMEWORK_CODEGENERATOR_HOME%\dist\comFrameworkCodeGenerator-1.11.jar;%CLASSPATH%" ^
      -ea ^
      codeGenerator.main.CodeGenerator %*

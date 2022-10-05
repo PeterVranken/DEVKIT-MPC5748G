@@ -208,7 +208,7 @@ static void logCanFrame( bool isReceived
                        )
 {
     if(_logCanData == NULL)
-        _logCanData = fopen("canInterfaceDemo.CAN.log", "wt");
+        _logCanData = fopen("winSampleIntegration.CAN.log", "wt");
     if(_logCanData != NULL)
     {
         fprintf( _logCanData

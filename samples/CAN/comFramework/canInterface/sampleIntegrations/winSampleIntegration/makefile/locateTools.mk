@@ -1,9 +1,7 @@
-# 
+#
 # Makefile for GNU Make 3.81
 #
 # Locate all the external tools used by the other makefile fragments.
-#
-# This makefile fragment depends on functions.mk.
 #
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
@@ -30,7 +28,7 @@ LOCATE_TOOLS_INCLUDED := 1
 #include commonFunctions.mk
 
 # Use the Windows standard shell to execute commands.
-ifeq ($(call os),win)
+ifeq ($(osName),win)
     #$(info Use Command Prompt as shell for Windows)
     SHELL = cmd
     .SHELLFLAGS = /c
@@ -57,7 +55,7 @@ endif
 # PATH.
 #   CAUTION: Blanks in path designations found in the environment variable PATH can't be
 # processed. A search will not take place in those directories.
-ifeq ($(os),win)
+ifeq ($(osName),win)
 toolsSearchPath := $(subst ;, ,$(call w2u,$(PATH)))
 else
 toolsSearchPath := $(subst :, ,$(call w2u,$(PATH)))
@@ -66,7 +64,7 @@ toolsSearchPath := $(minGwSearchPath) $(toolsSearchPath)
 #$(info Search path for external tools: $(toolsSearchPath))
 
 # Under Windows we have to look for gcc.exe rather than for gcc.
-ifeq ($(os),win)
+ifeq ($(osName),win)
     dotExe := .exe
 else
     dotExe :=
@@ -90,7 +88,7 @@ touch := $(call pathSearch,$(toolsSearchPath),touch$(dotExe))
 
 # TODO The resource compiler is system specific. We've added the Windows variant only.
 # Extend code for other systems if applicable.
-ifeq ($(os),win)
+ifeq ($(osName),win)
     windres := $(call pathSearch,$(toolsSearchPath),windres$(dotExe))
 endif
 
@@ -114,7 +112,8 @@ ifeq ($(and $(make),$(gcc),$(echo),$(rm),$(touch)),)
     $(error Required GNU tools can't be located. Most probable reasons are: You \
             didn't install the MinGW package or you didn't add the path to the MinGW \
             installation to the environment variable PATH and you didn't let environment \
-            variable MINGW_HOME point to that directory)
+            variable MINGW_HOME point to that directory or no appropriate distribution of \
+            POSIX executables like rm or mkdir is in the search path)
 endif
 
 else

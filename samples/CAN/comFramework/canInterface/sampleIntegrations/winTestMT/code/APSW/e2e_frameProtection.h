@@ -6,7 +6,7 @@
  * This module contains the set of functions pairs for the end-to-end protection of the CAN
  * frames. A CRC computing and a CRC validating function is generated for each CAN frame.
  *
- * This file has been created with comFramework - codeGenerator version 1.10.6,
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
  * see http://sourceforge.net/projects/comframe/
  *
  * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
@@ -41,19 +41,17 @@
 #ifndef E2E_ENABLE_TEST_CODE
 # define E2E_ENABLE_TEST_CODE 1
 #endif
- 
+
 
 /*
  * Type definitions
  */
 
- 
 
 /*
  * Data declarations
  */
 
- 
 
 /*
  * Function declarations
@@ -24385,5 +24383,10 @@ extern boolean_t e2e_randomTest_B10_frame_677_677();
 boolean_t e2e_testAll();
 #endif /* E2E_ENABLE_TEST_CODE */
 
+
+
+/*
+ * Inline function definitions
+ */
 
 #endif // !defined(E2E_FRAMEPROTECTION_DEFINED)

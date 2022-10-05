@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['software_20documentation_20for_20comframework_20_2d_20can_20interface',['Software Documentation for comFramework - CAN Interface',['../index.html',1,'']]],
-  ['senderhandleevent',['senderHandleEvent',['../structede__external_event__t.html#add0415b473e2e5a5c932a95e9a25e868',1,'ede_externalEvent_t']]],
-  ['sizeoffield',['sizeoffield',['../ede__event_dispatcher_engine_8c.html#a20b49b55678bd229a5a4fd324a019c21',1,'ede_eventDispatcherEngine.c']]],
-  ['submitbuffer',['submitBuffer',['../structede__event_sender_port__t.html#a8b9811adf477890a43f2449595beca03',1,'ede_eventSenderPort_t']]]
+  ['providesdatabyreference_0',['providesDataByReference',['../structede__event_receiver_port__t.html#a6d3b73c4b28f9f842250a90c4b3fbe98',1,'ede_eventReceiverPort_t']]],
+  ['ptrtoevtsrc_5ft_1',['ptrToEvtSrc_t',['../ede__event_dispatcher_engine_8c.html#acdac51b4b6d4ddac34b7b74526767e6e',1,'ede_eventDispatcherEngine.c']]]
 ];
