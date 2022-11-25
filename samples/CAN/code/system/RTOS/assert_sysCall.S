@@ -4,7 +4,7 @@
  * in order to make the system call work well in all contexts, the OS contexts in
  * supervisor mode or the normal user tasks.
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -163,7 +163,7 @@ ass_noUpdPID_\core\():
 
     /* MSR[EE] = 0 is always granted on entry into a basic system call handler and all
        which remains is entering an infinite loop. */
-    .extern     assert_infiniteLoopAfterCaughtError /* Just to have it in the map file. */
+    .global     assert_infiniteLoopAfterCaughtError_\core\() /* Just to have it in the map file. */
 assert_infiniteLoopAfterCaughtError_\core\():
     se_b        assert_infiniteLoopAfterCaughtError_\core\()
 

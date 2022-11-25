@@ -9,7 +9,8 @@
  *
  * @note References "RM75" in this module refer to "MPC5775E/MPC5775B Reference Manual",
  * document number: MPC5775E, Rev. 1, 05/2018.
- * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ *
+ * Copyright (C) 2021-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -55,7 +56,7 @@
  */
 
 /** The number of available, arbitrated, accessible ports.
-      @todo Many of the PCR number are not used. A rather cheap mapping is possible of PCR
+      @todo Many of the PCR numbers are not used. A rather cheap mapping is possible of PCR
     to a zero based index with only a few unused numbers - which would save a significant
     portion of the allocation table. For the MPC5775B/E with 416 pin housing this could save
     more than half the otherwise required memory. (Not checked for the MPC5748G.) */
@@ -120,7 +121,7 @@ void siu_osConfigureInput(unsigned int idxPort, const siu_portInCfg_t *pPortCfg)
 static inline bool siu_osGetGPIO(unsigned int idxPort)
 {
     assert(idxPort < SIU_NO_MCU_PORTS);
-    
+
 #if defined(MCU_MPC5748G)
     /* Unfortunately the MCU header only models the 32 Bit access to the GPIO data
        registers, which involves four port bits at once, although the original intention is
@@ -149,7 +150,7 @@ static inline bool siu_osGetGPIO(unsigned int idxPort)
 static inline void siu_osSetGPIO(unsigned int idxPort, bool highLevel)
 {
     assert(idxPort < SIU_NO_MCU_PORTS);
-    
+
 #if defined(MCU_MPC5748G)
     /* Unfortunately the MCU header only models the 32 Bit access to the GPIO data
        registers, which involves four port bits at once, although the original intention is
