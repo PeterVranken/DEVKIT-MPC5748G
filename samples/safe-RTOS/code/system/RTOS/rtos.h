@@ -403,7 +403,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  * mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks,
  * which should be locked, i.e. which compete for the resource or critical section to
  * protect. This may still lock other, not competing tasks, but at least all non competing
- * tasks of higher priority and the interrupt handlers will be served.\n
+ * tasks of higher priority and the interrupt handlers will still be served.\n
  *   To release the protected resource or to leave the critical section, call the
  * counterpart function rtos_resumeAllTasksByPriority(), which restores the original
  * task priority level.\n
@@ -454,7 +454,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  *   @remark
  * The raised priority is implicitly restored at the end of the task. It is not possible to
  * consider this function a mutex, which can be acquired in one task activation and which
- * can be releases in an arbitrary later task activation or from another task.
+ * can be released in an arbitrary later task activation or from another task.
  *   @remark
  * This function must be called from the user task context only. Any attempt to use it from
  * OS code will lead to a crash.
@@ -498,9 +498,9 @@ uint32_t rtos_suspendAllTasksByPriority(uint32_t suspendUpToThisPriority);
  * function it may even be advantageous to not call rtos_resumeAllTasksByPriority() in
  * order to save the overhead of the involved system call.
  *   @remark
- * Due to the task switch is can initiate, this function is implemented as a system call of
+ * Due to the task switch it can initiate, this function is implemented as a system call of
  * full conformance class and this means significant overhead. It should be applied with
- * care to for frequently aqcuired resources or for very short critical sections.\n
+ * care for frequently acquired resources or for very short critical sections.\n
  *   Alternatives are: Look-free programming techniques or dedicated system calls for the
  * given purpose.
  *   @remark
@@ -521,7 +521,7 @@ void rtos_resumeAllTasksByPriority(uint32_t resumeDownToThisPriority);
  * https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/doc/manual/manual.pdf,
  * section System calls of RTOS, Table 1, p. 17, for a list of system calls offered by the
  * RTOS kernel. More system calls will be offered by your operating system, which builds on
- * this safe-RTOS, please refer to your device driver documentation.\n
+ * safe-RTOS, please refer to your device driver documentation.\n
  *   The further function arguments depend on the particular system call.
  *   @param ...
  * The remaining arguments are passed register based to the system call implementation.

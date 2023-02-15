@@ -71,7 +71,7 @@
 
 /** A wrapper around the API for the priority ceiling protocal (PCP), which lets the API
     for mutual exclusion of a task set look like the API calls from the OSEK/VDX standard.
-      Here, for getting the resource, i.e. for entering a critical section of code. */
+      Here, for getting the resource, i.e., for entering a critical section of code. */
 #define GetResource(resource)                                                               \
             {   uint32_t priorityLevelSoFar;                                                \
                 priorityLevelSoFar = rtos_suspendAllTasksByPriority                         \
@@ -79,12 +79,12 @@
 
 /** A wrapper around the API for the priority ceiling protocal (PCP), which lets the API
     for mutual exclusion of a task set look like the API calls from the OSEK/VDX standard.
-      Here, for returning the resource, i.e. for leaving a critical section of code. */
+      Here, for returning the resource, i.e., for leaving a critical section of code. */
 #define ReleaseResource() rtos_resumeAllTasksByPriority(priorityLevelSoFar); }
 
 /** A wrapper around the API for the priority ceiling protocal (PCP), which lets the API
     for mutual exclusion of a task set look like the API calls from the OSEK/VDX standard.
-      Here, for getting the resource, i.e. for entering a critical section of code.\n
+      Here, for getting the resource, i.e., for entering a critical section of code.\n
       Here for OS tasks (including idle task). */
 #define osGetResource(resource)                                                             \
             {   uint32_t priorityLevelSoFar;                                                \
@@ -93,7 +93,7 @@
 
 /** A wrapper around the API for the priority ceiling protocal (PCP), which lets the API
     for mutual exclusion of a task set look like the API calls from the OSEK/VDX standard.\n
-      Here, for returning the resource, i.e. for leaving a critical section of code.\n
+      Here, for returning the resource, i.e., for leaving a critical section of code.\n
       Here for OS tasks (including idle task). */
 #define osReleaseResource() rtos_osResumeAllTasksByPriority(priorityLevelSoFar); }
 
@@ -104,7 +104,7 @@
 /** The priority level to set for the atomic operations done on the task cycle counts. The
     macro is named such that the code resembles the resource API from the OSEK/VDX
     standard.\n
-      Here for mutual exclusion of all particpating tasks. */
+      Here for mutual exclusion of all participating tasks. */
 #define RESOURCE_ALL    (MAXP(prioEvT,MAXP(prioEvH,MAXP(prioEvA,prioEvB))))
 
 /** The priority level to set for the atomic operations done on the task cycle counts.\n
@@ -381,13 +381,13 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
        increase.
          A lowers the priority again and checks for immediate increase of H's counter.
          Same with priority raised to a level, which doesn't include H. A needs to see an
-      immediate increase of H's counter, i.e. before lowering the priority again.
+      immediate increase of H's counter, i.e., before lowering the priority again.
          A raises the priority to a level which includes T and blocks for a while, which is
        longer than the cycle time of T. It checks for an increase of the activation loss
        counter of T.
          A lowers the priority to a level which doesn't include T any longer and blocks for
        a while, which is longer than the cycle time of T. It checks for no further
-       activation losses of T, i.e. T is now running and preempting A.
+       activation losses of T, i.e., T is now running and preempting A.
          A raises the priority level so that H is included. It stores the counter value of
        H (for task B) and terminates gracefully. H needs to be immediately called due to
        the implicit lowering of the priority at the end of task A. Task B will check for an

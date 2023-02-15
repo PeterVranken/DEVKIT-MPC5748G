@@ -864,7 +864,7 @@ rtos_osRunUserTask:
  *   This function is nearly the same as rtos_osRunUserTask() with the only exception that
  * the process state is not evaluated; the init function must be called while the process
  * is not yet enabled.\n
- *   For copy the function entry code rather than making a dynmic descision - it are just a
+ *   We copy the function entry code rather than making a dynamic descision - it are just a
  * few instructions to duplicate.
  */
 rtos_osRunInitTask:

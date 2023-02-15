@@ -127,7 +127,7 @@
 
 /** A wrapper around the API for the priority ceiling protocal (PCP), which lets the API
     for mutual exclusion of a task set look like the API calls from the OSEK/VDX standard.
-      Here, for getting the resource, i.e. for entering a critical section of code. */
+      Here, for getting the resource, i.e., for entering a critical section of code. */
 #define GetResource(idTask, resource)                                                       \
             {   uint32_t priorityLevelSoFar;                                                \
                 if((idTask) <= lastUserTaskId)                                              \
@@ -144,7 +144,7 @@
 
 /** A wrapper around the API for the priority ceiling protocal (PCP), which lets the API
     for mutual exclusion of a task set look like the API calls from the OSEK/VDX standard.
-      Here, for returning the resource, i.e. for leaving a critical section of code. */
+      Here, for returning the resource, i.e., for leaving a critical section of code. */
 #define ReleaseResource(idTask)                                                             \
                 if((idTask) <= lastUserTaskId)                                              \
                     rtos_resumeAllTasksByPriority(priorityLevelSoFar);                      \
@@ -368,7 +368,7 @@ static volatile struct sharedDataTasksIdleAnd1msAndCpuLoad_t
  * Test function, to be called from any of the tasks: A task related counter is incremented
  * and in the same atomic operation is a task-shared counter incremented. The function then
  * validates that the sum of all task related counters is identical to the value of the
- * shared counter. The test result is validated by assertion, i.e. the application is
+ * shared counter. The test result is validated by assertion, i.e., the application is
  * halted in case of an error.
  *   The test is aimed to prove the correct implementation of the offered mutual exclusion
  * mechanisms.

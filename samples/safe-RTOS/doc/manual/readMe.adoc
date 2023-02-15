@@ -1,7 +1,7 @@
 = safe-RTOS - Manual
 :Author:              Peter Vranken
 :Email:               mailto:Peter_Vranken@Yahoo.de[P. Vranken]
-:Revision:            2
+:Revision:            3
 :title-page:
 //:toc:                 left
 :toc:
@@ -79,7 +79,7 @@ relevant safety standards, like ISO 26262.
 == Introduction
 
 safe-RTOS is a successor of the simple RTOS previously published in
-GitHub. The scheduler implements rate monotonic scheduling, i.e. it
+GitHub. The scheduler implements rate monotonic scheduling, i.e., it
 implements a strictly hierarchical preemption pattern, which is for
 example called tasks of "Basic Conformance Class" in the OSEK/VDX-OS
 standard and which -- as a matter of experience and despite of its
@@ -116,7 +116,7 @@ exception. The access rights can be granted for read and/or write, they
 depend on the CPU's current execution mode ("problem state", see below)
 and they can be granted to either all or only a particular process.
 
-The configuration of the memory area descriptors in the MPU, i.e. the
+The configuration of the memory area descriptors in the MPU, i.e., the
 assignment of memory areas and/or I/O address space to the processes, is
 done statically, it is done once at system startup. This has several
 implications:
@@ -142,12 +142,12 @@ implications:
 //still not using it is the bad granularity of the managed memory areas.
 //Using the MPU, we can make the areas match the actual, linker-computed
 //memory consumption of the processes but with the MMU we would end up with
-//fixed size, pre-defined chunks of memory for the processes, e.g. 4k, 8k,
+//fixed size, pre-defined chunks of memory for the processes, e.g., 4k, 8k,
 //16k of RAM.
 //
 //The MMU remains active, it's a kind of primary access filter for CPU loads
 //and stores, not process specific but catching all accesses, which are
-//generally out of bounds, e.g. address space, where no physical memory or
+//generally out of bounds, e.g., address space, where no physical memory or
 //I/O sits at all.
 
 The protection of the other resource, CPU ownership, is mainly done by time
@@ -155,7 +155,7 @@ monitoring of the tasks. If a task doesn't terminate timely then it causes
 an exception. The kernel supports deadline monitoring; a task (may) have a
 termination date and if it hasn't terminated at that time then it is
 aborted by exception. This concept ensures that a task either meets its
-deadline (i.e. has produced its results timely) or the timing problem has
+deadline (i.e., has produced its results timely) or the timing problem has
 been recorded and is reported, typically to some supervisory task.
 
 Note, deadline monitoring always punishes the failing task, although it
@@ -374,7 +374,7 @@ available to untrusted application code.)
 Preemption takes place only by higher priority; once a task is running
 it'll not be preempted by any other of same or lower priority. If two or
 more tasks of same priority become ready at the same time then they are
-executed sequentially, i.e. one after another. This introduces a kind of
+executed sequentially, i.e., one after another. This introduces a kind of
 sub-ordinated priority, which determines the order of execution in this
 situation. This sub-ordinated priority is defined at RTOS configuration
 time; in the given situation, the tasks would be executed primarily in
@@ -412,7 +412,7 @@ descriptors. Therefore, an exception always means reporting an error.
 Any exception handler will first check, which process the exception
 causing task belongs to. The RTOS maintains process related error counters
 and the according counter is incremented. The exception handler will then
-abort the failing task, i.e. it does do basically the same as the RTOS API
+abort the failing task, i.e., it does do basically the same as the RTOS API
 _rtos_terminateTask_() does, which voluntarily ends a task. Code execution
 does not return to the failing code location. If a regular, time triggered
 task fails, then it'll be triggered again at next due time, regardless of
@@ -497,7 +497,7 @@ Understanding these aims of the mechanism it becomes clear, why its
 weaknesses are not painful. The check is only done on return from a
 preempting context to the monitored task. This limits the time resolution.
 The RTOS itself has a 1 ms interrupt, so the only general guarantee is an
-according time resolution. The idea to limit e.g. a notification callback
+according time resolution. The idea to limit, e.g., a notification callback
 to 50 µs will not work. If you think 50 µs should be enough under all
 circumstances then you should indeed specify this time span. But
 regardless, the callback may run up to 1 ms before it is surely killed.
@@ -554,7 +554,7 @@ sufficient in most cases (see service _rtos_getNoActivationLoss_()).
 Using deadline monitoring is absolutely unavoidable if ISRs make use of
 callbacks into user processes (using service _rtos_osRunTask_()). However,
 in many situations this construct can be replaced by deferred interrupt
-handling, i.e. by triggering an OS task that takes over the work from the
+handling, i.e., by triggering an OS task that takes over the work from the
 ISR. The triggered task would have a priority below the safety task and if
 it is blocked by a non-returning, bad callback into the user process then
 the safety task would immediately see the activation losses for the event
@@ -618,7 +618,7 @@ several implications:
   design and implementation and it is error prone
 * Our approach has a single, big disadvantage: By principle, the three
   cores share the SDA and SDA2 address areas. This limits the amount of
-  small data address space to a total of 64 kByte each, i.e. the small
+  small data address space to a total of 64 kByte each, i.e., the small
   data of all three cores together need to fit into the 64 kByte. The NXP
   approach with independent runs of the linker provides the 64 kByte
   separately to each of the cores.
@@ -641,7 +641,7 @@ If the system can reach a state, which is potentially harmful to people or
 hardware, then it'll typically need some supervisory software, too, which
 has the only aim of avoiding such a state. Most typical, the supervisory
 software can be kept very lean. Depending on what kind of system we talk,
-it may e.g. be sufficient to read a temperature sensor, check the
+it may, e.g., be sufficient to read a temperature sensor, check the
 temperature against a boundary and to control the coil of the main relay,
 which powers the system. If the temperature exceeds a limit or if the
 temperature reading is somehow implausible then the relay is switched off
@@ -695,7 +695,7 @@ All other technical safety requirements are derived from this one.
 //TODOC (partly done in other, existing sections like system calls and I/O
 //driver model):
 //
-//** All user code in user mode, i.e. permanent switching
+//** All user code in user mode, i.e., permanent switching
 //** All I/O access is done in driver code, either explicit on demand by
 //   system call or implicitly as implementation of the interrupts (which
 //   belong to the driver)
@@ -706,11 +706,11 @@ All other technical safety requirements are derived from this one.
 //   modify and/or invalidate the I/O data before the level 1 task is
 //   informed (inputs) or before the data is processed by the OS (outputs)
 //** I/O drivers can have local buffers, which can be read by user tasks
-//   (e.g. after notification). Polling paradigm (if no
+//   (e.g., after notification). Polling paradigm (if no
 //   notification is needed) with best performance. Reading becomes direct
 //   data access.
 //** Same for output but now the buffer needs to be write-accessible for
-//   processes, i.e. either local to a single process or in process-shared
+//   processes, i.e., either local to a single process or in process-shared
 //   memory, which makes the data vulnerable
 //** I/O drivers may safely advance data to user code; shade a light on
 //   handling of pointers.
@@ -766,7 +766,7 @@ registers.
 Such a driver has one major drawback. There's no immediate data flow
 between data source and application task. A typical example would be an
 analog input driver, which regularly samples the voltage at the input pins,
-e.g. once a Millisecond. The conversion-complete interrupt would read the
+e.g., once a Millisecond. The conversion-complete interrupt would read the
 ADC result registers and place the samples into the API memory. The
 application tasks can read that memory at any time. They surely get the
 last recently acquired samples but don't really know the age of the
@@ -840,7 +840,7 @@ make use of the RTOS API to run a user task, namely _rtos_osRunTask_(). The
 task function is of course the agreed callback.
 
 The callback is executed in the context of the aimed application process.
-If it would fail (e.g. forbidden memory access causes an MPU exception)
+If it would fail (e.g., forbidden memory access causes an MPU exception)
 then it would be aborted and control went immediately back to the the task
 starting ISR.
 
@@ -850,7 +850,7 @@ time would prolongate the execution time of the ISR - which is constrained
 in typical scenarios. A deadline for the (unknown, untrusted) user
 callback code will limit the possible damage by bad callback behavior.
 
-The callback is executed at same priority as the ISR, i.e. a priority
+The callback is executed at same priority as the ISR, i.e., a priority
 above all normal tasks and particularly above the safety task. This
 involves a safety risk: Deadline monitoring is not generally available to
 tasks with an interrupt priority greater or equal to the kernel priority
@@ -928,7 +928,7 @@ The leanest and fastest system call is the basic handler:
   volatile and non-volatile registers
 * The basic system call offers a maximum of flexibility and control; the
   handler is not restricted to be just an ordinary synchronous function
-  call with return. For example, the "throw exception" system call, i.e.
+  call with return. For example, the "throw exception" system call, i.e.,
   _rtos_terminateTask_(), is implemented this way, it returns to the
   operating system but not from the system call
   
@@ -961,7 +961,7 @@ executes slower than a basic handler but can be implemented as a C
 function:
 
 * Stack is available
-* The handler is a synchronous function call, i.e. it will return a result
+* The handler is a synchronous function call, i.e., it will return a result
   to the calling code
 * The handler receives a variable number of function arguments. Note, only
   register based function arguments are supported, which limits the
@@ -979,7 +979,7 @@ function:
   non-preemptable and must not resume interrupt processing. No functions
   must be called, neither in the handler function itself and nor in any of
   its sub-functions, which can potentially enable the External Interrupt
-  processing. This includes but is not restricted to:
+  processing. This includes but is not limited to:
 ** _rtos_osResumeAllInterrupts_()
 ** _rtos_osLeaveCriticalSection_()
 ** _rtos_osResumeAllTasksByPriority_()
@@ -1070,7 +1070,7 @@ Note: For such a crash, we don't even need to assume malicious software,
 which purposely abuses the system call; a simple failure in a user process
 -- totally unrelated to our system call -- can lead to a straying task,
 which hits a system call instruction and enters the system call with
-arbitrary register contents (i.e. function arguments) and it would
+arbitrary register contents (i.e., function arguments) and it would
 crash the system.
 =========
 
@@ -1100,7 +1100,7 @@ table entries and undefined, empty table entries.
 
 Each core has its own system call table. This has been decided to allow
 having different implementations of one and the same service on different
-cores. An I/O driver could e.g. be implemented to mainly run on the first
+cores. An I/O driver could, e.g., be implemented to mainly run on the first
 core. Here, the system call implementation will really service the I/O
 device. On the other cores, the same system call would rather implement
 some core-to-core communication to just get the data, which had already
@@ -1120,7 +1120,7 @@ maintenance if the constant is changed. Follow the hints given in the
 source code comments.
 
 If you design your own I/O drivers it's good practice to reserve index
-ranges for each driver, e.g. start the indexes of a driver at multiples of
+ranges for each driver, e.g., start the indexes of a driver at multiples of
 five or ten. Extensions of the drivers become possible without index
 clashes (which are properly reported during the build) and without the
 need for reworking other drivers to sort them out.
@@ -1210,7 +1210,7 @@ top of the RTOS:
 * OS functions are named `rtos_os<FctName>`
 * Application functions are named `rtos_<fctName>`
   
-OS functions must be used in supervisor mode only, i.e. from ISRs or OS
+OS functions must be used in supervisor mode only, i.e., from ISRs or OS
 tasks. Application tasks are executed in user mode. If they try calling an
 OS function then they will be punished by an exception.
 
@@ -1296,7 +1296,7 @@ user and OS tasks, interrupt service routines and bare-metal applications:
 // See http://asciidoc.org/newtables.html or https://leanpub.com/awesomeasciidoctornotebook/read
 // frame: top, bottom, topbot, all (default), sides, none
 // grid: all (default), none, maybe more
-// styles (use <char>| for a single cell, e.g. a|):
+// styles (use <char>| for a single cell, e.g., a|):
 //   e: emphasized
 //   a: Asciidoc markup
 //   m: monospace
@@ -1384,7 +1384,7 @@ to configure the RTOS appropriately for the implemented operating system,
 return an enumeration value, `rtos_errorCode_t`, indicating, whether or
 which problem appeared.
 
-The configuration of the RTOS is generally static, i.e. the sets of events
+The configuration of the RTOS is generally static, i.e., the sets of events
 and tasks and the granted privileges will not depend on variable input
 data and so the success of the RTOS initialization neither won't.
 Consequently, there's no need for a dynamic, intelligent error handling
@@ -1411,7 +1411,7 @@ for the list of recognized configuration errors.
 Tasks are activated by events. At OS initialization time, at first events are
 created to specify conditions under which the aimed tasks shall be
 activated. These are mostly (regular) time triggers but software trigger
-(e.g. from within an ISR) is supported, too.
+(e.g., from within an ISR) is supported, too.
 
     #include "rtos.h"
     rtos_errorCode_t rtos_osCreateEvent( unsigned int *pEventId
@@ -1436,9 +1436,9 @@ Parameter `minPIDToTriggerThisEvent` restricts the use of the API
 privileges.
 
 Parameter `taskParam` is provided to the task function as argument. It can
-be used as context information, e.g. if the same task function should be
+be used as context information, e.g., if the same task function should be
 associated with different events. (Which makes them different tasks
-entering the same shared code.)
+executing the same shared code.)
 
 [[secApiRegisterTask]]
 ==== Registering a task
@@ -1569,7 +1569,7 @@ The use case for this function is the initialization code of I/O drivers.
 Such drivers will frequently make use of interrupts.
 
 Note, this API may be used on a core running a bare-metal application,
-i.e. a core which doesn't start the safe-RTOS kernel.
+i.e., a core which doesn't start the safe-RTOS kernel.
 
 
 [[secApiConfRunTask]]
@@ -1617,7 +1617,7 @@ scheduler of the RTOS is started with a simple API call:
 The initialization tasks are run during the call of this function and the
 regular OS and user tasks start spinning. All code, which is found in
 ordinary, sequential order behind this function call, becomes the idle
-task.
+task. The idle task is executed in supervisor mode and belongs to the OS.
 
 === Control tasks and processes
 
@@ -1638,7 +1638,7 @@ not use it.
 Triggering the event can fail if at least one of the associated tasks has
 not yet completed the previous activation. This is counted as an
 activation loss error for the event. In this situation, the new trigger is
-entirely lost, i.e. none of the associated tasks will be activated by the
+entirely lost, i.e., none of the associated tasks will be activated by the
 new trigger.
 
 The trigger of an event can be used to specify the value `taskParam`,
@@ -1696,7 +1696,7 @@ result or an error indication, which is counted as an exception in the
 destination process. 
 
 The OS variant of the service is intended for implementing callbacks from
-ISRs or OS tasks into application code, e.g. for notifying events or
+ISRs or OS tasks into application code, e.g., for notifying events or
 delivering data.
 
 [[secApiTermTask]]
@@ -1741,7 +1741,7 @@ are widely de-coupled. For suspension of processes it means that the API
 only impacts the tasks of the process, which are configured to run on the
 core, which calls the API. If a supervisory task running one core wants to
 suspend a process entirely then it needs to implement according
-core-to-core communication to all others cores. It could e.g. use service
+core-to-core communication to all others cores. It could, e.g., use service
 <<secApiRunTask,rtos_runTask()>> to run
 <<secApiSuspProc,rtos_suspendProcess()>> on all cores.
 
@@ -1751,12 +1751,12 @@ core-to-core communication to all others cores. It could e.g. use service
 ==== Mutual exclusion of all contexts
 
 The RTOS offers the traditional services for mutual exclusion of all
-contexts on a core, i.e. ISRs and tasks, by suspending all interrupt
+contexts on a core, i.e., ISRs and tasks, by suspending all interrupt
 processing on the core. Since this service would break any safety concept
 it is generally unavailable to user tasks.
 
 Use case is the very efficient avoidance of race conditions in the
-implementation of an operating system, e.g. in its I/O drivers.
+implementation of an operating system, e.g., in its I/O drivers.
 
 The two pairs of functions differ in that only
 <<secApiSuspIrq,rtos_osEnterCriticalSection()>>/<<secApiSuspIrq,rtos_osLeaveCriticalSection()>>
@@ -1772,7 +1772,7 @@ to a few machine instructions.
     void rtos_osLeaveCriticalSection(uint32_t oldState);
 
 Note, all of these APIs may be used on a core running a bare-metal
-application, i.e. a core which doesn't start the safe-RTOS kernel.
+application, i.e., a core which doesn't start the safe-RTOS kernel.
 
 [[secApiPCP]]
 ==== Priority ceiling protocol for tasks
@@ -1827,7 +1827,7 @@ the "resource" objects in the macros hide the priorities a task must
 
 System calls are functions, which are provided by the implementer of an
 operating system, that would build on this RTOS. These function are
-executed in supervisor mode and can e.g. implement I/O drivers. A user
+executed in supervisor mode and can, e.g., implement I/O drivers. A user
 task invokes such a function with this API:
 
     #include "rtos.h"
@@ -1886,7 +1886,7 @@ expensive in relation to the intended pointer operation.
 If safe-RTOS is run on more than one core then much of the code can be
 shared between these core. For example, the entire RTOS implementation
 itself is shared between them. At some code locations, core specific
-decisions may be required, there are e.g. hardware registers, which are
+decisions may be required, there are, e.g., hardware registers, which are
 core related so that an I/O driver serving these registers would need to
 know, on which core it is executing. These services just return the index
 of the executing core.
@@ -1901,7 +1901,7 @@ penalty. They should only use the intrinsic
 <<secApiGetIdxCore,rtos_osGetIdxCore()>> instead.
 
 Note, service <<secApiGetIdxCore,rtos_osGetIdxCore()>> may be used on a
-core running a bare-metal application, i.e. a core which doesn't start the
+core running a bare-metal application, i.e., a core which doesn't start the
 safe-RTOS kernel.
 
 [[secApiGetMSR]]
@@ -1932,7 +1932,7 @@ enabled or not.
     bool rtos_osGetAllInterruptsSuspended(void);
 
 Note, service <<secApiGetIrqSusp,rtos_osGetAllInterruptsSuspended()>> may
-be used on a core running a bare-metal application, i.e. a core which
+be used on a core running a bare-metal application, i.e., a core which
 doesn't start the safe-RTOS kernel.
 
 [[secApiGetProcSusp]]
@@ -1982,7 +1982,7 @@ collect all of this information.]
   <<secApiTaskFailure,rtos_getNoTotalTaskFailure()>> returns the total
 number of exceptions for a given process whereas
 <<secApiTaskFailure,rtos_getNoTaskFailure()>> breaks the count down into
-several different exception kinds. You could e.g. try to decide, whether
+several different exception kinds. You could, e.g., try to decide, whether
 an exception is a possibly tolerable timeout exception.
   
     #include "rtos.h"
@@ -2022,8 +2022,8 @@ low priority.
 
 The service can be used by OS and user tasks.
 
-The service may be used on a core running a bare-metal application, i.e. a
-core which doesn't start the safe-RTOS kernel. In this case, argument
+The service may be used on a core running a bare-metal application, i.e.,
+a core which doesn't start the safe-RTOS kernel. In this case, argument
 _PID_ is necessarily zero, the ID of the OS process.
 
 [[secApiCpuLoad]]
@@ -2285,7 +2285,7 @@ The same constructs are of course found for the other processes, too.
 === Defining data objects
 
 The filters route the input sections to the process memory areas. So if we
-want a particular data object to be owned by a particular process, e.g.
+want a particular data object to be owned by a particular process, e.g.,
 _P4_, then we need to make it reside in one of the filtered sections. The
 compiler offers a type decoration for this purpose (see
 https://gcc.gnu.org/onlinedocs/gcc-4.9.4/gcc/Variable-Attributes.html#Variable-Attributes[GCC
@@ -2440,7 +2440,7 @@ don't need to "grep" for all data definitions in order to add the type
 decoration.
 
 If there's already some legacy safety code, which should run in a higher
-privileged process, e.g. _P2_, then you have two choices:
+privileged process, e.g., _P2_, then you have two choices:
 
 . Look for all data definitions and add the macros to make the data objects
   be owned by process _P2_.
@@ -2649,7 +2649,7 @@ portion, which is spent in the kernel.
 
 The reported kernel CPU times have been computed as difference of the
 overall CPU load and the sum of applied busy wait times. The reported
-value therefore includes everything but busy waiting, e.g. the call of the
+value therefore includes everything but busy waiting, e.g., the call of the
 nearly empty ISRs, the call of the task functions and incrementing of the
 alive counters. So it's not only the time spent in actual kernel
 functions.
