@@ -15,7 +15,7 @@
  *   - "Zen z4204n3 Embedded Processor", Implementation Definition, Rev 1.95 - Feb. 16, 2013
  *   - "Zen z210n3 Embedded Processor", Implementation Definition, Rev 1.95 - Feb. 16, 2013
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -722,7 +722,7 @@ rtos_isr_endIfPreemptable:
        involve a recursion inside of which new tasks are run.
          Note, to avoid stack overflow we need to enter the function still within the
        critical section, which we had started before signalling end of IRQ to the INTC. */
-    se_subi     r4, 1               /* r4: UINT_MAX, i.e. indication of "pointer unset" */
+    se_subi     r4, 1               /* r4: UINT_MAX, i.e., indication of "pointer unset" */
     e_stw       r4, O_ID_NEXT_EV_TO_SCH(r5)     /* Clear pointer to triggered Event */
     e_bl        rtos_osProcessTriggeredEvents   /* r3: Event to be scheduler first */
     
@@ -739,7 +739,7 @@ iv4_noCallOfScheduler:
        user task. */
 
     e_lwz       r3, (RUT_O_pPDESC+S_I4_StFr)(sp)/* Find pProcessDesc in parent stack frame */
-    se_lbz      r3, O_PDESC_ST(r3)      /* r3: Process state: 0=stopped */
+    se_lbz      r3, O_PDESC_ST(r3)      /* r3: Process state: 0=stopped, 1=init, 2=normal */
     se_cmpi     r3, 0
     se_beq      rut_endUserTaskByException  /* r3: 0=RTOS_CAUSE_TASK_ABBORTION_PROCESS_ABORT */
 #if RTOS_CAUSE_TASK_ABBORTION_PROCESS_ABORT != 0
@@ -852,9 +852,9 @@ rtos_osRunUserTask:
     /* We check the process abort condition. The scheduler will set the process abort
        flag asynchronous to the actual task execution. So it may be set even before we
        enter the task. */
-    se_lbz      r7, O_PDESC_ST(r6)      /* r7: Process status, 0=stopped */
-    se_cmpi     r7, 0
-    se_bne      rut_continueTaskExecution
+    se_lbz      r7, O_PDESC_ST(r6)      /* r7: Process status, 0=stopped, 1=init, 2=normal */
+    se_cmpi     r7, 2
+    se_beq      rut_continueTaskExecution
     e_li        r3, ~RTOS_CAUSE_TASK_ABBORTION_PROCESS_ABORT /* Load agreed function result */
     se_blr                          /* Do not execute function, return immediately */
 
@@ -864,7 +864,7 @@ rtos_osRunUserTask:
  *   This function is nearly the same as rtos_osRunUserTask() with the only exception that
  * the process state is not evaluated; the init function must be called while the process
  * is not yet enabled.\n
- *   For copy the function entry code rather than making a dynmic descision - it are just a
+ *   We copy the function entry code rather than making a dynamic decision - it are just a
  * few instructions to duplicate.
  */
 rtos_osRunInitTask:
@@ -933,7 +933,7 @@ rut_noTimeBudget:
     e_la        r7, rtos_terminateUserTask@l(r7)
     se_mtlr     r7
 
-    /* The value of the SV sp at start of user task (i.e. the pointer to the stack frame of
+    /* The value of the SV sp at start of user task (i.e., the pointer to the stack frame of
        this function) is globally stored. The stack frame contents are accessed by several
        services, which relate to the now started task, task abortion in the first place.
          The now started task (temporarily) supersedes a previously started other task of
@@ -1016,7 +1016,7 @@ rtos_scBscHdlr_terminateUserTask:
     /* Here we get from the common part of the IVOR #8 handler (system call). */
     mfspr       sp, SPR_G0_SVSP     /* Restore SV sp */
     e_lwz       r6, RUT_O_pPDESC(sp)/* r6: Retrieved address of process descriptor */
-    se_cmpi     r4, 0               /* Arg of sys call < 0: User reported errore */
+    se_cmpi     r4, 0               /* Arg of sys call < 0: User reported error */
     se_bge      rut_endWithoutErr   /* Skip counting cause of termination: Normal situation */
     se_li       r3, RTOS_CAUSE_TASK_ABBORTION_USER_ABORT    /* Array idx for err counter */
     e_li        r4, ~RTOS_CAUSE_TASK_ABBORTION_USER_ABORT /* r4: ret code of osRunUserTask() */
@@ -1034,7 +1034,7 @@ rtos_osSystemCallBadArgument:
     .global     rtos_scBscHdlr_sysCallUndefined
 rtos_scBscHdlr_sysCallUndefined:
     /* This is the system call handler for otherwise empty entries in the system call
-       table, i.e. it is the system call default handler. The user task, which invoked the
+       table, i.e., it is the system call default handler. The user task, which invoked the
        system call is aborted and the error is counted in the process the task belongs to. */
     se_li       r3, RTOS_CAUSE_TASK_ABBORTION_SYS_CALL_BAD_ARG
 
@@ -1422,8 +1422,8 @@ rtos_ivor8Handler:
        style function) and we add an according assertion here; if we wait until the code
        really fails then it's much harder to debug the cause. If your code hangs in this
        assertion then you just have to inspect the SPR SRR0 or the call stack to find the
-       code location, which had run made the system call although in was executed in
-       supervisor mode. */
+       code location, which had made the system call although it executed in supervisor
+       mode. */
 #ifdef DEBUG
     e_cmpl16i   r3, RTOS_SYSCALL_ASSERT_FUNC    /* A few system calls may safely be done */
     se_beq      ivr8_isSVEnabledSysCall         /* from SV code. We check them explicitly. */
@@ -1638,7 +1638,7 @@ rtos_systemCall:
     se_mflr     r0
     se_stw      r0, (SIZE_OF_STACKFRAME+4)(sp)
 
-    /* Raise a software interrupt. The contents of the GPR are not changed, i.e. all the
+    /* Raise a software interrupt. The contents of the GPR are not changed, i.e., all the
        (eight supported) function arguments in GPR 3..10 go to the system call
        implementation. */
     se_sc

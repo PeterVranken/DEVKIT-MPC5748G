@@ -284,7 +284,7 @@ typedef struct rtos_taskDesc_t
 
     /** Time budget for the user task in ticks of the time base (i.e. TBL or STM depending
         on MCU derivative). This budget is granted for each activation of the task. The
-        budget relates to deadline monitoring, i.e. it is a world time budget, not an
+        budget relates to deadline monitoring, i.e., it is a world time budget, not an
         execution time budget.\n
           Macros #RTOS_TI_MS2TICKS and #RTOS_TI_US2TICKS can be used to state the time
         budget in Milli- or Mircoseconds.\n
@@ -404,7 +404,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  * mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks,
  * which should be locked, i.e. which compete for the resource or critical section to
  * protect. This may still lock other, not competing tasks, but at least all non competing
- * tasks of higher priority and the interrupt handlers will be served.\n
+ * tasks of higher priority and the interrupt handlers will still be served.\n
  *   To release the protected resource or to leave the critical section, call the
  * counterpart function rtos_resumeAllTasksByPriority(), which restores the original
  * task priority level.\n
@@ -455,7 +455,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  *   @remark
  * The raised priority is implicitly restored at the end of the task. It is not possible to
  * consider this function a mutex, which can be acquired in one task activation and which
- * can be releases in an arbitrary later task activation or from another task.
+ * can be released in an arbitrary later task activation or from another task.
  *   @remark
  * This function must be called from the user task context only. Any attempt to use it from
  * OS code will lead to a crash.
@@ -499,9 +499,9 @@ uint32_t rtos_suspendAllTasksByPriority(uint32_t suspendUpToThisPriority);
  * function it may even be advantageous to not call rtos_resumeAllTasksByPriority() in
  * order to save the overhead of the involved system call.
  *   @remark
- * Due to the task switch is can initiate, this function is implemented as a system call of
+ * Due to the task switch it can initiate, this function is implemented as a system call of
  * full conformance class and this means significant overhead. It should be applied with
- * care to for frequently aqcuired resources or for very short critical sections.\n
+ * care for frequently acquired resources or for very short critical sections.\n
  *   Alternatives are: Look-free programming techniques or dedicated system calls for the
  * given purpose.
  *   @remark
@@ -522,7 +522,7 @@ void rtos_resumeAllTasksByPriority(uint32_t resumeDownToThisPriority);
  * https://github.com/PeterVranken/TRK-USB-MPC5643L/blob/master/LSM/safe-RTOS-VLE/doc/manual/manual.pdf,
  * section System calls of RTOS, Table 1, p. 17, for a list of system calls offered by the
  * RTOS kernel. More system calls will be offered by your operating system, which builds on
- * this safe-RTOS, please refer to your device driver documentation.\n
+ * safe-RTOS, please refer to your device driver documentation.\n
  *   The further function arguments depend on the particular system call.
  *   @param ...
  * The remaining arguments are passed register based to the system call implementation.
@@ -576,11 +576,12 @@ void rtos_osSuspendProcess(uint32_t PID);
 bool rtos_isProcessSuspended(uint32_t PID);
 
 /**
- *   @rtos_getIdxCore
+ *   @func rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning
- * Z4A, Z4B, Z2, respectively.
+ * Z4A, Z4B, Z2, respectively. (The convenience macros #RTOS_CORE_Z4A,  #RTOS_CORE_Z4B
+ * and #RTOS_CORE_Z2 can be used.)
  *   @remark
  * This function may be called from all contexts. However, OS contexts shouldn't because of
  * the performance penalty. They should only use the intrinsic rtos_osGetIdxCore() instead.
@@ -782,6 +783,9 @@ static ALWAYS_INLINE void rtos_osSuspendAllInterrupts(void)
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE void rtos_osResumeAllInterrupts(void)
 {
@@ -809,6 +813,9 @@ static ALWAYS_INLINE void rtos_osResumeAllInterrupts(void)
  *   @remark
  * This function must be used from OS tasks and ISRs only. Calling it from a user task will
  * cause a privileged instruction exception and an error is counted for the process.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE bool rtos_osGetAllInterruptsSuspended(void)
 {
@@ -839,6 +846,9 @@ static ALWAYS_INLINE bool rtos_osGetAllInterruptsSuspended(void)
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE uint32_t rtos_osEnterCriticalSection(void)
 {
@@ -871,6 +881,9 @@ static ALWAYS_INLINE uint32_t rtos_osEnterCriticalSection(void)
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
+ *   @remark
+ * This function can be called even from non safe-RTOS applications if they run in
+ * supervisor mode.
  */
 static ALWAYS_INLINE void rtos_osLeaveCriticalSection(uint32_t msr)
 {

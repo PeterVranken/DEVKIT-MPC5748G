@@ -4,7 +4,7 @@
  * @file rtos_process.h
  * Definition of global interface of module rtos_process.c
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -94,7 +94,7 @@ void rtos_osGrantPermissionSuspendProcess( unsigned int pidOfCallingTask
                                          );
 
 /** Kernel function to initially release a process. */
-void rtos_osReleaseProcess(uint32_t PID);
+void rtos_osReleaseProcess(uint32_t PID, bool isInitOnly);
 
 /** Kernel function to suspend a process. */
 void rtos_osSuspendProcess(uint32_t PID);

@@ -10,7 +10,7 @@
  * The CAN interface engine updates all signal values and status in the global CAN API and
  * sends due messages, filled with information read from this API.
  *
- * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -72,7 +72,7 @@
  */
 
 /** Software version */
-#define VERSION "0.5.0"
+#define VERSION "0.5.1"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -199,7 +199,7 @@ static void version()
 {
     static const char RODATA(version)[] =
     "DEVKIT-MPC5748G - CAN Demo, demonstration of safe-RTOS' CAN driver\r\n"
-    "Copyright (C) 2017-2022  Peter Vranken\r\n"
+    "Copyright (C) 2017-2023  Peter Vranken\r\n"
     "Version " VERSION
     #ifdef DEBUG
     " (Configuration: DEBUG"

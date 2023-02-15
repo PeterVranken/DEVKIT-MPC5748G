@@ -282,9 +282,10 @@ typedef struct rtos_taskDesc_t
           In the assembler code, this field is addressed to by offset O_TCONF_pFct. */
     uintptr_t addrTaskFct;
 
-    /** Time budget for the user task in ticks of TBL (i.e. 8.33ns). This budget is
-        granted for each activation of the task. The budget relates to deadline monitoring,
-        i.e. it is a world time budget, not an execution time budget.\n
+    /** Time budget for the user task in ticks of the time base (i.e. TBL or STM depending
+        on MCU derivative). This budget is granted for each activation of the task. The
+        budget relates to deadline monitoring, i.e., it is a world time budget, not an
+        execution time budget.\n
           Macros #RTOS_TI_MS2TICKS and #RTOS_TI_US2TICKS can be used to state the time
         budget in Milli- or Mircoseconds.\n
           A value of zero means that deadline monitoring is disabled for the task.\n
