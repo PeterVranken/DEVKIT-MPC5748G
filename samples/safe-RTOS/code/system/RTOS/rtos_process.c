@@ -3,7 +3,7 @@
  * This module implements the process related functionality like querying the number of
  * errors, recognized and counted for a process and suspension of a (failing) process.
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -376,11 +376,15 @@ void rtos_scSmplHdlr_suspendProcess(uint32_t pidOfCallingTask, uint32_t PID)
  * for a process, e.g. after a call of rtos_osSuspendProcess().
  *   @param PID
  * The ID of the process to suspend in the range 1..4. Checked by assertion.
+ *   @param isInitOnly
+ * If \a true is given, then the process state is set to 1, otherwise to 2. 1 means
+ * "initailization state". Only the registered process initialization tasks are allowed to
+ * execute. If \a false is passed then the process is fully enabled to run all tasks.
  *   @remark
  * This function must be called from the OS context only. Any attempt to use it in user
  * code will lead to a privileged exception.
  */
-void rtos_osReleaseProcess(uint32_t PID)
+void rtos_osReleaseProcess(uint32_t PID, bool isInitOnly)
 {
     /* The process array has no entry for the kernel process. An index offset by one
        results. */
@@ -388,7 +392,7 @@ void rtos_osReleaseProcess(uint32_t PID)
 
     rtos_kernelInstanceData_t * const pIData = rtos_osGetInstancePtr();
     assert(PID < sizeOfAry(pIData->processAry));
-    pIData->processAry[PID].state = 1;
+    pIData->processAry[PID].state = isInitOnly? 1u: 2u;
 
 } /* End of rtos_osReleaseProcess */
 
@@ -459,8 +463,8 @@ bool rtos_isProcessSuspended(uint32_t PID)
 
 
 /**
- * Get the number of task failures (and task abortions at the same time) counted for the
- * given process since start of the kernel on the calling core.
+ * Get the number of task failures (and voluntary task abortions at the same time) counted
+ * for the given process since start of the kernel on the calling core.
  *   @return
  * Get total number of errors counted for process \a PID.\n
  *   If the kernel is started on more than one core and if several cores share the same
@@ -530,7 +534,7 @@ unsigned int rtos_getNoTaskFailure(unsigned int PID, unsigned int kindOfErr)
  * Compute how many bytes of the stack area of a process are still unused on the calling
  * core. If the value is requested after an application has been run a long while and has
  * been forced to run through all its conditional code paths, it may be used to optimize
- * the static stack allocation. The function is useful only for diagnosis purpose as
+ * the static stack allocation. The function is useful only for diagnostic purpose as
  * there's no chance to dynamically increase or decrease the stack area at runtime.\n
  *   The function may be called from a task, ISR and from the idle task.\n
  *   The algorithm is as follows: The unused part of the stack is initialized with a
@@ -582,7 +586,7 @@ unsigned int rtos_getStackReserve(unsigned int PID)
            function regularly from core i then there's no guarantee that it doesn't have
            portions of the stack of core j still in its cache, while j has meanwhile
            changed its stack memory. i could see a too optimistic result - which is
-           inacceptable as particularly the pessimistic readings are (safety) use case of
+           inacceptable as particularly the pessimistic readings are use case (safety) of
            this API. */
         const unsigned int idxCore = rtos_getIdxCore();
         assert(idxCore < RTOS_NO_CORES);

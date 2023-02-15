@@ -104,7 +104,7 @@
  *   More details can be found at
  * https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE#3-the-safety-concept.
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -1447,13 +1447,13 @@ rtos_errorCode_t rtos_osInitKernel(void)
         rtos_osResumeAllInterrupts();
 
     /* When we get here (and if we didn't see a configuration error) then all kernel
-       interrupts are configured, interrupts occur and are processed, but no user tasks are
-       activated nor will an I/O driver run a callback. We can safely start our process
-       initialization tasks. */
+       interrupts are configured but global interrupt processing is not enabled yet, but it
+       could: The processes are still in state disabled and no user tasks can be activated,
+       neither by the scheduler's timer task nor by an I/O driver using rtos_osRunTask(). */
 
-    /* Run all process initialization in order of increasing PID. A process with higher
-       privileges is initialized after another with less privileges. The higher privileged
-       could override settings made by its predecessor.
+    /* Run all process initialization tasks in order of increasing PID. A process with
+       higher privileges is initialized after another with less privileges. The higher
+       privileged could override settings made by its predecessor.
          In this consideration and despite of its PID zero, the operating system process
        has the highest privileges. This requires a loop counter like 1, 2, ..., N, 0. */
     if(errCode == rtos_err_noError)
@@ -1472,7 +1472,8 @@ rtos_errorCode_t rtos_osInitKernel(void)
 
             /* The specification of an initialization task is an option only. Check for
                NULL pointer. */
-            if(pIData->initTaskCfgAry[idxP].addrTaskFct != 0)
+            const rtos_taskDesc_t * const pInitTaskCfg = &pIData->initTaskCfgAry[idxP];
+            if(pInitTaskCfg->addrTaskFct != 0)
             {
                 if(isProcessConfiguredAry[idxP])
                 {
@@ -1480,19 +1481,25 @@ rtos_errorCode_t rtos_osInitKernel(void)
                        return value is defined to be an error. (This needs to be considered
                        by the implementation of the task.) */
                     int32_t resultInit;
-                    if(pIData->initTaskCfgAry[idxP].PID == 0)
+                    if(pInitTaskCfg->PID == 0)
                     {
                         /* OS initialization function: It is a normal sub-function call; we
                            are here in the OS context. */
-                        resultInit =
-                            ((int32_t (*)(void))pIData->initTaskCfgAry[idxP].addrTaskFct)();
+                        resultInit = ((int32_t (*)(void))pInitTaskCfg->addrTaskFct)();
                     }
                     else
                     {
                         /* The initialization function of a process is run as a task in
                            that process, which involves full exception handling and
                            possible abort causes. */
-                        resultInit = rtos_osRunInitTask(&pIData->initTaskCfgAry[idxP]);
+                        rtos_osReleaseProcess(/* PID */ idxP, /* isInitOnly */ true);
+                        if(pInitTaskCfg->tiTaskMax > 0u)
+                            rtos_osResumeAllInterrupts();
+                            
+                        resultInit = rtos_osRunInitTask(pInitTaskCfg);
+
+                        rtos_osSuspendAllInterrupts();
+                        rtos_osSuspendProcess(/* PID */ idxP);
                     }
                     if(resultInit < 0)
                         errCode = rtos_err_initTaskFailed;
@@ -1516,13 +1523,11 @@ rtos_errorCode_t rtos_osInitKernel(void)
        of task priority, period time and initial due time). */
     if(errCode == rtos_err_noError)
     {
-        rtos_osSuspendAllInterrupts();
-
         /* Process state: Set to running (not zero) only if configuration generally okay. */
         unsigned int idxP;
         for(idxP=1; idxP<1+RTOS_NO_PROCESSES; ++idxP)
             if(isProcessConfiguredAry[idxP])
-                rtos_osReleaseProcess(/* PID */ idxP);
+                rtos_osReleaseProcess(/* PID */ idxP, /* isInitOnly */ false);
 
         /* Release scheduler. */
         pIData->tiOsStep = (unsigned long)GET_CORE_VALUE( RTOS_CLOCK_TICK_IN_MS
@@ -1532,8 +1537,7 @@ rtos_errorCode_t rtos_osInitKernel(void)
     }
 
     /* @todo Shall we offer idle tasks per process? If so, we cannot leave the routine but
-       would need to enter an infinite loop - and had to offer such a function for OS, too.
-       For consistency reasons this would require an init function for OS, too. */
+       would need to enter an infinite loop - and had to offer such a function for OS, too. */
 
     return errCode;
 
@@ -2076,11 +2080,6 @@ unsigned int rtos_getNoActivationLoss(unsigned int idEvent)
  *   @return
  * Get the base priority of the task, which calls this function. It's the priority of the
  * event it is associated with.
- *   @remark
- * The function is quite similar to rtos_getCurrentBasePriority() but this function
- * considers temporary changes of the priority of a task because of the use of the PCP API.
- * For one and the same task, it is rtos_getCurrentPriority() >
- * rtos_getCurrentBasePriority().
  *   @remark
  * This function can be called from an OS task only. Any attempt to call it from a user
  * task will cause a privileged exception.
