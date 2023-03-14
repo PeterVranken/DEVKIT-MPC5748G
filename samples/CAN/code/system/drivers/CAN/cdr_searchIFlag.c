@@ -45,15 +45,15 @@
 #define SEARCH_LSB              1
 
 /** The algorithm operates on a pre-defined tree of masks. The tree is a compile-time
-    constant with a fixed size. This limits the number of bits, which can be distiguished.
-    Effectively, this is the width of the input word, which we look for the bit in.\n
-      Note, necer change this definition. Change #MAX_WORD_SIZE_POW_2 is case. */
+    constant with a fixed size. This limits the number of bits, which can be distinguished.
+    Effectively, this is the width of the input word, which we look in for the bit.\n
+      Note, never change this definition. Change #MAX_WORD_SIZE_POW_2 is case. */
 #define MAX_WORD_SIZE           (1u<<(MAX_WORD_SIZE_POW_2))
 
-/** The word size #MAX_WORD_SIZE is a power of two. The actual value is controled
+/** The word size #MAX_WORD_SIZE is a power of two. The actual value is controlled
     indirectly through this definition.\n
       Note, never change this value without redefining the constant tree of masks
-    accordinly. */
+    accordingly. */
 #define MAX_WORD_SIZE_POW_2     5
 
 

@@ -22,6 +22,9 @@
  */
 /* Module interface
  *   cdr_getRxPollingAPIBuffer
+ *   cdr_scFullHdlr_makeMailboxReservation
+ *   cdr_scSmplHdlr_sendMessage
+ *   cdr_getRxPollingAPIBuffer
  *   cdr_scSmplHdlr_readMessage
  *   cdr_getIsBusOff
  *   cdr_getNoBusOffEvents
@@ -88,7 +91,6 @@ static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
 /*
  * Function implementation
  */
-
 
 /**
  * System call handler for making an assocation of a particular mailbox with a specific CAN
@@ -161,7 +163,7 @@ static cdr_apiBufferRxPolling_t DATA_OS(_apiBufferRxPolling)
  * buffer has just been filled with a message from the bus and a Tx mailbox will raise the
  * interrupt when it has entirely serialized a message on the bus. By callback invokation,
  * the interrupt handler notifies the client code about the event and provides it the
- * required information (e.g. message payload for Rx mailboxes).\n
+ * required information (e.g., message payload for Rx mailboxes).\n
  *   The choice of the notification callback is made in the driver configuration. All
  * mailboxes of one group share the same callback.\n
  *   It is considered an error if a notification is requested for a mailbox that belongs to
@@ -244,7 +246,7 @@ uint32_t cdr_scFullHdlr_makeMailboxReservation( uint32_t PID
  *   @param hMB
  * The message to send is identified by the handle of the mailbox it is associated with. A
  * message can be sent only if it had been associated with a mailbox in the hardware,
- * i.e. a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
+ * i.e., a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
  * is prerequisite of using this function. The handle to use here is the same as used when
  * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
  * situation raises an exception.
@@ -299,9 +301,9 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
  * from a user task.\n
  *   The memory protection concept of the driver is having internal buffers for read
  * mailboxes, which are write-inhibitted to all user code. The driver can place the Rx data
- * into buffer, the user code can fetch it from there but a memory protection fault caused
- * by the driver is impossible. Moreover, if more tahn one process should read the same CAN
- * message than data corruption by one process and on cost of the other one is
+ * into the buffer, the user code can fetch it from there but a memory protection fault
+ * caused by the driver is impossible. Moreover, if more than one process should read the
+ * same CAN message then data corruption by one process and on cost of the other one is
  * hindered, too.\n
  *   API buffers are dedicated to Rx mailboxes, which are configured for polling. The
  * reference stays always valid and typical client code will call this function only once
@@ -335,6 +337,9 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
  * dedicated to this mailbox is returned by reference. The handle to use is the result of a
  * successful call of either cdr_osMakeMailboxReservation() or
  * cdr_makeMailboxReservation(). An out of range situation is caught by assertion.
+ *   @remark
+ * The function can be called from any context on the permitted core, i.e., OS and user
+ * tasks or ISRs.
  */
 const cdr_apiBufferRxPolling_t *cdr_getRxPollingAPIBuffer( unsigned int idxCanDevice
                                                          , unsigned int hMB
@@ -398,7 +403,7 @@ const cdr_apiBufferRxPolling_t *cdr_getRxPollingAPIBuffer( unsigned int idxCanDe
  *   @param hMB
  * The message to check is identified by the handle of the mailbox it is associated with. A
  * message can be received only if it had been associated with a mailbox in the hardware,
- * i.e. a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
+ * i.e., a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
  * is prerequisite of using this function. The handle to use here is the same as used when
  * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
  * situation raises an exception.
@@ -466,7 +471,7 @@ uint32_t cdr_scSmplHdlr_readMessage( uint32_t PID
  * then the result is undefined (due to cache coherence issues).\n
  *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
  *   @remark
- * The function can be called from any context on the permitted core, i.e. OS and user
+ * The function can be called from any context on the permitted core, i.e., OS and user
  * tasks or ISRs.
  */
 bool cdr_getIsBusOff(unsigned int idxCanDevice)
@@ -502,7 +507,7 @@ bool cdr_getIsBusOff(unsigned int idxCanDevice)
  * then the result is undefined (due to cache coherence issues).\n
  *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
  *   @remark
- * The function can be called from any context on the permitted core, i.e. OS and user
+ * The function can be called from any context on the permitted core, i.e., OS and user
  * tasks or ISRs.
  */
 unsigned int cdr_getNoBusOffEvents(unsigned int idxCanDevice)
@@ -540,7 +545,7 @@ unsigned int cdr_getNoBusOffEvents(unsigned int idxCanDevice)
  * then the result is undefined (due to cache coherence issues).\n
  *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
  *   @remark
- * The function can be called from any context on the permitted core, i.e. OS and user
+ * The function can be called from any context on the permitted core, i.e., OS and user
  * tasks or ISRs.
  */
 unsigned int cdr_getNoRxFifoEvents( unsigned int idxCanDevice
@@ -589,7 +594,7 @@ unsigned int cdr_getNoRxFifoEvents( unsigned int idxCanDevice
  * then the result is undefined (due to cache coherence issues).\n
  *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
  *   @remark
- * The function can be called from any context on the permitted core, i.e. OS and user
+ * The function can be called from any context on the permitted core, i.e., OS and user
  * tasks or ISRs.
  */
 unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice)
@@ -607,7 +612,7 @@ unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice)
 #if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
 /**
  * Get the number of recorded ECC error events for the given CAN device. The device reports
- * correctable and incorrectable errors when reading the device's own RAM (i.e. mailboxes
+ * correctable and incorrectable errors when reading the device's own RAM (i.e., mailboxes
  * and filters). The only way, these problems are reported is by incrementing this counter.
  * See description of register ERRSR in the device reference manual RM75, 37.4.27 Error
  * Status Register (CAN_ERRSR), p. 1716f.
@@ -628,7 +633,7 @@ unsigned int cdr_getNoErrorEvents(unsigned int idxCanDevice)
  * then the result is undefined (due to cache coherence issues).\n
  *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
  *   @remark
- * The function can be called from any context on the permitted core, i.e. OS and user
+ * The function can be called from any context on the permitted core, i.e., OS and user
  * tasks or ISRs.
  */
 unsigned int cdr_getNoEccErrorEvents(unsigned int idxCanDevice)
@@ -666,7 +671,7 @@ unsigned int cdr_getNoEccErrorEvents(unsigned int idxCanDevice)
  * then the result is undefined (due to cache coherence issues).\n
  *   In DEBUG compilation, calling the function from the wrong core is caught by assertion.
  *   @remark
- * The function can be called from any context on the permitted core, i.e. OS and user
+ * The function can be called from any context on the permitted core, i.e., OS and user
  * tasks or ISRs.
  */
 uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice)
