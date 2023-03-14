@@ -97,6 +97,16 @@
 #define CDR_ENABLE_MCU_PINS_FOR_EVAL_BOARD      1
 
 
+/* The configuration template references the boot core of the MCU MPC5748G as IRQ servicing
+   core. For simplicity, we make this template code usable on the other derivatives, too,
+   by mapping that core designation to the boot core on the derivatives. In a true
+   application's configuration, one would remove this #define and directly address to the
+   desired cores in the code below. */
+#if defined(MCU_MPC5775B)  ||  defined(MCU_MPC5775E)
+# define RTOS_CORE_Z4A RTOS_CORE_Z7_0
+#endif
+
+
 /*
  * Global type definitions
  */
@@ -453,7 +463,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             to match #CDR_NO_RX_USER_CODE_POLLING_MAILBOXES.\n
               Note, the sort order of API buffers doesn't matter. Particularly, no run-time
             penalty is involved with having a zig-zag-pattern. */
-        .userAccessMailboxAry = 
+        .userAccessMailboxAry =
         {
             [24] = {.minPIDToAccess = 2, .useAsRxMailbox = false},
             [25] = {.minPIDToAccess = 2, .useAsRxMailbox = true, .idxAPIBuffer = 1},

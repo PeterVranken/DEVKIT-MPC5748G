@@ -28,7 +28,7 @@
  * facilitated by source code comments on the different fields and by using C99's
  * designated initializer expressions.\n
  *   The principal element in configuration file cdr_canDriver.config.inc is the list of
- * #defines to enable one or more of the physically available CAN devices; see e.g.
+ * #defines to enable one or more of the physically available CAN devices; see e.g.,
  * #CDR_ENABLE_USE_OF_CAN_0. (Most applications won't use all of them.) By means of
  * preprocessor switches, the driver configuration is produced only for the enabled set of
  * devices (and alike for some runtime data objects). Disabled CAN devices are not touched
@@ -45,7 +45,7 @@
  * file. However, no CAN device will then be enabled and the compiler will issue several
  * warnings because of zero-sized arrays and data structures.
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -73,7 +73,7 @@
 #include "cde_canDriver.config.MCUDerivative.h"
 #include "cdr_canDriver.config.inc"
 #include "cdr_canDriver.h"
-
+#include "cdr_queuedSending.h"
 
 /*
  * Defines
@@ -161,8 +161,8 @@ typedef struct cdr_apiBufferRxPolling_t
     /* The number of received bytes. */
     uint8_t DLC;
     
-    /* The time stamp of HW reception event. Unit is the CAN Bit time, i.e. the reciprocal
-       of the Baud rate. The time counts cyclically and the abosute value has no meaning. */
+    /* The time stamp of HW reception event. Unit is the CAN bit time, i.e., the reciprocal
+       of the Baud rate. The time counts cyclically and the absolute value has no meaning. */
     uint16_t timeStamp;
     
     /* The received bytes, accessible in different word sizes. The alignment is such that
@@ -277,13 +277,13 @@ uint16_t cdr_getLastTransmissionError(unsigned int idxCanDevice);
  */
 
 /**
- * Get the maximum number of CAN messages (i.e. with different CAN IDs) that can be
+ * Get the maximum number of CAN messages (i.e., with different CAN IDs) that can be
  * processed. Basically, this number depends on the hardware, in particular the number of
  * mailboxes in the CAN device. However, the result is also dependent on the chosen
  * (constant) driver configuration: The use of the FIFO can significantly enlarge the
  * number.\n
  *   The result of this function denotes the upper boundary for mailbox handles in the
- * public interface of the CAN driver, e.g. cdr_osMakeMailboxReservation().
+ * public interface of the CAN driver, e.g., cdr_osMakeMailboxReservation().
  *   @return
  * Get the number in the range 0..186. The count is the total number, including Rx and Tx
  * messages.
@@ -317,7 +317,7 @@ static inline unsigned int cdr_maxNoCanIds(cdr_enumCanDevice_t idxCanDevice)
  * The administration of messages and mailboxes is made independently for all enabled CAN
  * devices. This parameter chooses the affected CAN device.
  *   @param hMB
- * The driver has a fixed structure of mailboxes. Some aspects of this structure, e.g. the
+ * The driver has a fixed structure of mailboxes. Some aspects of this structure, e.g., the
  * number of mailboxes depend on the configuration. All mailboxes can be used for Rx.
  * Depending on the driver configuration, all or only a subset of them can be used for
  * Tx. All required details on available mailboxes and their characteristics can be found
@@ -382,7 +382,7 @@ static inline cdr_errorAPI_t cdr_makeMailboxReservation( unsigned int idxCanDevi
  *   @param hMB
  * The message to send is identified by the handle of the mailbox it is associated with. A
  * message can be sent only if it had been associated with a mailbox in the hardware,
- * i.e. a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
+ * i.e., a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
  * is prerequisite of using this function. The handle to use here is the same as used when
  * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
  * situation raises an exception.
@@ -443,7 +443,7 @@ static inline cdr_errorAPI_t cdr_sendMessage( unsigned int idxCanDevice
  *   @param hMB
  * The message to check is identified by the handle of the mailbox it is associated with. A
  * message can be received only if it had been associated with a mailbox in the hardware,
- * i.e. a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
+ * i.e., a successful call of cdr_osMakeMailboxReservation() or cdr_makeMailboxReservation()
  * is prerequisite of using this function. The handle to use here is the same as used when
  * having done the related call of cdr_(os)MakeMailboxReservation(). An out of range
  * situation raises an exception.
@@ -465,5 +465,57 @@ static inline cdr_errorAPI_t cdr_readMessage(unsigned int idxCanDevice, unsigned
 
 } /* End of cdr_readMessage */
 
+
+/**
+ * User code send API for Tx messages via the extended driver service "queued sending".
+ * User tasks can send messages, which have not been registered with a dedicated mailbox
+ * before, instead, an internal mailbox is used for this service. This mailbox is
+ * associated with a software queue. The user API will either directly transmit the message
+ * - if the mailbox is currently idle - or it'll queue the message for later
+ * transmission.\n
+ *   The queue is flushed to the CAN bus in order of queuing, not considering the CAN
+ * message priorities, i.e., not looking at the CAN ID of the queued messages.\n
+ *   @return
+ * Get \a cdr_errApi_noError if the message could be submitted or \a
+ * cdr_errApi_txMailboxBusy if the SW queue is currently full. A bad CAN device index
+ * \a idxCanDevice, in particular the specification of a device, which the queued
+ * sending service is not enabled for, will lead to \a cdr_errApi_handleOutOfRange.
+ *   @param idxCanDevice
+ * The CAN device/bus, which the message should be transmitted on. It is chosen by zero
+ * based index in the list of all enabled CAN devices. Range is 0..(\a
+ * cdr_canDev_noCANDevicesEnabled-1).\n
+ *   See enumeration \a cdr_enumCanDevice_t (actually a zero based index) for the set of
+ * possible devices. An out of range situation is caught by assertion.
+ *   @param isExtId
+ * Standard and extended CAN IDs partly share the same space of numbers. Hence, we need the
+ * additional Boolean information, which of the two the ID \a canId belongs to.
+ *   @param canId
+ * The standard or extended ID of the CAN message to send. See \a isExtId, too.
+ *   @param sizeOfPayload
+ * The number of bytes in \a payload[]. This number of bytes is sent. Range is 0..8. An
+ * exception would be raised otherwise.
+ *   @param payload
+ * The \a DLC message content bytes, which are sent.
+ *   @remark
+ * This function can be called at any time from a user task context on the core, which is
+ * configured to run the CAN driver and which services the mailbox group IRQs of the
+ * mailbox that is configured for service "queued sending". Any attempt to use it from
+ * another context and in particular from OS code will lead to undefined behavior.
+ */
+static inline enum cdr_errorAPI_t cdr_sendMessageQueued( unsigned int idxCanDevice
+                                                       , bool isExtId
+                                                       , unsigned int canId
+                                                       , unsigned int sizeOfPayload
+                                                       , const uint8_t payload[]
+                                                       )
+{
+    return (enum cdr_errorAPI_t)rtos_systemCall( CDR_SYSCALL_SEND_MESSAGE_QUEUED
+                                               , idxCanDevice
+                                               , isExtId
+                                               , canId
+                                               , sizeOfPayload
+                                               , payload
+                                               );
+} /* End of cdr_sendMessageQueued */
 
 #endif  /* CDR_CANDRIVER_API_INCLUDED */

@@ -7,7 +7,7 @@
  * driver. The functions and data objects declared in this file must not be accessed by
  * driver client code.
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -52,10 +52,10 @@ typedef struct cdr_idCanDevice_t
     /** The index of the CAN I/O device in the array of devices implemented in the MCU.
         Index zero relates to FlexCAN_A, one to FlexCAN_B, etc. */
     unsigned int idxFlexCAN_x;
-    
+
     /** The register file of the CAN I/O device in the MCU by reference. */
     CAN_Type *pCanDevice;
-    
+
 } cdr_idCanDevice_t;
 
 
@@ -67,10 +67,10 @@ typedef struct cdr_idMailbox_t
 {
     /** The enumerated CAN device has been resolved to the HW CAN device by reference. */
     CAN_Type *pDevice;
-    
+
     /** The configuration information of the CAN device by reference. */
     const cdr_canDeviceConfig_t *pDeviceConfig;
-    
+
     /** The index of the addressed mailbox in the HW array of those inside the device. */
     unsigned int idxMailbox;
 
@@ -137,13 +137,13 @@ typedef struct cdr_canDeviceData_t
 #endif
 
     /** Global counter for bus-off events. Each count means once entering the bus-off
-        state. The counter is saturated at its implementation maximum. 
+        state. The counter is saturated at its implementation maximum.
           @remark The counter is maintained by the core, which serves the group of bus off
         interrupts from the given CAN device (see configuration item
         cdr_canDriverConfig[idxCanDev].irqGroupBusOff.idxTargetCore) and can be read by other
         contexts on the same core. It can't be accessed at all from other cores. */
     unsigned int noBusOffEvents;
-    
+
     /** Global counter of error interrupts (ESR1[ERRINT], RM 43.4.9, p. 1727ff) since
         software startup. The counter is saturated at its implementation maximum.
           @remark The counter is maintained by the core, which serves the group of error
@@ -151,7 +151,7 @@ typedef struct cdr_canDeviceData_t
         cdr_canDriverConfig[idxCanDev].irqGroupError) and can be read by other contexts on
         the same core. It can't be accessed at all from other cores. */
     unsigned int noErrEvents;
-    
+
 #if defined(MCU_MPC5775B) || defined(MCU_MPC5775E)
     /** Global counter of error interrupts because of ECC errors in the CAN device RAM.
         (ERRSR[xCEIF], RM75 37.4.27 Error Status Register (CAN_ERRSR), p. 1716f) since
@@ -225,7 +225,15 @@ extern cdr_canDriverData_t cdr_canDriverData;
 enum cdr_errorAPI_t cdr_osSendMessage_idMB( const cdr_idMailbox_t * const pIdMB
                                           , const uint8_t payload[]
                                           );
-                                     
+
+/** Internally used Tx variant of cdr_osSendMessageEx(). */
+enum cdr_errorAPI_t cdr_osSendMessageEx_idMB( const cdr_idMailbox_t * const pIdMB
+                                            , bool isExtId
+                                            , unsigned int canId
+                                            , unsigned int DLC
+                                            , const uint8_t payload[]
+                                            );
+
 /** Internally used Rx variant of cdr_osReadMessage(). */
 enum cdr_errorAPI_t cdr_osReadMessage_idMB( const cdr_idMailbox_t * const pIdMB
                                           , uint8_t * const pDLC
@@ -291,7 +299,7 @@ static inline unsigned int cdr_getAdditionalCapacityDueToFIFO
 
 /**
  * Get the index of the first normal mailbox in the CAN device's RAM. The index is zero if
- * the FIFO is disabled by depends on the FIFO configuration otherwise.
+ * the FIFO is disabled but depends on the FIFO configuration otherwise.
  *   @return
  * The index of the first normal mailbox.
  *   @param pDeviceConfig
@@ -345,7 +353,7 @@ static inline bool cdr_mapMailboxHandleToId( cdr_idMailbox_t * const pIdMB
     const unsigned int noFIFOMsgs = cdr_getNoFIFOFilterEntries(pDeviceConfig)
                      , additionalCapaFIFO = cdr_getAdditionalCapacityDueToFIFO(pDeviceConfig)
                      , idxMB = hMB - additionalCapaFIFO;
-    
+
     /* hMB needs a simple transformation to become the index of the mailboxes in the
        device. */
     if(hMB >= noFIFOMsgs  &&  idxMB < pDeviceConfig->noMailboxes)
@@ -357,7 +365,7 @@ static inline bool cdr_mapMailboxHandleToId( cdr_idMailbox_t * const pIdMB
     }
     else
         return false;
-        
+
 } /* End of cdr_mapMailboxHandleToId */
 
 
