@@ -3,9 +3,9 @@
 // This is a template group file for StringTemplate V4, see www.stringtemplate.org.
 //
 // Demonstrate the capabilities of the library file iterations.stg to build a mapping table
-// that associates the pair (bus index, CAN ID) to the CAN interface's frame index. Such a
+// that associates the pair (bus index, CAN ID) to the CAN interface's message index. Such a
 // mapping is required on platforms, where the CAN notifications use bus and CAN ID as
-// arguments to identify the affected CAN frame.
+// arguments to identify the affected CAN message.
 //   On such a platform the use of the interface engine's native build-up mechanism for
 // such a  map is inefficient: it forces to hold the map in expensive RAM, while a cheap
 // ROM table would suffice. This template helps to build an appropriate table in ROM, which
@@ -29,8 +29,8 @@
 delimiters "<", ">"
 
 import "lib/mod.stg"
-import "lib/typeMap.stg"
 import "lib/iterations.stg"
+import "typeMap.stg"
 import "symbols.stg"
 
 // Root template: Generate C implementation file.
@@ -49,21 +49,21 @@ fileContentsH(cluster,info) ::= <<
 
 
 moduleDescription() ::= <<
- * A standard use case of sorted frame iteration is the implementation of a mapping table
- * to map the pair CAN bus index plus CAN frame ID (as occasionally used as frame
- * identification in the CAN callback in some platforms) to the zero based linear frame
+ * A standard use case of sorted message iteration is the implementation of a mapping table
+ * to map the pair CAN bus index plus CAN message ID (as occasionally used as message
+ * identification in the CAN callback in some platforms) to the zero based linear message
  * index as used by the CAN interface engine. If we sort the tables in raising order of CAN
  * IDs and separated by buses then an efficient binary search can be applied.\n
- *   As an optimization for (typical) platform, which offer a lot of ROM space but limited
+ *   As an optimization for (typical) platforms, which offer a lot of ROM space but limited
  * CPU power and very limited RAM space, we can further optimize the mapping by separating
  * standard CAN IDs, which are mostly used, from the rarely used extended CAN identifiers.
  * The former span a numeric range of 2048 values, which permits to have a direct lookup
  * table with complexity O(1). Only the few N extended identifiers need a binary search
  * with a complexity O(log(N)).\n
- *   The simplest way to relate the table entries to registered frames is to use the
- * position in the table as index of the frame in the interface engine. This requires that
- * frame registration in our CAN interface is done in the same iteration of frames. It's
- * also possible to have an enumeration of frames and to generate the enumeration in the
+ *   The simplest way to relate the table entries to registered messages is to use the
+ * position in the table as index of the message in the interface engine. This requires that
+ * message registration in our CAN interface is done in the same iteration of messages. It's
+ * also possible to have an enumeration of messages and to generate the enumeration in the
  * same iteration as the registration process. This is less ROM efficient but much more
  * transparent. This is what we demonstrate here.\n
  *   Please note, the usual way of doing is to let the code generator produce only the data
@@ -75,8 +75,8 @@ moduleDescription() ::= <<
 
 headerComment() ::= <<
  * Public data interface of the mapping table, which associates the pair CAN bus index plus
- * CAN frame ID (as occasionally used as frame identification in the CAN callback in some
- * platforms) to the zero based linear frame index as used by the CAN interface engine.\n
+ * CAN message ID (as occasionally used as message identification in the CAN callback in some
+ * platforms) to the zero based linear message index as used by the CAN interface engine.\n
  *   This interface does not contain the lookup algorithm; this is data independent program
  * code, which doesn't belong into an auto-generated module. It's however straightforward
  * to implement the function that operates on the generated data tables.
@@ -87,7 +87,8 @@ headerComment() ::= <<
 @modC.includes() ::= <<
 #include \<assert.h>
 
-#include "types.h"<\n>
+#include "types.h"
+#include "mci_ifMapBinarySearchCanId.h"<\n>
 >>
 
 // Configure the template mod.stg:modH, which shapes the module header file: The included
@@ -99,14 +100,6 @@ headerComment() ::= <<
 // Configure the template mod.stg:modC, which shapes the file frame contents: The local
 // defines.
 @modC.defines() ::= <<
-/** Initializer expression for  CAN IDs: Get CAN ID object from raw number and Boolean \a
-    isExt. */
-#if MCI_SUPPORT_EXTENDED_CAN_IDS == 1
-# define MCI_CAN_ID_INIT_EXPR(ID, isExt)    {.u.isExtId=(isExt), .u.id=(ID),}
-#else
-# define MCI_CAN_ID_INIT_EXPR(ID, isExt)    {.u.id=(ID),}
-#endif 
-
 >>
 
 
@@ -125,18 +118,18 @@ headerComment() ::= <<
 
 /** Most true environments will require the map for received CAN messages only. However, if
     a platform provides a send acknowledge with CAN ID as message handle then this macro
-    can be set to 1 and the sent frames are considered in the map, too.\n
+    can be set to 1 and the sent messages are considered in the map, too.\n
       The macro can be set to either 0 or 1. */
 #ifndef <define.supportSentFrames>
-# define <define.supportSentFrames>        <info.optionMap.defVal_MCI_USE_MAP_FOR_SENT_FRAMES>
+# define <define.supportSentFrames>        <info.optionMap.defVal_MCI_USE_MAP_FOR_SENT_MSGS>
 #endif
 
-/** If the map is integrated into a true project then the enumeration of CAN frames is
+/** If the map is integrated into a true project then the enumeration of CAN messages is
     likely defined externally and we won't use the definition made locally in this file.
     Set the value to 0 in this case.
       The macro can be set to either 0 or 1. */
 #ifndef <define.isEnumFrameDefExtern>
-# define <define.isEnumFrameDefExtern>         <info.optionMap.defVal_MCI_ENUM_FRAMES_IS_DEFINED>
+# define <define.isEnumFrameDefExtern>         <info.optionMap.defVal_MCI_ENUM_MSGS_IS_DEFINED_EXTERN>
 #endif
 
 /** This define controls whether code for the support of extended CAN identifiers is
@@ -155,7 +148,7 @@ headerComment() ::= <<
 // Configure the template mod.stg:modC, which shapes the file frame contents: The global
 // types.
 @modC.typedefs() ::= <<
-/** An enumeration gives meaningful names to the values of the linear, zero based frame
+/** An enumeration gives meaningful names to the values of the linear, zero based message
     index.
       @remark Normally, in a full scale integration of the CAN interface such an
     enumeration would probably be globally available, located and generated in the header
@@ -167,23 +160,23 @@ headerComment() ::= <<
 #if <define.isEnumFrameDefExtern> == 0
 enum <symbol.enumIdxFrame_t>
 {
-<! This iteration must meet the demands of the frame registration calls at the interface
+<! This iteration must meet the demands of the message registration calls at the interface
    engine. In most situations this will mean solid blocks for first received then sent
-   frames, but it can also means solid blocks for the different buses, or even distinct
+   messages, but it can also means solid blocks for the different buses, or even distinct
    index spaces for different buses. Any integration into a true environment will need to
    carefully check this iteration. !>
-    /* Received frames. */
+    /* Received messages. */
     <iterateFramesOfCluster(cluster,"received","enumValueDef")><\\>
     
-    /* Sent frames. */
+    /* Sent messages. */
     <iterateFramesOfCluster(cluster,"sent","enumValueDef")><\\>
     
-    /* The number of frames indexes is used to recognize overflow of the 8 bit integers,
+    /* The number of messages indexes is used to recognize overflow of the 8 bit integers,
        which are partly used to reduce the table sizes. */
     mci_idxEdeFr_maxIdxFrame
 };
 
-/* An assertion double-checks that there aren't to many frames for the 8 Bit integer
+/* An assertion double-checks that there aren't to many messages for the 8 Bit integer
    type, which is used for the direct lookup table in order to don't make it
    unnecessarily large and in the API. */
 _Static_assert( (unsigned)mci_idxEdeFr_maxIdxFrame \<= 254u
@@ -222,15 +215,15 @@ typedef enum <symbol.enumIdxBus_t>
 // declaration of global data.
 @modH.data() ::= <<
 #if <define.useDirectLookup> != 0
-/** A two dimensional lookup table only for standard CAN IDs to get the frame index from
+/** A two dimensional lookup table only for standard CAN IDs to get the message index from
     the pair (bus, 11 Bit CAN ID). The first array index selects the bus by zero based bus
-    index. The 11 Bit CAN ID is then used as second array index to get the wanted frame
+    index. The 11 Bit CAN ID is then used as second array index to get the wanted message
     index. */
 extern const <bt("uint8_t")> <symbol.lookupTableFrameIdxByBusAndId>[<cluster.noBuses>][0x800];
 #endif
 
 #if <define.useDirectLookup> == 0  ||  <define.swSupportExtCanIds> != 0
-/** A two dimensional map to get the frame index from the pair (bus, CAN ID). First, the
+/** A two dimensional map to get the message index from the pair (bus, CAN ID). First, the
     right row is selected by the bus index. Then a binary search can be applied to the row
     data as it is sorted in order of raising CAN IDs. */
 extern const <symbol.pairIdAndIdx_t> * const <symbol.mapFrameIdxByBusAndId>[<cluster.noBuses>];
@@ -253,12 +246,12 @@ extern const unsigned int <symbol.rowLengthAry>[<cluster.noBuses>];
     or equal to 2047.\n
       The code generator fills those elements of the table, which belong to known
     associations. All other elements are implicitly initialized to 0. Since 0 is a valid
-    frame index the unset elements cannot be distinguished from avlid fields. A lookup
-    could not decide on an unknown CAN ID. Therefore, we do not store the aimed frame index
+    message index the unset elements cannot be distinguished from avlid fields. A lookup
+    could not decide on an unknown CAN ID. Therefore, we do not store the aimed message index
     but the index plus 1. Now 0 is a valid indication of a bad query. The successful lookup
-    will subtract one from the found value in order to yield the true frame index. This is
+    will subtract one from the found value in order to yield the true message index. This is
     why we hide the table and only make the lookup function global.
-      @remark The compiler will generate a message if there should be frames with index
+      @remark The compiler will generate a message if there should be messages with index
     greater 254 and a standard CAN ID but this is a warning only. Bad code with table
     overflow can be compiler but will fail to work properly. */
 const <bt("uint8_t")> <symbol.lookupTableFrameIdxByBusAndId>[<cluster.noBuses>][0x800] =
@@ -270,7 +263,7 @@ const <bt("uint8_t")> <symbol.lookupTableFrameIdxByBusAndId>[<cluster.noBuses>][
 #if <define.useDirectLookup> == 0  ||  <define.swSupportExtCanIds> != 0
 <iterateBusesOfCluster(cluster,"mapFrameIdxById_bus")><\\>
 
-/** A two dimensional lookup table to get the frame index from the pair (bus, CAN ID).
+/** A two dimensional lookup table to get the message index from the pair (bus, CAN ID).
     First, the right row is selected by the bus index. Then a binary search can be
     applied to the row data as it is sorted in order of raising CAN IDs. */
 const <symbol.pairIdAndIdx_t> * const <symbol.mapFrameIdxByBusAndId>[<cluster.noBuses>] =
@@ -293,7 +286,7 @@ const unsigned int <symbol.rowLengthAry>[<cluster.noBuses>] =
 // declaration of the functions.
 @modH.prototypes() ::= <<
 #if <define.useDirectLookup> != 0
-/** Get the frame index as used by the CAN interface engine from the pair of CAN bus and
+/** Get the message index as used by the CAN interface engine from the pair of CAN bus and
     CAN standard ID. */
 <bt("uint8_t")> <symbol.fctLookupFrIdxByStdId>(<bt("uint8_t")> idxBus, <bt("uint16_t")> canId);
 #endif<\n>
@@ -308,7 +301,7 @@ lookupTableFrameIdxByBusAndIdEntry(frame) ::= <<
 >>
 
 mapFrameIdxById_bus(bus) ::= <<
-/** One row of the two dimensional lookup table: The CAN ID to frame index associations for
+/** One row of the two dimensional lookup table: The CAN ID to message index associations for
     bus <bus>. */
 static const <symbol.pairIdAndIdx_t> <symbol.mapFrameIdxById>[] =
 {
@@ -337,7 +330,7 @@ mapEntry(frame) ::= <<
 <endif><\\>
 <if(!frame.isReceived)>#if <define.supportSentFrames> != 0
 <endif><\\>
-{.canId = MCI_CAN_ID_INIT_EXPR(<frame.id; format="%#x">, <frame.isExtId>), .idx = <symbol.enumFrame>},
+{.canId = MCI_CAN_ID(<frame.id; format="%#x">, <frame.isExtId>), .idx = <symbol.enumFrame>},
 <if(!frame.isReceived)>#endif
 <endif><\\>
 <if(!frame.isExtId)>#endif
@@ -347,7 +340,7 @@ mapEntry(frame) ::= <<
 refMapFrameIdxById_bus(bus) ::= "&<symbol.mapFrameIdxById>[0],<\n>"
 
 
-// Find out if at least one frame uses the extended identifier and note the result down as
+// Find out if at least one message uses the extended identifier and note the result down as
 // value of the #define.
 //   We use a recursion as a loop. Stopping the recursion when an extended ID is seen is
 // like breaking the loop.

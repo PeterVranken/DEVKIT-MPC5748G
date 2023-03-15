@@ -72,11 +72,12 @@ project := winSampleIntegration
 # A list of arguments passed to the compiled target when yielding target run.
 targetRunArgs := -v INFO -f short $(ARG)
 
-# Specify a blank separated list of directories holding source files.
+# Specify a blank separated list of directories holding source files. The directories are
+# searched recursively for C and C++ source files.
 srcDirList := ../../code/eventDispatcher/ ../../code/memoryPool/ ../../code/connectors/	\
               ../../code/handleMaps/													\
               code/logger/ code/osSimulation/ code/codeGen/ code/integration/			\
-			  code/APSW/ code/environment/
+			  code/APSW/
 
 # Exclusion list: Edit the list of excluded files. A blank separated list of source files
 # (with extension but without path) is expected, which are excluded from the compilation of
@@ -85,7 +86,11 @@ cFileListExcl :=
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).
-incDirList :=
+incDirList := code/environment/
+
+# A blank separated list of defines, which are set in the compiler command line, with or
+# without value.
+defineList := 
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

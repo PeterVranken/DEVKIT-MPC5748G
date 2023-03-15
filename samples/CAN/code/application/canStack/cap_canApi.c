@@ -18,10 +18,10 @@
  * exclusion with the Embedded Coder generated APSW code, which also accesses the API data.
  * Although less likely may the same hold for CAN output.
  *
- * This file has been created with comFramework - codeGenerator version 1.11.2,
+ * This file has been created with comFramework - codeGenerator version 1.11.3,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

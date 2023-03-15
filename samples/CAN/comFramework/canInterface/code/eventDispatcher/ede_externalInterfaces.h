@@ -28,6 +28,7 @@
  * Include files
  */
 
+#include <stdlib.h>
 #include "ede_basicDefinitions.h"
 #include "ede_eventDispatcherEngine.config.h"
 
@@ -37,11 +38,22 @@
 
 /** Standard call of an interface function, which has one or more arguments. Can be applied
     to make such a call look like a normal function call. */
-#define EDE_CALL_INTERFACE_VA_ARGS(iObj, method, ...) ((iObj).method((iObj).hInstance, __VA_ARGS__))
+#define EDE_CALL_INTERFACE_VA_ARGS(iObj, method, ...) \
+            ((iObj).method((iObj).hInstance, __VA_ARGS__))
+
+/** Standard call of an interface function, which is optional and which has one or more
+    arguments. Can be applied to make such a call look like a normal function call. */
+#define EDE_CALL_OPTIONAL_INTERFACE_VA_ARGS(iObj, method, defVal, ...) \
+            ((method) != NULL? EDE_CALL_INTERFACE_VA_ARGS(iObj, method, __VA_ARGS__): (defVal))
 
 /** Standard call of an interface function, which has no arguments. Can be applied to make
     such a call look like a normal function call. */
 #define EDE_CALL_INTERFACE_NO_ARGS(iObj, method) ((iObj).method((iObj).hInstance))
+
+/** Standard call of an interface function, which is optional and which has no arguments.
+    Can be applied to make such a call look like a normal function call. */
+#define EDE_CALL_OPTIONAL_INTERFACE_NO_ARGS(iObj, method, defVal) \
+            ((method) != NULL? EDE_CALL_INTERFACE_NO_ARGS(iObj, method): (defVal))
 
 /** An initializer expression for a still uninitialized object of type \a
     ede_memoryPool_t. */

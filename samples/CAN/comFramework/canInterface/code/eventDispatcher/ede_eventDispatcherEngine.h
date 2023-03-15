@@ -145,6 +145,16 @@ ede_handleTimer_t ede_createPeriodicTimer( const ede_callbackContext_t *pContext
 #endif
                                          );
 
+/** Create a periodic timer object with shifted first due time. */
+ede_handleTimer_t ede_createPeriodicTimerShifted( const ede_callbackContext_t *pContext
+                                                , signed int tiPeriod
+                                                , signed int tiPhase
+                                                , ede_callback_t callback
+#if EDE_ENABLE_TIMER_CONTEXT_DATA == 1          
+                                                , uintptr_t refUserContextData
+#endif                                          
+                                                );
+
 /** Create a single shot timer. */
 ede_handleTimer_t ede_createSingleShotTimer( const ede_callbackContext_t *pContext
                                            , signed int tiFromNow

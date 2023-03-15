@@ -408,20 +408,19 @@ typedef struct queueElement_t
  */
 
 /**
- * We are creating an array of elements. The array as a whole must be correct aligned (using
- * method byteOffsetOfRingBuffer()) but the element size must be a multiple of the element
- * alignment, too - otherwise would latest the second element in the array be misaligned.
- * This method computes the element size to be reserved in the array based on the user
- * demanded element size.
+ * We are creating an array of elements. The array as a whole must be correctly aligned
+ * (using method byteOffsetOfRingBuffer()) but the element size must be a multiple of the
+ * element alignment, too - otherwise would latest the second element in the array be
+ * misaligned. This method computes the element size to be reserved in the array based on
+ * the user demanded element size.
  *   @return
- * Get the number of Bytes, which need to be reserved for each element in the ring buffer
+ * Get the number of bytes, which need to be reserved for each element in the ring buffer
  * array that implements the queue.
  *   @param sizeOfElement
  * The user specified size of an element in the queue.
  *   @param alignOfElement
  * The alignment required for an element in the queue.
  */
-
 static inline unsigned int alignedSizeOfObject( unsigned int sizeOfElement
                                               , unsigned int alignOfElement
                                               )

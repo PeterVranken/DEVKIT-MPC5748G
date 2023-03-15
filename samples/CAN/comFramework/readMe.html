@@ -18,12 +18,9 @@
   <![endif]-->
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">readMe</h1>
-</header>
 <nav id="TOC" role="doc-toc">
 <ul>
-<li><a href="#comframework-2.0-r476-04.10.2022"><span class="toc-section-number">1</span> comFramework 2.0 (r476, 04.10.2022)</a>
+<li><a href="#comframework-2.0-r500-19.01.2023"><span class="toc-section-number">1</span> comFramework 2.0 (r500, 19.01.2023)</a>
 <ul>
 <li><a href="#about-this-project"><span class="toc-section-number">1.1</span> About this project</a>
 <ul>
@@ -43,7 +40,7 @@
 </ul>
 </nav>
 <p>[TOC]</p>
-<h1 data-number="1" id="comframework-2.0-r476-04.10.2022"><span class="header-section-number">1</span> comFramework 2.0 (r476, 04.10.2022)</h1>
+<h1 data-number="1" id="comframework-2.0-r500-19.01.2023"><span class="header-section-number">1</span> comFramework 2.0 (r500, 19.01.2023)</h1>
 <h2 data-number="1.1" id="about-this-project"><span class="header-section-number">1.1</span> About this project</h2>
 <p><a href="https://sourceforge.net/p/comframe">This project</a> presents a flexible, widely customizable CAN communication interface for embedded applications. It binds signal based application code to the frame based hardware layer. It covers the CAN stack from the application layer down to the hardware driver layer (not including).</p>
 <p>The interface implementation is code generator supported; the dedicated API with the application software and the unpack/pack functions for message (de)composition can be generated from information in the network databases. A sample integration demonstrates, how to generate much more: Setting initial signal values, DLC check, checksum generation/validation, sequence counter generation/validation and the implementation of different timing patterns is generated in a fully automated fashion. Attributes defined in the DBC file(s) support the automation.</p>
@@ -76,7 +73,7 @@
 <li>The CAN interface with its dispatcher engine is distributed as source code; concept and how-to-use are documented in this <a href="https://sourceforge.net/p/comframe/wiki/The%20CAN%20Interface/">Wiki page</a></li>
 <li>Several compilable and runnable sample integrations of the CAN interface are distributed with source code and makefiles together with the dispatcher engine. There are integrations for Windows, there’s an Arduino ATmega 2560 real time integration and an integration with the MathWorks Embedded Coder. A complete runnable real-time application for MPC5748G with CAN driver and integrated CAN interface can be found at <a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN">GitHub</a></li>
 <li>The code generators are distributed as Java application. A number of samples for the <a href="https://sourceforge.net/p/comframe/code/HEAD/tree/codeGenerator/trunk/samples/">DBC code generator</a> and for <a href="https://sourceforge.net/p/comframe/code/HEAD/tree/excelExporter/trunk/samples/">excelExporter</a> demonstrate how templates can look like, which do the transformations mentioned above</li>
-<li>The <a href="https://sourceforge.net/p/comframe/files">download page</a> at SourceForge provides a ZIP archive for download, which bundles all needed tools, files and samples in a ready-to-use folder structure. The archive contains the files of revision r476 (04.10.2022 11:54:21) of the SourceForge <a href="https://sourceforge.net/p/comframe/code/HEAD/tree">SVN repository</a></li>
+<li>The <a href="https://sourceforge.net/p/comframe/files">download page</a> at SourceForge provides a ZIP archive for download, which bundles all needed tools, files and samples in a ready-to-use folder structure. The archive contains the files of revision r500 (19.01.2023 20:49:46) of the SourceForge <a href="https://sourceforge.net/p/comframe/code/HEAD/tree">SVN repository</a></li>
 <li>More recent revisions of the software are distributed as source code in this repository and, as far as the code generation tools are concerned, as compiled Java *<em>.jar</em> files. Get for example the last recent DBC code generator by replacing the files <em>dist/</em>*<em>.jar</em> and <em>dist/</em>*<em>.cmd</em> in your installation by the jar files and command files from <a href="https://sourceforge.net/p/comframe/code/HEAD/tree/codeGenerator/trunk/dist/" class="uri">https://sourceforge.net/p/comframe/code/HEAD/tree/codeGenerator/trunk/dist/</a>. excelExporter files would be found <a href="https://sourceforge.net/p/comframe/code/HEAD/tree/excelExporter/trunk/dist/">here</a>, respectively</li>
 </ul>
 <p>Support of the project is appreciated to support more kinds of network databases. For now, we are restricted to the DBC format. However, this format looses importance. New formats like arxml or FIBEX will probably supersede DBC in the future. Furthermore, different physical bus systems have different network database files, like *<em>.ldf</em> for LIN communication. Parsers for these input formats are required and - what’s more difficult - a common data model for all of these buses and network files needs to be developed so that the parser becomes a configurable choice but the templates can be kept widely independent of the input format.</p>

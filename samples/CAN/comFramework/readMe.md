@@ -1,6 +1,6 @@
 [TOC]
 
-# comFramework 2.0 (r476, 04.10.2022) #
+# comFramework 2.0 (r500, 19.01.2023) #
 
 ## About this project ##
 
@@ -137,8 +137,8 @@ The project is ready for productive use.
   how templates can look like, which do the transformations mentioned above
 - The [download page](https://sourceforge.net/p/comframe/files) at SourceForge provides a ZIP archive for download,
   which bundles all needed tools, files and samples in a ready-to-use
-  folder structure. The archive contains the files of revision r476
-  (04.10.2022 11:54:21) of the SourceForge [SVN repository](https://sourceforge.net/p/comframe/code/HEAD/tree)
+  folder structure. The archive contains the files of revision r500
+  (19.01.2023 20:49:46) of the SourceForge [SVN repository](https://sourceforge.net/p/comframe/code/HEAD/tree)
 - More recent revisions of the software are distributed as source code in
   this repository and, as far as the code generation tools are concerned,
   as compiled Java \*_.jar_ files. Get for example the last recent DBC code

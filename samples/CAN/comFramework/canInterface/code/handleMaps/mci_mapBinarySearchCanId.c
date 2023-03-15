@@ -181,12 +181,12 @@ static signed int comparePairsIdAndIdxById( const void *pFirstElement
     /* Both (unsigned) operands should be lower or equal than INT_MAX, so the maximum
        difference would be absolute INT_MAX; which a safe negative representation exits
        for. The assertion is sufficient to exclude an overflow. */
-    assert(((const mci_pairCanIdAndIdx_t*)pFirstElement)->canId.uniqueCanId <= INT_MAX
-           &&  ((const mci_pairCanIdAndIdx_t*)pSecondElement)->canId.uniqueCanId <= INT_MAX
+    assert(((const mci_pairCanIdAndIdx_t*)pFirstElement)->canId <= INT_MAX
+           &&  ((const mci_pairCanIdAndIdx_t*)pSecondElement)->canId <= INT_MAX
           );
 
-    return (signed int)((const mci_pairCanIdAndIdx_t*)pFirstElement)->canId.uniqueCanId
-           - (signed int)((const mci_pairCanIdAndIdx_t*)pSecondElement)->canId.uniqueCanId;
+    return (signed int)((const mci_pairCanIdAndIdx_t*)pFirstElement)->canId
+           - (signed int)((const mci_pairCanIdAndIdx_t*)pSecondElement)->canId;
     
 } /* comparePairsIdAndIdxById */
 
@@ -225,7 +225,7 @@ static bool getIdxByCanId( unsigned int * const pValue
                                                         );
     if(pFoundElement != NULL)
     {
-        assert(pFoundElement->canId.uniqueCanId == canId.uniqueCanId);
+        assert(pFoundElement->canId == canId);
         *pValue = (unsigned)pFoundElement->idx;
         return true;
     }
@@ -433,14 +433,15 @@ static bool getValue( uintptr_t hMap
         /* For this particular map, the sender event handle has a pre-defined structure:
            The 32 Bit integer is an agglomeration of CAN ID and Boolean isExtended. Decode
            it. */
-        const mci_canId_t canId = {.uniqueCanId = (uint32_t)senderHandleEvent,};
+        const mci_canId_t canId = (mci_canId_t)senderHandleEvent;
 
-        if(!canId.u.isExtId && pMapInstance->mapStdCanIdToEdeIdxAry != NULL)
+        if(!MCI_GET_IS_EXT_ID(canId) && pMapInstance->mapStdCanIdToEdeIdxAry != NULL)
         {
             /* The map defines a direct lookup table for the limited range of standard CAN
                IDs. This leads to very fast lookup. */
-            EDE_ASSERT(canId.u.id < 0x800u);
-            *pValue = (unsigned)pMapInstance->mapStdCanIdToEdeIdxAry[canId.u.id & 0x7FFu];
+            EDE_ASSERT(MCI_GET_CAN_ID(canId) < 0x800u);
+            const unsigned int idxInAry = MCI_GET_CAN_ID(canId) & 0x7FFu;
+            *pValue = (unsigned)pMapInstance->mapStdCanIdToEdeIdxAry[idxInAry];
         }
         else
         {

@@ -52,7 +52,7 @@
 //#define BSW_CAN_BUS_3                (/*cdr_canDev_CAN_*/1u)
 
 /** CAN interface: The BSW uses index spaces for the mailboxes, which are offered to
-    user the processes. Rx and Tx messages each have an own solid index space, which is not
+    the user processes. Rx and Tx messages each have an own solid index space, which is not
     zero based. The first and last available index are provided.\n
       Note, all CAN buses use the same configuration and therefore, the macro relates to
     each of them. */

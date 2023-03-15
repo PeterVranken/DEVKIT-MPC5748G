@@ -4,8 +4,8 @@
  * @file mci_mapCanIdToIdx_dataTables.h
  * 
  * Public data interface of the mapping table, which associates the pair CAN bus index plus
- * CAN frame ID (as occasionally used as frame identification in the CAN callback in some
- * platforms) to the zero based linear frame index as used by the CAN interface engine.\n
+ * CAN message ID (as occasionally used as message identification in the CAN callback in some
+ * platforms) to the zero based linear message index as used by the CAN interface engine.\n
  *   This interface does not contain the lookup algorithm; this is data independent program
  * code, which doesn't belong into an auto-generated module. It's however straightforward
  * to implement the function that operates on the generated data tables.
@@ -52,13 +52,13 @@
 
 /** Most true environments will require the map for received CAN messages only. However, if
     a platform provides a send acknowledge with CAN ID as message handle then this macro
-    can be set to 1 and the sent frames are considered in the map, too.\n
+    can be set to 1 and the sent messages are considered in the map, too.\n
       The macro can be set to either 0 or 1. */
 #ifndef MCI_USE_MAP_FOR_SENT_FRAMES
 # define MCI_USE_MAP_FOR_SENT_FRAMES        0
 #endif
 
-/** If the map is integrated into a true project then the enumeration of CAN frames is
+/** If the map is integrated into a true project then the enumeration of CAN messages is
     likely defined externally and we won't use the definition made locally in this file.
     Set the value to 0 in this case.
       The macro can be set to either 0 or 1. */
@@ -111,15 +111,15 @@ typedef enum mci_idxCanBus_t
  */
 
 #if MCI_USE_DIRECT_LOOKUP_FOR_STD_ID != 0
-/** A two dimensional lookup table only for standard CAN IDs to get the frame index from
+/** A two dimensional lookup table only for standard CAN IDs to get the message index from
     the pair (bus, 11 Bit CAN ID). The first array index selects the bus by zero based bus
-    index. The 11 Bit CAN ID is then used as second array index to get the wanted frame
+    index. The 11 Bit CAN ID is then used as second array index to get the wanted message
     index. */
-extern const UInt8 mci_lookupTableFrameIdxByBusAndStdId[4][0x800];
+extern const uint8_t mci_lookupTableFrameIdxByBusAndStdId[4][0x800];
 #endif
 
 #if MCI_USE_DIRECT_LOOKUP_FOR_STD_ID == 0  ||  MCI_SUPPORT_EXTENDED_CAN_IDS != 0
-/** A two dimensional map to get the frame index from the pair (bus, CAN ID). First, the
+/** A two dimensional map to get the message index from the pair (bus, CAN ID). First, the
     right row is selected by the bus index. Then a binary search can be applied to the row
     data as it is sorted in order of raising CAN IDs. */
 extern const mci_pairCanIdAndIdx_t * const mci_mapFrameIdxByBusAndId[4];
@@ -137,9 +137,9 @@ extern const unsigned int mci_mapFrameIdxByBusAndId_rowLengthAry[4];
  */
 
 #if MCI_USE_DIRECT_LOOKUP_FOR_STD_ID != 0
-/** Get the frame index as used by the CAN interface engine from the pair of CAN bus and
+/** Get the message index as used by the CAN interface engine from the pair of CAN bus and
     CAN standard ID. */
-UInt8 mci_getFrameIdxByCanBusAndStdId(UInt8 idxBus, UInt16 canId);
+uint8_t mci_getFrameIdxByCanBusAndStdId(uint8_t idxBus, uint16_t canId);
 #endif
 
 

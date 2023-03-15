@@ -56,14 +56,14 @@ uint8_t mci_getFrameIdxByCanBusAndStdId(uint8_t idxBus, uint16_t canId);
 #if MCI_USE_DIRECT_LOOKUP_FOR_STD_ID == 0  ||  MCI_SUPPORT_EXTENDED_CAN_IDS != 0
 /** Get the frame index as used by the CAN interface engine of the very frame, which is
     transmitted on the given bus and which has the given CAN ID. */
-UInt8 mci_getIdxFrameByCanId( UInt8 idxBus
+uint8_t mci_getIdxFrameByCanId( uint8_t idxBus
 #if MCI_SUPPORT_EXTENDED_CAN_IDS == 0
-                            , UInt16 id
+                              , uint16_t id
 #else
-                            , UInt32 id
-                            , bool isExtId
+                              , uint32_t id
+                              , bool isExtId
 #endif
-                            );
+                              );
 #endif
 
 #endif  /* MCI_MAP_CAN_ID_TO_IDX_INCLUDED */

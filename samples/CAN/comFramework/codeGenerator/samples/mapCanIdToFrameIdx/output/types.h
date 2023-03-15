@@ -32,6 +32,8 @@
  * Include files
  */
 
+#include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 /*
@@ -43,16 +45,8 @@
  * Global type definitions
  */
 
-typedef unsigned char UInt8;
-typedef unsigned short UInt16;
-typedef unsigned long UInt32;
-typedef unsigned long long UInt64;
-typedef signed char Int8;
-typedef signed short Int16;
-typedef signed long Int32;
-typedef signed long long Int64;
-typedef float Float32;
-typedef double Float64;
+typedef float float32_t;
+typedef double float64_t;
 
 
 /*

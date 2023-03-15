@@ -155,18 +155,19 @@ incDirList := $(call w2u,$(incDirList)) .
 #$(info incDirList := $(incDirList))
 
 # Determine the list of files to be compiled.
-#   Create a blank separated list file patterns matching possible source files.
-srcPatternList := $(foreach path, $(srcDirList), $(addprefix $(path), *.c *.cpp))
-# Get all files matching the source file patterns in the directory list. Caution: The
-# wildcard function will not accept Windows style paths.
-cFileList := $(wildcard $(srcPatternList))
+cFileList := $(call rwildcard,$(srcDirList),*.c *.cpp)
+
 # Remove the various paths. We assume unique file names across paths and will search for
 # the files later. This strongly simplifies the compilation rules. (If source file names
 # were not unique we could by the way not use a shared folder obj for all binaries.)
+#   Before we remove the directories from the source file designations, we need to extract
+# and keep these directories. They are needed for the VPATH search and for compiler include
+# instructions. Note, $(sort) is applied to filter dublicates not for sorting.
+srcDirList := $(sort $(dir $(cFileList)))
 cFileList := $(notdir $(cFileList))
 # Subtract each excluded file from the list.
 cFileList := $(filter-out $(cFileListExcl), $(cFileList))
-#$(info cFileList := $(cFileList))
+#$(info cFileList := $(cFileList)$(call EOL)srcDirList := $(srcDirList))
 # Translate C source file names in target binary files by altering the extension and adding
 # path information.
 objList := $(cFileList:.cpp=.o)

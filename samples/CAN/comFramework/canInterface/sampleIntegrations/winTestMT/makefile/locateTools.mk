@@ -3,8 +3,6 @@
 #
 # Locate all the external tools used by the other makefile fragments.
 #
-# This makefile fragment depends on functions.mk.
-#
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #

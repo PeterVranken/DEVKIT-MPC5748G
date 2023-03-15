@@ -34,22 +34,6 @@
  * Defines
  */
 
-/* The software is written as portable as reasonably possible. This requires the awareness
-   of the C language standard it is compiled with.
-     With respect to the language feature C11 and C17 are identical. We combine the in one
-   switch. */
-#if defined(__STDC_VERSION__)
-# if (__STDC_VERSION__)/100 == 2017
-#  define _STDC_VERSION_C17
-#  define _STDC_VERSION_C17_C11
-# elif (__STDC_VERSION__)/100 == 2011
-#  define _STDC_VERSION_C11
-#  define _STDC_VERSION_C17_C11
-# elif (__STDC_VERSION__)/100 == 1999
-#  define _STDC_VERSION_C99
-# endif
-#endif
-
 /** The definitions below depend on whether or not extended CAN IDs are in use. This needs
     to be decided before this header is included. Set #MCI_SUPPORT_EXTENDED_CAN_IDS to 0 or
     1 prior to including this file. */
@@ -57,52 +41,66 @@
 # error MCI_SUPPORT_EXTENDED_CAN_IDS needs to be defined when including this file
 #endif
 
+#if MCI_SUPPORT_EXTENDED_CAN_IDS == 1
+
+/** Helper to get CAN IDs: Get a 11 Bit standard CAN ID object from the raw number. */
+# define MCI_STD_CAN_ID(id11Bit)        ((mci_canId_t)(((unsigned)(id11Bit)&0x7FFu)<<1u))
+
+/** Helper to get CAN IDs: Get a 29 Bit standard CAN ID object from the raw number. */
+# define MCI_EXT_CAN_ID(id29Bit) \
+                            ((mci_canId_t)((((unsigned)(id29Bit)&0x1FFFFFFFu)<<1u)|1u))
+
+/** Helper to get CAN IDs: Get CAN ID object from raw number and Boolean \a isExt. */
+# define MCI_CAN_ID(ID, isExt) \
+                        ((mci_canId_t)((((unsigned)(ID)&0x1FFFFFFFu)<<1u)|((isExt)?1u:0u)))
+
+/** Helper to get the CAN ID as a number from a CAN ID object. */
+# define MCI_GET_CAN_ID(mci_canId)      ((mci_canId) >> 1u)
+
+/** Helper to get the Boolean distinction between standard and extended CAN ID from a CAN
+    ID object. */
+# define MCI_GET_IS_EXT_ID(mci_canId)   (((mci_canId) & 1u) == 1u)
+
+#else
+
+/** Helper to get CAN IDs: Get a 11 Bit standard CAN ID object from the raw number. */
+# define MCI_STD_CAN_ID(id11Bit)        ((mci_canId_t)((unsigned)(id11Bit)&0x7FFu))
+
+/** Helper to get CAN IDs: Get CAN ID object from raw number and Boolean \a isExt. */
+# define MCI_CAN_ID(ID, isExt)          (assert(!isExt),((mci_canId_t)((unsigned)(id11Bit)&0x7FFu)))
+
+/** Helper to get the CAN ID as a number from a CAN ID object. */
+# define MCI_GET_CAN_ID(mci_canId)      (mci_canId)
+
+/** Helper to get the Boolean distinction between standard and extended CAN ID from a CAN
+    ID object. */
+# define MCI_GET_IS_EXT_ID(mci_canId)   false
+
+#endif 
+
+
 /*
  * Type definitions
  */
 
-/** The map value type. Normally, a uint8 will be appropriate but if more than 254 CAN
-    messages are defined in at least one involved event dispatcher system then this type
-    would overflow and a unit16_t becomes the better choice. */
+/** The map value type. Normally, an 8 Bit unsigned will be appropriate but if more than
+    254 CAN messages are defined in at least one involved event dispatcher system then this
+    type would overflow and a uint16_t becomes the better choice. */
 typedef uint8_t mci_uintMapValue_t;
 
-/** CAN ID: The number and the Boolean distinction between standard 11 and extended 29 Bit
-    IDs. */
-typedef union mci_canId_t
-{
 #if MCI_SUPPORT_EXTENDED_CAN_IDS == 1
-    /** A struct provides the normally used access to the fields. */
-    struct
-    {
-        /** The Boolean distinction, whether we have an 11 or a 29 Bit CAN ID. */
-        uint32_t isExtId:1;
-
-        /** The CAN ID.\n
-              Note, this field is intentionally not modelled as 29 Bit integer in order to
-            avoid undefined values for unused bit: This supports efficient binary
-            comparison of CAN IDs. */
-        uint32_t id:31;
-        
-    } u;
-
-    /** An alternative 32 Bit integer access supports efficient CAN ID comparisons (equal
-        or not). */
-    uint32_t uniqueCanId;
+/** CAN ID: The number and the Boolean distinction between standard 11 and extended 29 Bit
+    IDs.\n
+      The Boolean "isExtendedID" is encoded as bit 0.\n
+      The ID as number is encoded as bits 1..31. Unused bits need to be set to zero; for
+    standard IDs all bits 12..31 are always zero and for extended IDs the bits 30 and 31 are
+    always zero. */
+typedef uint32_t mci_canId_t;
 #else
-    uint16_t id;
-    uint16_t uniqueCanId;
+/** CAN ID: A standard 11 Bit represented as a 16 Bit unsigned integer. The bits 11..15 are
+    always zero. */
+typedef uint16_t mci_canId_t;
 #endif
-
-} mci_canId_t;
-
-#if defined(_STDC_VERSION_C17_C11) || defined(_Static_assert)
-# if MCI_SUPPORT_EXTENDED_CAN_IDS == 1
-_Static_assert(sizeof(union mci_canId_t) == sizeof(uint32_t), "Unexpected size of data object");
-# else
-_Static_assert(sizeof(mci_canId_t) == sizeof(uint16_t), "Unexpected size of data object");
-# endif
-#endif
-
 
 /** Map entry: Makes the association from CAN ID to frame index. We just need to find the
     CAN ID by binary search to have the frame index. */

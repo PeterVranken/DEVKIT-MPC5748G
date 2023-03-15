@@ -79,6 +79,12 @@
                                          ||  (CDR_QUEUED_SENDING_SIZE_OF_QUEUE_CAN_7) > 0   \
                                         )
 
+#ifndef CANIF_hMB_MAILBOX_QUEUED_TX
+# ifdef CANIF_idxMB_MAILBOX_QUEUED_TX
+#  error For sake of consitency, handle and index of the reserved CAN mailbox should be \
+         defined together
+# endif
+
 /** If queued sending is configured then one of the mailboxes of the CAN device is reserved
     for this purpose. It needs to be configured as Tx and its access privileges control,
     which user processes can access the service "queued sending" on the given CAN device.\n
@@ -96,10 +102,12 @@
       Caution, because of the dependency on the configuration of the Rx FIFO, in particular
     field \a CTRL2_RFFN, it is not possible to provide here a reasonable default value.
     Each application of the service needs to double-check this setting. */
-#define CANIF_hMB_MAILBOX_QUEUED_TX     ((CANIF_idxMB_MAILBOX_QUEUED_TX)+48u)
+# define CANIF_hMB_MAILBOX_QUEUED_TX     ((CANIF_idxMB_MAILBOX_QUEUED_TX)+48u)
 
 /** See #CANIF_hMB_MAILBOX_QUEUED_TX. */
-#define CANIF_idxMB_MAILBOX_QUEUED_TX   ((CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE)-1u)
+# define CANIF_idxMB_MAILBOX_QUEUED_TX   ((CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE)-1u)
+
+#endif
 
 
 /*

@@ -30,6 +30,7 @@
  *   ede_registerInternalEventSource
  *   ede_dispatcherMain
  *   ede_createPeriodicTimer
+ *   ede_createPeriodicTimerShifted
  *   ede_createSingleShotTimer
  *   ede_killTimer
  *   ede_suspendSingleShotTimer
@@ -422,8 +423,15 @@ _Static_assert( EDE_COMMON_MACHINE_ALIGNMENT == 1u
  *   @param ti
  * The period of a periodic timer or the time span of a single shot timer. A positive
  * number is expected.\n
- *   For single-shot timers without auto-kill 0 is permitted, too; is means to create the
+ *   For single-shot timers without auto-kill 0 is permitted, too; it means to create the
  * timer in suspended state. Doing so can give better control of memory allocation.
+ *   @param tiPhase
+ * For periodic timers only, the first due time may differ from the repeated triggers; use
+ * case is control of a phase shift. The timer becomes due the first time at \a ti + \a
+ * tiPhase ticks from now. Range for this sum is 1.., silently limited. If \tiPhase would
+ * shift the first trigger to a value less than one dispatcher tick then the first due time
+ * will be the next dispatcher tick.\n
+ *   The parameter is ignored for single-shot timers. 0 should be passed in.
  *   @param callback
  * The callback, which is invoked at due time.
  *   @param refUserContextData
@@ -437,6 +445,7 @@ _Static_assert( EDE_COMMON_MACHINE_ALIGNMENT == 1u
 static ede_handleTimer_t createTimer( const ede_callbackContext_t * const pContext
                                     , bool isPeriodic
                                     , signed int ti
+                                    , signed int tiPhase
                                     , ede_callback_t callback
 #if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
                                     , uintptr_t refUserContextData
@@ -451,7 +460,7 @@ static ede_handleTimer_t createTimer( const ede_callbackContext_t * const pConte
        list order and to get more natural behavior at run time, we place new objects at the
        end.
          Killed timer objects are collected in the free list (as we don't want a dynamic
-       memory allocation concept). Conseqeuntly, the first source of object allocation is
+       memory allocation concept). Consequently, the first source of object allocation is
        this list. */
     timer_t *pTimer = NULL;
     if(pDisp->freeListOfTimerObjects != NULL)
@@ -483,16 +492,22 @@ static ede_handleTimer_t createTimer( const ede_callbackContext_t * const pConte
     EDE_ASSERT((!isPeriodic || !killAtDueTime)
                &&  (ti > 0  ||  (ti == 0 && !isPeriodic && !killAtDueTime))
               );
-    pTimer->tiReload = isPeriodic
-                       ? (ti >= pDisp->tiTick? ti: pDisp->tiTick)
-                       : (killAtDueTime
-                          ? TIMER_STATE_SINGLE_SHOT_AUTO_KILL
-                          : (ti == 0
-                             ? TIMER_STATE_SINGLE_SHOT_SUSPENDED
-                             : TIMER_STATE_SINGLE_SHOT
-                            )
-                         );
-    pTimer->tiDue = pDisp->tiNow + ti;
+    if(isPeriodic)
+    {
+        pTimer->tiReload = ti >= pDisp->tiTick? ti: pDisp->tiTick;
+        pTimer->tiDue = pDisp->tiNow + (ti+tiPhase>=1? ti+tiPhase: 1);
+    }
+    else
+    {
+        pTimer->tiReload = killAtDueTime
+                           ? TIMER_STATE_SINGLE_SHOT_AUTO_KILL
+                           : (ti == 0
+                              ? TIMER_STATE_SINGLE_SHOT_SUSPENDED
+                              : TIMER_STATE_SINGLE_SHOT
+                             );
+        pTimer->tiDue = pDisp->tiNow + ti;
+    }
+    
     pTimer->callback = callback;
 #if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
     pTimer->refUserContextData = refUserContextData;
@@ -1412,6 +1427,7 @@ ede_handleTimer_t ede_createPeriodicTimer( const ede_callbackContext_t * const p
     return createTimer( pContext
                       , /* isPeriodic */ true
                       , tiPeriod
+                      , /* tiPhase */ 0
                       , callback
 #if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
                       , refUserContextData
@@ -1419,6 +1435,90 @@ ede_handleTimer_t ede_createPeriodicTimer( const ede_callbackContext_t * const p
                       , /* killAtDueTime */ false
                       );
 } /* End of ede_createPeriodicTimer */
+
+
+
+
+
+/**
+ * Create a periodic timer event from a callback. It is started with phase shift - this is
+ * the only difference to the other constructor ede_createPeriodicTimer().\n
+ *   Typical use case in the context of CAN communication is a timer, which triggers
+ * sending of regular frames. The phase shift can be applied to avoid message bursts at
+ * integral mulitples of typical message period times like 10, 50, 100, 1000 ms.
+ *   @return
+ * The timer handle is returned; this handle is used to identify a timer (if several timers
+ * should share the same callback function) or to perform other operations on this timer.\n
+ *   If no timer can be created due to a lack of memory then #EDE_INVALID_TIMER_HANDLE is
+ * returned instead. Due to the static, deterministic error allocation concept this error
+ * should preferrably be handled by a simple assertion only; if this assertion doesn't fire
+ * in the DEBUG compilation then there won't be an error in the production code neither.
+ *   @param pContext
+ * The dispatcher context this callback is invoked from.
+ *   @param tiPeriod
+ * The timer will invoke the specified callback \a callback every \a tiPeriod time units.
+ * The unit is the same as that of argument \a tiTick in the call of
+ * ede_createDispatcher().\n
+ *   The value needs to be positive. If it is less than the tick time of the dispatcher than
+ * it is rounded upwards to this tick time; the timer will fire in every tick of the
+ * dispatcher.\n
+ *   The cycle time is not rounded to a multiple of the dispatcher's clock tick. If \a
+ * tiPeriod is not a multiple of the clock tick then the timer will always fire at the
+ * first tick at or after the next nominal due time. The timer events are no longer
+ * equidistant but the nominal cycle time is kept in average.
+ *   @param tiPhase
+ * For periodic timers only, the first due time may differ from the repeated triggers; use
+ * case is control of a phase shift. The timer becomes due the first time at \a tiPeriod +
+ * \a tiPhase ticks from now. Range for this sum is 1.., silently limited. If \tiPhase
+ * would shift the first trigger to a value less than one dispatcher tick then the first
+ * due time will be the next dispatcher tick.
+ *   @param callback
+ * Please refer to \a tiPeriod.
+ *   @param refUserContextData
+ * The user specified context information, which is stored with the timer and which will be
+ * brought back into its callback at due time. In the timer's callback, use \a
+ * ede_getEventData() to retrieve the value passed in here. The data type of the user
+ * specified context data is \a uintptr_t; if you pass in a pointer to some data then
+ * ede_getEventData() will only return the pointer - not the data it points to.\n
+ *   This argument is available only if #EDE_ENABLE_TIMER_CONTEXT_DATA is set to 1.
+ *   @remark
+ * This method and ede_createSingleShotTimer() are the only pieces of code in the
+ * dispatcher implementation, which could suffer from race conditions. The timer objects
+ * are created from the memory pool specified in ede_createDispatcherSystem(). Race conditions
+ * would occur if another task calls ede_dispatcherMain() for another dispatcher object and
+ * that dispatcher coincidently creates a timer and both dispatchers use the same memory
+ * pool. (Two dispatchers will always use the same memory pool if they belong to the same
+ * system!)\n 
+ *   In such a scenario, you'd need to use an implementation of the memory pool interface
+ * with appropriate mutual exclusion mechanism. The default implementation of the CAN
+ * interface, mem_malloc.c, allows using a guard function provided by the
+ * integration code, see argument \a mutualExclusionGuard of its constructor
+ * mem_createMemoryPool().\n
+ *   Even better is either having separated memory pools for concurrently executed
+ * dispatchers (not possible for same system) or not using the timer creation API at
+ * dispatcher run time. Instead, create your timers preferably at system initialization
+ * time.
+ */
+ede_handleTimer_t ede_createPeriodicTimerShifted( const ede_callbackContext_t * const pContext
+                                                , signed int tiPeriod
+                                                , signed int tiPhase
+                                                , ede_callback_t callback
+#if EDE_ENABLE_TIMER_CONTEXT_DATA == 1          
+                                                , uintptr_t refUserContextData
+#endif                                          
+                                                )
+{
+    return createTimer( pContext
+                      , /* isPeriodic */ true
+                      , tiPeriod
+                      , tiPhase
+                      , callback
+#if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
+                      , refUserContextData
+#endif
+                      , /* killAtDueTime */ false
+                      );
+} /* End of ede_createPeriodicTimerShifted */
 
 
 
@@ -1481,6 +1581,7 @@ ede_handleTimer_t ede_createSingleShotTimer( const ede_callbackContext_t * const
     return createTimer( pContext
                       , /* isPeriodic */ false
                       , tiFromNow
+                      , /* tiPhase */ 0
                       , callback
 #if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
                       , refUserContextData
