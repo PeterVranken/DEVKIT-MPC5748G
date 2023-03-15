@@ -985,7 +985,7 @@ void cdr_osInitCanDriver(void)
  *   @param doNotify
  * The Boolean choice whether or not the completion of the mailbox activity will trigger an
  * interrupt. If set to \a true then an Rx mailbox will raise an interrupt if the reception
- * buffer has just been filled with a message from the bus and an Tx mailbox will raise the
+ * buffer has just been filled with a message from the bus and a Tx mailbox will raise the
  * interrupt when it has entirely serialized a message on the bus. By callback invokation,
  * the interrupt handler notifies the client code about the event and provides it the
  * required information (e.g., message payload for Rx mailboxes).\n

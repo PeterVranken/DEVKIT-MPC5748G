@@ -201,6 +201,24 @@ uint32_t cdr_scFullHdlr_makeMailboxReservation( uint32_t PID
                                               , bool doNotify
                                               )
 {
+    /// @todo Decide, whether your application of the CAN driver needs the next statement:
+    /// This sample and its CAN driver configuration require some attention, when the
+    /// extended service "queued sending" is configured. In this case, we configure the Tx
+    /// IRQ for the mailbox group, which the MB dedicated to the service belongs to. All
+    /// other MBs of the same group must not be able to trigger the IRQ. The check-logic
+    /// implemented in cdr_osMakeMailboxReservation is not specific enough to handle this,
+    /// we need to put an according decision here, where we can still reject the
+    /// reservation demand.\n
+    ///   The sample uses the FIFO IRQ as only notification (besides the queued sending
+    /// service) and FIFO Rx is easy to identify: The sample uses it for and only for Rx of
+    /// the QM process P1.\n
+    ///   Note, another option would be a modification of the ISR for the group: it could
+    /// filter out all IRQs not coming from the dedicated MB. However, while basically
+    /// working, it would still mean that user code would get the power to trigger numerous
+    /// IRQs, which are basically effectless, but which consume CPU time.
+    if(PID == 1u  &&  !isReceived  &&  doNotify)
+        rtos_osSystemCallBadArgument();
+    
     if(idxCanDevice < sizeOfAry(cdr_canDriverConfig)
        &&  PID == (uint32_t)cdr_canDriverConfig[idxCanDevice].pidMakeMailboxReservation
       )

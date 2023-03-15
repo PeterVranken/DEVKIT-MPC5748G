@@ -72,7 +72,7 @@
  */
 
 /** Software version */
-#define VERSION "0.5.1"
+#define VERSION "0.6.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -129,10 +129,10 @@ volatile static bool SBSS_P1(_enableDisplayPWM) = false;
  *   @param pArgC
  * Prior to call: * \a pArgC is set by the caller to the number of entries available in
  * argV.\n
- *   After return: The number of found arguments, i.e. the number of non white space
+ *   After return: The number of found arguments, i.e., the number of non white space
  * regions in the command line.
  *   @param argV
- * The vector of arguments, i.e. pointers to the non white space regions in the command
+ * The vector of arguments, i.e., pointers to the non white space regions in the command
  * line.
  *   @param cmdLine
  * Prior to call: The original command line.\n
@@ -313,7 +313,10 @@ static void help()
     "unlisten [ID] signal: No longer report changes of Rx signal\r\n"
     "clearlisten: No longer report any Rx signal change\r\n"
     "set [ID] signal value: Specify new value of Tx signal for transmission\r\n"
-    "PWM n f [dc]: PWM output. n: 1 means PA1 at J3, pin 1; 2/4/5 means USR_LED2/4/5 at PA0/4/7\r\n"
+    "tx [ID] {byte}: Send an arbitrary message with up to eight \"byte\" with queued"
+    " sending\r\n"
+    "PWM n f [dc]: PWM output. n: 1 means PA1 at J3, pin 1; 2/4/5 means USR_LED2/4/5 at"
+    " PA0/4/7\r\n"
     "time: Print current time\r\n"
     "time hour min [sec]: Set current time\r\n";
 
@@ -414,7 +417,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
     char inputMsg[80+1];
     if(sio_getLine(inputMsg, sizeOfAry(inputMsg)) != NULL)
     {
-        const char *argV[10];
+        const char *argV[11];
         unsigned int argC = sizeOfAry(argV);
         tokenizeCmdLine(&argC, argV, inputMsg);
         bool didNotUnderstand = false;
@@ -588,6 +591,51 @@ int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTR
 
     /* Call the 100ms step functions of the APSW. */
     c2p_mainFunction100ms();
+
+#if 1
+    static unsigned int SBSS_P1(cntTx_) = 0u;
+    static unsigned int SDATA_P1(canId_) = 0x800u;
+    uint8_t payload[8] = { cntTx_ & 0xFF00u, cntTx_ & 0x00FFu
+                         , 0x22, 0x33 , 0x44, 0x55, 0x66, 0x77
+                         };
+    for(unsigned int u=0; u<16u; ++u)
+    {
+        const cdr_errorAPI_t errCode = cdr_sendMessageQueued
+                                                        ( BSW_CAN_BUS_0
+                                                        , /* isExtId */ true
+                                                        , canId_
+                                                        , /* DLC */ (canId_ & 7u) + 1u
+                                                        , payload
+                                                        );
+        if(errCode == cdr_errApi_noError)
+        {
+//            iprintf("apt: Message %u, ID=0x%X successfully submitted for sending\r\n", cntTx_, canId_);
+            canId_ = (canId_ + 1u) & 0x080Fu;
+            ++ cntTx_;
+            payload[0] = cntTx_ & 0xFF00u;
+            payload[1] = cntTx_ & 0x00FFu;
+        }
+        else    
+        {
+            if(errCode == cdr_errApi_txMailboxBusy)
+            {
+                iprintf( "apt: Can't send message %u, ID=0x%X, mailbox still busy\r\n"
+                       , cntTx_
+                       , canId_
+                       );
+            }
+            else
+            {
+                iprintf( "apt: Can't send message %u, ID=0x%X, error %i\r\n"
+                       , cntTx_
+                       , canId_
+                       , (int)errCode
+                       );
+            }
+            break;
+        }
+    }
+#endif
 
     return 0;
 

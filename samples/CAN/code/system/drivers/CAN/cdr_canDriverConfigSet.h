@@ -1,5 +1,5 @@
-#ifndef CDR_CANDRIVER_CONFIG_INCLUDED
-#define CDR_CANDRIVER_CONFIG_INCLUDED
+#ifndef CDR_CANDRIVER_CONFIG_SET_INCLUDED
+#define CDR_CANDRIVER_CONFIG_SET_INCLUDED
 /**
  * @file cdr_canDriver.config.h
  * Type definitions of application dependent configuration data objects of CAN I/O
@@ -9,7 +9,7 @@
  * made in file cdr_canDriver.config.inc and a prototype of the configuation is provides as
  * cdr_canDriver.config.inc.template.
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -437,9 +437,12 @@ typedef struct cdr_canDeviceConfig_t
           The Rx FIFO can be operated by IRQ only and hence it doesn't matter with
         respect to user process privilege management.
           @remark The designated initializers are defined such that non-mentioned array
-        elements are implicitly configure the according mailboxes as not accessible by any
+        elements implicitly configure the according mailboxes as not accessible by any
         user process. You just need to configure the mailboxes, which are enabled for user
-        code access. */
+        code access.
+          @remark The extended CAN driver service "queued sending" requires a mailbox,
+        which is not accessible by any user process, i.e., field \a minPIDToAccess needs
+        to be zero. */
     cdr_mailboxAccessConfig_t userAccessMailboxAry[CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE];
 
 } cdr_canDeviceConfig_t;
@@ -479,4 +482,4 @@ extern const cdr_canDriverConfig_t cdr_canDriverConfig;
  */
 
 
-#endif  /* CDR_CANDRIVER_CONFIG_INCLUDED */
+#endif  /* CDR_CANDRIVER_CONFIG_SET_INCLUDED */

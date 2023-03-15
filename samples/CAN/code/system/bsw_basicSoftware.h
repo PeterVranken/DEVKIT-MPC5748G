@@ -59,7 +59,7 @@
 #define BSW_IDX_FIRST_RX_MAILBOX            0u
 #define BSW_IDX_LAST_RX_MAILBOX             71u
 #define BSW_IDX_FIRST_TX_MAILBOX            82u
-#define BSW_IDX_LAST_TX_MAILBOX             111u
+#define BSW_IDX_LAST_TX_MAILBOX             110u
 
 /** A few mailboxes are reserverd for use by the safety supervision process. The Rx
     mailboxes can be used by polling only (which is a typical safety requirement).

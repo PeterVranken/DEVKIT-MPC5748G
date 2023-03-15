@@ -10,7 +10,7 @@
  * Never include this file or your copy directly from your application and never try to
  * compile it.
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -115,7 +115,7 @@ _Static_assert( CDR_IRQ_PRIO_CAN_RX < RTOS_KERNEL_IRQ_PRIORITY_CORE_0
 /* Only now, load the definition of the configuration data set: To avoid waste of ROM
    space, several elements are defined conditionally depending on the previously made
    selection of enabled CAN devices. */
-#include "cdr_canDriver.config.h"
+#include "cdr_canDriverConfigSet.h"
 
 
 /*
@@ -171,7 +171,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             the SW can use polling to receive the messages. The N_rx_min Rx messages can be
             received by interrupt only.\n
               Note, all mentioned maximum numbers are yielded only with a maximum number of
-            active mailboxes, i.e. noMailboxes=96.\a
+            active mailboxes, i.e., noMailboxes=96.\a
               This setting doesn't care if \a isFIFOEnabled is \a false. */
         .CTRL2_RFFN = 8,
 
@@ -194,7 +194,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             group supports only an Rx notification.\n
               The error and bus off interrrupt groups have their internal handlers plus an
             optional notification handler. They may be enabled (priority > 0) without
-            configuring a notifcation (i.e. callback is NULL).\n
+            configuring a notifcation (i.e., callback is NULL).\n
               Here, we have the interrupt configuration for error interrupts, ERRINT,
             ERRINT_FAST. */
         .irqGroupError =
@@ -423,13 +423,18 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             .osCallbackOnTx = NULL,
         },
 
-        /** IRQ configuration, IRQs of mailboxes 32..63. */
+        /** IRQ configuration, IRQs of mailboxes 32..63.\n
+              Note, the sample configuration uses the Tx IRQ for the CAN driver's extended
+            service "queued sending". This requires that either all other mailboxes in the
+            group need to be configured to not use a notification or another ISR needs to
+            be implemented, which first filters for this particular mailbox and only then
+            branches into the ISR offered by service "queued sending". */
         .irqGroupMB32_63 =
         {
             .idxTargetCore  = CDR_CAN_IRQ_SERVICING_CORE,
-            .irqPrio        = 0,
+            .irqPrio        = CDR_IRQ_PRIO_CAN_RX + 1u,
             .osCallbackOnRx = NULL,
-            .osCallbackOnTx = NULL,
+            .osCallbackOnTx = cdr_osCbOnCANTx_CAN_0_queuedSending,
         },
 
 #if defined(MCU_MPC5748G)
@@ -451,7 +456,7 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
         .pidMakeMailboxReservation = 1,
 
         /** Privileges for mailboxes: By default, code in user processes can't access the
-            mailboxes (i.e. minPIDToAccess=0). You need to specify just those mailboxes,
+            mailboxes (i.e., minPIDToAccess=0). You need to specify just those mailboxes,
             which need to be accessed by polling from user tasks.\n
               Note, the index used here is the HW mailbox index not the user visible
             mailbox handle.\n
@@ -500,7 +505,11 @@ const cdr_canDriverConfig_t RODATA(cdr_canDriverConfig) =
             [/*hMB=108*/ 60] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=109*/ 61] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=110*/ 62] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
-            [/*hMB=111*/ 63] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
+            
+            /* In this sample, the last mailbox, which is available on all supported MCU
+               derivatives, is dedicated to the extended CAN driver service, "queued
+               sending". It is not accessible for normal registration from a user process. */
+            [/*hMB=111*/ 63] = {.minPIDToAccess = 0, .useAsRxMailbox = false},
 #if defined(MCU_MPC5748G)
             [/*hMB=112*/ 64] = {.minPIDToAccess = 1, .useAsRxMailbox = false},
             [/*hMB=113*/ 65] = {.minPIDToAccess = 1, .useAsRxMailbox = false},

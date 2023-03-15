@@ -333,6 +333,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         initOk = false;
         assert(false);
     }
+    
+    /** Initialize the extended CAN driver service "queued sending". */
+    if(!cdr_osInitQueuedSending())
+    {
+        initOk = false;
+        assert(false);
+    }
 
     /* Initialize the PWM driver. */
     pwm_osInitIODriver();

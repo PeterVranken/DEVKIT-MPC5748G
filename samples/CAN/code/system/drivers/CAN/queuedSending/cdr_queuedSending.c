@@ -27,8 +27,11 @@
  *     #CDR_QUEUED_SENDING_SIZE_OF_QUEUE_CAN_1, etc.\n
  *   - reserve a particular mailbox for the service. For simplicity, all enabled buses will
  *     usually use the same mailbox, but this is not a must.\n
- *   - call the CAN driver's mailbox registration for the chosen mailbox at initialization
- *     time\n
+ *   - strictly avoid calling the CAN driver's mailbox registration for the chosen mailbox;
+ *     the MB is registered for the queued sending service by its initialization function\n
+ *   - strictly avoid any access to the chosen MB by user processes; the access rights need
+ *     to be configured accordingly, i.e., field userAccessMailboxAry[idxMB].minPIDToAccess
+ *     needs to be zero\n
  *   - configure the ISR cdr_osCbOnCANTx_CAN_n_queuedSending(), which is
  *     implemented in this module, as CAN Tx ISR for the group, which the chosen mailbox
  *     belongs to. See field \a .osCallbackOnTx in cdr_canDriverConfig, for the buses the
@@ -37,7 +40,9 @@
  *     mailbox is not the only one in its groups, which requires a Tx acknowledge IRQ, then
  *     a new ISR needs to be implemented and configured, which branches into this service'
  *     ISR cdr_osCbOnCANTx_CAN_n_queuedSending() only after it has checked that the IRQ was
- *     triggered by the chosen mailbox.
+ *     triggered by the chosen mailbox.\n
+ *   - include the system call definitions, file cdr_queuedSending_defSysCalls.h, from file
+ *     rtos_config_defSysCalls.h
  *
  * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -680,14 +685,16 @@ uint32_t cdr_scSmplHdlr_sendMessageQueued( uint32_t PID
        &&  rtos_checkUserCodeReadPtr(payload, sizeOfPayload)
       )
     {
-        const cdr_canDeviceConfig_t * const pDeviceConfig = &cdr_canDriverConfig[idxCanDevice];
-        const struct cdr_mailboxAccessConfig_t configMB =
-                        pDeviceConfig->userAccessMailboxAry[CANIF_idxMB_MAILBOX_QUEUED_TX];
-        const unsigned int minPID = configMB.minPIDToAccess;
-        if(minPID > 0  &&  PID >= minPID  &&  !configMB.useAsRxMailbox)
+        /// @todo The next condition implements the privileges for "queued sending". In
+        /// this sample, we keep it simple and allow the service user process P1 with all
+        /// CAN devices it is enabled on. However, it would be easily possible to do this
+        /// depending on the CAN device or differently for different user processes, etc.
+        if(PID == 1u)
         {
             /* After checking the potentially bad user input we may delegate to the "normal"
-               function implementation. */
+               function implementation.
+                 Please note, we didn't do a range check of idxCanDevice. This is caught
+               inside the OS API and would be reported by normal function result code. */
             return (uint32_t)osSendMessageQueued( idxCanDevice
                                                 , isExtId
                                                 , canId

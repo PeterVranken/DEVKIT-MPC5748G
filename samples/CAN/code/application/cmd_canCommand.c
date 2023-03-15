@@ -3,7 +3,7 @@
  * This module implements a simple command interpreter for the CAN related commands, the
  * application understands.
  *
- * Copyright (C) 2020-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -22,6 +22,7 @@
  *   cmd_parseCanCommand
  * Local functions
  *   checkNoArgs
+ *   parseCanId
  *   searchSignalToListenTo
  *   parseCanSignal
  *   compareCanId
@@ -46,7 +47,7 @@
 #include "f2d_float2Double.h"
 #include "cdt_canDataTables.h"
 #include "cmd_canCommand.h"
-
+#include "cdr_canDriverAPI.h"
 
 /*
  * Defines
@@ -161,7 +162,7 @@ void cmd_onReceiveMessage(unsigned int idxRxFr)
  *   @param min
  * The minimum allowed number of arguments.
  *   @param max
- * The minimum allowed number of arguments.
+ * The maximum allowed number of arguments.
  */
 static bool checkNoArgs( const char *cmd
                        , unsigned int noArguments
@@ -193,6 +194,61 @@ static bool checkNoArgs( const char *cmd
     
 } /* End of checkNoArgs */
 
+
+
+
+/**
+ * Interpret a command line argument as CAN ID.
+ *   @return
+ * \a true, if function succeeded, else \a false. The parse results, i.e., the CAN ID and
+ * flag isExtId, are valid only if the function returns \a true.
+ *   @param pCanId
+ * If the function succeeds, and if the user specified it, the CAN ID is returned by
+ * reference. Otherwise UINT_MAX is returned.
+ *   @param pExtId
+ * If the function succeeds, and if the user specified a CAN ID, then the Boolean
+ * information whether * \a pCanId designates an extended ID is returned by reference.
+ * Otherwise \a false is returned.
+ *   @param arg
+ * The command line argument, which is expected to be a CAN ID.
+ */
+static bool parseCanId( unsigned int * const pCanId
+                      , bool * const pIsExtId
+                      , const char arg[]
+                      )
+{
+    /* A CAN ID 0xffffffff, which doesn't exist, indicates that the user has not
+       specified a particular ID. */
+    unsigned int canId = UINT_MAX;
+    bool isExtId = false;
+
+
+    /* A leading x indicates an extended ID. */
+    const char *canIdStr = arg;
+    unsigned int noChars = strlen(canIdStr);
+    assert(noChars > 0);
+
+    isExtId = (toupper((int)*canIdStr) == 'X');
+    if(isExtId)
+    {
+        ++ canIdStr;
+        -- noChars;
+    }
+
+    if(noChars > 0  && isdigit((int)*canIdStr))
+        canId = (unsigned)atoi(canIdStr);
+
+    /* Trailing characters in the CAN ID argument are silently ignored. */
+
+    /* Check range of received CAN ID. If we didn't get any then the check
+       fails, too, due to the chosen default value for canId. */
+    const bool canIdOk = (canId & ~0x1fffffffu) == 0  &&  (isExtId ||  (canId & ~0x7ffu) == 0);
+
+    *pCanId = canId;
+    *pIsExtId = isExtId;
+    return canIdOk;
+
+} /* parseCanId */
 
 
 
@@ -238,46 +294,16 @@ static bool parseCanSignal( const char * * const pSignalName
     bool cmdOk = false;
     if(checkNoArgs(cmd, argC-1, 1, 2))
     {
-        /* A CAN ID 0xffffffff, which doesn't exist, indicates that the user has not
-           specified a particular ID. */
-        unsigned int canId = UINT_MAX;
-        bool isExtId = false;
-
         if(argC == 3)
         {
             /* The first argument is the decimal CAN ID for disambiguation of the
-               signal name. A leading x indicates an extended ID. */
-            const char *canIdStr = argV[1];
-            unsigned int noChars = strlen(canIdStr);
-            assert(noChars > 0);
+               signal name. */
+            cmdOk = parseCanId(pCanId, pIsExtId, argV[1]);
 
-            isExtId = (toupper((int)*canIdStr) == 'X');
-            if(isExtId)
-            {
-                ++ canIdStr;
-                -- noChars;
-            }
-
-            if(noChars > 0  && isdigit((int)*canIdStr))
-                canId = (unsigned)atoi(canIdStr);
-
-            /* Trailing characters in the CAN ID argument are silently ignored. */
-
-            /* Check range of received CAN ID. If we didn't get any then the check
-               fails, too, due to the chosen default value for canId. */
-            if((canId & ~0x1fffffffu) == 0
-               &&  (isExtId ||  (canId & ~0x7ffu) == 0)
-              )
-            {
-                cmdOk = true;
-
-                /* The second argument is the name of the signal to listen to. */
-                *pSignalName =  argV[2];
-
-                *pCanId = canId;
-                *pIsExtId = isExtId;
-            }
-            else
+            /* The second argument is the name of the signal to listen to. */
+            *pSignalName =  argV[2];
+            
+            if(!cmdOk)
             {
                 iprintf( "Bad 1st argument received for command %s; %s is not a valid CAN"
                          " ID."
@@ -291,7 +317,7 @@ static bool parseCanSignal( const char * * const pSignalName
         else
         {
             /* The first and only argument is the name of the signal to listen to. */
-            *pSignalName =  argV[1];
+            *pSignalName = argV[1];
             cmdOk = true;
         }
     }
@@ -717,7 +743,7 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
     }
     else if(stricmp(cmd, "set") == 0)
     {
-        /* "set" has 1..2 arguments to specify a signal and the value of it. */
+        /* "set" has 2..3 arguments to specify a signal and the value of it. */
         if(checkNoArgs(cmd, argC-1, 2, 3))
         {
             unsigned int idxSignalInCanDb = parseCanSignalInDb( argC-1
@@ -734,6 +760,51 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
         }
         
         /* Command "set" has been consumed. */
+        return true;
+    }
+    else if(stricmp(cmd, "tx") == 0)
+    {
+        /* "tx" has 1..9 arguments to specify a CAN ID and up to eight payload bytes. */
+        if(checkNoArgs(cmd, argC-1, 1, 9))
+        {
+            unsigned int canId;
+            bool isExtId;
+            if(parseCanId(&canId, &isExtId, argV[1]))
+            {
+                unsigned int DLC = argC - 2u;
+                assert(DLC <= 8u);
+                
+                uint8_t payloadAry[DLC];
+                for(unsigned int u=0u; u<DLC; ++u)
+                    payloadAry[u] = (uint8_t)atoi(argV[u+2u]);
+                
+                const cdr_errorAPI_t errCode = cdr_sendMessageQueued( BSW_CAN_BUS_0
+                                                                    , isExtId
+                                                                    , canId
+                                                                    , DLC
+                                                                    , payloadAry
+                                                                    );
+                if(errCode == cdr_errApi_noError)
+                {
+                    iprintf( "CAN message %u%s successfully queued for transmission\r\n"
+                           , canId
+                           , isExtId? "x": ""
+                           );
+                }
+                else
+                {
+                    iprintf( "Failed to send CAN message %u%s: Error %u\r\n"
+                           , canId
+                           , isExtId? "x": ""
+                           , (unsigned)errCode
+                           );
+                }
+            }
+            else
+                iprintf("Bad CAN ID stated: %s\r\n", argV[1]);
+        }
+
+        /* Command "tx" has been consumed. */
         return true;
     }
     else

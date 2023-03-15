@@ -35,5 +35,6 @@
 #include "sio_serialIO_defSysCalls.h"
 #include "cdr_canDriver_defSysCalls.h"
 #include "pwm_pwmIODriver_defSysCalls.h"
+#include "cdr_queuedSending_defSysCalls.h"
 
 #endif  /* RTOS_CONFIG_DEFSYSCALLS_INCLUDED */

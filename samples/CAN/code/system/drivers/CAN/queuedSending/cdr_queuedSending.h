@@ -41,7 +41,7 @@
       Caution: Only powers of two in the range 1..256 are allowed as capacity.\n
       The queued sending service is configured individually per CAN device. Here for CAN
     device CAN_0. */
-#define CDR_QUEUED_SENDING_SIZE_OF_QUEUE_CAN_0  0u
+#define CDR_QUEUED_SENDING_SIZE_OF_QUEUE_CAN_0  16u
 
 /** The number of queued messages for CAN device 1. 0 means service is off. */
 #define CDR_QUEUED_SENDING_SIZE_OF_QUEUE_CAN_1  0u
@@ -86,8 +86,9 @@
 # endif
 
 /** If queued sending is configured then one of the mailboxes of the CAN device is reserved
-    for this purpose. It needs to be configured as Tx and its access privileges control,
-    which user processes can access the service "queued sending" on the given CAN device.\n
+    for this purpose. It needs to be configured as not accessible by any user process,
+    i.e., field \a .userAccessMailboxAry.minPIDToAccess in the driver configuration data
+    set needs to be zero.\n
       Note, for sake of simplicity, all CAN devices, which enable the service use the same
     mailbox.\n
       Most typical, and in order to retain a simple contiguous handle space for the user
@@ -101,11 +102,13 @@
       The settings don't matter if the service is not enabled on any CAN device.\n
       Caution, because of the dependency on the configuration of the Rx FIFO, in particular
     field \a CTRL2_RFFN, it is not possible to provide here a reasonable default value.
-    Each application of the service needs to double-check this setting. */
+    Each application of the service needs to double-check this setting.\n
+      The default configuration uses the last mailbox, which is available on all supported
+    MCU derivatives. */
 # define CANIF_hMB_MAILBOX_QUEUED_TX     ((CANIF_idxMB_MAILBOX_QUEUED_TX)+48u)
 
 /** See #CANIF_hMB_MAILBOX_QUEUED_TX. */
-# define CANIF_idxMB_MAILBOX_QUEUED_TX   ((CDR_NO_HW_MAILBOXES_PER_CAN_DEVICE)-1u)
+# define CANIF_idxMB_MAILBOX_QUEUED_TX   ((64u)-1u)
 
 #endif
 
