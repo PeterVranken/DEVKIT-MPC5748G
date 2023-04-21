@@ -31,7 +31,8 @@
  *     the MB is registered for the queued sending service by its initialization function\n
  *   - strictly avoid any access to the chosen MB by user processes; the access rights need
  *     to be configured accordingly, i.e., field userAccessMailboxAry[idxMB].minPIDToAccess
- *     needs to be zero\n
+ *     needs to be zero. And also the privileges checks in the system calls need to consider
+ *     this.\n
  *   - configure the ISR cdr_osCbOnCANTx_CAN_n_queuedSending(), which is
  *     implemented in this module, as CAN Tx ISR for the group, which the chosen mailbox
  *     belongs to. See field \a .osCallbackOnTx in cdr_canDriverConfig, for the buses the
@@ -680,10 +681,7 @@ uint32_t cdr_scSmplHdlr_sendMessageQueued( uint32_t PID
        in case halt the SW in DEBUG compilation and lead to undefined, potentially unsafe
        behavior in the PRODUCTION code. */
 
-    if(idxCanDevice < sizeOfAry(cdr_canDriverConfig)
-       &&  sizeOfPayload <= 8u
-       &&  rtos_checkUserCodeReadPtr(payload, sizeOfPayload)
-      )
+    if(sizeOfPayload <= 8u  &&  rtos_checkUserCodeReadPtr(payload, sizeOfPayload))
     {
         /// @todo The next condition implements the privileges for "queued sending". In
         /// this sample, we keep it simple and allow the service user process P1 with all

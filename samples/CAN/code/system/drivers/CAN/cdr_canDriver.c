@@ -1461,8 +1461,6 @@ cdr_errorAPI_t cdr_osSendMessageEx_idMB( const cdr_idMailbox_t * const pIdMB
                                        , const uint8_t payload[]
                                        )
 {
-    /// @todo Double-check appropriateness of data type cdr_idMailbox_t: Field pDeviceConfig is not used for cdr_osSendMessageEx_idMB and likely not for the other *_idMB. First check: uint32_t cdr_scSmplHdlr_readMessage() sems to be the only location of using the field
-
     /* Check and prepare the mailbox to be used and get the pointer to it. */
     volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(pIdMB);
 

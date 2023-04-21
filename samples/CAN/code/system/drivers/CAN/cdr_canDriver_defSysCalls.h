@@ -3,7 +3,7 @@
 /**
  * @file cdr_canDriver_defSysCalls.h
  * Definition of system call interface of CAN I/O driver. Mostly, the implementation of the
- * system calls is found in file cdr_userCodeAPI.c.
+ * system calls is found in file cdr_canDriverAPI.c.
  *
  * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
@@ -95,31 +95,33 @@
 #endif
 
 
-#if !defined(RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042)    \
-    && !defined(RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0042) \
-    && !defined(RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0042)
-    
-# if CDR_SYSCALL_READ_MSG != 42
-#  error Inconsistent definition of system call
-# endif
+#if CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0
+# if !defined(RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042)    \
+     && !defined(RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0042) \
+     && !defined(RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0042)
+     
+#  if CDR_SYSCALL_READ_MSG != 42
+#   error Inconsistent definition of system call
+#  endif
 
 /* This system call is not specific to a core; all of them may use the same function.
    Uncomment the definition for cores, which should not get access to the CAN stack. */
-# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042 \
+#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042 \
                                         RTOS_SC_TABLE_ENTRY(cdr_scSmplHdlr_readMessage, SIMPLE)
-# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0042 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042
-# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0042 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042
-
-#else
-# error System call 0042 is ambiguously defined
+#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0042 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042
+#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0042 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042
+  
+# else
+#  error System call 0042 is ambiguously defined
 
 /* We purposely redefine the table entry and despite of the already reported error; this
    makes the compiler emit a message with the location of the conflicting previous
    definition.*/
-# define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-# define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0042   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-# define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0042   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
-#endif
+#  define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+#  define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0042   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+#  define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0042   RTOS_SYSCALL_DUMMY_TABLE_ENTRY
+# endif
+#endif /* CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0 */
 
 /*
  * Global type definitions
@@ -153,11 +155,13 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
                                    , uint8_t payload[8]
                                    );
                                    
+#if CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0
 /* System call implementation to read a message mailbox (polling). */
 uint32_t cdr_scSmplHdlr_readMessage( uint32_t PID
                                    , unsigned int idxCanDevice
                                    , unsigned int hMB
                                    );
+#endif /* CDR_NO_RX_USER_CODE_POLLING_MAILBOXES > 0 */
 
 /*
  * Global inline functions
