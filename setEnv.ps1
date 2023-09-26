@@ -68,7 +68,7 @@ set-alias -Name "make" `
 $env:PATH = "$PSScriptRoot\bin" `
             + ";$env:GCC_POWERPC_HOME\bin" `
             + ";$env:S32DS_HOME\S32DS\build_tools\msys32\usr\bin" `
-            + ";$env:S32DS_HOME\eclipse\plugins\com.pemicro.debug.gdbjtag.ppc_1.9.9.201907200403\win32" `
+            + ";$env:S32DS_HOME\eclipse\plugins\com.pemicro.debug.gdbjtag.ppc_2.0.5.202210261806\win32" `
             + ";$env:JAVA_BIN" `
             + ";$env:PATH"
 
