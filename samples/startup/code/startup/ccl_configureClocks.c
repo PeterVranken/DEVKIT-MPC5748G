@@ -2,7 +2,7 @@
  * @file ccl_configureClocks.c
  * Configuration of system and peripheral clocks.
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -256,7 +256,7 @@ void ccl_configureClocks(void)
     MC_CGM->AC4_SC = MC_CGM_AC4_SC_SELCTL(0u /* 0: F40, 1: external clock */);
 
     /* CLKOUT_0, RM 31.2. The selector of the signal is ambiguously documented. In RM
-       31.3.34 we sse the choice of PLL_CLKOUT1 and PLL_CLOCKOUT2, while figure 31-9 names
+       31.3.34 we see the choice of PLL_CLKOUT1 and PLL_CLOCKOUT2, while figure 31-9 names
        the same signals PHI_0 and PHI_1. The latter naming is found back in section 9,
        where the PLL and its outputs are shown in the clocking overview. */
     MC_CGM->AC6_SC = MC_CGM_AC6_SC_SELCTL(3u /* S160 clock. See RM 31.3.34 */);
@@ -287,7 +287,7 @@ void ccl_configureClocks(void)
        peripheral-specific clock enabling needs to be done later - after reset all
        peripherals refer by default to run configuration 0 (out of eight available
        configurations). */
-    MC_ME->RUN_PC[0] = 0xfcu;
+    MC_ME->RUN_PC[0] = 0xFCu;
 
     /* Changes take effect after mode transition. See RM, 38.3.2. */
     ccl_triggerTransitionToModeDRUN();
