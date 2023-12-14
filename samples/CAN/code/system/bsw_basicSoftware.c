@@ -7,7 +7,7 @@
  * supervisor mode and has the highest quality assurance level defined for the parts of the
  * aimed software.
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -126,12 +126,12 @@ enum
     inherits the priority of the event it is associated with. */
 enum
 {
-    prioEv1ms = 1,
-    prioEv10ms,
+    prioEv1000ms = 1,
     prioEv100ms,
-    prioEv1000ms,
+    prioEv10ms,
+    prioEv1ms,
 
-    prioHighestForApplTasks = prioEv1000ms,
+    prioHighestForApplTasks = prioEv1ms,
 };
 _Static_assert(BSW_PRIO_USER_TASK_10MS == prioEv10ms, "Inconsistency in public interface");
 
@@ -427,7 +427,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
                                            )                                                \
                    )
 
-    #define CREATE_OS_TASK(idEv, taskFct) CREATE_TASK(rtos_osRegisterOsTask((idEv), (taskFct)))
+    #define CREATE_OS_TASK(idEv, taskFct) CREATE_TASK(rtos_osRegisterOSTask((idEv), (taskFct)))
 
     #define CREATE_TASK(rtosApiCall)                                                        \
     {                                                                                       \
