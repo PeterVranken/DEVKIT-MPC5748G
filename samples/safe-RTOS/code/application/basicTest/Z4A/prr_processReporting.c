@@ -161,7 +161,7 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     const uint32_t tiStart = stm_getSystemTime(1);
     iprintf( "CPU load is %u.%u%%. Stack reserve:\r\n"
@@ -224,7 +224,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB
  * A variable task parameter. Here not used.
  */
 int32_t prr_taskTestContextSwitches( uint32_t PID ATTRIB_UNUSED
-                                   , uintptr_t taskParam ATTRIB_UNUSED
+                                   , uint32_t taskParam ATTRIB_UNUSED
                                    )
 {
     /* The next call produces 100 * noCycles*(waitTimePerCycleInUS/1000) / 11 percent of

@@ -5,7 +5,7 @@
  * operating system code and anything which relates to their configuration cannot be
  * changed anymore by user code.
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -443,7 +443,7 @@ static void injectError(void)
 
 #if PRF_ENA_TC_PRF_KOF_TRIGGER_UNAVAILABLE_EVENT == 1
     case prf_kof_triggerUnavailableEvent:
-        rtos_triggerEvent(syc_idEvTest, 999);
+        rtos_sendEvent(syc_idEvTest, 999);
         break;
 #endif
 
@@ -1104,7 +1104,7 @@ static void nestStackInjectError(unsigned int remainingLevels)
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     nestStackInjectError(/* remainingLevels */ prf_cmdFailure.noRecursionsBeforeFailure);
     return 0;
@@ -1124,7 +1124,7 @@ int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTR
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     /* We stay for a while here in this routine to enlarge the chance of becoming
        interrupted by the failure injecting task. Which means that this task's execution
@@ -1150,7 +1150,7 @@ int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUS
  * parameter. In this test we just apply it for a consistency check.
  *
  */
-int32_t prf_task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+int32_t prf_task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 {
     static uint32_t SDATA_PRC_FAIL(cnt_) = 0;
 

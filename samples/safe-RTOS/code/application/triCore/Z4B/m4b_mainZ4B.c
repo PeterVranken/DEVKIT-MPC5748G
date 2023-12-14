@@ -77,9 +77,9 @@
 /** The enumeration of all events, tasks and priorities, to have them as symbols in the
     source code. Most relevant are the event IDs. Actually, these IDs are provided by the
     RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
-    are dealt out by rtos_osCreateEvent() form the series 0, 1, 2, .... So we don't need
+    are dealt out by rtos_osCreateEventProcessor() form the series 0, 1, 2, .... So we don't need
     to have a dynamic storage of the IDs; we define them as constants and double-check by
-    assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
+    assertion that we got the correct, expected IDs from rtos_osCreateEventProcessor(). Note, this
     requires that the order of creating the events follows the order here in the
     enumeration.\n
       Here, we have the IDs of the created events. They occupy the index range starting
@@ -207,7 +207,7 @@ static int32_t taskInitProcess(uint32_t PID)
  * sample it is a checksum to enable test of data correctness.
  */
 static int32_t taskNotificationFromZ2( uint32_t PID ATTRIB_UNUSED
-                                     , uintptr_t notificationParam
+                                     , uint32_t notificationParam
                                      )
 {
     while(notificationParam != m4b_cntTaskNotificationFromZ2)
@@ -232,7 +232,7 @@ static int32_t taskNotificationFromZ2( uint32_t PID ATTRIB_UNUSED
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -268,7 +268,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
+static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -462,18 +462,20 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
     }
 
     /* Create the events that trigger application tasks at the RTOS. Note, we do not really
-       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
+       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEventProcessor().
        The returned value is redundant. This technique requires that we create the events
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     unsigned int idEvent;
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              1
-                         , /* tiFirstActivationInMs */    10
-                         , /* priority */                 prioEv1ms
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                        ( &idEvent
+                        , /* tiCycleInMs */               1
+                        , /* tiFirstActivationInMs */     10
+                        , /* priority */                  prioEv1ms
+                        , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                        , /* timerUsesCountableEvents */  false
+                        , /* taskParam */                 0
+                        )
        == rtos_err_noError
       )
     {
@@ -496,13 +498,15 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
     else
         initOk = false;
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              0
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 prioEvNotificationFromZ2
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                        ( &idEvent
+                        , /* tiCycleInMs */               0
+                        , /* tiFirstActivationInMs */     0
+                        , /* priority */                  prioEvNotificationFromZ2
+                        , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                        , /* timerUsesCountableEvents */  false
+                        , /* taskParam */                 0
+                        )
        == rtos_err_noError
       )
     {

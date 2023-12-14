@@ -315,12 +315,12 @@ extern prf_cmdFailure_t SHARED(prf_cmdFailure);
  */
 
 /** User task intenionally producing severe errors, which would crash an unprotected RTOS. */
-int32_t prf_taskInjectError(uint32_t PID, uintptr_t taskParam);
+int32_t prf_taskInjectError(uint32_t PID, uint32_t taskParam);
 
 /** User task in same process, running at lower priority. */
-int32_t prf_task17ms(uint32_t PID, uintptr_t taskParam);
+int32_t prf_task17ms(uint32_t PID, uint32_t taskParam);
 
 /** User task in same process, running at higher priority. */
-int32_t prf_task1ms(uint32_t PID, uintptr_t taskParam);
+int32_t prf_task1ms(uint32_t PID, uint32_t taskParam);
 
 #endif  /* PRF_PROCESSFAILUREINJECTION_INCLUDED */

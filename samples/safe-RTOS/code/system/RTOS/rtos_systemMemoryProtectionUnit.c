@@ -56,7 +56,7 @@
  * number of processes would be entirely switching off the short addressing modes. This is a
  * matter of the compiler command line
  *
- * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -148,9 +148,9 @@ void rtos_osInitMPU(void)
        Z2 debug (M10)
          SMPU1 handles all 3 SRAM blocks accessed by XBAR1 masters plus debug interfaces.
        The connected masters are:
-         Z4a (M0), Z4b (M1), Z2 (M2), HSM (M3), DMA (M4), Ethernet (M5), FlexRay(M6), MLB
+         Z4a (M0), Z4b (M1), Z2 (M2), HSM (M3), DMA (M4), Ethernet0 (M5), FlexRay(M6), MLB
        (M7), Z4a debug (M8), Z4b debug (M9), Z2 debug (M10), USB0 (M11), USB1 (M12), uSDHC
-       (M13) */
+       (M13), Ethernet1 (M14) */
 
     /* All regions grant the same access to all relevant bus masters. The access word (we
        use format 1) has two bits for each master which form the index to select one out of
@@ -164,36 +164,43 @@ void rtos_osInitMPU(void)
          - rw for SV, no access for U   (peripherals)
          The access pattern is defined by six bits in this order: SVR, SVW, SVX, UR, UW,
        UX.
-         Masters 0 .. 15 are ordered from left to right, i.e. from most to least
-       significant. The relevant masters are the three cores and DMA: M0, M1, M2, M4, M8,
-       M9, M10. In this sample, we don't use the other bus masters (security core and
-       certain I/O devices) and for now, they don't get access.
-         Remark: We use two overlapping regions for most RAM. One spawns all of the RAM and
+         Masters 0 .. 15 are ordered from left to right, i.e., from most to least
+       significant. The relevant masters are the three cores, DMA and Ethernet0: M0, M1,
+       M2, M4, M5, M8, M9, M10. In this sample, we don't use the other bus masters
+       (security core and certain I/O devices) and for now, they don't get access.
+         Ethernet0 is seen as a user. We define WORD2 such, that it grants full access
+       rights for Ethernet, disregarding the argument of macro RGD_WRD2 and thus generally
+       for all RAM. This is uncritical insofar as user code has no access to the
+       configuration and behavior of the Ethernet device. However, the Ethernet driver
+       needs to take care by software that user specified RAM addresses are explicitly
+       checked prior to configuring its DMA.
+         Remark: We use two overlapping regions for most RAM. One spans all of the RAM and
        grants read access to anybody (and write access to OS code), the other ones relate
        to small areas, which grant write access to one of the processes. This technique
        makes it difficult to get cache inhibitted RAM: The large global read access area
        must of course not disable the cache and -- since CI=1 has lower priority than CI=0
        (see RM 21.4.2, p. 506) -- this can't be altered by the overlapping area. To provide
        cached and uncached RAM we split the large global read area into two MPU areas. */
-#define WORD3_ACCESS_SET_RAM            RGD_WRD3(074u, 077u, 076u, /* CI */ 0u)
-#define WORD3_ACCESS_SET_RAM_CI         RGD_WRD3(074u, 077u, 076u, /* CI */ 1u)
-#define WORD2_ALL_RAM                   RGD_WRD2(/* idxPattern */ 1u)
-#define WORD2_PROCESS_RAM               RGD_WRD2(/* idxPattern */ 2u)
-#define WORD2_SHARED_RAM                RGD_WRD2(/* idxPattern */ 3u)
-#define WORD3_ACCESS_SET_ROM_PERIPHRALS RGD_WRD3(055u, 060u, 050u, /* CI */ 0u)
-#define WORD2_ALL_ROM                   RGD_WRD2(/* idxPattern */ 1u)
-#define WORD2_PERIPHRALS                RGD_WRD2(/* idxPattern */ 2u)
-#define WORD2_RESERVED_BLOCK            RGD_WRD2(/* idxPattern */ 3u) /* See below */
+#define WORD3_ACCESS_SET_RAM                RGD_WRD3(074u, 077u, 076u, /* CI */ 0u)
+#define WORD3_ACCESS_SET_RAM_CI             RGD_WRD3(074u, 077u, 076u, /* CI */ 1u)
+#define WORD2_ALL_RAM                       RGD_WRD2(/* idxPattern */ 1u)
+#define WORD2_PROCESS_RAM                   RGD_WRD2(/* idxPattern */ 2u)
+#define WORD2_SHARED_RAM                    RGD_WRD2(/* idxPattern */ 3u)
+#define WORD3_ACCESS_SET_ROM_PERIPHERALS    RGD_WRD3(055u, 060u, 050u, /* CI */ 0u)
+#define WORD2_ALL_ROM                       RGD_WRD2(/* idxPattern */ 1u)
+#define WORD2_PERIPHERALS                   RGD_WRD2(/* idxPattern */ 2u)
+#define WORD2_RESERVED_BLOCK                RGD_WRD2(/* idxPattern */ 3u) /* See below */
 
     /* Support macro for sake of readability of code below: One particular access pattern
        is applied to all bus masters. */
-    #define RGD_WRD2(idxPattern) ((((idxPattern)&0x3u)<<(15*2))     \
-                                  | (((idxPattern)&0x3u)<<(14*2))   \
-                                  | (((idxPattern)&0x3u)<<(13*2))   \
-                                  | (((idxPattern)&0x3u)<<(11*2))   \
-                                  | (((idxPattern)&0x3u)<<(7*2))    \
-                                  | (((idxPattern)&0x3u)<<(6*2))    \
-                                  | (((idxPattern)&0x3u)<<(5*2))    \
+    #define RGD_WRD2(idxPattern) ((((idxPattern)&0x3u)<<(15*2))   /* M0 */  \
+                                  | (((idxPattern)&0x3u)<<(14*2)) /* M1 */  \
+                                  | (((idxPattern)&0x3u)<<(13*2)) /* M2 */  \
+                                  | (((idxPattern)&0x3u)<<(11*2)) /* M4 */  \
+                                  | (((    3u    )&0x3u)<<(10*2)) /* M5 */  \
+                                  | (((idxPattern)&0x3u)<<(7*2))  /* M8 */  \
+                                  | (((idxPattern)&0x3u)<<(6*2))  /* M9 */  \
+                                  | (((idxPattern)&0x3u)<<(5*2))  /* M10 */ \
                                  )
 
     /* Macro to form the WORD 3 of a region descriptor from the up to three access
@@ -225,21 +232,21 @@ void rtos_osInitMPU(void)
     /* We consider the entire flash ROM, as far as used in this sample, as one memory
        region. We use linker defined symbols to find the boundaries. They need to be
        aligned compatible with the constraints of the SMPU. All start and end addresses
-       have a granularity of 16 Byte. By hardware, the least significant five bits of a
+       have a granularity of 16 Byte. By hardware, the least significant four bits of a
        start address are set to zero and to all ones for an end address. This requires
        according alignment operations in the linker script. This is checked by assertion. */
     extern uint8_t ld_romStart[0], ld_romEnd[0];
     assert(((uintptr_t)ld_romStart & 0xf) == 0  &&  ((uintptr_t)ld_romEnd & 0xf) == 0);
 
     /* All used flash ROM.
-         All masters and processes (i.e. user mode code) get full read and execute rights.
+         All masters and processes (i.e., user mode code) get full read and execute rights.
        Write access is forbidden in order to detect programming errors. */
-    SMPU_0->RGD[r].WORD0 = (uintptr_t)ld_romStart;  /* Start address of region. */
-    SMPU_0->RGD[r].WORD1 = (uintptr_t)ld_romEnd-1;  /* End address of region, including. */
-    SMPU_0->RGD[r].WORD2 = WORD2_ALL_ROM;
-    SMPU_0->RGD[r].WORD3 = WORD3_ACCESS_SET_ROM_PERIPHRALS;
-    SMPU_0->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_0->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    SMPU_0->RGD[r].WORD0    = (uintptr_t)ld_romStart;   /* Start address of region. */
+    SMPU_0->RGD[r].WORD1    = (uintptr_t)ld_romEnd-1;   /* End address of region, including. */
+    SMPU_0->RGD[r].WORD2.F1 = WORD2_ALL_ROM;
+    SMPU_0->RGD[r].WORD3    = WORD3_ACCESS_SET_ROM_PERIPHERALS;
+    SMPU_0->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_0->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;    /* Enable region descriptor. */
     ++ r;
 #endif
 
@@ -247,12 +254,12 @@ void rtos_osInitMPU(void)
        in RM 3.6.1, Table 3-5, p. 133.
          All masters get read and write access in supervisor mode. The processes running in
        user mode don't get access. */
-    SMPU_0->RGD[r].WORD0 = 0xf0000000u;             /* Start address of region. */
-    SMPU_0->RGD[r].WORD1 = 0xffffc000u - 1u;        /* End address of region, including. */
-    SMPU_0->RGD[r].WORD2 = WORD2_PERIPHRALS;
-    SMPU_0->RGD[r].WORD3 = WORD3_ACCESS_SET_ROM_PERIPHRALS;
-    SMPU_0->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_0->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    SMPU_0->RGD[r].WORD0    = 0xf0000000u;          /* Start address of region. */
+    SMPU_0->RGD[r].WORD1    = 0xffffc000u - 1u;     /* End address of region, including. */
+    SMPU_0->RGD[r].WORD2.F1 = WORD2_PERIPHERALS;
+    SMPU_0->RGD[r].WORD3    = WORD3_ACCESS_SET_ROM_PERIPHERALS;
+    SMPU_0->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_0->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;/* Enable region descriptor. */
     ++ r;
 
     /* The last 16k block in the peripheral address space, labeled "Reserved" in RM 3.6.1,
@@ -269,14 +276,14 @@ void rtos_osInitMPU(void)
        supervisor mode. The processes running in user mode still don't get any access. This
        can only partly avoid the effect.
          The effect appears only if the debugger is asked to display the related registers
-       at a break, e.g. MCSSR0. If this display is not demanded then the code execution can
+       at a break, e.g., MCSSR0. If this display is not demanded then the code execution can
        be safely continued. */
-    SMPU_0->RGD[r].WORD0 = 0xffffc000u;             /* Start address of region. */
-    SMPU_0->RGD[r].WORD1 = 0xffffffffu;             /* End address of region, including. */
-    SMPU_0->RGD[r].WORD2 = WORD2_RESERVED_BLOCK;
-    SMPU_0->RGD[r].WORD3 = WORD3_ACCESS_SET_ROM_PERIPHRALS;
-    SMPU_0->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_0->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    SMPU_0->RGD[r].WORD0    = 0xffffc000u;          /* Start address of region. */
+    SMPU_0->RGD[r].WORD1    = 0xffffffffu;          /* End address of region, including. */
+    SMPU_0->RGD[r].WORD2.F1 = WORD2_RESERVED_BLOCK;
+    SMPU_0->RGD[r].WORD3    = WORD3_ACCESS_SET_ROM_PERIPHERALS;
+    SMPU_0->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_0->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;/* Enable region descriptor. */
     ++ r;
 
     /* End of configuration of SMPU0 for ROM and peripherals. */
@@ -291,30 +298,30 @@ void rtos_osInitMPU(void)
          The entire used RAM is split in two: We have a cached and an uncached portion. The
        latter degrades system performance but is still useful for simple cross-core
        communication.
-         We use linker defined symbols to find the boundaries of the region. In the linker
+         We use linker defined symbols to find the boundaries of the regions. In the linker
        script, they need to be aligned compatible with the constraints of the MPU. This is
        checked by assertion. */
     extern uint8_t ld_cachedRamStart[0], ld_cachedRamEnd[0];
     assert(((uintptr_t)ld_cachedRamStart & 0xf) == 0
            &&  ((uintptr_t)ld_cachedRamEnd & 0xf) == 0
           );
-    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_cachedRamStart;/* Start address of region. */
-    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_cachedRamEnd-1;/* End address of region, including. */
-    SMPU_1->RGD[r].WORD2 = WORD2_ALL_RAM;
-    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM;
-    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    SMPU_1->RGD[r].WORD0    = (uintptr_t)ld_cachedRamStart;/* Start address of region. */
+    SMPU_1->RGD[r].WORD1    = (uintptr_t)ld_cachedRamEnd-1;/* End address of region, incl. */
+    SMPU_1->RGD[r].WORD2.F1 = WORD2_ALL_RAM;
+    SMPU_1->RGD[r].WORD3    = WORD3_ACCESS_SET_RAM;
+    SMPU_1->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_1->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;    /* Enable region descriptor. */
     ++ r;
     extern uint8_t ld_uncachedRamStart[0], ld_uncachedRamEnd[0];
     assert(((uintptr_t)ld_uncachedRamStart & 0xf) == 0
            &&  ((uintptr_t)ld_uncachedRamEnd & 0xf) == 0
           );
-    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_uncachedRamStart;/* Start address of region. */
-    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_uncachedRamEnd-1;/* End address of region, incl. */
-    SMPU_1->RGD[r].WORD2 = WORD2_ALL_RAM;
-    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM_CI;
-    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    SMPU_1->RGD[r].WORD0    = (uintptr_t)ld_uncachedRamStart;/* Start address of region. */
+    SMPU_1->RGD[r].WORD1    = (uintptr_t)ld_uncachedRamEnd-1;/* End address of region, incl. */
+    SMPU_1->RGD[r].WORD2.F1 = WORD2_ALL_RAM;
+    SMPU_1->RGD[r].WORD3    = WORD3_ACCESS_SET_RAM_CI;
+    SMPU_1->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_1->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;    /* Enable region descriptor. */
     ++ r;
 
     /* It would be very easy to offer a compile time switch to select a hierarchical memory
@@ -327,6 +334,7 @@ void rtos_osInitMPU(void)
        required. */
 
 #if RTOS_DISARM_RAM_MPU == 1
+/// @todo TBC: It looks as if we would disable the cache inhibit area by defining all RAM in one area. Shouldn't we see two areas in this block?
     /* Full rwx access rights for all used RAM for all user processes. Here, we disable the
        PID awareness. */
     extern uint8_t ld_ramStart[0], ld_ramEnd[0];
@@ -354,12 +362,12 @@ void rtos_osInitMPU(void)
             assert(((uintptr_t)ld_##section##P##pid##Start & 0xf) == 0                      \
                    &&  ((uintptr_t)ld_##section##P##pid##End & 0xf) == 0                    \
                   );                                                                        \
-            SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_##section##P##pid##Start;/* from */        \
-            SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_##section##P##pid##End-1;/* to, incl. */   \
-            SMPU_1->RGD[r].WORD2 = WORD2_PROCESS_RAM;                                       \
-            SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM##CI;                                \
-            SMPU_1->RGD[r].WORD4 = WORD4_PIT_AWARE(pid);                                    \
-            SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */ \
+            SMPU_1->RGD[r].WORD0    = (uintptr_t)ld_##section##P##pid##Start;/* from */     \
+            SMPU_1->RGD[r].WORD1    = (uintptr_t)ld_##section##P##pid##End-1;/* to, incl. */\
+            SMPU_1->RGD[r].WORD2.F1 = WORD2_PROCESS_RAM;                                    \
+            SMPU_1->RGD[r].WORD3    = WORD3_ACCESS_SET_RAM##CI;                             \
+            SMPU_1->RGD[r].WORD4    = WORD4_PIT_AWARE(pid);                                 \
+            SMPU_1->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;/* Enable region descriptor. */ \
             ++ r;                                                                           \
         }
 
@@ -371,26 +379,27 @@ void rtos_osInitMPU(void)
 #undef CONFIG_REGIONS_PROC_RAM
 #undef CONFIG_REGION_DESC_PROC_RAM
 
-    /* A shared memory area. All processes can write. */
+    /* A shared memory area. All processes can write. This area is a subset of (or overlays
+       with, respectively) the uncached RAM. */
     extern uint8_t ld_dataSharedStart[0], ld_dataSharedEnd[0];
     assert(((uintptr_t)ld_dataSharedStart & 0xf) == 0
            &&  ((uintptr_t)ld_dataSharedEnd & 0xf) == 0
           );
-    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_dataSharedStart;   /* Start address data + bss */
-    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_dataSharedEnd-1;   /* End address, including. */
-    SMPU_1->RGD[r].WORD2 = WORD2_SHARED_RAM;
-    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_RAM_CI;
-    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;           /* Enable region descriptor. */
+    SMPU_1->RGD[r].WORD0    = (uintptr_t)ld_dataSharedStart;/* Start address data + bss */
+    SMPU_1->RGD[r].WORD1    = (uintptr_t)ld_dataSharedEnd-1;/* End address, including. */
+    SMPU_1->RGD[r].WORD2.F1 = WORD2_SHARED_RAM;
+    SMPU_1->RGD[r].WORD3    = WORD3_ACCESS_SET_RAM_CI;
+    SMPU_1->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_1->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;        /* Enable region descriptor. */
     ++ r;
 
 #endif /* RTOS_DISARM_RAM_MPU */
 
 #if defined(LINK_IN_RAM) /* See above, ROM/peripherals configuration, otherwise */
-    /* We consider the entire test and constant data segment, as far as used in this
+    /* We consider the entire text and constant data segment, as far as used in this
        sample, as one memory region. We use linker defined symbols to find the boundaries.
        They need to be aligned compatible with the constraints of the SMPU. All start and
-       end addresses have a granularity of 16 Byte. By hardware, the least significant five
+       end addresses have a granularity of 16 Byte. By hardware, the least significant four
        bits of a start address are set to zero and to all ones for an end address. This
        requires according alignment operations in the linker script. This is checked by
        assertion. */
@@ -398,14 +407,14 @@ void rtos_osInitMPU(void)
     assert(((uintptr_t)ld_romStart & 0xf) == 0  &&  ((uintptr_t)ld_romEnd & 0xf) == 0);
 
     /* All used flash ROM contents, however held in RAM.
-         All masters and processes (i.e. user mode code) get full read and execute rights.
+         All masters and processes (i.e., user mode code) get full read and execute rights.
        Write access is forbidden in order to detect programming errors. */
-    SMPU_1->RGD[r].WORD0 = (uintptr_t)ld_romStart;  /* Start address of region. */
-    SMPU_1->RGD[r].WORD1 = (uintptr_t)ld_romEnd-1;  /* End address of region, including. */
-    SMPU_1->RGD[r].WORD2 = WORD2_ALL_ROM;
-    SMPU_1->RGD[r].WORD3 = WORD3_ACCESS_SET_ROM_PERIPHRALS;
-    SMPU_1->RGD[r].WORD4 = WORD4_NO_PID_COMPARISON;
-    SMPU_1->RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   /* Enable region descriptor. */
+    SMPU_1->RGD[r].WORD0    = (uintptr_t)ld_romStart;   /* Start address of region. */
+    SMPU_1->RGD[r].WORD1    = (uintptr_t)ld_romEnd-1;   /* End address of region, including. */
+    SMPU_1->RGD[r].WORD2.F1 = WORD2_ALL_ROM;
+    SMPU_1->RGD[r].WORD3    = WORD3_ACCESS_SET_ROM_PERIPHERALS;
+    SMPU_1->RGD[r].WORD4    = WORD4_NO_PID_COMPARISON;
+    SMPU_1->RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;    /* Enable region descriptor. */
     ++ r;
 #endif
 
@@ -506,9 +515,9 @@ bool rtos_checkUserCodeWritePtr(unsigned int PID, const void *address, size_t no
                 }
     #define addrPrcAryAry(prc)   {[from] = addrAry(prc, Start), [to] = addrAry(prc, End)}
 
-    static const uint8_t const *ramAreaAryAryAry_[/* idxP */ RTOS_NO_PROCESSES]
-                                                 [/* from/to */ 2]
-                                                 [/* Area */ 3] =
+    static const uint8_t * const RODATA(ramAreaAryAryAry_)[/* idxP */ RTOS_NO_PROCESSES]
+                                                          [/* from/to */ 2]
+                                                          [/* Area */ 3] =
                                                             { [/*idxP*/ 0] = addrPrcAryAry(P1)
                                                             , [/*idxP*/ 1] = addrPrcAryAry(P2)
                                                             , [/*idxP*/ 2] = addrPrcAryAry(P3)

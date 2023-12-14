@@ -51,9 +51,11 @@
 #include "rtos_process_defSysCalls.h"
 #include "rtos_runTask_defSysCalls.h"
 #include "rtos_scheduler_defSysCalls.h"
-#include "lbd_ledAndButtonDriver_defSysCalls.h"
-#include "sio_serialIO_defSysCalls.h"
-#include "stm_systemTimer_defSysCalls.h"
+
+/* The include directives of all system call headers from code, which is external to the
+   RTOS are collected in a globally accessible header file. The next include will add the
+   system call table entries from all the I/O drivers. */
+#include "rtos_config_defSysCalls.h"
 
 
 /*

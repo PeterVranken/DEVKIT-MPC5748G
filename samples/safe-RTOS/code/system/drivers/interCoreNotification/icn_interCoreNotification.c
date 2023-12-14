@@ -33,7 +33,7 @@
  * expensive RAM. In this driver, we use a C implementation file for configuration. Each
  * application needs to have its individual implementation file.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -128,7 +128,7 @@ typedef struct icn_notification_t
 
     /** Here, we have an array of possibly triggered events. The first
         #ICN_MAX_NO_TRIGGERED_EVENTS elements of the array refer to actually triggered
-        events and they hold an event ID each (see rtos_osCreateEvent()). The other
+        events and they hold an event ID each (see rtos_osCreateEventProcessor()). The other
         elements of the array don't care.\n
           All tasks, which are activated because of one of the triggered events, will
         receive the notification parameter (see icn_osSendNotification()) as task parameter. */
@@ -195,7 +195,8 @@ static void swIrqAction(unsigned int idxNotification)
     unsigned int u = pN->noTriggeredEvents;
     const unsigned int *pIdxEv = &pN->eventIdAry[0];
     while(u-- > 0)
-        rtos_osTriggerEvent(* pIdxEv++, /* taskParam */ notificationParam);
+/// @todo Service should be changed to use countable events
+        rtos_osSendEvent(* pIdxEv++, /* taskParam */ notificationParam);
 
 } /* End of swIrqAction */
 
@@ -493,7 +494,7 @@ icn_errorCode_t icn_osInitInterCoreNotificationDriver(void)
  * successful: If the action is triggering one or more RTOS events then we don't receive any
  * feedback about. Triggering an event can fail on the notified core if one of the tasks
  * associated with the event should not have completed yet. This failure is reported on the
- * notified core but not seen here on the notifying core. See rtos_osTriggerEvent() for
+ * notified core but not seen here on the notifying core. See rtos_osSendEvent() for
  * details.
  *   @param idxNotification
  * The notification to send is chosen by index. It is the same index as used in the

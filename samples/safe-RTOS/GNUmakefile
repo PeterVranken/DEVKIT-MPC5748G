@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -83,7 +83,7 @@ cFileListExcl :=
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).
-incDirList :=
+incDirList := code/system/
 
 # A blank separated list of C defines for compilation, with or without value.
 #   There are some macros with predefined meaning for the build process. They impact the

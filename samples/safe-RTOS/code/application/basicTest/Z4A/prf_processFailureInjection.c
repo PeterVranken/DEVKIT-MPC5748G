@@ -443,7 +443,7 @@ static void injectError(void)
 
 #if PRF_ENA_TC_PRF_KOF_TRIGGER_UNAVAILABLE_EVENT == 1
     case prf_kof_triggerUnavailableEvent:
-        rtos_triggerEvent(syc_idEvTest, 999);
+        rtos_sendEvent(syc_idEvTest, 999);
         break;
 #endif
 
@@ -743,7 +743,6 @@ static void injectError(void)
         {
 /// @todo Need alternating choice of none allowed operations
 /// @todo Have more target addresses - in other process, in kernel, in ROM, in peripherals
-            /* The instruction dcbz is basically permitted but we don't have a D-cache. */
             volatile uint32_t dummy;
             asm volatile ("dcbt    0, %%r0  /* Executed without exception */\n\t"
                           "dcbtst  0, %%r0  /* Executed without exception */\n\t"
@@ -1104,7 +1103,7 @@ static void nestStackInjectError(unsigned int remainingLevels)
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     nestStackInjectError(/* remainingLevels */ prf_cmdFailure.noRecursionsBeforeFailure);
     return 0;
@@ -1124,7 +1123,7 @@ int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTR
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     /* We stay for a while here in this routine to enlarge the chance of becoming
        interrupted by the failure injecting task. Which means that this task's execution
@@ -1150,7 +1149,7 @@ int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUS
  * parameter. In this test we just apply it for a consistency check.
  *
  */
-int32_t prf_task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+int32_t prf_task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 {
     static uint32_t SDATA_PRC_FAIL(cnt_) = 0;
 

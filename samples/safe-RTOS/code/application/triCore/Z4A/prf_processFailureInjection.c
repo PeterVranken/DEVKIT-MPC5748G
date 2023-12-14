@@ -443,7 +443,7 @@ static void injectError(void)
 
 #if PRF_ENA_TC_PRF_KOF_TRIGGER_UNAVAILABLE_EVENT == 1
     case prf_kof_triggerUnavailableEvent:
-        rtos_triggerEvent(syc_idEvTest, 999);
+        rtos_sendEvent(syc_idEvTest, 999);
         break;
 #endif
 
@@ -600,6 +600,11 @@ static void injectError(void)
 
 #if PRF_ENA_TC_PRF_KOF_PRIVILEGED_AND_MPU == 1
     case prf_kof_privilegedAndMPU:
+        /* The privileged instructions are placed in OS RAM, where we don't have
+           instruction read access. This test case should cause an access violation rather
+           than a privileged exception. Moreover, it's unclear, what the unpermitted
+           instruction read really gets from the bus; from experiments in the debugger it
+           seems to be all zeros, which would mean se_illegal instructions. */
         _pFctPrivilegedInstrInOSRAM();
         break;
 #endif
@@ -677,9 +682,9 @@ static void injectError(void)
 
 #if PRF_ENA_TC_PRF_KOF_MMU_EXECUTE_2 == 1
     case prf_kof_MMUExecute2:
-        /* The difference to PRF_ENA_TC_PRF_KOF_MMU_EXECUTE: Here we jump to an adress
-           further ahead of RAM such that the 64 Bit instruction read wouldn't touch the
-           RAM.
+        /* The difference to PRF_ENA_TC_PRF_KOF_MMU_EXECUTE: Here we jump to an address
+           further ahead of RAM such that the 32 Byte instruction cache line read wouldn't
+           touch the RAM.
              PRF_ENA_TC_PRF_KOF_MMU_EXECUTE_2 produces a single IVOR #14 exception, while
            PRF_ENA_TC_PRF_KOF_MMU_EXECUTE produces a double exception, first the IVOR #14,
            but immediately preempted by an imprecise, delayed machine check exception
@@ -736,10 +741,13 @@ static void injectError(void)
 #if PRF_ENA_TC_PRF_KOF_DCACHE_INSTR == 1
     case prf_kof_dCacheInstr:
         {
-            /* The instruction dcbz is basically permitted but we don't have a D-cache. */
-            uint32_t dummy;
-            asm volatile ("dcbtst  0, %%r0, %0 /* Executed without exception */\n\t"
-                          "dcbz    %%r0, %0 /* Fails because of missing cache, IVOR #5 */\n\t"
+/// @todo Need alternating choice of none allowed operations
+/// @todo Have more target addresses - in other process, in kernel, in ROM, in peripherals
+            volatile uint32_t dummy;
+            asm volatile ("dcbt    0, %%r0  /* Executed without exception */\n\t"
+                          "dcbtst  0, %%r0  /* Executed without exception */\n\t"
+                          "dcbz    0, %%r0  /* Exception, not allowed with write-though */\n\t"
+                          "dcbtls  0, %%r0  /* Exception, lock not allowed in user mode */\n\t"
                          : /* OutputOperands */
                          : /* InputOperands */ "r" (&dummy)
                          : /* Clobbers */ "memory"
@@ -763,9 +771,9 @@ static void injectError(void)
             while(true)
             {
                 /* We have three interesting address areas to write to, ROM: 0, 2^20 Byte,
-                   RAM: 0x40000000, 2^17 Byte, peripheral: 0xf0000000, 2^28 Byte. We use 2
-                   Bit from the random number to select one of the three blocks and use
-                   n+1 Bit for the address in the block, where n is the number of
+                   RAM: 0x40000000, 2^17 Byte, peripheral: 0xf0000000, 2^28 Byte.
+                     We use 2 Bit from the random number to select one of the three blocks
+                   and use n+1 Bit for the address in the block, where n is the number of
                    physically available bits, so that that we have both, potentially
                    forbidden physically available memory or unequipped memory. */
 #if RAND_MAX < 0x7fffffff
@@ -1095,7 +1103,7 @@ static void nestStackInjectError(unsigned int remainingLevels)
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     nestStackInjectError(/* remainingLevels */ prf_cmdFailure.noRecursionsBeforeFailure);
     return 0;
@@ -1115,7 +1123,7 @@ int32_t prf_taskInjectError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTR
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     /* We stay for a while here in this routine to enlarge the chance of becoming
        interrupted by the failure injecting task. Which means that this task's execution
@@ -1141,7 +1149,7 @@ int32_t prf_task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUS
  * parameter. In this test we just apply it for a consistency check.
  *
  */
-int32_t prf_task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+int32_t prf_task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 {
     static uint32_t SDATA_PRC_FAIL(cnt_) = 0;
 

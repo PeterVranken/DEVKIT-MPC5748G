@@ -163,7 +163,7 @@ static void isrPit2(void)
     /* Indirectly start a user task. It is executed asynchronously to this ISR and has its
        own, irrelated task priority level. */
     static long unsigned int SBSS_OS(cnt_) = 0;
-    rtos_osTriggerEvent(syc_idEvPIT2, cnt_++);
+    rtos_osSendEvent(syc_idEvPIT2, cnt_++);
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
@@ -235,9 +235,9 @@ static void osInstallInterruptServiceRoutines(void)
          The RTOS operates in ticks of 1ms. We use prime numbers to get good asynchronity
        with the RTOS clock.
          -1: See RM, 51.6 */
-    PIT->TIMER[1].LDVAL = 39989-1;/* Interrupt rate approx. 1kHz */             
+    PIT->TIMER[1].LDVAL = 39989-1;/* Interrupt rate approx. 1kHz */
     PIT->TIMER[2].LDVAL = 40009-1;/* Interrupt rate approx. 1kHz for watchdog */
-    PIT->TIMER[3].LDVAL = 1327-1; /* Interrupt rate approx. 30kHz */            
+    PIT->TIMER[3].LDVAL = 1327-1; /* Interrupt rate approx. 30kHz */
 
     /* Enable timer operation. This operation affects all timer channels.
          PIT_MCR_FRZ: For this multi-core MCU it is not so easy to decide whether or not to
@@ -246,12 +246,12 @@ static void osInstallInterruptServiceRoutines(void)
        debugger know...). Both possibilities can be annoying or advantageous, depending on
        the situation. */
     PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
-    
+
     /* Clear possibly pending interrupt flags. */
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
-    
+
     /* Enable interrupts by the timers and start them. See RM 51.4.10. */
     PIT->TIMER[1].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
@@ -273,13 +273,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* Interrupts become usable and configurable by SW. */
     rtos_osInitINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -301,23 +301,23 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
-    
+
     /* Initialize the port driver. This should come early; most typical, many other I/O
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
                                 , /* onButtonChangeCallback_core1 */ NULL
                                 , /* PID_core1 */                    0
                                 , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0   
+                                , /* PID_core2 */                    0
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -343,13 +343,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     unsigned int idEvent;
-    if(rtos_osCreateEvent
+    if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */              997 /* about 1s but prime to others */
-                    , /* tiFirstActivationInMs */    19
-                    , /* priority */                 syc_prioEvReporting
-                    , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                    , /* taskParam */                0
+                    , /* tiCycleInMs */               997 /* about 1s but prime to others */
+                    , /* tiFirstActivationInMs */     19
+                    , /* priority */                  syc_prioEvReporting
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* useCountableEvents */        false
+                    , /* taskParam */                 0
                     )
        != rtos_err_noError
       )
@@ -359,13 +360,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvReporting);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              10
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEvTest
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               10
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEvTest
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* useCountableEvents */        false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {
@@ -374,13 +377,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvTest);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              11
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEvTestCtxSw
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               11
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEvTestCtxSw
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* useCountableEvents */        false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {
@@ -389,13 +394,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvTestCtxSw);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              0
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEvPIT2
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               0
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEvPIT2
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* useCountableEvents */        false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {
@@ -404,13 +411,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvPIT2);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              17
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEv17ms
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               17
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEv17ms
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* useCountableEvents */        false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {

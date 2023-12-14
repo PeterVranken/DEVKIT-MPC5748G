@@ -195,9 +195,9 @@ rtos_osGetEventByPriority:
     se_bgt      .
 #endif
     se_slwi     r3, 2   /* r3: priority*4; each array element is a pointer */
-    mfspr       r5, SPR_G3_CDATA        /* r5+O_ID_MAP_PRIO_TO_EV: &mapPrioToEvent[0] */
+    mfspr       r5, SPR_G3_CDATA        /* r5+O_ID_MAP_PRIO_TO_EV_PROC: &mapPrioToEvProc[0] */
     se_add      r5, r3
-    e_lwz       r3, O_ID_MAP_PRIO_TO_EV(r5) /* r3: rtos_mapPrioToEvent[priority] */
+    e_lwz       r3, O_ID_MAP_PRIO_TO_EV_PROC(r5) /* r3: rtos_mapPrioToEvProc[priority] */
     se_blr
 
 /* End of rtos_osGetEventByPriority */

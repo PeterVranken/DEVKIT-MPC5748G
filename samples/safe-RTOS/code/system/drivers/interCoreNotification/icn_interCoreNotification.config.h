@@ -11,7 +11,7 @@
  * Either remove the file here or ensure by include path settings of your compiler that
  * your modified version of the file is used for compilation.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -60,7 +60,7 @@
 
 /** A notification can mean to trigger a number of RTOS events on the notified core. The
     maximum number of triggered events per notification is specified here. The range is 0
-    .. #RTOS_MAX_NO_EVENTS. */
+    .. #RTOS_MAX_NO_EVENT_PROCESSORS. */
 #define ICN_MAX_NO_TRIGGERED_EVENTS 1
 
 
@@ -124,7 +124,7 @@ static const icn_configuration_t icn_configuration =
             /* Here, we have an array of #ICN_MAX_NO_TRIGGERED_EVENTS possibly triggered
                events. The first #ICN_MAX_NO_TRIGGERED_EVENTS elements of the array refer
                to actually triggered events and they hold an event ID each (see
-               rtos_osCreateEvent()). The other elements of the array don't care.
+               rtos_osCreateEventProcessor()). The other elements of the array don't care.
                  All tasks, which are activated because of one of the triggered events,
                will receive the notification parameter (see icn_osSendNotification()) as task
                parameter. */

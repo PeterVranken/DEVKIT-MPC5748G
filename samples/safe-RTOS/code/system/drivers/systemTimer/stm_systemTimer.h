@@ -76,11 +76,15 @@
 
 /**
  * Read one of the three system timers. The function can be called at any time from any
- * context on any core. It must not be called before stm_initSystemTimers() has completed.
+ * supervisor context on any core. It must not be called before stm_initSystemTimers() has
+ * completed.
  *   @return
- * The timers are running at #STM_TIMER_0_CLK, #STM_TIMER_1_CLK and #STM_TIMER_2_CLK Hz (80
- * MHz each). The unit of one step of the counter value is the reciprocal, i.e. 12.5 ns.
- * The timers wrap at 2^32-1. This limits measurable time spans to 2^32 * 12.5ns = 53.6s.
+ * The timers are running at #STM_TIMER_0_CLK, #STM_TIMER_1_CLK and #STM_TIMER_2_CLK Hz The
+ * unit of one step of the counter value is the reciprocal, i.e. 12.5 ns for timer 0. The
+ * units are accessible as #STM_TIMER_0_PERIOD_IN_NS, #STM_TIMER_1_PERIOD_IN_NS and
+ * #STM_TIMER_2_PERIOD_IN_NS.\n
+ *   The timers wrap at 2^32-1. This limits measurable time spans to 2^32 * 12.5ns = 53.6s
+ * for timer 0.
  *   @param idxTimer
  * The index of the timer in the range 0..2. Our configuration lets the timers count at
  * different speeds to support high resolution for short time measurements and low
@@ -94,8 +98,8 @@
  * This function is available solely to OS tasks and ISRs. User code would cause a memory
  * protection exception. User mode code uses stm_getSytemTime() instead.
  *   @remark
- * This function is available to code running on any core, regardless whether safe-RTOS is
- * configured and running on that core or not.
+ * This function is available to supervisor code running on any core, regardless whether
+ * safe-RTOS is configured and running on that core or not.
  */
 static inline uint32_t stm_osGetSystemTime(unsigned int idxTimer)
 {

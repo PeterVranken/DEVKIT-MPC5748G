@@ -46,7 +46,21 @@
     9-16, p. 223f, and 9.9.1.2. */
 #define CCL_PHI_1_CLK   (CCL_PHI_0_CLK/2u)
 
-/// @todo Complete the clock rate definitions
+/** The clock rate of peripheral clock F20. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_F20     20000000u
+
+/** The clock rate of peripheral clock F40. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_F40     40000000u
+
+/** The clock rate of peripheral clock S40. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_S40     40000000u
+
+/** The clock rate of peripheral clock FS80. See RM 9.7, Table9-6, pp.220f to find out,
+    which I/O device is connected to which peripheral clock. */
+#define CCL_PER_CLK_FS80    80000000u
 
 
 /*

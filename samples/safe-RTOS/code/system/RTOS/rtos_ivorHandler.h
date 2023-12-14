@@ -6,7 +6,7 @@
  *   This file contains all global difinitions, which are used by the assembler
  * implementation. The file is shared between C and assembler code.
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -78,9 +78,9 @@
 #define O_ID_ITSK_CFG_ARY       (O_ID_TSK_CFG_ARY+RTOS_MAX_NO_TASKS*SIZE_OF_TASK_CONF)
 #define O_ID_NO_TSKS            (O_ID_ITSK_CFG_ARY+(1+4)*SIZE_OF_TASK_CONF)
 #define O_ID_EV_ARY             (O_ID_NO_TSKS+4)
-#define O_ID_MAP_ID_TO_EV       (O_ID_EV_ARY+(RTOS_MAX_NO_EVENTS+1)*SIZE_OF_EV_DESC)
-#define O_ID_MAP_PRIO_TO_EV     (O_ID_MAP_ID_TO_EV+RTOS_MAX_NO_EVENTS*4)/* Assembler used */
-#define O_ID_NO_EV              (O_ID_MAP_PRIO_TO_EV+(RTOS_MAX_TASK_PRIORITY+1)*4)
+#define O_ID_MAP_ID_TO_EV       (O_ID_EV_ARY+(RTOS_MAX_NO_EVENT_PROCESSORS+1)*SIZE_OF_EV_DESC)
+#define O_ID_MAP_PRIO_TO_EV_PROC (O_ID_MAP_ID_TO_EV+RTOS_MAX_NO_EVENT_PROCESSORS*4)/* Assembler used */
+#define O_ID_NO_EV              (O_ID_MAP_PRIO_TO_EV_PROC+(RTOS_MAX_TASK_PRIORITY+1)*4)
 #define O_ID_NEXT_EV_TO_SCH     (O_ID_NO_EV+4)                          /* Assembler used */
 #define O_ID_END_EV             (O_ID_NEXT_EV_TO_SCH+4)
 #define O_ID_CUR_EV             (O_ID_END_EV+4)
@@ -111,8 +111,8 @@
 #define O_TCONF_tiMax           4
 #define O_TCONF_pid             8
 
-/* Define the offsets of fields in struct rtos_eventDesc_t. */
-#define SIZE_OF_EV_DESC         32
+/* Define the offsets of fields in struct rtos_eventProcDesc_t. */
+#define SIZE_OF_EV_DESC         44
 
 /* Define the field offsets and enumeration values in struct systemCallDesc_t. */
 #define SIZE_OF_SC_DESC         8
@@ -187,13 +187,14 @@
     code and shapes a kind of minimalistic type-safety. */
 #define RTOS_STATIC_CONSTRAINTS_INTERFACE_C_AS_INSTANCE_DATA (                              \
             offsetof(rtos_kernelInstanceData_t, processAry) == 0                            \
-            &&  sizeof(rtos_eventDesc_t) == SIZE_OF_EV_DESC                                 \
+            &&  sizeof(rtos_eventProcDesc_t) == SIZE_OF_EV_DESC                             \
             &&  offsetof(rtos_kernelInstanceData_t, processAry) == O_ID_PROC_ARY            \
-            &&  offsetof(rtos_kernelInstanceData_t, mapPrioToEvent) == O_ID_MAP_PRIO_TO_EV  \
-            &&  sizeof(rtos_eventDesc_t*) == 4                                              \
-            &&  offsetof(rtos_kernelInstanceData_t, pNextEventToSchedule)                   \
+            &&  offsetof(rtos_kernelInstanceData_t, mapPrioToEvProc)                        \
+                == O_ID_MAP_PRIO_TO_EV_PROC                                                 \
+            &&  sizeof(rtos_eventProcDesc_t*) == 4                                          \
+            &&  offsetof(rtos_kernelInstanceData_t, pNextEvProcToSchedule)                  \
                 == O_ID_NEXT_EV_TO_SCH                                                      \
-            &&  sizeoffield(rtos_kernelInstanceData_t, pNextEventToSchedule) == 4           \
+            &&  sizeoffield(rtos_kernelInstanceData_t, pNextEvProcToSchedule) == 4          \
             &&  offsetof(rtos_kernelInstanceData_t, systemCallDescAry) == O_ID_SYS_CALL_TBL \
             &&  sizeoffield(rtos_kernelInstanceData_t, systemCallDescAry) == 4              \
             &&  offsetof(rtos_kernelInstanceData_t, currentPrio) == O_ID_CUR_PRIO           \

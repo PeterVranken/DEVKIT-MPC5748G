@@ -47,7 +47,7 @@
 
 /* This system call is not specific to a core; all of them may use the same function. */
 # define RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003 \
-                                        RTOS_SC_TABLE_ENTRY(rtos_scFlHdlr_triggerEvent, FULL)
+                                        RTOS_SC_TABLE_ENTRY(rtos_scFlHdlr_sendEvent, FULL)
 # define RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0003 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003
 # define RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0003 RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0003
 
@@ -78,8 +78,9 @@
  */
 
 /** System call handler implementation to activate a task. */
-uint32_t rtos_scFlHdlr_triggerEvent( unsigned int pidOfCallingTask
-                                   , unsigned int idEvent
-                                   , uintptr_t taskParam
-                                   );
+uint32_t rtos_scFlHdlr_sendEvent( unsigned int pidOfCallingTask
+                                , unsigned int idEventProc
+                                , uint8_t noCountableTriggers
+                                , uint32_t evMaskOrTaskParam
+                                );
 #endif  /* RTOS_SCHEDULER_DEFSYSCALLS_INCLUDED */

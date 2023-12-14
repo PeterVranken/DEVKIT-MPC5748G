@@ -216,7 +216,7 @@ static int32_t taskInitProcess(uint32_t PID)
  * A variable task parameter. Here just used for testing, we expect a linear counter
  * starting at zero.
  */
-static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
 #ifdef DEBUG
     static uint32_t SDATA_P1(cnt_) = 0;
@@ -226,7 +226,7 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_
 
     /* Trigger the next task out of the three round robin tasks.
          The triggered task has same priority, so the trigger needs to be always possible. */
-    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_triggerEvent(idEvTaskB, mai_cntTaskB);
+    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_sendEvent(idEvTaskB, mai_cntTaskB);
     assert(evCouldBeTriggered);
 
     /* Scheduler test: No race conditions with other round robin tasks. */
@@ -252,18 +252,18 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_
  * A variable task parameter. Here just used for testing, we expect a linear counter
  * starting at zero.
  */
-static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == mai_cntTaskB);
-    
+
     /* Trigger the next task out of the three round robin tasks.
          The triggered task has same priority, so the trigger needs to be always possible. */
-    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_triggerEvent(idEvTaskC, mai_cntTaskB);
+    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_sendEvent(idEvTaskC, mai_cntTaskB);
     assert(evCouldBeTriggered);
 
     /* Trigger a task of higher priority. This will lead to an immediate task switch.
          The triggered task has same priority, so the trigger needs to be always possible. */
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, mai_cntTaskH);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskH, mai_cntTaskH);
     assert(evCouldBeTriggered);
 
     /* Scheduler test: No race conditions with other round robin tasks. */
@@ -289,13 +289,13 @@ static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_
  * A variable task parameter. Here just used for testing, we expect a linear counter
  * starting at zero.
  */
-static int32_t taskC(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskC(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam+1 == mai_cntTaskB);
-    
+
     /* Trigger the next task out of the three round robin tasks.
          The triggered task has same priority, so the trigger needs to be always possible. */
-    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_triggerEvent(idEvTaskA, mai_cntTaskA);
+    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_sendEvent(idEvTaskA, mai_cntTaskA);
     assert(evCouldBeTriggered);
 
     /* Scheduler test: No race conditions with other round robin tasks. */
@@ -323,7 +323,7 @@ static int32_t taskC(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_
  * A variable task parameter. Here just used for testing, we expect a linear counter
  * starting at zero.
  */
-static int32_t taskH(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskH(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == mai_cntTaskH);
 
@@ -358,10 +358,10 @@ static int32_t taskH(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_
  * A variable task parameter. Here just used for testing, we expect the initial value
  * defined at rtos_osCreateEvent().
  */
-static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == idEvTaskT);
-    
+
     /* Scheduler test: No race conditions with task H. */
     ++ mai_cntTaskT;
     ++ mai_cntSharedTaskHAndT;
@@ -399,10 +399,10 @@ static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_
  * A variable task parameter. Here just used for testing, we expect the initial value
  * defined at rtos_osCreateEvent().
  */
-static int32_t taskS(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskS(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == idEvTaskS);
-    
+
     /* This task runs in another process as the supervised tasks. */
     assert(PID == 2);
 
@@ -455,13 +455,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* Interrupts become usable and configurable by SW. */
     rtos_osInitINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -483,23 +483,23 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
-    
+
     /* Initialize the port driver. This should come early; most typical, many other I/O
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
                                 , /* onButtonChangeCallback_core1 */ NULL
                                 , /* PID_core1 */                    0
                                 , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0   
+                                , /* PID_core2 */                    0
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -517,15 +517,17 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
 
 #define CREATE_TASK(name, tiCycleInMs)                                                      \
-    if(rtos_osCreateEvent( &idEvent                                                         \
-                         , /* tiCycleInMs */              tiCycleInMs                       \
-                         , /* tiFirstActivationInMs */    0                                 \
-                         , /* priority */                 prioEv##name                      \
-                         , /* minPIDToTriggerThisEvent */ tiCycleInMs == 0                  \
-                                                          ? 1                               \
-                                                          : RTOS_EVENT_NOT_USER_TRIGGERABLE \
-                         , /* taskParam */                idEvTask##name                    \
-                         )                                                                  \
+    if(rtos_osCreateEventProcessor                                                          \
+                ( &idEvent                                                                  \
+                , /* tiCycleInMs */               tiCycleInMs                               \
+                , /* tiFirstActivationInMs */     0                                         \
+                , /* priority */                  prioEv##name                              \
+                , /* minPIDToTriggerThisEvProc */ tiCycleInMs == 0                          \
+                                                  ? 1                                       \
+                                                  : RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE    \
+                , /* timerUsesCountableEvents */  false                                     \
+                , /* taskParam */                 idEvTask##name                            \
+                )                                                                           \
        == rtos_err_noError                                                                  \
       )                                                                                     \
     {                                                                                       \
@@ -581,9 +583,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        computation time at their priority level and we must never get back into the idle
        task.
          Since we are here in idle, the trigger needs to be always possible. */
-    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_osTriggerEvent( idEvTaskA
-                                                                 , /* taskParam */ 0
-                                                                 );
+    bool evCouldBeTriggered ATTRIB_DBG_ONLY = rtos_osSendEvent(idEvTaskA, /* taskParam */ 0);
     assert(evCouldBeTriggered);
     while(true)
     {

@@ -6,7 +6,7 @@
  * The reference manual suggest a standard setting and this configuration module widely
  * implement this suggestion.
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -80,10 +80,10 @@ void xbs_configCrossbarSwitch(bool isZ2IOCore)
 {
     /* Master priorities: The 8 hex digits in the LHS literals correspond with the masters
        in this order:
-         HSM, DMA, Z2-D-Bus, Z2-I-Bus, Z4A-D, Z4B-I, Z4A-D, Z4B-I
+         HSM, DMA, Z2-D-Bus, Z2-I-Bus, Z4B-D, Z4B-I, Z4A-D, Z4A-I
          The values are invers with respect to priority. The default value after reset is
        0x76543210, meaning that HSM has lowest priority, followed by DMA, follwed by Z2,
-       Z4A and Z4B. For the three cores, a data access has lower priority as an
+       Z4B and Z4A. For the three cores, a data access has lower priority as an
        instruction read.
          The tables 16-1 and 16-2 in the RM, section 16.1.1, propose a priority scheme.
        This is widely adopted by the code here. The concept is to have higher priority for
@@ -98,10 +98,6 @@ void xbs_configCrossbarSwitch(bool isZ2IOCore)
     AXBS_0->PORT[4].PRS = 0x41736205;
     if(isZ2IOCore)
     {
-        /// @todo Check difference of both peripheral bridges. Do they work in parallel or
-        // do they share the I/O address space? In the former case it would be better to
-        // grant each of the Z4 core highest priority in one bridge in the latter case it
-        // would depend on the intended driver design.
         AXBS_0->PORT[5].PRS = 0x73062514;
         AXBS_0->PORT[6].PRS = 0x73062514;
     }   
@@ -111,8 +107,8 @@ void xbs_configCrossbarSwitch(bool isZ2IOCore)
         AXBS_0->PORT[6].PRS = 0x73261504;
     }
 
-    /* AXBS_1: The reset settings grant the priorities as proposed in RM, 16.1.2, table
-       16-2.
+    /* AXBS_1: The reset settings are same as for AXBS_0, see RM, sections 16.1.3f, p.411.
+       They grant the priorities as proposed in RM, 16.1.2, table 16-2.
          @todo It's not clear, why table 16-2 proposes giving AXBS_1M0_slave3 precedence
        over AXBS_1M1_slave4: The latter is the path for the D bus of core Z4A and normally
        this core has highest priority. */

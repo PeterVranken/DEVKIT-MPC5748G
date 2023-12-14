@@ -4,7 +4,7 @@
  * @file rtos_scheduler.h
  * Definition of global interface of module rtos_scheduler.c
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -23,7 +23,7 @@
  *   rtos_osGetCurrentInterruptPriority
  *   rtos_osIsInterrupt
  */
- 
+
 /*
  * Include files
  */
@@ -39,7 +39,7 @@
  * Defines
  */
 
-/** System call index of function rtos_triggerEvent(), offered by this module. */
+/** System call index of function rtos_sendEvent(), offered by this module. */
 #define RTOS_SYSCALL_TRIGGER_EVENT                      3
 
 
@@ -48,25 +48,26 @@
  */
 
 
-/** The runtime information for a task triggering event.
-      Note, we use a statically allocated array of fixed size for all possible events. A
-    resource optimized implementation could use an application defined macro to tailor the
-    size of the array and it could put the event and task configuration data into ROM.
-    (Instead of offering the run-time configuration by APIs.) */
-typedef struct rtos_eventDesc_t
+/** The representation of a task triggering event processor.\n
+      Note, to support APIs for configuration at runtime, the object contains both, runtime
+    information and static configuration data. A resource optimized implementation could
+    separate both parts and it could then put the configuration data into ROM. (Instead of
+    offering the run-time configuration by APIs.) This holds for the task representation,
+    too. */
+typedef struct rtos_eventProcDesc_t
 {
     /** The current state of the event.\n
           This field is shared with the assembly code. The PCP implementation reads it. */
     enum eventState_t { evState_idle, evState_triggered, evState_inProgress } state;
 
-    /** An event can be triggered by user code, using rtos_triggerEvent(). However, tasks
+    /** An event can be triggered by user code, using rtos_sendEvent(). However, tasks
         belonging to less privileged processes must not generally granted permission to
         trigger events that may activate tasks of higher privileged processes. Since an
-        event is not process related, we make the minimum process ID an explicitly
-        configured, which is required to trigger this event.\n
-          Only tasks belonging to a process with PID >= \a minPIDToTriggerThisEvent are
+        event is not process related, we make the minimum process ID explicitly configured,
+        which is required to trigger this event.\n
+          Only tasks belonging to a process with PID >= \a minPIDToTriggerThisEvProc are
         permitted to trigger this event.\n
-          The range of \a minPIDToTriggerThisEvent is 0 ... (#RTOS_NO_PROCESSES+1). 0 and 1
+          The range of \a minPIDToTriggerThisEvProc is 0 ... (#RTOS_NO_PROCESSES+1). 0 and 1
         both mean, all processes may trigger the event, #RTOS_NO_PROCESSES+1 means only OS
         code can trigger the event. */
     uint8_t minPIDForTrigger;
@@ -84,7 +85,7 @@ typedef struct rtos_eventDesc_t
 
     /** The period time of the (cyclic) event in ms. The permitted range is 0..2^30-1.\n
           0 means no regular, timer controlled activation. The event is only enabled for
-        software trigger using rtos_triggerEvent() (by interrupts or other tasks). */
+        software trigger using rtos_sendEvent() (by interrupts or other tasks). */
     unsigned int tiCycleInMs;
 
     /** The priority of the event (and thus of all associated user tasks, which inherit the
@@ -96,25 +97,48 @@ typedef struct rtos_eventDesc_t
         use. This is a safety constraint. */
     unsigned int priority;
 
-    /** The tasks associated with the event can receive an argument. It is send with the
-        triggerEvent operation and advanced to the task functions, when they are called
-        later. */
-    uintptr_t taskParam;
+    /** The tasks associated with the event processor can receive an argument. It is set by
+        the event processor, when an event is notified and advanced to the task functions,
+        when they are called later. */
+    uint32_t taskParam;
 
-    /** We can't queue events. If at least one task is still busy, which had been activated
-        by the event at its previous due time then an event (and the activation of the
-        associated tasks) is lost. This situation is considered an overrun and it is
-        counted for diagnostic purpose. The counter is saturated and will halt at the
-        implementation maximum.
+    /** If an event processor is triggered by a timer event then this flag decides whether
+        the task parameter is an arbitrary value (integer or pointer and meaningless to the
+        RTOS) or a countable event. */
+    bool timerUsesCountableEvs;
+
+    /** This is the value of argument \a evMaskOrTaskParam of rtos_osSendEvent() when an
+        event is triggered by a timer event. The interpretation of the value as either task
+        parameter or countable event depends on field \a timerUsesCountableEvs. */
+    uint32_t timerTaskTriggerParam;
+
+    /** Countable events, which are accumulated when posted while the event is not idle,
+        are held in this variable until the event can be eventually triggered again.\n
+          Different countable events may share the bits of the variable. */
+    uint32_t eventCounterMask;
+
+    /** We don't queue event triggers. If at least one task is still busy, which had been
+        activated by the event at its previous due time then an event sent with
+        rtos_sendEvent() (and the activation of the associated tasks) can be lost:\n
+          If using arbitrary task parameters, then the event and the next task activation
+        is lost.\n
+          If using countable events then the event sent with rtos_sendEvent() is counted
+        and stored and will lead to a task activation later. All counted and stored events
+        will be handed over to the associated tasks at once. No task activation loss is
+        recorded. However, if the counter for events saturates at its implementation
+        maximum then no new event can be accounted and a task activation loss is recorded.\n
+          This is counter of lost task activations, intended for diagnostic purpose. The
+        counter is not saturated, it won't wrap around at its implementation maximum; this
+        behavior allows most easy evaluation of the rate of events.
           @remark This field is shared with the external client code of the module. There,
         it is read only. Only the scheduler code must update the field. */
     unsigned int noActivationLoss;
 
     /** Support the scheduler: If this event has been processed then check event * \a
         this->pNextScheduledEvent as next one. */
-    struct rtos_eventDesc_t *pNextScheduledEvent;
+    struct rtos_eventProcDesc_t *pNextScheduledEvent;
 
-} rtos_eventDesc_t;
+} rtos_eventProcDesc_t;
 
 
 
@@ -149,7 +173,7 @@ static ALWAYS_INLINE unsigned int rtos_osGetCurrentInterruptPriority(void)
  * Query if we are running code inside an ISR.
  *   @return
  * Get \a true if we are in an External Interrupt and \a false otherwise (i.e. including
- * system calls, which are often considered software interrupts). 
+ * system calls, which are often considered software interrupts).
  *   @remark
  * This function must be called from the OS context only. User tasks don't have the
  * privileges to call this function.
@@ -169,14 +193,21 @@ static ALWAYS_INLINE bool rtos_osIsInterrupt(void)
  */
 
 /** Creation of an event. The event can be cyclically triggering or software triggerd. */
-rtos_errorCode_t rtos_osCreateEvent( unsigned int *pEventId
-                                   , unsigned int tiCycleInMs
-                                   , unsigned int tiFirstActivationInMs
-                                   , unsigned int priority
-                                   , unsigned int minPIDToTriggerThisEvent
-                                   , uintptr_t taskParam
-                                   );
+rtos_errorCode_t rtos_osCreateEventProcessor( unsigned int *pEventId
+                                            , unsigned int tiCycleInMs
+                                            , unsigned int tiFirstActivationInMs
+                                            , unsigned int priority
+                                            , unsigned int minPIDToTriggerThisEvProc
+                                            , bool useCountableEvents
+                                            , uint32_t taskParam
+                                            );
 
+/** Creation of an event, which will be triggered by software only. No timer triggers. */
+rtos_errorCode_t rtos_osCreateSwTriggeredEventProcessor( unsigned int *pEventId
+                                                       , unsigned int priority
+                                                       , unsigned int minPIDToTriggerThisEvProc
+                                                       );
+                                              
 /** Task registration for user mode or operating system initialization task. */
 rtos_errorCode_t rtos_osRegisterInitTask( int32_t (*initTaskFct)(uint32_t PID)
                                         , unsigned int PID
@@ -184,17 +215,18 @@ rtos_errorCode_t rtos_osRegisterInitTask( int32_t (*initTaskFct)(uint32_t PID)
                                         );
 
 /** Task registration for scheduled user mode tasks. */
-rtos_errorCode_t rtos_osRegisterUserTask( unsigned int idEvent
-                                        , int32_t (*userModeTaskFct)( uint32_t PID
-                                                                    , uintptr_t taskParam
-                                                                    )
+rtos_errorCode_t rtos_osRegisterUserTask( unsigned int idEventProc
+                                        , int32_t (*userModeTaskFct)
+                                                            ( uint32_t PID
+                                                            , uint32_t evMaskOrTaskParam
+                                                            )
                                         , unsigned int PID
                                         , unsigned int tiMaxInUs
                                         );
 
 /** Task registration for scheduled operating system tasks. */
-rtos_errorCode_t rtos_osRegisterOSTask( unsigned int idEvent
-                                      , void (*osTaskFct)(uintptr_t taskParam)
+rtos_errorCode_t rtos_osRegisterOSTask( unsigned int idEventProc
+                                      , void (*osTaskFct)(uint32_t evMaskOrTaskParam)
                                       );
 
 /** Kernel initialization. */
@@ -202,7 +234,7 @@ rtos_errorCode_t rtos_osInitKernel(void);
 
 /** Enter critcal section; partially suspend task scheduling. */
 uint32_t rtos_osSuspendAllTasksByPriority(uint32_t suspendUpToThisTaskPriority);
- 
+
 /** Leave critical section; resume scheduling of tasks. */
 void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
 

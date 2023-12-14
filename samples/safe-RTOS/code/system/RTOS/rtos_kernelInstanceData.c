@@ -102,17 +102,20 @@
          Note, this variable is an interface with the assembly code. It may need to pick    \
        an element from the list if lowering the current priority in the implementation of   \
        the PCP requires the recursive call of the scheduler. */                             \
-    .eventAry =                                                                             \
-        { [0 ... RTOS_MAX_NO_EVENTS] =                                                      \
+    .eventProcAry =                                                                         \
+        { [0 ... RTOS_MAX_NO_EVENT_PROCESSORS] =                                            \
             { .state = evState_idle                                                         \
-              , .minPIDForTrigger = RTOS_EVENT_NOT_USER_TRIGGERABLE                         \
-              , .noTasks = 0                                                                \
+              , .minPIDForTrigger = RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE                    \
+              , .noTasks = 0u                                                               \
               , .taskAry = NULL                                                             \
-              , .tiDue = 0                                                                  \
-              , .tiCycleInMs = 0                                                            \
-              , .priority = 0                                                               \
-              , .taskParam = 0                                                              \
-              , .noActivationLoss = 0                                                       \
+              , .tiDue = 0u                                                                 \
+              , .tiCycleInMs = 0u                                                           \
+              , .priority = 0u                                                              \
+              , .taskParam = 0u                                                             \
+              , .timerUsesCountableEvs = false                                              \
+              , .timerTaskTriggerParam = 0u                                                 \
+              , .eventCounterMask = 0u                                                      \
+              , .noActivationLoss = 0u                                                      \
               , .pNextScheduledEvent = NULL                                                 \
             },                                                                              \
         },                                                                                  \
@@ -120,34 +123,34 @@
     /* For performance reasons, all events are internally ordered by priority. At user      \
        API, they are identified by an ID, which can have an ordering. We need a mapping     \
        for the implementation of APIs that refer to an event. */                            \
-    .mapEventIDToPtr = {[0 ... (RTOS_MAX_NO_EVENTS-1)] = NULL},                             \
+    .mapEvProcIDToPtr = {[0 ... (RTOS_MAX_NO_EVENT_PROCESSORS-1)] = NULL},                  \
                                                                                             \
     /* The PCP, which changes the current priority needs the mapping from priority to       \
        the first event in the list that has this priority. The map is implemented as        \
        direct lookup table.\n                                                               \
          Note the map object is shared with the assembly code. */                           \
-    .mapPrioToEvent = {[0 ... RTOS_MAX_TASK_PRIORITY] = NULL},                              \
+    .mapPrioToEvProc = {[0 ... RTOS_MAX_TASK_PRIORITY] = NULL},                             \
                                                                                             \
-    /* The number of created events. The range is 0..#RTOS_MAX_NO_EVENTS. */                \
-    .noEvents = 0,                                                                          \
+    /* The number of created event processors. Range is 0..#RTOS_MAX_NO_EVENT_PROCESSORS. */\
+    .noEventProcs = 0,                                                                      \
                                                                                             \
-    /* A pointer to the event, which has to be served next by the scheduler. Points to      \
-       an element of array rtos_osGetInstancePtr()->eventAry if an event requires the       \
-       call of the scheduler or behind the end of the array otherwise.\n                    \
+    /* A pointer to the event processor, which has to be served next by the scheduler.      \
+       Points to an element of array rtos_osGetInstancePtr()->eventProcAry if an event the  \
+       requires call of the scheduler or behind the end of the array otherwise.\n           \
          This variable is an interface with the assembly code. It may call the              \
        scheduler with this variable as argument after an ISR (postponed task                \
        activation). */                                                                      \
-    .pNextEventToSchedule = (rtos_eventDesc_t*)(uintptr_t)-1,                               \
+    .pNextEvProcToSchedule = (rtos_eventProcDesc_t*)(uintptr_t)-1,                          \
                                                                                             \
-    /* Pointer to guard element at the end of the list of events.\n                         \
+    /* Pointer to guard element at the end of the list of event processors.\n               \
          Since the guard itself is used as list termination this explicit pointer is        \
        just used for self-tests in DEBUG compilation. */                                    \
-    .pEndEvent = NULL,                                                                      \
+    .pEndEvProc = NULL,                                                                     \
                                                                                             \
-    /* Pointer to currently active event. This event is the one, whose associated tasks     \
+    /* Pointer to currently active event processor. It's the one, whose associated tasks    \
        are currently executed. Using this pointer, some informative services can be         \
        implemented for the tasks. */                                                        \
-    .pCurrentEvent = NULL,                                                                  \
+    .pCurrentEvProc = NULL,                                                                 \
                                                                                             \
     /* The different instances of the RTOS will offer different sets of system calls.       \
        Here we have the pointer to the system call table to be used. */                     \

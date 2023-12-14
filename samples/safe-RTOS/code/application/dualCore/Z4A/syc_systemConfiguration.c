@@ -181,7 +181,7 @@ static void isrPit2(void)
     /* Indirectly start a user task. It is executed asynchronously to this ISR and has its
        own, irrelated task priority level. */
     static long unsigned int SBSS_OS(cnt_) = 0;
-    rtos_osTriggerEvent(syc_idEvPIT2, cnt_++);
+    rtos_osSendEvent(syc_idEvPIT2, cnt_++);
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
@@ -413,11 +413,11 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
@@ -457,13 +457,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     unsigned int idEvent;
-    if(rtos_osCreateEvent
+    if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */              997 /* about 1s but prime to others */
-                    , /* tiFirstActivationInMs */    19
-                    , /* priority */                 syc_prioEvReporting
-                    , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                    , /* taskParam */                0
+                    , /* tiCycleInMs */               997 /* about 1s but prime to others */
+                    , /* tiFirstActivationInMs */     19
+                    , /* priority */                  syc_prioEvReporting
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* timerUsesCountableEvents */  false
+                    , /* taskParam */                 0
                     )
        != rtos_err_noError
       )
@@ -473,13 +474,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvReporting);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              10
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEvTest
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               10
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEvTest
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* timerUsesCountableEvents */  false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {
@@ -488,13 +491,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvTest);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              11
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEvTestCtxSw
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               11
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEvTestCtxSw
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* timerUsesCountableEvents */  false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {
@@ -503,13 +508,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvTestCtxSw);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              0
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEvPIT2
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               0
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEvPIT2
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* timerUsesCountableEvents */  false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {
@@ -518,13 +525,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         assert(idEvent == syc_idEvPIT2);
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              17
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 syc_prioEv17ms
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               17
+                    , /* tiFirstActivationInMs */     0
+                    , /* priority */                  syc_prioEv17ms
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* timerUsesCountableEvents */  false
+                    , /* taskParam */                 0
+                    )
        != rtos_err_noError
       )
     {

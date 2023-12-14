@@ -4,7 +4,7 @@
  * @file rtos.config.h
  * This file contains the application depended compile-time configuration of the RTOS.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -82,20 +82,22 @@
     one less than #RTOS_MAX_TASK_PRIORITY. */
 #define RTOS_MAX_LOCKABLE_TASK_PRIORITY         40
 
-/** Any user task is activated by an event. Several tasks can be associated with one and
-    the same event but each event needs to have at least one associated task. Therefore, it
-    is useless to configure this macro less than #RTOS_MAX_NO_TASKS.\n
+/** Any user task is activated by an event, which is notified to an event processor.
+    Several tasks can be associated with one and the same event processor but each event
+    processor needs to have at least one associated task. Therefore, it is useless to
+    configure this macro less than #RTOS_MAX_NO_TASKS.\n
       The chosen number is a compile time configuration setting and there are no
     constraints in changing it besides the amount of reserved RAM space for the resulting
     table size.\n
-      @remark The maximum number of events is not core specific. It impacts the build-up of
-    the kernel instance data set, which needs to be identical on all cores. You will need
-    to specify the maximum of what is required on all cores. */
-#define RTOS_MAX_NO_EVENTS                      6
+      @remark The specification of the maximum number of event processors is not core
+    specific. It impacts the build-up of the kernel instance data set, which needs to be
+    identical on all cores. You will need to specify the maximum of what is required on all
+    cores. */
+#define RTOS_MAX_NO_EVENT_PROCESSORS            6
 
-/** The maximum, total number of user tasks, which can be activated by the events. The
-    chosen number is a compile time configuration setting and there are no constraints in
-    changing it besides the amount of reserved RAM space for the resulting table size.\n
+/** The maximum, total number of user tasks, which can be activated by an event processor.
+    The chosen number is a compile time configuration setting and there are no constraints
+    in changing it besides the amount of reserved RAM space for the resulting table size.\n
       The configured limit applies to the tasks registered with rtos_osRegisterUserTask()
     and rtos_osRegisterOSTask() only; process initialization tasks and callbacks from I/O
     drivers, which are much of a user task, too, are not counted here.\n

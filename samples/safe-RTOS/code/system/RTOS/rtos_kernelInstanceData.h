@@ -69,42 +69,44 @@ typedef struct rtos_kernelInstanceData_t
     /** The number of registered tasks. The range is 0..#RTOS_MAX_NO_TASKS. */
     unsigned int noTasks;
 
-    /** The list of task activating events. Plus a zero element as end-of-list guard.\n
+    /** The list of task activating event processors. Plus a zero element as end-of-list
+        guard.\n 
           Note, this variable is an interface with the assembly code. It may need to pick
         an element from the list if lowering the current priority in the implementation of
         the PCP requires the recursive call of the scheduler. */
-    rtos_eventDesc_t eventAry[RTOS_MAX_NO_EVENTS+1];
+    rtos_eventProcDesc_t eventProcAry[RTOS_MAX_NO_EVENT_PROCESSORS+1];
 
-    /** For performance reasons, all events are internally ordered by priority. At user
-        API, they are identified by an ID, which can have an ordering. We need a mapping
-        for the implementation of APIs that refer to an event. */
-    rtos_eventDesc_t *mapEventIDToPtr[RTOS_MAX_NO_EVENTS];
+    /** For performance reasons, all event processors are internally ordered by priority.
+        At user API, they are identified by an ID, which can have an ordering. We need a
+        mapping for the implementation of APIs that refer to an event processor. */
+    rtos_eventProcDesc_t *mapEvProcIDToPtr[RTOS_MAX_NO_EVENT_PROCESSORS];
 
     /** The PCP, which changes the current priority needs the mapping from priority to the
-        first event in the list that has this priority. The map is implemented as direct
-        lookup table.\n
+        first event processor in the list that has this priority. The map is implemented as
+        direct lookup table.\n
           Note the map object is shared with the assembly code. */
-    rtos_eventDesc_t *mapPrioToEvent[RTOS_MAX_TASK_PRIORITY+1];
+    rtos_eventProcDesc_t *mapPrioToEvProc[RTOS_MAX_TASK_PRIORITY+1];
 
-    /** The number of created events. The range is 0..#RTOS_MAX_NO_EVENTS. */
-    unsigned int noEvents;
+    /** The number of created event processors. The range is
+        0..#RTOS_MAX_NO_EVENT_PROCESSORS. */
+    unsigned int noEventProcs;
 
-    /** A pointer to event, which has to be served next by the scheduler. Points to an
-        element of array rtos_osGetInstancePtr()->eventAry if an event requires the call of
-        the scheduler or behind the end of the array otherwise.\n
+    /** A pointer to the event processor, which has to be served next by the scheduler.
+        Points to an element of array rtos_osGetInstancePtr()->eventProcAry if an event
+        requires the call of the scheduler or behind the end of the array otherwise.\n
           This variable is an interface with the assembly code. It may call the scheduler
         with this variable as argument after an ISR (postponed task activation). */
-    rtos_eventDesc_t *pNextEventToSchedule;
+    rtos_eventProcDesc_t *pNextEvProcToSchedule;
 
-    /** Pointer to guard element at the end of the list of events.\n
+    /** Pointer to guard element at the end of the list of event processors.\n
           Since the guard itself is used as list termination this explicit pointer is just
         used for self-tests in DEBUG compilation. */
-    const rtos_eventDesc_t *pEndEvent;
+    const rtos_eventProcDesc_t *pEndEvProc;
 
-    /** Pointer to currently active event. This event is the one, whose associated tasks
-        are currently executed. Using this pointer, some informative services can be
-        implemented for the tasks. */
-    const rtos_eventDesc_t *pCurrentEvent;
+    /** Pointer to currently active event processor. This processor is the one, whose
+        associated tasks are currently executed. Using this pointer, some informative
+        services can be implemented for the tasks. */
+    const rtos_eventProcDesc_t *pCurrentEvProc;
 
     /** The different instances of the RTOS will offer different sets of system calls. Here
         we have the pointer to the system call table to be used. */

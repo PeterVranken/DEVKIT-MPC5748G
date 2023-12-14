@@ -320,7 +320,7 @@ static void isrPit2(void)
     /* This ISR delegates some computation to a user task. It triggers the task. */
     const unsigned long tmpCntTaskUserPit2 ATTRIB_DBG_ONLY = mai_cntTaskUserPit2;
     const bool evCouldBeTriggered ATTRIB_DBG_ONLY =
-                        rtos_osTriggerEvent(idEvPit2, /* taskParam */ mai_cntTaskUserPit2);
+                        rtos_osSendEvent(idEvPit2, /* taskParam */ mai_cntTaskUserPit2);
     assert(evCouldBeTriggered);
 
     /* There must be no immediate counter change of the task. It will be started after
@@ -377,7 +377,7 @@ static void isrPit3(void)
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t taskUserPit2(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t taskUserPit2(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     bool success = true;
 
@@ -430,7 +430,7 @@ static int32_t taskUserPit2(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTR
 volatile unsigned long SBSS_P1(mai_cntTaskUser##tiCycleInMs##ms) = 0;                       \
                                                                                             \
 static int32_t taskUser##tiCycleInMs##ms( uint32_t PID ATTRIB_UNUSED                        \
-                                        , uintptr_t taskParam ATTRIB_UNUSED                 \
+                                        , uint32_t taskParam ATTRIB_UNUSED                  \
                                         )                                                   \
 {                                                                                           \
     bool success = true;                                                                    \
@@ -489,7 +489,7 @@ USER_TASK(/* tiCycleInMs */ 1000, /* cpuLoad */ LOAD_TASK_1000MS, /* prioCritSec
 /** Counter of cycles of infinite main loop. */                                             \
 volatile unsigned long SBSS_OS(mai_cntTaskOS##tiCycleInMs##ms) = 0;                         \
                                                                                             \
-static void taskOS##tiCycleInMs##ms(uintptr_t taskParam ATTRIB_UNUSED)                      \
+static void taskOS##tiCycleInMs##ms(uint32_t taskParam ATTRIB_UNUSED)                       \
 {                                                                                           \
     /* Simulate the task prologue: All input data is copied to local storage. This is done  \
        in a critical section, which includes all competing tasks. */                        \
@@ -525,7 +525,7 @@ OS_TASK(/* tiCycleInMs */ 10, /* cpuLoad */ LOAD_TASK_OS_10MS, /* prioCritSec */
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t taskSafety1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskSafety1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     busyWait(LOAD_TASK_SAFETY_1MS, /* tiCycleInMs */ 1);
 
@@ -732,12 +732,12 @@ static void osInstallInterruptServiceRoutines(void)
        debugger know...). Both possibilities can be annoying or advantageous, depending on
        the situation. */
     PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
-    
+
     /* Clear possibly pending interrupt flags. */
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
-    
+
     /* Enable interrupts by the timers and start them. See RM 51.4.10. */
     PIT->TIMER[1].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
@@ -762,13 +762,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* Interrupts become usable and configurable by SW. */
     rtos_osInitINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -790,23 +790,23 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
-    
+
     /* Initialize the port driver. This should come early; most typical, many other I/O
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
                                 , /* onButtonChangeCallback_core1 */ NULL
                                 , /* PID_core1 */                    0
                                 , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0   
+                                , /* PID_core2 */                    0
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -827,14 +827,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
 #define CREATE_EVENT(name, tiCycleInMs)                                                     \
     if(initOk                                                                               \
-       &&  rtos_osCreateEvent( &idEvent                                                     \
-                             , /* tiCycleInMs */              tiCycleInMs                   \
-                             , tiCycleInMs>0? tiFirstActivationInMs: 0                      \
-                             , /* priority */                 prioEv##name                  \
-                             , /* minPIDToTriggerThisEvent */                               \
-                                                         RTOS_EVENT_NOT_USER_TRIGGERABLE    \
-                             , /* taskParam */                0                             \
-                             )                                                              \
+       &&  rtos_osCreateEventProcessor                                                      \
+                    ( &idEvent                                                              \
+                    , /* tiCycleInMs */               tiCycleInMs                           \
+                    , tiCycleInMs>0? tiFirstActivationInMs: 0                               \
+                    , /* priority */                  prioEv##name                          \
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE  \
+                    , /* timerUsesCountableEvents */  false                                 \
+                    , /* taskParam */                 0                                     \
+                    )                                                                       \
            != rtos_err_noError                                                              \
       )                                                                                     \
     {                                                                                       \
@@ -933,7 +934,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        then the second task activation will fail as the first triggered task has not
        completed yet.
          In this particular sample, we saw this happen depending on the compilation mode.
-       The slower DEBUG failed, while the a bit faster PRODUCTION ran fine. 
+       The slower DEBUG failed, while the a bit faster PRODUCTION ran fine.
          We can force correct startup by waiting for the next begin of counter cycle of the
        timer PIT2. Note, a cycle of the test loop must not execute longer than
        cntStillFarFromIrq, which is 20us in our case. */

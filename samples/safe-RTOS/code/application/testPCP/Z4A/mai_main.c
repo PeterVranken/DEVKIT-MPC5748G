@@ -141,7 +141,7 @@ enum idEvent_t
     idEvTaskH,      /// Event for task of higer priority, which can preempt A, B
     idEvTaskT,      /// Event for cyclic task
     idEvTaskS,      /// Event for cyclic supervisor task in other process
-    
+
     /** The number of tasks to register. */
     noRegisteredEvents
 };
@@ -215,13 +215,13 @@ volatile counter64_t SBSS_OS(mai_cntISRPit3) = 0;
 volatile counter64_t SBSS_OS(mai_cntTaskIdle) = 0;
 
 /** Counter of event task A. */
-volatile counter64_t SBSS_P1(mai_cntTaskA) = 0;  
+volatile counter64_t SBSS_P1(mai_cntTaskA) = 0;
 
 /** Counter of event task B. */
-volatile counter64_t SBSS_P1(mai_cntTaskB) = 0;  
+volatile counter64_t SBSS_P1(mai_cntTaskB) = 0;
 
 /** Counter of task O. */
-volatile counter64_t SBSS_OS(mai_cntTaskO) = 0;  
+volatile counter64_t SBSS_OS(mai_cntTaskO) = 0;
 
 /** Counter of event task H. */
 volatile counter64_t SBSS_P1(mai_cntTaskH) = 0;
@@ -349,7 +349,7 @@ static bool checkTotalCount(void)
     /* Supervisory task S can't have mutual exclusion with the normal worker tasks. It must
        not participate the consistency check. */
     return mai_cntTaskIdle + mai_cntTaskA + mai_cntTaskB + mai_cntTaskH + mai_cntTaskT
-           + mai_cntTaskO 
+           + mai_cntTaskO
            == mai_cntTotalOfAllTasks;
 
 } /* End of checkTotalCount */
@@ -367,12 +367,12 @@ static bool checkTotalCount(void)
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 {
     bool success = true;
 
-    ASSERT(taskParam == (uintptr_t)mai_cntTaskA);
-    
+    ASSERT(taskParam == (uint32_t)mai_cntTaskA);
+
     /* Concept: Tasks B and H are event triggered by A and have no race conditions with
        each other. H has higher priority as A and B, which have the same priority. Task T
        can preempt.
@@ -395,29 +395,29 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
 
     /* A triggers H and double checks immediate increase of its counter. */
     counter64_t tmpCntH = mai_cntTaskH;
-    bool evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    bool evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
     ASSERT(evCouldBeTriggered);
-    
+
     /* Use PCP to hinder the triggered task from immediate activation. */
     GetResource(RESOURCE_ALL);
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be no counter change now. */
-    ASSERT(tmpCntH == mai_cntTaskH); 
+    ASSERT(tmpCntH == mai_cntTaskH);
     ASSERT(evCouldBeTriggered);
-    
+
     /* Use PCP the release tasks of higher priority. */
     ReleaseResource();
     /* Task H must execute immediately and before we have the chance to do anything else. */
-    ASSERT(tmpCntH+1 == mai_cntTaskH); 
+    ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
 
     /* Use PCP to raise priority but not to the extend that is observable but doesn't
        hinder the triggered task from immediate activation yet. */
     GetResource(RESOURCE_A_B_T);
     const counter64_t tmpCntT = mai_cntTaskT;
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be an immediate counter change. */
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
@@ -430,12 +430,12 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
            || noActivationLoss == UINT_MAX
           );
     ASSERT(tmpCntT == mai_cntTaskT);
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be an immediate counter change. */
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
     ASSERT(evCouldBeTriggered);
-    
+
     /* A lowers the priority such that T will be served again. No more activation losses
        should be observed. Moreover, as we saw at least one loss, we know that the event
        must be triggered now. We need to see at least one immediate cycle from T. */
@@ -446,13 +446,13 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
     noActivationLoss = rtos_getNoActivationLoss(idEvTaskT);
     del_delayMicroseconds(/* tiCpuInUs */ 4100);
     ASSERT(noActivationLoss == rtos_getNoActivationLoss(idEvTaskT));
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be an immediate counter change. */
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
     ASSERT(evCouldBeTriggered);
     ReleaseResource();
-    
+
     GetResource(RESOURCE_ALL);
     ++ mai_cntTaskA;
     ++ mai_cntTotalOfAllTasks;
@@ -462,14 +462,14 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
     /* A triggers B. There must be no immediate counter change because of the same
        priority. */
     const counter64_t tmpCntB = mai_cntTaskB;
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskB, /* taskParam */ (uintptr_t)mai_cntTaskB);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskB, /* taskParam */ (uint32_t)mai_cntTaskB);
     ASSERT(tmpCntB == mai_cntTaskB);
     ASSERT(evCouldBeTriggered);
 
     /* A blocks and triggers H and leaves without releasing the lock. The scheduler needs
        to take care. */
-    GetResource(RESOURCE_ALL); 
-    evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    GetResource(RESOURCE_ALL);
+    evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be no immediate counter change because of the lock. */
     ASSERT(tmpCntH == mai_cntTaskH);
     mai_copyOfCntTaskH = tmpCntH;
@@ -493,12 +493,12 @@ static int32_t taskA(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 {
     bool success = true;
 
-    ASSERT(taskParam == (uintptr_t)mai_cntTaskB);
-    
+    ASSERT(taskParam == (uint32_t)mai_cntTaskB);
+
     /* Task H needs to have executed after leaving A but before entering B. */
     ASSERT(mai_copyOfCntTaskH+1 == mai_cntTaskH);
 
@@ -507,7 +507,7 @@ static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
     ++ mai_cntTotalOfAllTasks;
     ASSERT(checkTotalCount());
     ReleaseResource();
-    
+
     /* A, B and O need to be always in sync. There are no race conditions. */
     ASSERT(mai_cntTaskA == mai_cntTaskB  &&  mai_cntTaskB == mai_cntTaskO+1);
 
@@ -515,7 +515,7 @@ static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
        to take care. */
     GetResource(RESOURCE_ALL);
     const counter64_t tmpCntH = mai_cntTaskH;
-    const bool evCouldBeTriggered = rtos_triggerEvent(idEvTaskH, /* taskParam */ 0);
+    const bool evCouldBeTriggered = rtos_sendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be no immediate counter change because of the lock. */
     ASSERT(tmpCntH == mai_cntTaskH);
     mai_copyOfCntTaskH = tmpCntH;
@@ -536,12 +536,12 @@ static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static void taskO(uintptr_t taskParam)
+static void taskO(uint32_t taskParam)
 {
     bool success = true;
 
-    ASSERT(taskParam+1 == (uintptr_t)mai_cntTaskB);
-    
+    ASSERT(taskParam+1 == (uint32_t)mai_cntTaskB);
+
     /* Task H needs to have executed after leaving B but before entering O. */
     ASSERT(mai_copyOfCntTaskH+1 == mai_cntTaskH);
 
@@ -550,29 +550,29 @@ static void taskO(uintptr_t taskParam)
 
     /* O triggers H and double checks immediate increase of its counter. */
     counter64_t tmpCntH = mai_cntTaskH;
-    bool evCouldBeTriggered = rtos_osTriggerEvent(idEvTaskH, /* taskParam */ 0);
+    bool evCouldBeTriggered = rtos_osSendEvent(idEvTaskH, /* taskParam */ 0);
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
     ASSERT(evCouldBeTriggered);
-    
+
     /* Use PCP to hinder the triggered task from immediate activation. */
     osGetResource(RESOURCE_ALL);
-    evCouldBeTriggered = rtos_osTriggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_osSendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be no counter change now. */
-    ASSERT(tmpCntH == mai_cntTaskH); 
+    ASSERT(tmpCntH == mai_cntTaskH);
     ASSERT(evCouldBeTriggered);
-    
+
     /* Use PCP the release tasks of higher priority. */
     osReleaseResource();
     /* Task H must execute immediately and before we have the chance to do anything else. */
-    ASSERT(tmpCntH+1 == mai_cntTaskH); 
+    ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
 
     /* Use PCP to raise priority but not to the extend that is observable but doesn't
        hinder the triggered task from immediate activation yet. */
     osGetResource(RESOURCE_A_B_T);
     const counter64_t tmpCntT = mai_cntTaskT;
-    evCouldBeTriggered = rtos_osTriggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_osSendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be an immediate counter change. */
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
@@ -585,12 +585,12 @@ static void taskO(uintptr_t taskParam)
            || noActivationLoss == UINT_MAX
           );
     ASSERT(tmpCntT == mai_cntTaskT);
-    evCouldBeTriggered = rtos_osTriggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_osSendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be an immediate counter change. */
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
     ASSERT(evCouldBeTriggered);
-    
+
     /* O lowers the priority such that T will be served again. No more activation losses
        should be observed. Moreover, as we saw at least one loss, we know that the event
        must be triggered now. We need to see at least one immediate cycle from T. */
@@ -601,19 +601,19 @@ static void taskO(uintptr_t taskParam)
     noActivationLoss = rtos_getNoActivationLoss(idEvTaskT);
     del_delayMicroseconds(/* tiCpuInUs */ 4100);
     ASSERT(noActivationLoss == rtos_getNoActivationLoss(idEvTaskT));
-    evCouldBeTriggered = rtos_osTriggerEvent(idEvTaskH, /* taskParam */ 0);
+    evCouldBeTriggered = rtos_osSendEvent(idEvTaskH, /* taskParam */ 0);
     /* There must be an immediate counter change. */
     ASSERT(tmpCntH+1 == mai_cntTaskH);
     tmpCntH = mai_cntTaskH;
     ASSERT(evCouldBeTriggered);
     osReleaseResource();
-    
+
     osGetResource(RESOURCE_ALL);
     ++ mai_cntTaskO;
     ++ mai_cntTotalOfAllTasks;
     ASSERT(checkTotalCount());
     osReleaseResource();
-    
+
     /* A, B and O need to be always in sync. There are no race conditions. */
     ASSERT(mai_cntTaskA == mai_cntTaskB  &&  mai_cntTaskB == mai_cntTaskO);
 
@@ -621,7 +621,7 @@ static void taskO(uintptr_t taskParam)
        PRODUCTION compilation and if we detected a problem then we have to report it
        somehow differently. We inject another error, which will be handled at latest in the
        next user mode task. */
-    if(!success)       
+    if(!success)
     {
         osGetResource(RESOURCE_ALL);
         -- mai_cntTaskO;
@@ -644,7 +644,7 @@ static void taskO(uintptr_t taskParam)
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t taskH(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskH(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     bool success = true;
 
@@ -675,7 +675,7 @@ static int32_t taskH(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUS
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     bool success = true;
 
@@ -694,7 +694,7 @@ static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUS
         const unsigned int min = (unsigned int)(total / 60ull);
         total -= 60ull*min;
         const unsigned int sec = (unsigned int)total;
-        
+
         iprintf( "%3u:%02u:%02u, cycles: Task S: %llu, tasks A, B, O: %llu"
                  ", task H: %llu, task T: %llu (%u lost activations),"
                  "isrPit1: %llu, isrPit2: %llu, isrPit3: %llu\r\n"
@@ -729,17 +729,17 @@ static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUS
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t taskS(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskS(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     /* This task runs in another process as the supervised tasks. */
     assert(PID == 2);
-    
+
     ++ mai_cntTaskS;
-    
+
     const unsigned int stackReserveOs = rtos_getStackReserve(/* PID */ pidOs)
                      , stackReserveP1 = rtos_getStackReserve(/* PID */ 1)
                      , stackReserveP2 = rtos_getStackReserve(/* PID */ 2);
-                     
+
     const bool success = rtos_getNoTotalTaskFailure(/* PID */ 1) == 0
                          &&  rtos_getNoTotalTaskFailure(/* PID */ 2) == 0
                          &&  stackReserveOs >= 3072
@@ -804,7 +804,7 @@ static void osInstallInterruptServiceRoutines(void)
                   , "By intention, at least one interrupt should have the priority of the"
                     " scheduler of the RTOS"
                   );
-                  
+
     /* Disable timers during configuration. RM, 51.4.1, p. 2731.
          Disable all PIT timers during configuration. Note, this is a global setting for
        all sixteen timers. Accessing the bits makes this rountine have race conditions with
@@ -850,12 +850,12 @@ static void osInstallInterruptServiceRoutines(void)
        debugger know...). Both possibilities can be annoying or advantageous, depending on
        the situation. */
     PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
-    
+
     /* Clear possibly pending interrupt flags. */
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
-    
+
     /* Enable interrupts by the timers and start them. See RM 51.4.10. */
     PIT->TIMER[1].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
@@ -880,13 +880,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* Interrupts become usable and configurable by SW. */
     rtos_osInitINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -908,23 +908,23 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
-    
+
     /* Initialize the port driver. This should come early; most typical, many other I/O
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ NULL
                                 , /* PID_core0 */                    0
                                 , /* onButtonChangeCallback_core1 */ NULL
                                 , /* PID_core1 */                    0
                                 , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0   
+                                , /* PID_core2 */                    0
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -942,15 +942,17 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
 
 #define CREATE_TASK(name, tiCycleInMs)                                                      \
-    if(rtos_osCreateEvent( &idEvent                                                         \
-                         , /* tiCycleInMs */              tiCycleInMs                       \
-                         , /* tiFirstActivationInMs */    0                                 \
-                         , /* priority */                 prioEv##name                      \
-                         , /* minPIDToTriggerThisEvent */ tiCycleInMs == 0                  \
-                                                          ? 1                               \
-                                                          : RTOS_EVENT_NOT_USER_TRIGGERABLE \
-                         , /* taskParam */                0                                 \
-                         )                                                                  \
+    if(rtos_osCreateEventProcessor                                                          \
+                ( &idEvent                                                                  \
+                , /* tiCycleInMs */               tiCycleInMs                               \
+                , /* tiFirstActivationInMs */     0                                         \
+                , /* priority */                  prioEv##name                              \
+                , /* minPIDToTriggerThisEvProc */ tiCycleInMs == 0                          \
+                                                  ? 1                                       \
+                                                  : RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE    \
+                , /* timerUsesCountableEvents */  false                                     \
+                , /* taskParam */                 0                                         \
+                )                                                                           \
        == rtos_err_noError                                                                  \
       )                                                                                     \
     {                                                                                       \
@@ -973,7 +975,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 /* End of macro CREATE_TASK */
 
     /* Create the events that trigger application tasks at the RTOS. Note, we do not really
-       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
+       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEventProcessor().
        The returned value is redundant. This technique requires that we create the events
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
@@ -986,7 +988,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Create OS task for same event as triggers task B. O becomes a successor of B. */
     if(rtos_osRegisterOSTask(idEvTaskB, taskO) != rtos_err_noError)
-        initOk = false;                                                               
+        initOk = false;
 
     /* The last check ensures that we didn't forget to register a task. */
     assert(initOk &&  idEvent == noRegisteredEvents-1);
@@ -1010,29 +1012,29 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Here we are in the idle task. */
 
     bool success ATTRIB_UNUSED = true;
-    while(true)    
+    while(true)
     {
 /// @todo Add: osGetResource with level higher than idle but lower than A. Should work with and without osReleaseResource
 
         /* Trigger the first of the chained test tasks.
              Since we are here in idle, the trigger needs to be always possible. */
         bool evCouldBeTriggered ATTRIB_DBG_ONLY =
-                                rtos_osTriggerEvent( idEvTaskA
-                                                   , /* taskParam */ (uintptr_t)mai_cntTaskA
-                                                   );
+                                    rtos_osSendEvent( idEvTaskA
+                                                    , /* taskParam */ (uint32_t)mai_cntTaskA
+                                                    );
         ASSERT(2*mai_cntTaskIdle+1 == mai_cntTaskA);
         assert(evCouldBeTriggered);
 
         osGetResource(RESOURCE_ALL);
         ASSERT(2*mai_cntTaskIdle+1 == mai_cntTaskA);
-        evCouldBeTriggered = rtos_osTriggerEvent( idEvTaskA
-                                                , /* taskParam */ (uintptr_t)mai_cntTaskA
-                                                );
+        evCouldBeTriggered = rtos_osSendEvent( idEvTaskA
+                                             , /* taskParam */ (uint32_t)mai_cntTaskA
+                                             );
         ASSERT(2*mai_cntTaskIdle+1 == mai_cntTaskA);
         osReleaseResource();
         ASSERT(2*mai_cntTaskIdle+2 == mai_cntTaskA);
         assert(evCouldBeTriggered);
-        
+
         /* Make spinning of the idle task observable in the debugger. */
         osGetResource(RESOURCE_ALL);
         ++ mai_cntTaskIdle;

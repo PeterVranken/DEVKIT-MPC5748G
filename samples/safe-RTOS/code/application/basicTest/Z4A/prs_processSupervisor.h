@@ -51,13 +51,13 @@ extern volatile long unsigned int prs_cntTestCycles;
  */
 
 /** User task to select and command the error to inject by the failing task. */
-int32_t prs_taskCommandError(uint32_t PID, uintptr_t taskParam);
+int32_t prs_taskCommandError(uint32_t PID, uint32_t taskParam);
 
 /** User task to double-check if failure has been produced and was reported on process
     level. */
-int32_t prs_taskEvaluateError(uint32_t PID, uintptr_t taskParam);
+int32_t prs_taskEvaluateError(uint32_t PID, uint32_t taskParam);
 
 /** Watchdog task to check if supervisor task is still alive. */
-int32_t prs_taskWatchdog(uint32_t PID, uintptr_t taskParam);
+int32_t prs_taskWatchdog(uint32_t PID, uint32_t taskParam);
 
 #endif  /* PRS_PROCESSSUPERVISOR_INCLUDED */

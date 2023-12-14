@@ -61,7 +61,7 @@
 /*
  * Defines
  */
- 
+
 /** The demo can be compiled with a ground load. Most tasks produce some CPU load if this
     switch is set to 1. */
 #define TASKS_PRODUCE_GROUND_LOAD   1
@@ -128,7 +128,7 @@ enum
 volatile unsigned long SECTION(.uncached.OS.msc_cntTaskIdle) msc_cntTaskIdle = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long SECTION(.uncached.P1.msc_cntTask1ms) msc_cntTask1ms = 0;  
+volatile unsigned long SECTION(.uncached.P1.msc_cntTask1ms) msc_cntTask1ms = 0;
 
 /** Counter of cyclic 1ms OS task. */
 volatile unsigned long SECTION(.uncached.OS.msc_cntTaskOs1ms) msc_cntTaskOs1ms = 0;
@@ -146,7 +146,7 @@ volatile unsigned int SECTION(.uncached.OS.msc_stackReserveP1) msc_stackReserveP
 /** Stack reserve of kernel process on the second core. */
 volatile unsigned int SECTION(.uncached.OS.msc_stackReserveOS) msc_stackReserveOS = 0;
 
-/** The average CPU load produced by all tasks and interrupts in tens of percent. */ 
+/** The average CPU load produced by all tasks and interrupts in tens of percent. */
 volatile unsigned int SECTION(.uncached.OS.msc_cpuLoadSecondCore) msc_cpuLoadSecondCore = 1000;
 
 
@@ -206,32 +206,32 @@ static void injectError(void)
     case 0:
         /* No error. */
         break;
-    
+
     case 1:
         /* Illegal instruction. */
         rtos_osGetIdxCore();
         break;
-    
+
     case 2:
         /* Modify instance pointer. */
         asm volatile ("mtspr 275, %%r1\n\t" ::: /* Clobbers */ "memory");
         break;
-    
+
     case 3:
         /* Abort task execution (without reporting an error). */
         rtos_terminateTask(0);
         break;
-    
+
     case 4:
         /* Abort task execution (with reporting an error). */
         rtos_terminateTask(-1);
         break;
-    
+
     case 5:
         /* Access some peripheral. */
         lbd_osSetLED(lbd_led_7_DS4, /* isOn */ true);
         break;
-    
+
     case 6:
     {
         /* Access an other process' memory. */
@@ -249,7 +249,7 @@ static void injectError(void)
             produced. */
         idxErr_ = 0;
     }
-    
+
 } /* End of injectError */
 
 
@@ -265,7 +265,7 @@ static void injectError(void)
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -300,7 +300,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
+static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -317,7 +317,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
 
     /* Test button input: The current status is echoed as LED status. */
     lbd_osSetLED(lbd_led_5_DS6,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
-              
+
     /* Communicate the current number of recognized failures to the reporting task running
        on the boot core. */
     msc_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
@@ -329,7 +329,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     if(++cntIsOn_ >= 500)
         cntIsOn_ = -500;
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
-    
+
 } /* End of taskOs1ms */
 
 
@@ -355,8 +355,8 @@ int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonSta
         lbd_setLED(lbd_led_6_DS5,  /* isOn */ true);
     else if((buttonState & lbd_btStMask_btnSw1_released) != 0)
         lbd_setLED(lbd_led_6_DS5,  /* isOn */ false);
-              
-    return 0;    
+
+    return 0;
 
 } /* End of msc_onButtonChangeCallback */
 
@@ -373,7 +373,7 @@ int32_t msc_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonSta
  * the name of the core, which is started.
  *   @remark
  * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
- * compiler warning. 
+ * compiler warning.
  */
 void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
                                        , const char *argAry[] ATTRIB_DBG_ONLY
@@ -386,7 +386,7 @@ void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
             &&  strcmp(argAry[0], "Z2") == 0
 #endif
           );
-            
+
 #if 0 /* Here, on the second core, we must not make use of the serial output. It is
          basically alright to make use of the sio API but blocking by busy wait is involved
          with hard to predict impact on the RTOS timing. Moreover, the use of the C library
@@ -405,7 +405,7 @@ void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
     fputs("fputs saying " GREETING, stdout);
     printf("printf saying %s", GREETING);
     #undef GREETING
-#endif    
+#endif
 
     /* Register the process initialization tasks. */
     bool initOk = true;
@@ -422,13 +422,15 @@ void /* _Noreturn */ msc_mainSecondCore( int noArgs ATTRIB_DBG_ONLY
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     unsigned int idEvent;
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              1
-                         , /* tiFirstActivationInMs */    10
-                         , /* priority */                 prioEv1ms
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                    ( &idEvent
+                    , /* tiCycleInMs */               1
+                    , /* tiFirstActivationInMs */     10
+                    , /* priority */                  prioEv1ms
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                    , /* timerUsesCountableEvents */  false
+                    , /* taskParam */                 0
+                    )
        == rtos_err_noError
       )
     {

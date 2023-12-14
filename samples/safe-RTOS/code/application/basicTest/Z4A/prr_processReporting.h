@@ -95,10 +95,10 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
                              );
 
 /** User task doing some regular status reporting via serial output. */
-int32_t prr_taskReporting(uint32_t PID, uintptr_t taskParam);
+int32_t prr_taskReporting(uint32_t PID, uint32_t taskParam);
 
 /** User task doing some invisible background testing of context switches. */
-int32_t prr_taskTestContextSwitches(uint32_t PID, uintptr_t taskParam);
+int32_t prr_taskTestContextSwitches(uint32_t PID, uint32_t taskParam);
 
 
 #endif  /* PRR_PROCESSREPORTING_INCLUDED */

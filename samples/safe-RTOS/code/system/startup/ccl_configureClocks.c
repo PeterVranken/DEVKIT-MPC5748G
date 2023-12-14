@@ -2,7 +2,7 @@
  * @file ccl_configureClocks.c
  * Configuration of system and peripheral clocks.
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -43,7 +43,7 @@
 /*
  * Defines
  */
- 
+
 /** Enumeration of MCU run modes (missing in MPC5748G.h). */
 #define MC_ME_MCTL_DRUN 0x03
 
@@ -59,18 +59,18 @@
 /*
  * Local type definitions
  */
- 
- 
+
+
 /*
  * Local prototypes
  */
- 
- 
+
+
 /*
  * Data definitions
  */
- 
- 
+
+
 /*
  * Function implementation
  */
@@ -126,7 +126,7 @@ void ccl_configureClocks(void)
 
     /* Configure the clock sources, which can either be taken directly
        as system clock or be multiplied by the PLL. */
-    
+
     /* Configure the fast internal RC Oscillator (FIRC). See RM, section 27.3.1. */
     FIRC->CTL = FIRC_CTL_FIRCDIV(0u /* divide by n+1 */);
 
@@ -150,16 +150,16 @@ void ccl_configureClocks(void)
     ccl_triggerTransitionToModeDRUN();
 
     /* Configure FXOSC, see RM section 29. */
-    const uint32_t XOSC_CTL = XOSC->CTL;
-    XOSC->CTL = XOSC_CTL_OSCBYP(0u /* 0: run oscillator, 1: use crystal input as clock */)
-                | (XOSC_CTL_EOCV_MASK & XOSC_CTL)
-                | XOSC_CTL_I_OSC(1u) /* Reset possible interrupt flag */
-                | XOSC_CTL_OSCM(0u /* 0: full swing pierce mode, 1: loop controlled pierce
-                                      mode */
-                               )
-                | XOSC_CTL_OSCDIV(0u /* divide by n+1 */);
+    const uint32_t FXOSC_CTL = FXOSC->CTL;
+    FXOSC->CTL = FXOSC_CTL_OSCBYP(0u /* 0: run oscillator, 1: use crystal input as clock */)
+                 | FXOSC_CTL_OSCM(0u /* 0: full swing pierce mode, 1: loop ctrl'd pierce md */)
+                 | (FXOSC_CTL & FXOSC_CTL_EOCV_MASK) /* Stabilization count: Take from reset */
+                 | FXOSC_CTL_M_OSC(0u) /* IRQ Mask; 0: disable interrupt */
+                 | FXOSC_CTL_OSCDIV(0u /* divide by n+1 */)
+                 | FXOSC_CTL_I_OSC(1u) /* Reset possible interrupt flag */
+                 ;
 
-    /* Enable XOSC. See RM, section 38.3.10. */
+    /* Enable FXOSC. See RM, section 38.3.10. */
     MC_ME->DRUN_MC |= MC_ME_DRUN_MC_FXOSCON(1u);
 
     /* Changes take effect after mode transition. See RM, 38.3.2. */
@@ -220,10 +220,10 @@ void ccl_configureClocks(void)
 
     /* All clock soures are running. Now connect the system clocks to the principal clock
        source, the PLL. */
-    
+
     /* Select the system clock source in a read modify write access to register DRUN_MC. */
 /// @todo Wrong macro used. However identically defined. Use MC_ME_DRUN_MC_FXOSCON, should be binary same
-    MC_ME->DRUN_MC = MC_ME->DRUN_MC 
+    MC_ME->DRUN_MC = MC_ME->DRUN_MC
                      & ~MC_ME_GS_S_SYSCLK_MASK
                      | MC_ME_GS_S_SYSCLK(2u /* clock source is PLL, PHI_0 */);
 

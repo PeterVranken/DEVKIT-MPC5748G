@@ -134,7 +134,7 @@ static failureStatus_t BSS_PRC_SV(prs_status);
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     /* Don't inject more errors if an error had already been detected and the process had
        been halted. Return zero, do not count the same situation repeatedly. */
@@ -536,7 +536,7 @@ int32_t prs_taskCommandError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATT
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-int32_t prs_taskEvaluateError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t prs_taskEvaluateError(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     /* Don't repeat the error evaluation if an error had already been detected and the
        process had been halted. Return zero, do not count the same situation repeatedly. */
@@ -618,7 +618,7 @@ int32_t prs_taskEvaluateError(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam AT
  * A variable task parameter. Here just used for testing, we expect a linear counter
  * starting at zero.
  */
-int32_t prs_taskWatchdog(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
+int32_t prs_taskWatchdog(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 {
     const bool isPrcFailingTasksSuspended = rtos_isProcessSuspended(syc_pidFailingTasks);
     
@@ -649,7 +649,7 @@ int32_t prs_taskWatchdog(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam)
            losses for the supervisory process (event syc_idEvPIT2). The event triggering
            ISR sends consecutive number 0, 1, 2... but we would see here a missing number
            if the triggering the event should have failed. */
-        static uintptr_t SBSS_PRC_SV(expectedTaskParam_) = 0;
+        static uint32_t SBSS_PRC_SV(expectedTaskParam_) = 0;
         bool isOk = taskParam == expectedTaskParam_++
                     &&  prs_status.status.noActLossEvTest == 0
                     &&  prs_status.status.noActLossEvPIT2 == 0

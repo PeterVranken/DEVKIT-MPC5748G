@@ -292,7 +292,7 @@ volatile unsigned long long SHARED(_cntTaskAry)[noRegisteredTasks+1] =
                                                         {[0 ... noRegisteredTasks] = 0};
 
 volatile unsigned long mai_cntTaskIdle SECTION(.bss.OS) = 0  /** Counter of cycles of
-                                                                 infinite main loop. */ 
+                                                                 infinite main loop. */
                      , mai_cntTask1ms SECTION(.bss.P1) = 0   /** Counter of cyclic task. */
                      , mai_cntTask3ms SECTION(.bss.P1) = 0   /** Counter of cyclic task. */
                      , mai_cntTask1s SECTION(.bss.P1) = 0    /** Counter of cyclic task. */
@@ -302,7 +302,7 @@ volatile unsigned long mai_cntTaskIdle SECTION(.bss.OS) = 0  /** Counter of cycl
                      , mai_cntTaskOnButtonDown SECTION(.bss.P1) = 0 /** Counter of button
                                                                         event task. */
                      , mai_cntTaskCpuLoad SECTION(.bss.P1) = 0   /** Counter of cyclic task. */
-                     , mai_cntActivationLossTaskNonCyclic SECTION(.bss.P1) = 0 /** Lost 
+                     , mai_cntActivationLossTaskNonCyclic SECTION(.bss.P1) = 0 /** Lost
                                                                                    activations
                                                                                    of non
                                                                                    cyclic
@@ -542,7 +542,7 @@ static void isrPit1(void)
        integrate this ISR into the consistency check any more. */
     checkAndIncrementTaskCnts(idISRPit1);
 #endif
-       
+
     ++ mai_cntISRPit1;
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. */
@@ -598,7 +598,7 @@ static void isrPit3(void)
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static void taskOs1ms(uintptr_t taskParam ATTRIB_UNUSED)
+static void taskOs1ms(uint32_t taskParam ATTRIB_UNUSED)
 {
     /* The I/O driver for the buttons is run from the OS task with priority
        prioTaskOs1ms = 2. The driver code and the callback onButtonChangeCallback it may
@@ -633,11 +633,11 @@ static int32_t onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t button
         /* Activate the non cyclic task a second time. The priority of the activated
            task (3) is higher than of this activating callback (2) so any earlier
            activation should have been processed meanwhile and this one should be accepted,
-           too. */ 
+           too. */
 #ifdef DEBUG
         bool bActivationAccepted =
 #endif
-        rtos_triggerEvent(idEvNonCyclic, /* taskParam */ 0);
+        rtos_sendEvent(idEvNonCyclic, /* taskParam */ 0);
         assert(bActivationAccepted);
 
         /* Activate our button down event task. The activation will normally succeed
@@ -646,7 +646,7 @@ static int32_t onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t button
 #ifdef DEBUG
         bActivationAccepted =
 #endif
-        rtos_triggerEvent(idEvOnButtonDown, /* taskParam */ 0);
+        rtos_sendEvent(idEvOnButtonDown, /* taskParam */ 0);
         //assert(bActivationAccepted);
 
         ++ cntButtonPress_;
@@ -669,7 +669,7 @@ static int32_t onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t button
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTask1ms);
     testPCP(idTask1ms);
@@ -680,7 +680,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UN
          Note, the non cyclic task is of higher priority than this task and it'll be
        executed immediately, preempting this task. The second activation below, on button
        down must not lead to an activation loss. */
-    rtos_triggerEvent(idEvNonCyclic, /* taskParam */ 0);
+    rtos_sendEvent(idEvNonCyclic, /* taskParam */ 0);
 
 #if TASKS_PRODUCE_GROUND_LOAD == 1
     /* Produce a bit of CPU load. This call simulates some true application software. */
@@ -709,7 +709,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UN
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t task3ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t task3ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTask3ms);
     ++ mai_cntTask3ms;
@@ -735,7 +735,7 @@ static int32_t task3ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UN
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t task1s(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t task1s(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTask1s);
 
@@ -824,7 +824,7 @@ static int32_t task1s(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNU
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t taskNonCyclic(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskNonCyclic(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTaskNonCyclic);
     ++ mai_cntTaskNonCyclic;
@@ -845,7 +845,7 @@ static int32_t taskNonCyclic(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATT
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t task17ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTask17ms);
     ++ mai_cntTask17ms;
@@ -853,7 +853,7 @@ static int32_t task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_U
     /* This task has a higher priority than the software triggered, non cyclic task. Since
        the latter one is often active we have a significant likelihood of a failing
        activation from here -- always if we preempted the non cyclic task. */
-    if(!rtos_triggerEvent(idEvNonCyclic, /* taskParam */ 0))
+    if(!rtos_sendEvent(idEvNonCyclic, /* taskParam */ 0))
         ++ mai_cntActivationLossTaskNonCyclic;
 
 #if TASKS_PRODUCE_GROUND_LOAD == 1
@@ -866,7 +866,7 @@ static int32_t task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_U
 #ifdef DEBUG
     bool bActivationAccepted =
 #endif
-    rtos_triggerEvent(idEv17ms, /* taskParam */ 0);
+    rtos_sendEvent(idEv17ms, /* taskParam */ 0);
     assert(!bActivationAccepted);
 
     return 0;
@@ -886,7 +886,7 @@ static int32_t task17ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_U
  *   @param taskParam
  * A variable task parameter. Here not used.
  */
-static int32_t taskOnButtonDown(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskOnButtonDown(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTaskOnButtonDown);
     ++ mai_cntTaskOnButtonDown;
@@ -932,7 +932,7 @@ static int32_t taskOnButtonDown(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam 
  * observation window, which compensates for the effect of the discontinuous observation
  * window.
  */
-static int32_t taskCpuLoad(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_UNUSED)
+static int32_t taskCpuLoad(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSED)
 {
     checkAndIncrementTaskCnts(idTaskCpuLoad);
     testPCP(idTaskCpuLoad);
@@ -1009,7 +1009,7 @@ static void osInstallInterruptServiceRoutines(void)
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[2].TFLG = PIT_TFLG_TIF(1);
     PIT->TIMER[3].TFLG = PIT_TFLG_TIF(1);
-    
+
     /* Enable interrupts by the timers and start them. See RM 51.4.10. */
     PIT->TIMER[1].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
     PIT->TIMER[2].TCTRL = PIT_TCTRL_CHN(0) | PIT_TCTRL_TIE(1) | PIT_TCTRL_TEN(1);
@@ -1022,7 +1022,7 @@ static void osInstallInterruptServiceRoutines(void)
        debugger know...). Both possibilities can be annoying or advantageous, depending on
        the situation. */
     PIT->MCR = PIT_MCR_MDIS(0) | PIT_MCR_FRZ(1);
-    
+
 } /* End of osInstallInterruptServiceRoutines */
 
 
@@ -1098,15 +1098,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
        code. */
-    
+
     /* All clocks run at full speed, including all peripheral clocks. */
-    ccl_configureClocks();          
-    
+    ccl_configureClocks();
+
     /* The interrupt controller is configured. This is the first driver initialization
        call: Many of the others will register their individual ISRs and this must not be
        done prior to initialization of the interrupt controller. */
     rtos_osInitINTCInterruptController();
-    
+
     /* Configuration of cross bars: All three cores need efficient access to ROM and RAM.
        By default, the cores generally have strictly prioritized access to all memory slave
        ports in order Z4A, I-Bus, Z4A, D-Bus, Z4B, I-Bus, Z4B, D-Bus, Z2, I-Bus, Z2, D-Bus.
@@ -1128,23 +1128,23 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        it must be neither changed nor re-configured without carefully double-checking the
        side-effects on the kernel! */
     stm_osInitSystemTimers();
-    
+
     /* Initialize the port driver. This should come early; most typical, many other I/O
        drivers will make use of pins and ports and therefore depend on the the port
        driver. */
     siu_osInitPortDriver();
-    
+
     /* Initialize the DMA driver. This driver needs to be initialized prior to any other
        I/O driver, which makes use of a DMA channel. */
     dma_osInitDMADriver();
-    
+
     /* Initialize the button and LED driver for the eval board. */
     lbd_osInitLEDAndButtonDriver( /* onButtonChangeCallback_core0 */ onButtonChangeCallback
                                 , /* PID_core0 */                    pidOnButtonChangeCallback
                                 , /* onButtonChangeCallback_core1 */ NULL
                                 , /* PID_core1 */                    0
                                 , /* onButtonChangeCallback_core2 */ NULL
-                                , /* PID_core2 */                    0   
+                                , /* PID_core2 */                    0
                                 , /* tiMaxTimeInUs */                1000
                                 );
 
@@ -1165,20 +1165,21 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     {
         initOk = false;
     }
-    
+
     /* Create the events that trigger application tasks at the RTOS. Note, we do not really
        respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
        The returned value is redundant. This technique requires that we create the events
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     unsigned int idEvent;
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              1
-                         , /* tiFirstActivationInMs */    10
-                         , /* priority */                 prioTask1ms
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor( &idEvent
+                                  , /* tiCycleInMs */               1
+                                  , /* tiFirstActivationInMs */     10
+                                  , /* priority */                  prioTask1ms
+                                  , /* minPIDToTriggerThisEvProc */ 1
+                                  , /* timerUsesCountableEvents */  false
+                                  , /* taskParam */                 0
+                                  )
        == rtos_err_noError
       )
     {
@@ -1200,14 +1201,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     }
     else
         initOk = false;
-        
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              3
-                         , /* tiFirstActivationInMs */    17
-                         , /* priority */                 prioTask3ms
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+
+    if(rtos_osCreateEventProcessor( &idEvent
+                                  , /* tiCycleInMs */               3
+                                  , /* tiFirstActivationInMs */     17
+                                  , /* priority */                  prioTask3ms
+                                  , /* minPIDToTriggerThisEvProc */ 1
+                                  , /* timerUsesCountableEvents */  false
+                                  , /* taskParam */                 0
+                                  )
        == rtos_err_noError
       )
     {
@@ -1225,14 +1227,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     }
     else
         initOk = false;
-    
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              1000
-                         , /* tiFirstActivationInMs */    100
-                         , /* priority */                 prioTask1s
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+
+    if(rtos_osCreateEventProcessor( &idEvent
+                                  , /* tiCycleInMs */               1000
+                                  , /* tiFirstActivationInMs */     100
+                                  , /* priority */                  prioTask1s
+                                  , /* minPIDToTriggerThisEvProc */ 1
+                                  , /* timerUsesCountableEvents */  false
+                                  , /* taskParam */                 0
+                                  )
        == rtos_err_noError
       )
     {
@@ -1250,14 +1253,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     }
     else
         initOk = false;
-    
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              0 /* non-cyclic */
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 prioTaskNonCyclic
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+
+    if(rtos_osCreateEventProcessor( &idEvent
+                                  , /* tiCycleInMs */               0 /* non-cyclic */
+                                  , /* tiFirstActivationInMs */     0
+                                  , /* priority */                  prioTaskNonCyclic
+                                  , /* minPIDToTriggerThisEvProc */ 1
+                                  , /* timerUsesCountableEvents */  false
+                                  , /* taskParam */                 0
+                                  )
        == rtos_err_noError
       )
     {
@@ -1276,13 +1280,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         initOk = false;
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              17
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 prioTask17ms
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor( &idEvent
+                                  , /* tiCycleInMs */               17
+                                  , /* tiFirstActivationInMs */     0
+                                  , /* priority */                  prioTask17ms
+                                  , /* minPIDToTriggerThisEvProc */ 1
+                                  , /* timerUsesCountableEvents */  false
+                                  , /* taskParam */                 0
+                                  )
        == rtos_err_noError
       )
     {
@@ -1300,14 +1305,16 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     }
     else
         initOk = false;
-        
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              0 /* Event task, no cycle time */
-                         , /* tiFirstActivationInMs */    0
-                         , /* priority */                 prioTaskOnButtonDown
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+
+    if(rtos_osCreateEventProcessor
+                        ( &idEvent
+                        , /* tiCycleInMs */               0 /* Event task, no cycle time */
+                        , /* tiFirstActivationInMs */     0
+                        , /* priority */                  prioTaskOnButtonDown
+                        , /* minPIDToTriggerThisEvProc */ 1
+                        , /* timerUsesCountableEvents */  false
+                        , /* taskParam */                 0
+                        )
        == rtos_err_noError
       )
     {
@@ -1315,7 +1322,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         if(rtos_osRegisterUserTask( idEvOnButtonDown
                                   , taskOnButtonDown
                                   , pidTaskOnButtonDown
-                                  , /* tiTaskMaxInUs */ 0 
+                                  , /* tiTaskMaxInUs */ 0
                                   )
            != rtos_err_noError
           )
@@ -1326,13 +1333,14 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     else
         initOk = false;
 
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              23 /* ms */
-                         , /* tiFirstActivationInMs */    3
-                         , /* priority */                 prioTaskCpuLoad
-                         , /* minPIDToTriggerThisEvent */ 1
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor( &idEvent
+                                  , /* tiCycleInMs */               23 /* ms */
+                                  , /* tiFirstActivationInMs */     3
+                                  , /* priority */                  prioTaskCpuLoad
+                                  , /* minPIDToTriggerThisEvProc */ 1
+                                  , /* timerUsesCountableEvents */  false
+                                  , /* taskParam */                 0
+                                  )
        == rtos_err_noError
       )
     {
@@ -1386,7 +1394,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 #ifdef DEBUG
         bool bActivationAccepted =
 #endif
-        rtos_osTriggerEvent(idEvNonCyclic, /* taskParam */ 0);
+        rtos_osSendEvent(idEvNonCyclic, /* taskParam */ 0);
         assert(bActivationAccepted);
 
         /* Run a kind of idle task in process 2. */
@@ -1406,7 +1414,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         if(_sharedDataTasksIdleAnd1msAndCpuLoad.noErrors != 0)
             rtos_osSuspendProcess(/* PID */ 1);
     }
-    
+
     /* We never get here. Just to avoid a compiler warning. */
     return -1;
 

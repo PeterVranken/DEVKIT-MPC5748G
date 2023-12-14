@@ -285,7 +285,7 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
                        };
 #endif /* #if At least one button is in use */
 
-#if LBD_NO_ENABLED_BUTTONS > 0
+#if LBD_NO_ENABLED_LEDS > 0
 
     const siu_portOutCfg_t stdOutpCfg =
         {
@@ -345,7 +345,7 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
 
     #undef INIT_LED
 
-#endif /* #if At least one button is in use */
+#endif /* #if At least one LED is in use */
 
 #if LBD_NO_ENABLED_BUTTONS > 0
 
@@ -435,11 +435,11 @@ void lbd_osInitLEDAndButtonDriver( lbd_onButtonChangeCallback_t onButtonChangeCa
 
 #if LBD_NO_ENABLED_LEDS > 0
 /**
- * Sample implementation of a system call of conformance class "simple". Such a
- * system call can already be implemented in C but it needs to be run with all interrupts
- * suspended. It cannot be preempted. Suitable for short running services only.\n
+ * Sample implementation of a system call of conformance class "simple". Such a system call
+ * can be implemented in C but it needs to be run with all interrupts suspended. It cannot
+ * be preempted. Suitable for short running services only.\n
  *   Here we use the concept to implement an I/O driver for the four LEDs on the eval board
- * TRK-USB-MPC5643L.
+ * DEVKIT-MPC5748G.
  *   @return
  * The value of the argument \a isOn is returned.
  *   @param pidOfCallingTask
@@ -548,8 +548,8 @@ uint32_t lbd_scSmplHdlr_setLED( uint32_t pidOfCallingTask ATTRIB_UNUSED
 # if RTOS_RUN_SAFE_RTOS_ON_CORE_0 == 1
 /**
  * Sample implementation of a system call of conformance class "simple". Such a system call
- * can already be implemented in C but it needs to be run with all interrupts suspended. It
- * cannot be preempted. Suitable for short running services only.\n
+ * can be implemented in C but it needs to be run with all interrupts suspended. It cannot
+ * be preempted. Suitable for short running services only.\n
  *   Here we use the concept to implement an input function for the two buttons on core 0
  * on the eval board DEVKIT-MPC5748G.
  *   @return

@@ -88,7 +88,7 @@ simplicity -- suffices to drive the majority of industrial applications.
 By means of compile-time configuration, the kernel can be instantiated on
 any set of cores. Nonetheless, safe-RTOS is still not a multi-core RTOS.
 The different kernel instantiations don't have any awareness of one
-another and there are no core-spawning scheduling strategies. However, a
+another and there are no core-spanning scheduling strategies. However, a
 number of core-to-core comunication basics is offered; we have a shared
 memory concept, which considers the complexity introduced by the cache,
 mutex objects, spin locks and an interrupt based core-to-core notification
@@ -108,7 +108,7 @@ channels or I/O data become protected resources, too.
 Memory protection is implemented with the memory protection unit (MPU) of
 the microcontroller. The MPU contains a number of memory area descriptors,
 which associate a range of memory addresses (defined by start and end
-address) with access rights. Mre precise, it are addresses, regardless
+address) with access rights. More precise, it are addresses, regardless
 whether memory, I/O registers or nothing is found at these addresses. Any
 load and store of the CPU is either permitted by at least one of the
 descriptors and then executed or it is suppressed and leads to an
@@ -167,10 +167,10 @@ system design fails to meet the timing requirements for the punished task.
 
 A second, simpler yet often advantageous mechanism is offered for time
 protection. The situation is recorded and reported as an "activation loss"
-error when an event is triggered but not all tasks associated with the
-event have terminated yet after the preceding trigger of the event. For
-the most typical use case of timer events and regular tasks this would
-have the meaning of a task overrun.
+error when an event aims to trigger one or more tasks but not all tasks
+associated with the event have terminated yet after the preceding trigger
+by the same event. For the most typical use case of timer events and
+regular tasks this would have the meaning of a task overrun.
 
 The kernel offers the priority ceiling protocol (PCP) to the tasks for
 implementing mutual exclusion. A minor modification of this common
@@ -235,27 +235,29 @@ The features of safe-RTOS:
 
 The proposed RTOS is little exciting with respect to its functionality.
 The scheduler implements the functionality of what is called the "Basic
-Conformance Class 1" (BCC1) of the OSEK/VDX-OS standard and of its BCC2 with
-the exception of activation queuing.
+Conformance Class 1" (BCC1) of the OSEK/VDX-OS standard and of its BCC2
+with the exception of activation queuing.
 
-The scheduler offers an API to create events that can activate tasks. An
+The scheduler offers an API to notify events that can activate tasks. An
 event is either a regular timer event, triggered by the RTOS system clock,
-or a software triggered event. The latter can be triggered either from
-user code (if it has sufficient privileges) or from ISRs belonging to the
-operating system.
+or an event notified by software. Event notification by software is
+possible either from user code (if it has sufficient privileges) or from
+ISRs belonging to the operating system.
 
 The RTOS offers a pre-configured set of four user processes. The
 limitation to four is a hardware constraint and for sake of simplicity no
 virtualizing by software has been shaped. The operating system forms a
 fifth process. The operating system startup code will register the needed
 tasks. The registration assigns them to one of the processes and
-associates them with one of the created events.
+associates them with one of the created event objects. (Where "event"
+actually is an event processor containing the logic to receive events and
+to activate associated tasks).
 
-All scheduling is strictly priority controlled. The triggering of an event
-makes all associated tasks ready to run. This is called task activation.
-At any time, the scheduler decides by priority, which of the _ready_ tasks
-becomes the one and only _running_ task. This may involve preemption of
-tasks.
+All scheduling is strictly priority controlled. The notification of an
+event makes all associated tasks ready to run. This is called task
+activation. An activated task is _ready_ to run. At any time, the
+scheduler decides by priority, which of the _ready_ tasks becomes the one
+and only _running_ task. This may involve preemption of tasks.
 
 The operating system startup code can install needed interrupt service
 routines (ISR). This will mostly appear in the initialization of the added
@@ -304,44 +306,65 @@ n1, n2 and n3 then we would have a total of 3+n1+n2+n3 stacks.
 Although BCC means a significant reduction of complexity and functionality
 in comparison to a full featured real time kernel, the embedded practice
 mostly doesn't require more than this. The typical data flow paradigm of
-an industrial embbeded application is to have event triggered tasks, which
+an industrial embedded application is to have event triggered tasks, which
 serve the asynchronous I/O channels and strictly cyclic application tasks,
 which process the data and implement the control strategies. The
 communication between ISRs and tasks is done either by queues or by
-overwriting (last recent value supersedes earlier ones), that depents.
+overwriting (last recent value supersedes earlier ones), that depends.
 It's a simple model, which has the advantage of being well understood,
 transparent and by nature free of dead locks. The latency times are higher
 than for consequently designed event controlled systems but they are
 predictable and have easy to determine upper bounds. Last but not least,
 software design can determine the upper bounds by choosing appropriate
-cycle times. 
+cycle times.
 
 === Events
 
-A task activation always happens by means of an event. The event is an
-RTOS object, which is created in the initialization code sequence. A set
-of tasks can be associated with an event. We have the relation 1:n for
-events to tasks. Any task is associated with exactly one event. An event
-has a method to trigger it. When the event is triggered then all
-associated tasks are triggered (and the scheduler will execute them in the
-order of priority).
+A task activation always happens via an event processing object. The event
+processor is an RTOS object, which is created in the initialization code
+sequence. It handles timer or software notified events. A set of tasks can
+be associated with such an object. We have the relation 1:n for event
+processors to tasks. Any task is associated with exactly one event
+processor. An event processor has methods to receive events that trigger
+all associated tasks. Once triggered, the scheduler will execute the tasks
+in the order of priority.
 
-An event can be configured such that it is implicitly triggered by the
-RTOS clock. This functionality is limited to an arbitrary time for the
-first trigger and an infinite, regular sequence of further triggers.
-Evidently, this aims at "normal", regular tasks. However, even these
-events still have the method for explicit trigger by software so that more
-complex activation patterns could be implemented.
+An event processor can be configured such that it is implicitly triggered
+by the RTOS clock. This functionality is limited to an arbitrary time for
+the first trigger and an infinite, regular sequence of further triggers.
+Evidently, this aims at "normal", regular tasks. However, even these event
+processors still have the methods for explicit trigger by software so that
+more complex activation patterns can be implemented.
 
-Triggering an event is a privileged operation. By configuration it is
-decided, which process may use the method for which event. For the
-majority of events, this will only be the kernel process but there are
-reasonable use cases for user tasks triggering specific events, too, and
--- as long as privileges are granted with care -- without breaking the
-safety concept.
+Notifying an event is a privileged operation. By configuration it is
+decided, which process may use the event notification methods for which
+event processor. For the majority of event processors, this will only be
+the kernel process but there are reasonable use cases for user tasks
+triggering specific event processors, too, and -- as long as privileges
+are granted with care -- without breaking the safety concept.
 
-The method to trigger an event can be used from ISRs and from tasks. The
+The methods to notify an event can be used from ISRs and from tasks. The
 former can be used to implement deferred interrupt handling.
+
+==== Countable versus ordinary events
+
+Software as well as the timers inside the event processors can decide,
+whether to notify an ordinary event or a countable event.
+
+TODOC:
+
+- How countable works
+- Countable till one is nearly the same as ordinary but not exactly
+- Ordinary mainly for cyclic tasks with task overrun detection
+- Mixing for one and same event processor possible but to handle with
+  care, tasks need to be able to recognize the difference
+  - Barely reasonable as the ordinary event will frequently be lost
+    although this is no longer an error indication
+- Multiplicity implemented as O(n), therefore limited to uint8_t
+- Use case "semaphore like", producer notifying delivered entities,
+  thread-safe queuing with awake
+- Flooding with events: Round robin on their priority level, preemption by
+  higher levels, starvation of lower levels
 
 === The operating system clock
 
@@ -378,28 +401,29 @@ executed sequentially, i.e., one after another. This introduces a kind of
 sub-ordinated priority, which determines the order of execution in this
 situation. This sub-ordinated priority is defined at RTOS configuration
 time; in the given situation, the tasks would be executed primarily in
-order of creation of the events, they are associated with, and secondarily
-in order of registration, if they are associated with one and the same
-event; see _rtos_osCreateEvent_(), _rtos_osRegisterOSTask_() and
-_rtos_osRegisterUserTask_() for details.
+order of creation of the event processors, they are associated with, and
+secondarily in order of registration, if several of them are associated
+with one and the same event processor; see _rtos_osCreateEvent_(),
+_rtos_osRegisterOSTask_() and _rtos_osRegisterUserTask_() for details.
 
 What does "become ready at the same time" mean? This can be as easy as two
 cyclic tasks that become due at the same nominal operating system clock
 tick. For event tasks, which are triggered from one or more ISRs it's less
-evident. One ISR can trigger several events or several nesting, preempting
-ISRs can each trigger one or more events. Due to the generally higher
-priority of interrupts in comparison to tasks, all of the tasks, which are
-associated with any of the triggered events, become effectively due at the
-(logically) same time and compete for the CPU immediately after return
-from the last of the nested interrupts. In this situation, the
-sub-ordinated priority counts for those of same priority.
+evident. One ISR can trigger several event processors or several nesting,
+preempting ISRs can each trigger one or more event processors. Due to the
+generally higher priority of interrupts in comparison to tasks, all of the
+tasks, which are associated with any of the triggered event processors,
+become effectively due at the (logically) same time and compete for the
+CPU immediately after return from the last of the nested interrupts. In
+this situation, the sub-ordinated priority counts for those of same
+priority.
 
-TIP: A most important aspect of tasks of same priority -- it doesn't
-matter whether they are associated with the same event or with different
-events of same priority -- is that there are by principle no race
-condition between them. They can easily share data objects without any
-concern about using keyword _volatile_ or the need to implement critical
-section code.
+TIP: A most important aspect of tasks of same priority executing on the
+same core -- it doesn't matter whether they are associated with the same
+event processor or with different event processors of same priority -- is
+that there are by principle no race condition between them. They can
+easily share data objects without any concern about using keyword
+_volatile_ or the need to implement critical section code.
 
 === Exception handling
 
@@ -548,8 +572,8 @@ supervised processes.
 The design of an operating system building on safe-RTOS can make the
 consideration, whether or not deadline monitoring needs to be applied at
 all. If some design rules are obyed then the observation of the event
-activation loss counters from the safety supervisory task will be
-sufficient in most cases (see service _rtos_getNoActivationLoss_()).
+processors' activation loss counters from the safety supervisory task will
+be sufficient in most cases (see service _rtos_getNoActivationLoss_()).
 
 Using deadline monitoring is absolutely unavoidable if ISRs make use of
 callbacks into user processes (using service _rtos_osRunTask_()). However,
@@ -558,7 +582,7 @@ handling, i.e., by triggering an OS task that takes over the work from the
 ISR. The triggered task would have a priority below the safety task and if
 it is blocked by a non-returning, bad callback into the user process then
 the safety task would immediately see the activation losses for the event
-triggered by the ISR and likely some other (timer) events.
+notified by the ISR and likely some other (timer) events.
 
 Typically, the latency times resulting from observation of activation
 losses will be a bit higher than when applying deadline monitoring. This
@@ -622,7 +646,7 @@ several implications:
   data of all three cores together need to fit into the 64 kByte. The NXP
   approach with independent runs of the linker provides the 64 kByte
   separately to each of the cores.
-  
+
 [[secSafetyConcept]]
 == The safety concept
 
@@ -754,7 +778,7 @@ to be executable in user mode.
 
 The simplest way to implement an I/O driver is the memory mapped driver.
 All conveyed information is placed in memory, which can be accessed from
-the application tasks and from the OS. 
+the application tasks and from the OS.
 
 The API is a set of getters and/or setters, which simply read from or
 write to this memory. The I/O driver registers a function at the OS to
@@ -783,11 +807,11 @@ see some samples from before and some from after the preemption. The set
 of samples is inconsistent; the age of the samples differs by one cycle.
 
 If consistency of a data set matters for an interrupt driven I/O driver
-then it can either apply a double-buffering strategy or it delegate the
+then it can either apply a double-buffering strategy or it delegates the
 API update to an OS task of sufficiently high priority. Delegation means
-the ISR just triggers the event the task is associated with. The task
-reads the I/O registers and writes the results into the API buffers. This
-design is often referred to as "deferred interrupt handling". The
+the ISR just triggers the event processor the task is associated with. The
+task reads the I/O registers and writes the results into the API buffers.
+This design is often referred to as "deferred interrupt handling". The
 difference is that the API now can implement critical section code -- this
 is possible between different tasks, between OS tasks and ISRs but not
 between application tasks and ISRs.
@@ -862,19 +886,19 @@ supervisory task from executing.
 safety task in turn as a callback from a (regular timer) ISR of even
 higher priority to overcome this problem.]
 
-The second way to implement a callback is using a dedicated event. The
-callback is implemented as a task, which is associated with the event. By
-triggering the event, the ISR activates the task. Independently, the
-scheduler of the RTOS decides when to make the task running. The task is
-user code owned, belongs to the same, supervised process and can implement
-the notification as suitable in this context.
+The second way to implement a callback is using a dedicated event
+processor. The callback is implemented as a task, which is associated with
+the event processor. By triggering the processor, the ISR activates the
+task. Independently, the scheduler of the RTOS decides when to make the
+task running. The task is user code owned, belongs to the same, supervised
+process and can implement the notification as suitable in this context.
 
 There are significant differences between both solutions:
 
 * Using an event means less time uncertainty for the ISR implementation.
-  The event has a lower priority than the ISR, so the ISR is surely not
-  preempted and triggering the event will be done in no time. The ISR can
-  return soon
+  The task activated by the event has a lower priority than the ISR, so
+  the ISR is surely not preempted and triggering the event will be done in
+  no time. The ISR can return soon
 * Using the event means to have better control on priorities. The callback
   has a priority, which can be balanced with the other tasks. The other
   side of the coin: This can break the intended tight coupling in time,
@@ -931,7 +955,7 @@ The leanest and fastest system call is the basic handler:
   call with return. For example, the "throw exception" system call, i.e.,
   _rtos_terminateTask_(), is implemented this way, it returns to the
   operating system but not from the system call
-  
+
 The programmer of a basic system call has the full responsibility for
 every detail. The only things the RTOS code does are the switch to
 supervisor mode and the table lookup operation to find the entry into the
@@ -953,7 +977,7 @@ without the significant overhead of the other conformance classes.
 Examples are simple I/O drivers: Getting or setting a digital port is a
 matter of loading an address plus a load or store - all in all two or
 three instructions. Here, the basic handler perfectly suits.
-  
+
 ===== Simple handler
 
 The "simple handler" will mostly suit for low-computational operations. It
@@ -1008,9 +1032,9 @@ additional:
 * The full handler is preemptable. It is entered with External Interrupt
   processing enabled and race conditions appear with other contexts
 * All OS services may be used in the implementation, including critical
-  section operations and running a user task or triggering an event to
+  section operations and running a user task or notifying an event to
   activate the associated tasks
-  
+
 The handler uses the kernel stack, which cannot be protected by the MPU
 like the user process stacks. For a safe software design, it's unavoidable
 that the static stack calculation for the handler implementation is
@@ -1147,13 +1171,13 @@ by user code
 resource or enter critical section
 |2  |rtos_scBscHdlr_{zwsp}resumeAllTasksByPriority |Basic |PCP: Release
 resource or leave critical section
-|3  |rtos_scFlHdlr_triggerEvent |Full |Event trigger by software
+|3  |rtos_scFlHdlr_triggerEvent |Full |Event notification by software
 |4  |rtos_scFlHdlr_runTask |Full |Run a user task or inter-process
-function call 
+function call
 |5  |rtos_scSmplHdlr_suspendProcess |Simple |Suspend a process forever
 |6  |assert_scBscHdlr_assert_func |Basic |Implementation of C assert macro
 |7-19 |rtos_scBscHdlr_sysCallUndefined |Basic |Index space reserved for
-RTOS extensions 
+RTOS extensions
 |=======
 
 ===== System calls of sample I/O drivers
@@ -1209,7 +1233,7 @@ top of the RTOS:
 
 * OS functions are named `rtos_os<FctName>`
 * Application functions are named `rtos_<fctName>`
-  
+
 OS functions must be used in supervisor mode only, i.e., from ISRs or OS
 tasks. Application tasks are executed in user mode. If they try calling an
 OS function then they will be punished by an exception.
@@ -1235,7 +1259,7 @@ software execution being halted in the kernel.
 
 // @todo Shall we a have table with all the calls?
 // System configuration and initialization:
-// 
+//
 //   rtos_osCreateEvent                         <<secApiCreateEvent>>
 //   rtos_osRegisterInitTask                    <<secApiRegisterTask>>
 //   rtos_osRegisterUserTask                    <<secApiRegisterTask>>
@@ -1245,9 +1269,9 @@ software execution being halted in the kernel.
 //   rtos_osGrantPermissionRunTask              <<secApiConfRunTask>>
 //   rtos_osGrantPermissionSuspendProcess       <<secApiConfSuspProc>>
 //   rtos_osInitKernel                          <<secApiInitKernel>>
-// 
+//
 // Control tasks and processes:
-// 
+//
 //   rtos_osTriggerEvent                        <<secApiTriggerEvent>>
 //   rtos_triggerEvent (inline)                 <<secApiTriggerEvent>>
 //   rtos_osRunTask (inline)                    <<secApiRunTask>>
@@ -1255,9 +1279,9 @@ software execution being halted in the kernel.
 //   rtos_terminateTask (inline)                <<secApiTermTask>>
 //   rtos_osSuspendProcess                      <<secApiSuspProc>>
 //   rtos_suspendProcess (inline)               <<secApiSuspProc>>
-// 
+//
 // Critical sections:
-// 
+//
 //   rtos_osSuspendAllInterrupts (inline)       <<secApiSuspIrq>>, bare-metal
 //   rtos_osResumeAllInterrupts (inline)        <<secApiSuspIrq>>, bare-metal
 //   rtos_osEnterCriticalSection (inline)       <<secApiSuspIrq>>, bare-metal
@@ -1266,24 +1290,24 @@ software execution being halted in the kernel.
 //   rtos_osResumeAllTasksByPriority            <<secApiPCP>>
 //   rtos_suspendAllTasksByPriority             <<secApiPCP>>
 //   rtos_resumeAllTasksByPriority              <<secApiPCP>>
-// 
-// System call interface: 
-// 
+//
+// System call interface:
+//
 //   rtos_systemCall                            <<secApiSysCall>>
 //   rtos_osSystemCallBadArgument               <<secApiTermSysCall>>
 //   rtos_checkUserCodeReadPtr (inline)         <<secApiCheckPtr>>
 //   rtos_checkUserCodeWritePtr                 <<secApiCheckPtr>>
-// 
+//
 // Query system state:
-// 
+//
 //   rtos_osGetIdxCore (inline)                 <<secApiGetIdxCore>>, bare-metal
 //   rtos_getIdxCore                            <<secApiGetIdxCore>>, OS contexts
 //   rtos_getCoreStatusRegister                 <<secApiGetMSR>>, OS contexts
 //   rtos_osGetAllInterruptsSuspended (inline)  <<secApiGetIrqSusp>>, bare-metal
 //   rtos_isProcessSuspended                    <<secApiGetProcSusp>>, OS contexts
-// 
+//
 // Diagnostic interface:
-// 
+//
 //   rtos_getNoActivationLoss                   <<secApiActivationLoss>>, OS contexts
 //   rtos_getNoTotalTaskFailure                 <<secApiTskFailure>>, OS contexts
 //   rtos_getNoTaskFailure                      <<secApiTskFailure>>, OS contexts
@@ -1337,7 +1361,7 @@ user and OS tasks, interrupt service routines and bare-metal applications:
 | <<secApiPCP,rtos_osResumeAllTasksByPriority()>> | OS |
 | <<secApiPCP,rtos_suspendAllTasksByPriority()>> | user |
 | <<secApiPCP,rtos_resumeAllTasksByPriority()>> | user |
-// System call interface: 
+// System call interface:
 | <<secApiSysCall,rtos_systemCall()>> | user |
 | <<secApiTermSysCall,rtos_osSystemCallBadArgument()>> | OS (system call) |
 | <<secApiCheckPtr,rtos_checkUserCodeReadPtr()>> | all | inline
@@ -1384,13 +1408,13 @@ to configure the RTOS appropriately for the implemented operating system,
 return an enumeration value, `rtos_errorCode_t`, indicating, whether or
 which problem appeared.
 
-The configuration of the RTOS is generally static, i.e., the sets of events
-and tasks and the granted privileges will not depend on variable input
-data and so the success of the RTOS initialization neither won't.
-Consequently, there's no need for a dynamic, intelligent error handling
-strategy. The implemented strategy will simply be to start the application
-software if and only if all RTOS configuration and initialization calls
-return "no error".
+The configuration of the RTOS is generally static, i.e., the sets of event
+processors and tasks and the granted privileges will not depend on
+variable input data and so the success of the RTOS initialization neither
+won't. Consequently, there's no need for a dynamic, intelligent error
+handling strategy. The implemented strategy will simply be to start the
+application software if and only if all RTOS configuration and
+initialization calls return "no error".
 
 The added value of the enumeration only is development support. Having the
 error code it's much easier to find or identify the bad configuration
@@ -1404,14 +1428,14 @@ for the list of recognized configuration errors.
 
     #include "rtos.h"
     typedef enum rtos_errorCode_t;
-    
-[[secApiCreateEvent]]
-==== Create an event
 
-Tasks are activated by events. At OS initialization time, at first events are
-created to specify conditions under which the aimed tasks shall be
-activated. These are mostly (regular) time triggers but software trigger
-(e.g., from within an ISR) is supported, too.
+[[secApiCreateEvent]]
+==== Create an event processor
+
+Tasks are activated by events. At OS initialization time, at first event
+processors are created. Most often, they are configured to produce regular
+timer events in order to implement cyclic tasks, but notification of
+events by software (e.g., from within an ISR) is supported, too.
 
     #include "rtos.h"
     rtos_errorCode_t rtos_osCreateEvent( unsigned int *pEventId
@@ -1422,36 +1446,36 @@ activated. These are mostly (regular) time triggers but software trigger
                                        , uintptr_t taskParam
                                        );
 
-The returned event IDs form a sequence of numbers 0, 1, 2, ... in the
-order of creation calls. The ID is required as input to some other API
-functions that relate to an event,
+The returned event processor IDs form a sequence of numbers 0, 1, 2, ...
+in the order of creation calls. The ID is required as input to some other
+API functions that relate to a events,
 <<secApiTriggerEvent,`rtos_triggerEvent`>> in the first place.
 
 The priority is a non zero integer number. Regardless of the number, any
-event (and thus all of the associated tasks) will have a priority below any
-interrupt. See <<secPrioTaskAndISR>> and <<secApiRegisterIsr>> also.
+event (and thus all of the associated tasks) will have a priority below
+any interrupt. See <<secPrioTaskAndISR>> and <<secApiRegisterIsr>> also.
 
 Parameter `minPIDToTriggerThisEvent` restricts the use of the API
-`rtos_triggerEvent` for the given event to processes of sufficient
-privileges.
+`rtos_triggerEvent` for the given event processor to processes of
+sufficient privileges.
 
-Parameter `taskParam` is provided to the task function as argument. It can
-be used as context information, e.g., if the same task function should be
-associated with different events. (Which makes them different tasks
-executing the same shared code.)
+Parameter `taskParam` is provided to the associated task functions as
+argument. It can be used as context information, e.g., if the same task
+function should be associated with different event processors. (Which
+makes them different tasks executing the same shared code.)
 
 [[secApiRegisterTask]]
 ==== Registering a task
 
 Tasks are not created dynamically, on demand, but they are registered at
 the RTOS before the scheduler is started. The registration of a task
-specifies the task function and the event, which will activate the task.
-The task function is associated with the event.
+specifies the task function and the event processor, which will activate
+the task. The task function is associated with the event processor.
 
 Any number of tasks (up to a configurable compile time constant) can be
-associated with an event. Later, when the event is triggered, they will
-all be executed, in the order of registration, each in its process and
-without mutual race conditions.
+associated with an event processor. Later, when an event is notified to
+the processor, they will all be executed, in the order of registration,
+each in its process and without mutual race conditions.
 
 The RTOS differentiates between three kinds of tasks:
 
@@ -1511,6 +1535,7 @@ triggered tasks receive the value, which is sent with
 <<secApiTriggerEvent,_rtos_osTriggerEvent_()>> or
 <<secApiTriggerEvent,_rtos_triggerEvent_()>>.
 
+TODOC Make the distinction between ordinary and countable events.
 
 [[secApiInitINTC]]
 ==== Initialize the interrupt hardware
@@ -1622,10 +1647,10 @@ task. The idle task is executed in supervisor mode and belongs to the OS.
 === Control tasks and processes
 
 [[secApiTriggerEvent]]
-==== Trigger an event
+==== Notify an event
 
-Most events are typically time triggered. The rest is triggered on demand.
-Here's the API to trigger such an event. Use cases are inter-process
+Most events are typically timer based. The rest is notified on demand.
+Here's the API to notify such an event. Use cases are inter-process
 communication and deferred interrupt handling. This service is available
 to ISRs, OS and user tasks and system call handlers of full
 conformance class. System call handlers of lower conformance class must
@@ -1635,33 +1660,36 @@ not use it.
     bool rtos_osTriggerEvent(unsigned int idEvent, uintptr_t taskParam);
     bool rtos_triggerEvent(unsigned int idEvent, uintptr_t taskParam);
 
-Triggering the event can fail if at least one of the associated tasks has
+Notifying the event can fail if at least one of the associated tasks has
 not yet completed the previous activation. This is counted as an
 activation loss error for the event. In this situation, the new trigger is
 entirely lost, i.e., none of the associated tasks will be activated by the
 new trigger.
 
-The trigger of an event can be used to specify the value `taskParam`,
-which is delivered to the associated tasks as function argument, when they
-are activated. Main use case is deferred interrupt handling; an ISR
-can send some context information about what to do to the task. This is
-likely the most simple available coherent, process boundary crossing
-communication channel.
-  footnote:[It may look like an inconsistent API design if all associated
-tasks receive the same value `taskParam` from the triggering event. The
-service _rtos_triggerEvent_() could easily offer an API, which provides an
-individual value to each associated task. The only reason not to do so is
-the additional overhead in combination with the very few imaginable use
-cases. In most cases an explicitly triggered event will have just one
-associated task; events with more than one task will mostly be regular
-timer tasks, which make rarely use of the task parameter.]
+TODOC Make the distinction between ordinary and countable events.
 
-Unrestricted use of event triggers would easily break the safety concept
-of the aimed software. Therefore, the use of this kernel service is
-subject to privilege configuration: See function
+The notification of an ordinary event can be used to specify the value
+`taskParam`, which is delivered to the associated tasks as function
+argument, when they are activated. Main use case is deferred interrupt
+handling; an ISR can send some context information to the task about what
+to do. This is likely the most simple available coherent, process boundary
+crossing communication channel.
+  footnote:[It may look like an inconsistent API design if all associated
+tasks receive the same value `taskParam` from the triggering ISR or task.
+The service _rtos_triggerEvent_() could easily offer an API, which
+provides an individual value to each associated task. The only reason not
+to do so is the additional overhead in combination with the very few
+imaginable use cases. In most cases an explicitly triggered event
+processor will have just one associated task; event processors with more
+than one task will mostly be regular timer tasks, which make rarely use of
+the task parameter.]
+
+Unrestricted use of event notification would easily break the safety
+concept of the aimed software. Therefore, the use of this kernel service
+is subject to privilege configuration: See function
 <<secApiCreateEvent,rtos_osCreateEvent>>, argument
 _minPIDToTriggerThisEvent_; it's a matter of explicit configuration to
-permit certain processes to trigger a particular event.
+permit certain processes to trigger a particular event processor.
 
 [[secApiRunTask]]
 ==== Inter-process function call
@@ -1693,7 +1721,7 @@ task.
 
 The task function takes a 32 Bit argument and may return either a 31 Bit
 result or an error indication, which is counted as an exception in the
-destination process. 
+destination process.
 
 The OS variant of the service is intended for implementing callbacks from
 ISRs or OS tasks into application code, e.g., for notifying events or
@@ -1832,7 +1860,7 @@ task invokes such a function with this API:
 
     #include "rtos.h"
     uint32_t rtos_systemCall(uint32_t idxSysCall, ...);
-    
+
 The ellipsis stands for the function arguments of the particular system
 call; different system calls will have different argument lists.
 
@@ -1873,7 +1901,7 @@ to the referenced memory addresses is granted to the calling process. See
                                    , const void *address
                                    , size_t noBytes
                                    );
-                                   
+
 Note, the use of pointers as function call arguments is possible but not
 recommended. The call of these checker functions will mostly be too
 expensive in relation to the intended pointer operation.
@@ -1915,7 +1943,7 @@ which needs to take according decisions, like which particular API to call
 to get a needed service.
 
     #include "rtos.h"
-    rtos_getCoreStatusRegister                 
+    rtos_getCoreStatusRegister
 
 Note, this function can be called from OS and user code. OS contexts
 should however better use an intrinsic to read the MSR and in order to
@@ -1958,10 +1986,13 @@ decisions.
 [[secApiActivationLoss]]
 ==== Task overrun
 
-Tasks are activated by triggering an event. Triggering an event may fail
-if any of its associated tasks have not yet completed after their
-preceding activation. This leads to a loss of the event trigger and to not
-activating its associated tasks -- effectively a task overrun.
+Tasks are activated by notifying an event at the event processor the tasks
+are associated with. Triggering an event processor may fail if any of its
+associated tasks have not yet completed after their preceding activation.
+This leads to a loss of the event and to not activating the tasks --
+effectively a task overrun.
+
+TODOC Make the distinction between ordinary and countable events.
 
 This failure is counted for each distinct event.
 
@@ -1984,7 +2015,7 @@ number of exceptions for a given process whereas
 <<secApiTaskFailure,rtos_getNoTaskFailure()>> breaks the count down into
 several different exception kinds. You could, e.g., try to decide, whether
 an exception is a possibly tolerable timeout exception.
-  
+
     #include "rtos.h"
     unsigned int rtos_getNoTotalTaskFailure(unsigned int PID);
     unsigned int rtos_getNoTaskFailure( unsigned int PID
@@ -2164,7 +2195,7 @@ normally addressed data objects in RAM, owned by process 4:
     . += ld_stackSizeP4Core0;
     . = ALIGN(8);
     ld_stackEndP4Core0 = ABSOLUTE(.);
-    
+
     . = ALIGN(16);
     ld_dataP4End = ABSOLUTE(.);
 
@@ -2182,7 +2213,7 @@ _ld_dataP4Start_ and _ld_dataP4End_ and which are globally visible:
   _.data.*_, _.bss_, _.bss.*_), if they come from a compilation unit with a name
   containing _&#x5f;P4&#x5f;_
 * Stack memory for process 4 is placed here, too, by moving the current address
-  (`. += ld_stackSizeP4CoreN`) 
+  (`. += ld_stackSizeP4CoreN`)
 
 You may add additional input section filters to assign memory to the
 given process as long as they appear between the two labels
@@ -2305,7 +2336,7 @@ double-check proper locating of data objects.
 The type decoration makes a variable definition somewhat bulky,
 particularly when using the section name with contained variable name.
 Therefore safe-RTOS offers some convenience macros to hide it. Consider
-typing: 
+typing:
 
     #include "typ_types.h"
     static uint16_t DATA_P4(myVariable) = 99;
@@ -2510,8 +2541,8 @@ linked with the RTOS code. Now, the build process yields a flashable and
 runnable binary.
 
 The concept is to specify an additional source code folder on the command
-line of the make processor. All source code, which is found in the folder or
-one of its sub-folders, is considered the sample application.
+line of the make processor. All source code, which is found in the folder
+or one of its sub-folders, is considered the sample application.
 
 The safe-RTOS repository contains a few such sample applications.
 
@@ -2519,8 +2550,9 @@ The safe-RTOS repository contains a few such sample applications.
 === Sample application "initial"
 
 Sample application "initial" is a minimal configuration of the RTOS, meant
-to demonstrate the use of the APIs to configure and run the RTOS: Create an
-event, associate a task with the event and start the kernel.
+to demonstrate the use of the APIs to configure and run the RTOS: Create
+an event processor, associate a task with the processor and start the
+kernel.
 
 To see how the RTOS sample application works you need to open a terminal
 software on your host machine. You can find a terminal as part of the
@@ -2534,7 +2566,7 @@ out.) The Baud rate has been selected as 115200 Bd in file
 Bit. The terminal should print the messages, which are regularly sent by
 the sample code running on the evaluation board.
 
-To compile the RTOS with this sample application, have 
+To compile the RTOS with this sample application, have
 
     APP=code/application/initial/
 
@@ -2561,7 +2593,7 @@ a terminal program on the development computer is identical to
 
 Try pressing button SW3 on the evaluation board and see what happens.
 
-To compile the RTOS with this sample application, have 
+To compile the RTOS with this sample application, have
 
     APP=code/application/default/
 
@@ -2591,7 +2623,7 @@ execution if any deviation from the expectations should be recognized -
 which must of course never happen. The situation would be observable even
 without connected terminal as the LED stops blinking.
 
-To compile the RTOS with this sample application, have 
+To compile the RTOS with this sample application, have
 
     APP=code/application/basicTest/
 
@@ -2604,7 +2636,7 @@ Progress and status are reported through the serial interface. Setting up
 a terminal program on the development computer is identical to
 <<secAppInitial>>.
 
-To compile the RTOS with this sample applications, have 
+To compile the RTOS with this sample applications, have
 
     APP=code/application/testPCP/
 
@@ -2663,7 +2695,7 @@ Progress and results are reported through the serial interface. Setting up
 a terminal program on the development computer is identical to
 <<secAppInitial>>.
 
-To compile the RTOS with this sample application, have 
+To compile the RTOS with this sample application, have
 
     APP=code/application/benchmark/
 

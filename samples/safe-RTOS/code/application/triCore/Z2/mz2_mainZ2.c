@@ -59,7 +59,7 @@
 /*
  * Defines
  */
- 
+
 /** The demo can be compiled with a ground load. Most tasks produce some CPU load if this
     switch is set to 1. */
 #define TASKS_PRODUCE_GROUND_LOAD   1
@@ -72,9 +72,9 @@
 /** The enumeration of all events, tasks and priorities, to have them as symbols in the
     source code. Most relevant are the event IDs. Actually, these IDs are provided by the
     RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
-    are dealt out by rtos_osCreateEvent() form the series 0, 1, 2, .... So we don't need
+    are dealt out by rtos_osCreateEventProcessor() form the series 0, 1, 2, .... So we don't need
     to have a dynamic storage of the IDs; we define them as constants and double-check by
-    assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
+    assertion that we got the correct, expected IDs from rtos_osCreateEventProcessor(). Note, this
     requires that the order of creating the events follows the order here in the
     enumeration.\n
       Here, we have the IDs of the created events. They occupy the index range starting
@@ -123,16 +123,16 @@ enum
  */
 
 /** Counter of regular 1ms user isr. */
-volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr1ms) mz2_cntIsr1ms = 0;  
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr1ms) mz2_cntIsr1ms = 0;
 
 /** Counter of regular 100us user isr. */
-volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr100us) mz2_cntIsr100us = 0;  
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr100us) mz2_cntIsr100us = 0;
 
 /** Counter of regular 33us user isr. */
-volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr33us) mz2_cntIsr33us = 0;  
+volatile unsigned long SECTION(.uncached.OS.mz2_cntIsr33us) mz2_cntIsr33us = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long SECTION(.uncached.P1.mz2_cntTask1ms) mz2_cntTask1ms = 0;  
+volatile unsigned long SECTION(.uncached.P1.mz2_cntTask1ms) mz2_cntTask1ms = 0;
 
 /** Counter of cyclic 1ms OS task. */
 volatile unsigned long SECTION(.uncached.OS.mz2_cntTaskOs1ms) mz2_cntTaskOs1ms = 0;
@@ -157,7 +157,7 @@ volatile unsigned int SECTION(.uncached.OS.mz2_stackReserveP1) mz2_stackReserveP
 /** Stack reserve of kernel process on the second core. */
 volatile unsigned int SECTION(.uncached.OS.mz2_stackReserveOS) mz2_stackReserveOS = 0;
 
-/** The average CPU load produced by all ISRs in tens of percent. */ 
+/** The average CPU load produced by all ISRs in tens of percent. */
 volatile unsigned int SECTION(.uncached.OS.mz2_cpuLoadZ2) mz2_cpuLoadZ2 = 1000;
 
 
@@ -226,7 +226,7 @@ static void isrPit6(void)
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -259,7 +259,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
+static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -276,7 +276,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
 
     /* Test button input: The current status is echoed as LED status. */
 //    lbd_osSetLED(lbd_led_5_DS6,  /* isOn */ lbd_osGetButton(lbd_bt_button_SW2));
-              
+
     /* Communicate the current number of recognized failures to the reporting task running
        on the boot core. */
     mz2_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
@@ -291,7 +291,7 @@ static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
     icn_osSendNotification( ICN_ID_NOTIFICATION_Z2_TO_Z4B
                           , /* notificationParam */ mz2_cntTaskOs1ms-1
                           );
-    
+
 } /* End of taskOs1ms */
 
 
@@ -322,7 +322,7 @@ int32_t mz2_onButtonChangeCallback( uint32_t PID ATTRIB_UNUSED
         lbd_setLED(lbd_led_6_DS5,  /* isOn */ false);
 #endif
 
-    return 0;    
+    return 0;
 
 } /* End of mz2_onButtonChangeCallback */
 
@@ -407,14 +407,14 @@ static void osInstallInterruptServiceRoutines(void)
  * the name of the core, which is started.
  *   @remark
  * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
- * compiler warning. 
+ * compiler warning.
  */
 void /* _Noreturn */ mz2_mainZ2( int noArgs ATTRIB_DBG_ONLY
                                , const char *argAry[] ATTRIB_DBG_ONLY
                                )
 {
     assert(noArgs == 1  &&  strcmp(argAry[0], "Z2") == 0);
-            
+
 #if 0 /* Here, on the third core, we must not make use of the serial output. It is
          basically alright to make use of the sio API but blocking by busy wait is involved
          with hard to predict impact on the RTOS timing. Moreover, the use of the C library
@@ -433,22 +433,24 @@ void /* _Noreturn */ mz2_mainZ2( int noArgs ATTRIB_DBG_ONLY
     fputs("fputs saying " GREETING, stdout);
     printf("printf saying %s", GREETING);
     #undef GREETING
-#endif    
+#endif
 
     /* Create the events that trigger application tasks at the RTOS. Note, we do not really
-       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
+       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEventProcessor().
        The returned value is redundant. This technique requires that we create the events
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     bool initOk = true;
     unsigned int idEvent;
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              1
-                         , /* tiFirstActivationInMs */    10
-                         , /* priority */                 prioEv1ms
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                        ( &idEvent
+                        , /* tiCycleInMs */               1
+                        , /* tiFirstActivationInMs */     10
+                        , /* priority */                  prioEv1ms
+                        , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                        , /* timerUsesCountableEvents */  false
+                        , /* taskParam */                 0
+                        )
        == rtos_err_noError
       )
     {
@@ -476,7 +478,7 @@ void /* _Noreturn */ mz2_mainZ2( int noArgs ATTRIB_DBG_ONLY
 
     /* Configure the interrupts, which we have justto produce some load and disturbance. */
     osInstallInterruptServiceRoutines();
-    
+
     /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
        succeeds. The step involves a configuration check. We must not startup the SW if the
        check fails. */
@@ -499,37 +501,37 @@ void /* _Noreturn */ mz2_mainZ2( int noArgs ATTRIB_DBG_ONLY
              We assume, that the idle loop takes between 1 and 2s. */
         bool isSystemAlive = mz2_cpuLoadZ2 < 1000
                              &&  mz2_cpuLoadZ2 > 0;
-                             
+
         static unsigned long SDATA_OS(cntIsr1ms_) = 0;
         unsigned long tmpCnt = mz2_cntIsr1ms;
         if(tmpCnt < cntIsr1ms_+1000u  ||  tmpCnt > cntIsr1ms_+2000u)
             isSystemAlive = false;
-        cntIsr1ms_ = tmpCnt; 
-        
+        cntIsr1ms_ = tmpCnt;
+
         static unsigned long SDATA_OS(cntIsr100us_) = 0;
         tmpCnt = mz2_cntIsr100us;
         if(tmpCnt < cntIsr100us_+10000u  ||  tmpCnt > cntIsr100us_+20000u)
             isSystemAlive = false;
-        cntIsr100us_ = tmpCnt; 
-            
+        cntIsr100us_ = tmpCnt;
+
         static unsigned long SDATA_OS(cntIsr33us_) = 0;
         tmpCnt = mz2_cntIsr33us;
         if(tmpCnt < cntIsr33us_+30000u  ||  tmpCnt > cntIsr33us_+60000u)
             isSystemAlive = false;
-        cntIsr33us_ = tmpCnt; 
+        cntIsr33us_ = tmpCnt;
 
         static unsigned long SDATA_OS(cntTask1ms_) = 0;
         tmpCnt = mz2_cntTask1ms;
         if(tmpCnt < cntTask1ms_+1000u  ||  tmpCnt > cntTask1ms_+2000u)
             isSystemAlive = false;
-        cntTask1ms_ = tmpCnt; 
-        
+        cntTask1ms_ = tmpCnt;
+
         static unsigned long SDATA_OS(cntTaskOs1ms_) = 0;
         tmpCnt = mz2_cntTaskOs1ms;
         if(tmpCnt < cntTaskOs1ms_+1000u  ||  tmpCnt > cntTaskOs1ms_+2000u)
             isSystemAlive = false;
-        cntTaskOs1ms_ = tmpCnt; 
-        
+        cntTaskOs1ms_ = tmpCnt;
+
         static bool SBSS_OS(isOn_) = false;
         isOn_ = isSystemAlive && !isOn_;
         lbd_osSetLED(lbd_led_4_DS7, isOn_);
@@ -538,7 +540,7 @@ void /* _Noreturn */ mz2_mainZ2( int noArgs ATTRIB_DBG_ONLY
            core. */
         mz2_stackReserveP1 = rtos_getStackReserve(pidTask1ms);
         mz2_stackReserveOS = rtos_getStackReserve(pidOs);
-        
+
         /* Make spinning of the idle task observable in the debugger. */
         ++ mz2_cntTaskIdle;
 

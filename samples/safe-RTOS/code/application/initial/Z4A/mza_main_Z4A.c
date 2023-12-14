@@ -223,7 +223,7 @@ static int32_t onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t button
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DBG_ONLY)
+static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -273,7 +273,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uintptr_t taskParam ATTRIB_DB
  *   @param taskParam
  * A variable task parameter. Here just used for testing.
  */
-static void taskOs1ms(uintptr_t taskParam ATTRIB_DBG_ONLY)
+static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
 {
     assert(taskParam == 0);
 
@@ -518,13 +518,15 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
     unsigned int idEvent;
-    if(rtos_osCreateEvent( &idEvent
-                         , /* tiCycleInMs */              1
-                         , /* tiFirstActivationInMs */    10
-                         , /* priority */                 prioEv1ms
-                         , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE
-                         , /* taskParam */                0
-                         )
+    if(rtos_osCreateEventProcessor
+                ( &idEvent
+                , /* tiCycleInMs */               1
+                , /* tiFirstActivationInMs */     10
+                , /* priority */                  prioEv1ms
+                , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                , /*useCountableEvents*/          false                               
+                , /* taskParam */                 0
+                )
        == rtos_err_noError
       )
     {
