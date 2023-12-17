@@ -7,7 +7,7 @@
  * harmful. In particular, it must be avoided that the current priority can be lowered by a
  * task.
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -191,7 +191,7 @@ rtos_osGetEventByPriority:
     se_cmpli    r3, RTOS_MAX_TASK_PRIORITY
 # else
     e_cmpl16i   r3, RTOS_MAX_TASK_PRIORITY
-#endif
+# endif
     se_bgt      .
 #endif
     se_slwi     r3, 2   /* r3: priority*4; each array element is a pointer */
@@ -265,20 +265,21 @@ rtos_scBscHdlr_resumeAllTasksByPriority:
     se_bge      rat_return              /* r4>=r3: No change of current prio */
     e_stw       r4, O_ID_CUR_PRIO(r5)   /* Store checked, demanded value in prio var */
     se_mr       r7, r4      /* r6+r7 are persistent with respect to next function call */
-    se_bl       rtos_osGetEventByPriority   /* r3: prio@entry -> pEvent with that prio */
+#warning Refactoring needed: rtos_osGetEventByPriority -> rtos_osGetEvProcByPriority
+    se_bl       rtos_osGetEventByPriority   /* r3: prio@entry -> pEvProc with that prio */
     
-    /* We will now visit the returned event, and all of its successors, to see whether at
-       least one has been triggered. If so, we need to recursively call the scheduler to
-       process this event (and maybe others, which can be left to the scheduler). The
-       iteration ends when we see an event of priority lower than or equal to the new,
-       restored current priority; the current scheduler instance (which brought us here)
-       will take care. */
+    /* We will now visit the returned event processor, and all of its successors, to see
+       whether at least one has been triggered. If so, we need to recursively call the
+       scheduler to process this event processor (and maybe others, which can be left to
+       the scheduler). The iteration ends when we see an event processor of priority lower
+       than or equal to the new, restored current priority; the current scheduler instance
+       (which brought us here) will take care. */
     se_mr       r4, r3      /* r4: pEv under progress */
     
 #ifdef DEBUG
     /* The iteration ends at latest at the guard element at the end of the list, which has
-       priority zero. Moreover, before that we need to stop at an event of currently
-       scheduled priority. We can add an assertion. */
+       priority zero. Moreover, before that we need to stop at an event processor of
+       currently scheduled priority. We can add an assertion. */
     se_mr       r3, r7      /* r3: restored value of current prio */
     se_bl       rtos_osGetEventByPriority   /* r3: restored prio -> pEvent with that prio */
     se_mr       r5, r3      /* r5: Guard pointer for assertion */
@@ -287,28 +288,28 @@ rtos_scBscHdlr_resumeAllTasksByPriority:
 rat_loopNextEvent:
 #ifdef DEBUG
     se_cmpl     r4, r5
-    se_bgt      .           /* assert(pEvUnderProgess <= pEvRestoredPrio); */
+    se_bgt      .           /* assert(pEvProcInProgess <= pEvProcRestoredPrio); */
 #endif
     se_lwz      r3, PCP_O_EVDESC_prio(r4)   /* r3: The event's priority */
-    se_cmpl     r3, r7      /* gt: Event is still to be considered */
-    se_ble      rat_return  /* First event in scope of current scheduler reached */
+    se_cmpl     r3, r7      /* gt: Event processor is still to be considered */
+    se_ble      rat_return  /* First event processor in scope of current scheduler reached */
 #ifdef DEBUG
     se_cmpl     r4, r5
-    se_bge      .           /* assert(pEvUnderProgess < pEvRestoredPrio); */
+    se_bge      .           /* assert(pEvProcInProgess < pEvProcRestoredPrio); */
 #endif
-    se_lbz      r3, PCP_O_EVDESC_state(r4)  /* r3: The event's state */
+    se_lbz      r3, PCP_O_EVDESC_state(r4)  /* r3: The event processor's state */
     se_cmpli    r3, PCP_E_EVST_triggered
 #ifdef DEBUG
-    se_bgt      .           /* assert(pEv->state != evState_inProgress); */
+    se_bgt      .           /* assert(pEvProc->state != evState_inProgress); */
 #endif
-    se_beq      rat_callSchedulerRecursively    /* Seeing one demanding event is sufficient
-                                                   to decide. */
+    se_beq      rat_callSchedulerRecursively    /* Seeing one demanding event processor is
+                                                   sufficient to decide. */
 #if PCP_SIZE_OF_EV_DESC <= 32
-    se_addi     r4, PCP_SIZE_OF_EV_DESC     /* r4: Points to next event in list */
+    se_addi     r4, PCP_SIZE_OF_EV_DESC     /* r4: Points to next event processor in list */
 #else
-    e_add16i    r4, r4, PCP_SIZE_OF_EV_DESC /* r4: Points to next event in list */
+    e_add16i    r4, r4, PCP_SIZE_OF_EV_DESC /* r4: Points to next event processor in list */
 #endif
-    se_b        rat_loopNextEvent           /* Check next event's state */
+    se_b        rat_loopNextEvent           /* Check next event processor's state */
 
 rat_callSchedulerRecursively:
 
@@ -321,11 +322,11 @@ rat_callSchedulerRecursively:
                                                        and return here. r4..r10 are retained */
     /* Here we are in a full conformance handler. r3 contains the PID of calling process. */
     
-    .extern     rtos_osProcessTriggeredEvents
+    .extern     rtos_osProcessTriggeredEvProcs
     se_mr       r3, r4      /* r3: PID -> pEvent with prio@entry */
-    wrteei      0           /* Call of rtos_osProcessTriggeredEvents requires MSR[EE] = 0 */
-    e_b         rtos_osProcessTriggeredEvents /* Check for possible task switches and return
-                                                 from system call */
+    wrteei      0           /* Call of rtos_osProcessTriggeredEvProcs requires MSR[EE] = 0 */
+    e_b         rtos_osProcessTriggeredEvProcs /* Check for possible task switches and return
+                                                  from system call */
 rat_return:
 #ifdef DBG_COUNT_SCHEDULER_CALLS
     /* Count executions of system call handler as basic handler. */

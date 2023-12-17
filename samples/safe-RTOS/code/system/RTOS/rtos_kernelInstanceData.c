@@ -116,7 +116,8 @@
               , .timerTaskTriggerParam = 0u                                                 \
               , .eventCounterMask = 0u                                                      \
               , .noActivationLoss = 0u                                                      \
-              , .pNextScheduledEvent = NULL                                                 \
+              , .offsNextEvProcSamePrio = 0                                                 \
+              , .offsNextEvProcLowerPrio = 0                                                \
             },                                                                              \
         },                                                                                  \
                                                                                             \

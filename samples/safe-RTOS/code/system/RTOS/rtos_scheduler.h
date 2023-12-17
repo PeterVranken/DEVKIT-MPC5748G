@@ -134,9 +134,15 @@ typedef struct rtos_eventProcDesc_t
         it is read only. Only the scheduler code must update the field. */
     unsigned int noActivationLoss;
 
-    /** Support the scheduler: If this event has been processed then check event * \a
-        this->pNextScheduledEvent as next one. */
-    struct rtos_eventProcDesc_t *pNextScheduledEvent;
+    /** Support the scheduler: If this event has been processed then it may want to check
+        its successor of same priority. This field is the byte offset to that successor
+        element. */
+    int16_t offsNextEvProcSamePrio;
+    
+    /** Support the scheduler: If this event has been processed then it may want to check
+        its successor of next lower priority. This field is the byte offset to that
+        successor element. */
+    int16_t offsNextEvProcLowerPrio;
 
 } rtos_eventProcDesc_t;
 
