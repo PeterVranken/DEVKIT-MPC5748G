@@ -3,14 +3,14 @@
  *   C entry function. The core completes the HW initialization (clocks run at full speed,
  * drivers for MPU and devices are initialized).\n
  *   The safe-RTOS is configured to run a few tasks, both OS and user mode tasks, which
- * drive the user LEDs. The user tasks injects a very few failures in order to demonstrate
+ * drive the user LEDs. The user tasks inject a very few failures in order to demonstrate
  * the error catching capabilities of the RTOS.\n
  *   Only if all the LEDs are blinking everything is alright.\n
  *   Progress information is permanently written into the serial output channel. A terminal
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
  * parity, 1 stop bit.
  *
- * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -94,8 +94,8 @@ enum
 
 
 /** The RTOS uses constant priorities for its events, which are defined here.\n
-      Note, the priority is a property of an event rather than of a task. A task implicitly
-    inherits the priority of the event it is associated with. */
+      Note, the priority is a property of an event processor rather than of a task. A task
+    implicitly inherits the priority of the event processor it is associated with. */
 enum
 {
     prioTaskIdle = 0,            /* Prio 0 is implicit, cannot be chosen explicitly */

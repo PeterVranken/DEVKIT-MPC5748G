@@ -94,7 +94,7 @@ incDirList := code/system/
 # USE_NEWLIB needs to be defined.
 #   USE_FP_EMULATION_CLIB: If given, then all code on all cores won't use the floating
 # point instructions. All cores can do floating point operations regardless of USE_Z2_CLIB,
-# however it's slow. This option has been barley tested.
+# however it's slow. This option has been barely tested.
 #   USE_Z2_CLIB: The code can be compiled against binaries of the c runtime libs, which had
 # been compiled either for the Z2 or for the Z4 core. Since the libraries are shared
 # between all cores, only the Z2 variant is guaranteed safe if the Z2 core makes clib
