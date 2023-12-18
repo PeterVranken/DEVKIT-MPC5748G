@@ -1115,8 +1115,8 @@ rut_endWithoutErr:
 #endif
     se_beq      rut_noRestoreCPR        /* r0==r3: No restore of current prio required */
     e_stw       r0, O_ID_CUR_PRIO(r5)   /* Restore priority in global instance data */
-    .extern     rtos_osGetEventByPriority
-    e_bl        rtos_osGetEventByPriority/* r3: prio before restore -> pEvProc with that prio*/
+    .extern     rtos_osGetEvProcByPriority
+    e_bl        rtos_osGetEvProcByPriority/* r3: prio before restore->pEvProc with that prio */
     wrteei      0             /* Call of rtos_osProcessTriggeredEvProcs requires MSR[EE] = 0 */
     e_bl        rtos_osProcessTriggeredEvProcs  /* Check for possible task switches */
     wrteei      1

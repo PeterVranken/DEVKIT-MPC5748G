@@ -294,12 +294,12 @@ typedef enum rtos_errorCode_t
     , rtos_err_badEventTiming   /// Inconsistent or bad timing configuration stated for event
     , rtos_err_eventNotTriggerable  /// Bad configuration makes event unusable
     , rtos_err_configurationOfRunningKernel /// Attempt to (re-)configure a running kernel
-    , rtos_err_badEventId       /// The ID of the event is invalid. No such event exists
+    , rtos_err_badEventProcId   /// The ID of the event is invalid. No such event exists
     , rtos_err_badCountableTimerEventMask   /// Invalid mask specified for a countable timer event
     , rtos_err_badProcessId     /// The ID of the process is invalid. No such process exists
     , rtos_err_tooManyTasksRegistered   /// More than #RTOS_MAX_NO_TASKS registered
     , rtos_err_noEvOrTaskRegistered /// No event and/or no task defined at start of system
-    , rtos_err_eventWithoutTask /// A useless event exists, which has no task to activate
+    , rtos_err_evProcWithoutTask    /// A useless event exists, which has no task to activate
     , rtos_err_badTaskFunction  /// Bad task function NULL specified
     , rtos_err_taskBudgetTooBig     /// Task budget greater than #RTOS_TI_DEADLINE_MAX_IN_US
     , rtos_err_initTaskRedefined /// Attempt to redefine an already defined initialization task
@@ -1022,8 +1022,8 @@ static ALWAYS_INLINE void rtos_osLeaveCriticalSection(uint32_t msr)
  */
 static inline bool rtos_sendEvent(unsigned int idEventProc, uintptr_t taskParam)
 {
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall( RTOS_IDX_SC_TRIGGER_EVENT
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
                                 , idEventProc
                                 , /* noCountableTriggers */ 0u /* 0: "old style" trigger */
                                 , /* evMaskOrTaskParam */ taskParam
@@ -1085,8 +1085,8 @@ static inline bool rtos_sendEvent(unsigned int idEventProc, uintptr_t taskParam)
  */
 static inline bool rtos_sendEventCountable(unsigned int idEventProc, uint32_t evMask)
 {
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall( RTOS_IDX_SC_TRIGGER_EVENT
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
                                 , idEventProc
                                 , /* noCountableTriggers */ 1u
                                 , /* evMaskOrTaskParam */ evMask
@@ -1138,8 +1138,8 @@ static inline bool rtos_sendEventMultiple(unsigned int idEventProc, uint32_t evM
        be different to what's expected. */
     assert(count > 0u);
 
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall( RTOS_IDX_SC_TRIGGER_EVENT
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
                                 , idEventProc
                                 , /* noCountableTriggers */ count
                                 , /* evMaskOrTaskParam */ evMask

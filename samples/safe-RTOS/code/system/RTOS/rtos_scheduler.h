@@ -40,7 +40,7 @@
  */
 
 /** System call index of function rtos_sendEvent(), offered by this module. */
-#define RTOS_SYSCALL_TRIGGER_EVENT                      3
+#define RTOS_SYSCALL_SEND_EVENT                     3
 
 
 /*

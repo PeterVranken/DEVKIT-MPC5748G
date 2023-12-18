@@ -54,12 +54,11 @@
  * tasks. This scheme is sometimes referred to as scheduling of tasks of Basic Conformance
  * Class (BCC). It's simple, less than what most RTOSs offer, but still powerful enough for
  * the majority of industrial use cases.\n
- * Basic conformance class means that a task cannot suspend intentionally and ahead of
- * its normal termination. Once started, it needs to be entirely executed. Due to the
- * strict priority scheme it'll temporarily suspend only for sake of tasks of higher
- * priority (but not voluntarily or on own desire). Another aspect of the same is that the
- * RTOS doesn't know task to task events -- such events are usually the way intentional
- * suspension and later resume of tasks is implemented.\n
+ * Basic conformance class means that a task cannot suspend intentionally and ahead of its
+ * normal termination, e.g., entering a system call to wait for an event. Once started, it
+ * needs to be entirely executed. Due to the strict priority scheme it'll temporarily
+ * suspend only for sake of tasks of higher priority (but not voluntarily or on own
+ * desire).\n
  *   The activation of a task can be done by software, using API function
  * rtos_osSendEvent() or rtos_sendEvent() or it can be done by the scheduler on a
  * regular time base. In the former case the task is called an event task, the latter is a
@@ -74,9 +73,9 @@
  * critical sections with other ISRs or with OS tasks, which are based on interrupt locks
  * and which are highly efficient. (Note, safety concerns forbid having an API to shape a
  * critical section between ISRs and user tasks.)
- *   - An ISR may use rtos_osSendEvent() to trigger an event. The associated tasks will
- * be scheduled after returning from the interrupt (and from any other interrupt it has
- * possibly preempted)
+ *   - An ISR may use rtos_osSendEvent() to trigger an event processor. The associated
+ * tasks will be scheduled after returning from the interrupt (and from any other interrupt
+ * it has possibly preempted)
  *   - An ISR may use rtos_osRunTask to implement a callback into another process. The
  * callback is run under the constraints of the target process and can therefore be
  * implemented as part of the application(s) in that process and still without breaking the
@@ -88,8 +87,8 @@
  * explanations given there still hold. There are two major differences:\n
  *   In this project, we have replaced the hardware scheduler with a scheduler implemented
  * in software. The behavior is nearly identical and the performance penalty is little in
- * comparison to the advantage of now having an unlimited number of events, priorities and
- * tasks.\n
+ * comparison to the advantage of now having an unlimited number of event processors,
+ * priorities and tasks.\n
  *   The second modification is the added safety concept. Such a concept starts with a
  * specification of what we expect from a "safe" RTOS:\n
  *   "If the implementation of a task, which is meant the supervisory or safety task, is
@@ -148,7 +147,7 @@
  *   osSendEvent
  *   checkEventDue
  *   onOsTimerTick
- *   launchAllTasksOfEvent
+ *   launchAllTasksOfEvProc
  *   advanceEvProcToSuccesorSamePrio
  *   advanceEvProcToSuccesorLowerPrio
  *   initRTOSClockTick
@@ -209,7 +208,7 @@
    implementing files. Therefore it needs to make some assumptions about basically variable
    but normally never changed constants. These assumptions need of course to be double
    checked. We do this here at compile time of the RTOS. */
-#if RTOS_IDX_SC_TRIGGER_EVENT != RTOS_SYSCALL_TRIGGER_EVENT
+#if RTOS_IDX_SC_SEND_EVENT != RTOS_SYSCALL_SEND_EVENT
 # error Inconsistent definitions made in C modules and RTOS API header file rtos.h
 #endif
 
@@ -218,7 +217,7 @@
 #endif
 
 /** A pseudo event ID. Used to register a process initialization task using registerTask(). */
-#define EVENT_ID_INIT_TASK     (UINT_MAX)
+#define EVENT_PROC_ID_INIT_TASK     (UINT_MAX)
 
 /** Select the static configuration, which applies to the calling core. It's a simple
     selection from one out of three statically defined macros. Selection is done by
@@ -273,7 +272,7 @@ static const unsigned int rtos_idxRtosTimerAry[RTOS_NO_CORES] =
  *   @return
  * Get the event processor object by reference.
  *   @param idEventProc
- * The linear index of the event as used at the API.
+ * The linear index of the event processor as used at the API.
  *   @remark
  * The mapping is not essential for the kernel. It implies avoidable run-time effort. The
  * only reason for having the mapping is a user friendly configuration API. If we had a
@@ -301,7 +300,7 @@ static ALWAYS_INLINE rtos_eventProcDesc_t *getEventProcByID(unsigned int idEvent
  *   @return
  * Get the event processor object by reference.
  *   @param idxEventProc
- * Index of event object in the array rtos_getInstancePtr()->eventProcAry.
+ * Index of event processor object in the array rtos_getInstancePtr()->eventProcAry.
  *   @remark
  * This function must be called from a supervisor context only. It makes use of priviledged
  * instructions.
@@ -369,23 +368,23 @@ static ALWAYS_INLINE void advanceEvProcToSuccesorLowerPrio
  *   An assertion in the calling code is considered appropriate to handle the error because
  * it'll always be a static configuration error.
  *   @param idEventProc
- * Any (normal) task is activated by an event and a task without related event is useless.
- * This call associates the registered task with an already created event. See
- * rtos_osCreateEventProcessor().\n
+ * Any (normal) task is activated by an event and a task without related event processor is
+ * useless. This call associates the registered task with an already created event
+ * processor. See rtos_osCreateEventProcessor().\n
  *   If a process or OS initialization task is registered, then \a idEventProc is set to
- * #EVENT_ID_INIT_TASK. It is allowed not to register an init task for a process or
+ * #EVENT_PROC_ID_INIT_TASK. It is allowed not to register an init task for a process or
  * for the OS but it is not possible to register more than one (or to re-register an) init
  * task for a given process or the OS.\n
- *   The order of registration of several tasks with one and the same event matters. The
- * tasks will be acivated in order of registration whenever the event becomes due or is
- * triggered by software.\n
+ *   The order of registration of several tasks with one and the same event processor
+ * matters. The tasks will be acivated in order of registration whenever the event
+ * processor becomes due or is triggered by software.\n
  *   The order of registration doesn't matter for initialization tasks! The OS
  * initialization task is served first. Processes are always initialized in order of rising
  * process ID. The most privileged process is served last and can thus override descisions
  * of its less privileged predecessors.
  *   @param addrTaskFct
- * The task function, which is run in process \a PID every time, the event \a idEventProc
- * triggers.
+ * The task function, which is run in process \a PID every time, the event processor \a
+ * idEventProc becomes due or is triggered by software.
  *   @param PID
  *   The process the task belongs to by identifier. We have a fixed, limited number of four
  * processes (#RTOS_NO_PROCESSES) plus the kernel process, which has ID 0. The range of
@@ -416,20 +415,20 @@ static rtos_errorCode_t registerTask( unsigned int idEventProc
     if(pIData->tiOsStep != 0)
         return rtos_err_configurationOfRunningKernel;
 
-    /* The event need to be created before the task can be registered. */
-    if(idEventProc >= pIData->noEventProcs  &&  idEventProc != EVENT_ID_INIT_TASK)
-        return rtos_err_badEventId;
+    /* The event processor need to be created before the task can be registered. */
+    if(idEventProc >= pIData->noEventProcs  &&  idEventProc != EVENT_PROC_ID_INIT_TASK)
+        return rtos_err_badEventProcId;
 
     /* The process ID needs to be in the fixed and limited range. */
     if(PID > RTOS_NO_PROCESSES)
         return rtos_err_badProcessId;
 
     /* The number of runtime tasks is constraint by compile time configuration. */
-    if(pIData->noTasks >= RTOS_MAX_NO_TASKS  &&  idEventProc != EVENT_ID_INIT_TASK)
+    if(pIData->noTasks >= RTOS_MAX_NO_TASKS  &&  idEventProc != EVENT_PROC_ID_INIT_TASK)
         return rtos_err_tooManyTasksRegistered;
 
-    /* The event's field noTasks is of smaller size. */
-    if(idEventProc != EVENT_ID_INIT_TASK
+    /* The event processor's field noTasks is of smaller size. */
+    if(idEventProc != EVENT_PROC_ID_INIT_TASK
        &&  getEventProcByIdx(idEventProc)->noTasks
            >= UINT_T_MAX(((rtos_eventProcDesc_t*)NULL)->noTasks)
       )
@@ -454,7 +453,7 @@ static rtos_errorCode_t registerTask( unsigned int idEventProc
     // with a virtual event, meaning the system initialization.
     /// @todo See other TODO, which proposes more or less the same for process related idle
     // tasks
-    if(idEventProc == EVENT_ID_INIT_TASK)
+    if(idEventProc == EVENT_PROC_ID_INIT_TASK)
     {
         /* An initialization task must not be configured repeatedly for one and the same
            process. */
@@ -469,47 +468,48 @@ static rtos_errorCode_t registerTask( unsigned int idEventProc
     }
     else
     {
-        /* Add the new runtime task to the array. All tasks associated with an event need
-           to form a consecutive list. We need to find the right location to insert the
-           task and we need to consider an update of all events with refer to tasks with
-           higher index. */
+        /* Add the new runtime task to the array. All tasks associated with an event
+           processor need to form a consecutive list. We need to find the right location to
+           insert the task and we need to consider an update of all event processors with
+           refer to tasks with higher index. */
         rtos_eventProcDesc_t * const pEvProc = getEventProcByID(idEventProc);
         rtos_taskDesc_t *pNewTaskDesc;
         if(pEvProc->taskAry == NULL)
         {
-            /* First task of given event, we append a new sequence of tasks to the end of
-               the task list so far. Done. */
+            /* First task of given event processor, we append a new sequence of tasks to
+               the end of the task list so far. Done. */
             pEvProc->taskAry = pNewTaskDesc = &pIData->taskCfgAry[pIData->noTasks];
 
-            /* Associate the task with the specified event. */
+            /* Associate the task with the specified event processor. */
             pEvProc->noTasks = 1;
         }
         else
         {
-            /* This is a further task for the event. We will have to shift the tasks in the
-               task list to still have a consecutive sequence of tasks for the event. */
+            /* This is a further task for the event processor. We will have to shift the
+               tasks in the task list to still have a consecutive sequence of tasks for the
+               event processor. */
             pNewTaskDesc = (rtos_taskDesc_t*)pEvProc->taskAry + pEvProc->noTasks;
 
-            /* The event's task sequence can be in the middle of the task list. So need to
-               check if we have to move some rightmost list entries. */
+            /* The event processor's task sequence can be in the middle of the task list.
+               So need to check if we have to move some rightmost list entries. */
             rtos_taskDesc_t *pTaskCfg = &pIData->taskCfgAry[pIData->noTasks];
             assert(pIData->noTasks >= 2  ||  pTaskCfg <= pNewTaskDesc);
             for(; pTaskCfg>pNewTaskDesc; --pTaskCfg)
                 *pTaskCfg = *(pTaskCfg-1);
 
-            /* Update the reference to the task sequence for all events, which still point
-               to the shifted area of the task list. Note, that the events don't have a
-               particular order with respect to the user specified index. (Instead, they
-               are sorted by priority.) */
+            /* Update the reference to the task sequence for all event processors, which
+               still point to the shifted area of the task list. Note, that the event
+               processors don't have a particular order with respect to the user specified
+               index. (Instead, they are sorted by priority.) */
             unsigned int idxEvProc;
             for(idxEvProc=0; idxEvProc<pIData->noEventProcs; ++idxEvProc)
             {
-                rtos_eventProcDesc_t * const pCheckedEvent = getEventProcByIdx(idxEvProc);
-                if(pCheckedEvent != pEvProc  &&  pCheckedEvent->taskAry >= pNewTaskDesc)
-                    ++ pCheckedEvent->taskAry;
+                rtos_eventProcDesc_t * const pCheckedEvProc = getEventProcByIdx(idxEvProc);
+                if(pCheckedEvProc != pEvProc  &&  pCheckedEvProc->taskAry >= pNewTaskDesc)
+                    ++ pCheckedEvProc->taskAry;
             }
 
-            /* Associate the task with the specified event. */
+            /* Associate the task with the specified event processor. */
             ++ pEvProc->noTasks;
             assert(pEvProc->noTasks > 0);
         }
@@ -530,17 +530,16 @@ static rtos_errorCode_t registerTask( unsigned int idEventProc
 
 
 /**
- * This function implements the increment of a counter, which consists of an
- * arbitrary number of bits scattered over a 32 Bit word. Where the counter bits sit in the
- * word is expressed by a mask. The significance of counter bits has the same ordering as
- * for the bits in the word.\n
+ * This function implements the increment of a counter, which consists of an arbitrary
+ * number of bits scattered over a 32 Bit word. Where the counter bits sit in the word is
+ * expressed by a mask. The significance of counter bits has the same ordering as for the
+ * bits in the word.\n
  *   All bits in the word, i.e., * \a pWord, which do not correspond to a bit set in the
  * mask are not affected by the operation.\n
  *   The current value of the counter, denoted by the mask bits, is incremented by a small
- * integral number \a inc if
- * this is possible without overflow to zero. If the increment would overflow then the counter
- * is not modified as far as possible, i.e., the counter in the word is saturated at its
- * implementation maximum.\n
+ * integral number \a inc if this is possible without overflow to zero. If the increment
+ * would overflow then the counter is not modified as far as possible, i.e., the counter in
+ * the word is saturated at its implementation maximum.\n
  *   Note, for single-bit masks, the operation is identical to:\n
  *   *pWord = *pWord | mask;
  *   @return
@@ -810,9 +809,10 @@ static ALWAYS_INLINE bool osSendEvent( rtos_eventProcDesc_t * const pEvProc
 
 
 /**
- * Process the conditions that trigger events. The events are checked for becoming
- * meanwhile due and the associated tasks are made ready in case by setting the according
- * state in the event object. However, no tasks are already started in this function.
+ * Process the conditions that trigger event processors. The event processors are checked
+ * for becoming meanwhile due and the associated tasks are made ready in case by setting
+ * the according state in the event processor object. However, no tasks are already started
+ * in this function.
  */
 static inline void checkEventDue(void)
 {
@@ -820,7 +820,7 @@ static inline void checkEventDue(void)
 
     rtos_eventProcDesc_t *pEvProc = getEventProcByIdx(0);
 
-    /* We iterate the events in order for decreasing priority. */
+    /* We iterate the event processors in order for decreasing priority. */
     const rtos_eventProcDesc_t * const pEndEvProc = pIData->pEndEvProc;
     while(pEvProc < pEndEvProc)
     {
@@ -828,7 +828,7 @@ static inline void checkEventDue(void)
         {
             if((signed int)(pEvProc->tiDue - pIData->tiOs) <= 0)
             {
-                /* Trigger the event or count an activation loss error. */
+                /* Trigger the event processor or count an activation loss error. */
                 osSendEvent( pEvProc
                            , /* noCountableTriggers */ pEvProc->timerUsesCountableEvs? 1u: 0u
                            , pEvProc->timerTaskTriggerParam
@@ -840,19 +840,19 @@ static inline void checkEventDue(void)
                    the due time. Some limitation code would be required to make this safe. */
                 pEvProc->tiDue += pEvProc->tiCycleInMs;
 
-            } /* End if(Event is due?) */
+            } /* End if(Event Processor is due?) */
         }
         else
         {
-            /* Non regular events: nothing to be done. These events are triggered only by
-               explicit software call of rtos_sendEvent(). */
+            /* Non regular events: nothing to be done. These event processors are triggered
+               only by explicit software call of rtos_sendEvent(). */
 
         } /* End if(Timer or application software activated task?) */
 
-        /* Proceed with next event. */
+        /* Proceed with next event processor. */
         ++ pEvProc;
 
-    } /* End While(All configured events) */
+    } /* End While(All configured event processors) */
 
 } /* End of checkEventDue */
 
@@ -892,13 +892,13 @@ static void onOsTimerTick(void)
 
 
 /**
- * Processing a triggered event means to execute all associated tasks. If the scheduler
- * finds an event to be processed as next one, then it'll call this function to run the
- * tasks.
+ * Processing a triggered event processor means to execute all associated tasks. If the
+ * scheduler finds an event processor to be processed as next one, then it'll call this
+ * function to run the tasks.
  *   @param pEvProc
- * The event by reference, whose tasks are to be executed one after another.
+ * The event processor by reference, whose tasks are to be executed one after another.
  */
-static inline void launchAllTasksOfEvent(const rtos_eventProcDesc_t * const pEvProc)
+static inline void launchAllTasksOfEvProc(const rtos_eventProcDesc_t * const pEvProc)
 {
     const rtos_taskDesc_t *pTaskConfig = &pEvProc->taskAry[0];
     unsigned int u = (unsigned int)pEvProc->noTasks;
@@ -912,9 +912,9 @@ static inline void launchAllTasksOfEvent(const rtos_eventProcDesc_t * const pEvP
 
         ++ pTaskConfig;
 
-    } /* End while(Run all tasks associated with the event) */
+    } /* End while(Run all tasks associated with the event processor) */
 
-} /* End of launchAllTasksOfEvent */
+} /* End of launchAllTasksOfEvProc */
 
 
 /**
@@ -1320,7 +1320,7 @@ rtos_errorCode_t rtos_osRegisterInitTask( int32_t (*initTaskFct)(uint32_t PID)
                                         , unsigned int tiTaskMaxInUs
                                         )
 {
-    return registerTask(EVENT_ID_INIT_TASK, (uintptr_t)initTaskFct, PID, tiTaskMaxInUs);
+    return registerTask(EVENT_PROC_ID_INIT_TASK, (uintptr_t)initTaskFct, PID, tiTaskMaxInUs);
 
 } /* End of rtos_osRegisterInitTask */
 
@@ -1342,13 +1342,13 @@ rtos_errorCode_t rtos_osRegisterInitTask( int32_t (*initTaskFct)(uint32_t PID)
  * it'll always be a static configuration error.
  *   @param idEventProc
  * The task is activated by an event. This call associates the registered task with an
- * already created event. See rtos_osCreateEventProcessor().\n
+ * already created event processor. See rtos_osCreateEventProcessor().\n
  *   The order of registration of several tasks (both, OS and user mode) with one and the
- * same event matters. The tasks will be acivated in order of registration whenever the
- * event becomes due or is triggered by software.
+ * same event processor matters. The tasks will be acivated in order of registration
+ * whenever the event processor becomes due or is triggered by software.
  *   @param userModeTaskFct
- * The task function, which is run in process \a PID every time, the event \a idEventProc
- * triggers.\n
+ * The task function, which is run in process \a PID every time the event processor \a
+ * idEventProc becomes due of is triggered by software.\n
  *   The function gets the ID of the process it belongs to as argument.\n
  *   The function returns a signed value. If the value is negative then it is considered an
  * error, which is counted as error #RTOS_ERR_PRC_USER_ABORT in the owning
@@ -1404,13 +1404,13 @@ rtos_errorCode_t rtos_osRegisterUserTask( unsigned int idEventProc
  * it'll always be a static configuration error.
  *   @param idEventProc
  * The task is activated by an event. This call associates the registered task with an
- * already created event. See rtos_osCreateEventProcessor().\n
+ * already created event processor. See rtos_osCreateEventProcessor().\n
  *   The order of registration of several tasks (both, OS and user mode) with one and the
- * same event matters. The tasks will be acivated in order of registration whenever the
- * event becomes due or is triggered by software.
+ * same event processor matters. The tasks will be acivated in order of registration
+ * whenever the event processor becomes due or is triggered by software.
  *   @param osTaskFct
- * The task function, which is run in the OS context every time, the event \a idEventProc
- * triggers.
+ * The task function, which is run in the OS context every time the event processor \a
+ * idEventProc becomes due or is triggered by software.
  *   @remark
  * Never call this function after the call of rtos_osInitKernel()!
  *   @remark
@@ -1460,8 +1460,8 @@ rtos_errorCode_t rtos_osInitKernel(void)
        - can decide to change the condition of the assertion if you really need so many
          different task priorities
        - should decide if you change the implementation of the mapping from task priority
-         to events having that priority. So far we chose the most time efficient technique,
-         a direct lookup table, but any other technique would be fine, too. */
+         to event processors having that priority. So far we chose the most time efficient
+         technique, a direct lookup table, but any other technique would be fine, too. */
     _Static_assert( RTOS_MAX_TASK_PRIORITY <= 64
                   , "The used range of task priorities has been chosen such large that the"
                     " implementation becomes quite inefficient in terms of memory usage"
@@ -1486,19 +1486,19 @@ rtos_errorCode_t rtos_osInitKernel(void)
     rtos_errorCode_t errCode = rtos_err_noError;
 
     /* The pointer pIData->pNextEvProcToSchedule is either unset or it points to the event
-       of highest priority which has been triggered but which cannot be scheduled yet
-       because we are still in an ISR. The value "unset" need to maintain the ordering of
-       pointers, the higher the value the lesser the priority of an event it points to.
-       NULL would not fulfill both condition and therefore require additional runtime code.
-       We choose UINT_MAX as indication of "unset". */
+       processor of highest priority which has been triggered but which cannot be scheduled
+       yet because we are still in an ISR. The value "unset" need to maintain the ordering
+       of pointers, the higher the value the lesser the priority of an event processor it
+       points to. NULL would not fulfill both condition and therefore require additional
+       runtime code. We choose UINT_MAX as indication of "unset". */
     pIData->pNextEvProcToSchedule = (rtos_eventProcDesc_t*)(uintptr_t)-1;
 
     pIData->pEndEvProc     =
     pIData->pCurrentEvProc = getEventProcByIdx(pIData->noEventProcs);
     pIData->currentPrio    = 0;
 
-    /* The user must have registered at minimum one task and must have associated it with a
-       event. */
+    /* The user must have registered at minimum one task and must have associated it with an
+       event processor. */
     if(pIData->tiOsStep != 0)
         errCode = rtos_err_configurationOfRunningKernel;
     else if(pIData->noEventProcs == 0  ||  pIData->noTasks == 0)
@@ -1568,14 +1568,14 @@ rtos_errorCode_t rtos_osInitKernel(void)
             const rtos_eventProcDesc_t * const pEvProc = getEventProcByIdx(idxEvProc);
             const unsigned int noAssociatedTasks = (unsigned int)pEvProc->noTasks;
 
-            /* Check task configuration: Events without an associated task are useless and
-               point to a configuration error. */
+            /* Check task configuration: Event Processors without an associated task are
+               useless and point to a configuration error. */
             if(noAssociatedTasks == 0)
-                errCode = rtos_err_eventWithoutTask;
+                errCode = rtos_err_evProcWithoutTask;
 
-            /* If an event has a priority above #RTOS_MAX_LOCKABLE_TASK_PRIORITY then only
-               those tasks can be associated, which belong to the process with highest PID
-               in use or OS tasks. This is a safety constraint. */
+            /* If an event processor has a priority above #RTOS_MAX_LOCKABLE_TASK_PRIORITY
+               then only those tasks can be associated, which belong to the process with
+               highest PID in use or OS tasks. This is a safety constraint. */
             if(pEvProc->priority > RTOS_MAX_LOCKABLE_TASK_PRIORITY)
             {
                 for(idxTask=0; idxTask<noAssociatedTasks; ++idxTask)
@@ -1584,14 +1584,14 @@ rtos_errorCode_t rtos_osInitKernel(void)
                     if(PID > 0  &&  PID != maxPIDInUse)
                         errCode = rtos_err_highPrioTaskInLowPrivPrc;
                 }
-            } /* End if(Unblockable priority is in use by event) */
-        } /* for(All registered events) */
+            } /* End if(Unblockable priority is in use by event processor) */
+        } /* for(All registered event processors) */
     }
 
     /* The scheduling of events is supported by a link pointer, which points the scheduler
-       to the next event processor to check after the event had been processed. This next
-       event is either the (cyclically) next one in a group of events of same priority or
-       the first successor with lower priority. */
+       to the next event processor to check after the event processor had been processed.
+       This next event processor is either the (cyclically) next one in a group of event
+       processors of same priority or the first successor with lower priority. */
     if(errCode == rtos_err_noError)
     {
         unsigned int lastPrioMap = sizeOfAry(pIData->mapPrioToEvProc) - 1u;
@@ -1602,7 +1602,7 @@ rtos_errorCode_t rtos_osInitKernel(void)
         {
             const unsigned int nextPriority = getEventProcByIdx(idxEvProc)->priority;
             
-            /* Is this event the first one of the group of next lower priority? */
+            /* Is this event processor the first one of the group of next lower priority? */
             if(nextPriority < priority)
             {
                 /* We have identified a group of event processors of same priority prio. */
@@ -1633,9 +1633,9 @@ rtos_errorCode_t rtos_osInitKernel(void)
                 getEventProcByIdx(idxInGrp)->offsNextEvProcLowerPrio = 
                                                         (int16_t)sizeof(rtos_eventProcDesc_t);
 
-                /* Add some entries to the map from priority to event. Assertions are fine
-                   to make the code safe - the according object properties have already
-                   been validated when creating the event objects. */
+                /* Add some entries to the map from priority to event processor. Assertions
+                   are fine to make the code safe - the according object properties have
+                   already been validated when creating the event processor objects. */
                 do
                 {
                     assert(lastPrioMap < sizeOfAry(pIData->mapPrioToEvProc));
@@ -1654,14 +1654,14 @@ rtos_errorCode_t rtos_osInitKernel(void)
         
         assert(priority == 0u);
 
-        /* The remaining entries of the map priority-to-evProc are initialized to the NULL
-           pointer. It would be formally correct to let them point to guard object, but
-           ever referencing these entries is an implementation error and this is easier
-           detected having the NULL pointers. */
+        /* The remaining entries of the map priority-to-evProc are initialized to point to
+           the guard object. However, referencing these entries is an implementation
+           error. */
+        rtos_eventProcDesc_t * const pEvProcGuard = getEventProcByIdx(pIData->noEventProcs);
         do
         {
             assert(lastPrioMap < sizeOfAry(pIData->mapPrioToEvProc));
-            pIData->mapPrioToEvProc[lastPrioMap] = NULL;
+            pIData->mapPrioToEvProc[lastPrioMap] = pEvProcGuard;
         }
         while(lastPrioMap-- > 0u);
 
@@ -1675,18 +1675,18 @@ rtos_errorCode_t rtos_osInitKernel(void)
        - Initialize the memory protection. This needs to be done before the very first user
          mode task function has the chance to become started. (The very first user mode task
          functions need to be the process initialization tasks.)
-       - Disable the scheduler to trigger any events (which is its initial state).
-         Triggering events would not cause any user tasks to execute (processes still
-         disabled) but their due counters would already run and the configured startup
-         conditions would not be met later when enabling the processes
+       - Disable the scheduler to trigger any event processors (which is its initial
+         state). Triggering event processors would not cause any user tasks to execute
+         (processes still disabled) but their due counters would already run and the
+         configured startup conditions would not be met later when enabling the processes
        - Globally enable interrupt processing. I/O drivers and OS clock tick are running.
          This is a prerequisite for the deadline monitoring, which we want to have in place
          already for the init tasks
        - Sequentially execute all configured process initialization tasks. There are no
          crosswise race condition and nor with user tasks or I/O driver callbacks. Note,
          interrupts are already running and cause race conditions. Moreover, they could
-         make use of rtos_osSendEvent() and if an OS task is associated with the
-         triggered event then there would be race conditions with this OS task, too
+         make use of rtos_osSendEvent() and if an OS task is associated with the triggered
+         event processor then there would be race conditions with this OS task, too
        - Enable the processes and release the scheduler; scheduler, user tasks and I/O
          driver's callbacks start running */
 
@@ -2066,274 +2066,64 @@ uint32_t rtos_scFlHdlr_sendEvent( unsigned int pidOfCallingTask
 
 /**
  * This function implements the main part of the scheduler, which actually runs tasks. It
- * inspects all events, whether they have been triggered in an ISR or system call handler
- * and execute the associated tasks if furthermore the priority conditions are fullfilled.
+ * inspects all event processors, whether they have been triggered in an ISR or system call
+ * handler and execute the associated tasks if furthermore the priority conditions are
+ * fullfilled.
  *   The function is called from the common part of the assembly implementation of the ISRs
  * and from all system call handlers, which could potentially lead to the start of tasks.\n
  *   This function is entered with all interrupt processing disabled (MSR[ee]=0).
  *   @param
- * The caller (likely osSendEvent(), immediately or postponed) usually knows, which is
- * the recently triggered event, which has to be handled by the scheduler. This event is
- * provided by reference as a hint so that the scheduler doesn't need to look for the
- * event.
+ * The caller (likely osSendEvent(), immediately or postponed) usually knows, which is the
+ * recently triggered event processor, which has to be handled by the scheduler. This event
+ * processor is provided by reference as a hint so that the scheduler doesn't need to look
+ * for the event processor.
  */
 SECTION(.text.ivor.rtos_osProcessTriggeredEvProcs) void rtos_osProcessTriggeredEvProcs
                                                                (rtos_eventProcDesc_t *pEvProc)
-#if 0
 {
     /* This function and particularly this loop is the essence of the task scheduler. There
        are some tricky details to be understood.
          This function is called as a kind of "on-exit-hook" of any interrupt, which makes
        use of the rtos_osSendEvent() service. (Actually, this includes user tasks, which
        run the software interrupt rtos_sendEvent().) It looks for the triggered event
-       and runs the associated tasks if it has a priority higher then the priority of the
-       currently running task.
-         The operation looks uncomplicated for an event of higher priority. We acknowledge
-       the event and run the tasks. Looking for and acknowleding means a read-modify-write
-       operation and since the events can at any time be accessed by interrupts of higher
-       priority we need a critical section for this.
-         First complexity is an interrupt, which sets another event while we are processing
-       the tasks of the first one. If this has in turn a higher priority then it's no new
-       consideration but just a matter of recursive invocation of this same function.
-       However, if it has a priority lower than that of the currently processed event and
-       tasks, then we (and not the preempting context, which triggers the event) are
-       obliged to run the tasks of this event, too, but - because of the lower priority -
-       only later, after the current set of tasks. (Note, "later", there is no
-       HW/SW-interrupt any more to get the new event be processed - so we need a loop here
-       to not forget that event.) The tricky thing is how to span the critical sections:
-         If we find the first event (searching from highest towards lower priorities) then
-       we apply the CS just to acknowledge the event. (I.e., no potential later, recursive
-       invocation of this function will compete in handling it.) When done with all the
-       tasks of the event we release the event. We change the status from "in progress" to
-       "idle" - of course again in a CS. However, this CS must now be merged with the CS at
-       the beginning of the next cycle, the CS to acknowledge the next found event. The
-       reason why:
-         As soon as we release an event, it can be set again and in particular before we
-       have left this function and killed its stack frame (a stack frame of significant
-       size as this function still is element of an ISR). The newly set event would mean a
-       recursive call of this function, so another stack frame for the same event. The same
-       could then happen to the recursive function invocation and so forth - effectively
-       there were no bounds anymore for the stack consumption, which is a fatal risk.
-       Merging the CSs for releasing event A and acknowledging event B (of lower priority)
-       means that the stack frame of this invokation is inherited by the next processed
-       event B before a recursive call can process the next occurance of A. Which is
-       alright; this leads to the pattern that there can be outermost one stack frame per
-       event priority and this is the possible minimum.
-         The same consideration requires that the CS for the final event release must not
-       be left before return from the function. Return from the function still means
-       several instructions until the stack frame is killed and event setting in this phase
-       is just the same as outlined for the loop cycle-to-cycle situation. Actually, the
-       final CS must not be ended before the stack frame has been killed, effectively at
-       the very end of the ISR, with the rfi instruction.
-         Another consideration makes it useful that we are already inside the first
-       acknowledge-CS when entering the function. This CS includes the decision (in
-       sendEvent), whether or not a recursive scheduler call is required. Being here,
-       and because of the CS, this information is still coherent with the events' state. We
-       can place some assertions, the behavior is more transparent and the implementation
-       more reliable. Without an CS we could see this: Event A is set and makes this
-       scheduler invoked. Event B can be triggered before the scheduler finds the due
-       event. It is preempted by a recursive scheduler invocation. The preempting scheduler
-       would handle both events, B first then A. After the preemption the event A is no
-       longer due and the scheduler would have to return without doing anything. Which is
-       neither a problem nor an advantage (same overall effort and timing), but there are
-       less invariants for checking. Note, this is still an option if minimizing the CS
-       is rated higher than transparency of behavior. */
-
-    rtos_kernelInstanceData_t * const pIData = rtos_osGetInstancePtr();
-
-    /* Here, we are inside a critical section. External Interrupt handling is disabled. */
-    assert(rtos_osGetAllInterruptsSuspended());
-
-    /* If we were called because of pending, postponed events, which are indicated by
-       pIData->pNextEvProcToSchedule then the caller must have acknowledged the request by
-       setting the pointer back to "unset". */
-    assert((uintptr_t)pIData->pNextEvProcToSchedule == (uintptr_t)-1);
-
-    /* Safe the current state: It'll be updated with each of the events, we find to be
-       served, but finally we will have to restore these values here. */
-    const rtos_eventProcDesc_t * const pCurrentEvProc = pIData->pCurrentEvProc;
-    const unsigned int prioAtEntry = pIData->currentPrio;
-
-    /* We iterate the events in order of decreasing priority. */
-    assert(pEvProc < pIData->pEndEvProc &&  pEvProc->priority >= prioAtEntry);
-    while(true)
-    {
-        if(pEvProc->priority <= prioAtEntry)
-        {
-            /* Launching tasks must not be considered for events at or below the priority
-               at start of this scheduler recursion. This priority level will mostly be
-               because another, earlier call of this function, preempted and currently
-               suspended somewhere deeper on the OS stack, which already handles the event
-               but it can also happen if the PCP has been used to temporarily raise the
-               current priority. This would hinder us to serve a triggered event already
-               now.
-                 We leave the function still (or again) being in a critical section. */
-            break;
-        }
-        else if(pEvProc->state == evState_triggered)
-        {
-            /* Associated tasks are due and they have a priority higher than all other
-               currently activated ones. Before we execute them we need to acknowledge the
-               event - only then we my leave the critical section. */
-            pEvProc->state = evState_inProgress;
-
-            /* The current priority is changed synchronously with the acknowledge of the
-               event. We need to do this still inside the same critical section. */
-            pIData->pCurrentEvProc = pEvProc;
-            pIData->currentPrio = pEvProc->priority;
-
-            /* Now handle the event, i.e., launch and execute all associated tasks. This is
-               of course not done inside the critical section. We leave it now. */
-            rtos_osResumeAllInterrupts();
-            launchAllTasksOfEvent(pEvProc);
-
-            /* The executed tasks can have temporarily changed the current priority, but
-               here it needs to be the event's priority again.
-                 The assertion can fire if an OS task raised the priority using the PCP API
-               but didn't restore it again. */
-            assert(pIData->currentPrio == pEvProc->priority);
-
-            /* The event is entirely processed, we can release it. This must not be done
-               before we are again in the next critical section. */
-            rtos_osSuspendAllInterrupts();
-
-            if(pEvProc->eventCounterMask != 0u)
-            {
-                /* The event has received more countable events while its associated tasks
-                   were executing (or were being preempted by tasks of higher priority).
-                   The event remains triggered and the new events are adopted and forwarded
-                   to the tasks as task parameter. */
-                pEvProc->state = evState_triggered;
-                pEvProc->taskParam = pEvProc->eventCounterMask;
-                pEvProc->eventCounterMask = 0u;
-
-                /* pEvProc itself is not modified, the event remains the active one. */
-            }
-            else
-            {
-/// @todo New scheduling schema needed, true round-robin for same prio.
-// New schema needed: Wenn A re-triggerable (useCountableEvents==true) dann muss Nachfolger
-// von A A selbst sein. Dann kann das Statement hier entfallen und wir können in jedem Fall
-// mit der Liste weitermachen. Wenn A vom alten Stil ist, kann man über die Liste wie
-// gehabt mit dem direkten Nachfolger von A fortsetzen - was lediglich eine minimale
-// Optimierung ist.
-//   Fürs Erste geht es aber auch ohne diese Änderung. In der überwiegenden Anzahl Fälle,
-// gleiche Prioritäten kommen nicht so oft vor, macht das keinen Unterschied in Performance
-// oder Verhalten aus. (Gerechtigkeit kommt durch die Änderung auch nicht ins Spiel. Wenn A,
-// B, C gleiche Prio haben, wird weiterhin A dauernd ausgeführt, solange nachgetriggert. B
-// würde immerhin A zum Zuge kommen lassen und nur C wäre fair.)
-//   Wir brauchen die Anzahl je Prio und einen Zähler für inaktiv auf dieser Ebene, der
-// jedesmal auf Null gesetzt wird, wenn eine getriggerte gefunden wird. Übergang zur
-// nächsten Prio erst, wenn Zähler gleich Anzahl. Bis dahin zyklisches Wählen des nächsten
-// Events.
-                /* When not re-triggered, the active state is always followed by state
-                   idle. */
-                pEvProc->state = evState_idle;
-
-                /* The next event to check is not necessarily the next in order. Since we
-                   allow events to have the same priority we need to ensure that we have
-                   checked all other events of same priority before we advance to one of
-                   lower priority. (If we wouldn't allow same priorities then this
-                   condition was implicitly fulfilled and we could always advance with the
-                   next event in order, which is surely of lower priority.)
-                     Note, this consideration leads to the repeated check of the same
-                   events. Example: A and B were events of same priority and appear in the
-                   list in this order. Event A can be triggered while event B is being
-                   proceessed. We must check A before we check the successor of B, e.g., C,
-                   which has lower priority. While running the tasks of A, event B can have
-                   been triggered again, and so on. In an extreme situation, we would
-                   infinitly loop and alternatingly process A and B, but C would never be
-                   visited and suffer from starvation. (Easy to get: A task of A triggers
-                   event B and a task of B triggers event A.)
-                     After we have served an event of priority n, we check the first event
-                   of this priority n as next one. All event specifications, inlcuding
-                   priorities, are statical and we have prepared a link from each event to
-                   the first in list order, which has the same priority but which is not
-                   the event itself. Examples:
-                   - A, B, C have prio n, D is the successor of C with prio n-1:
-                     - A is linked to B
-                     - B and C are linked to A
-                     - D is linked to its successor
-                   - A has prio n, B has prio n-1, C has prio n-2:
-                     - A is linked to B
-                     - B is linked to C
-                     - C is linked to its successor
-                     Note, this scheme doesn't lead to a fair round robin for groups of
-                   events with same priority but this is not a contradiction with the
-                   meaning of priorities or priority based scheduling. */
-
-                /* Proceed with preceding events of same priority (if any). */
-                pEvProc = pEvProc->pNextScheduledEvent;
-
-            } /* if(Immediately re-triggered countable event?) */
-        }
-        else
-        {
-            /* Ignore events, which have not been triggered (yet). */
-
-            /* There must be no events in state inProgress, which have a priority above the
-               current one. */
-            assert(pEvProc->state == evState_idle);
-
-            /* Proceed with next event. No need to start over at first event of same
-               priority as we had not left the critical section so that no such event can
-               have been triggered meanwhile. */
-            ++ pEvProc;
-
-        } /* End if(Which event state?) */
-    } /* End while(All events of prio, which is to be handled by this scheduler invocation) */
-
-    /* Here we are surely still or again inside a critical section. */
-
-    /* Restored the initial state. */
-    pIData->pCurrentEvProc = pCurrentEvProc;
-    pIData->currentPrio = prioAtEntry;
-
-}
-#else
-{
-    /* This function and particularly this loop is the essence of the task scheduler. There
-       are some tricky details to be understood.
-         This function is called as a kind of "on-exit-hook" of any interrupt, which makes
-       use of the rtos_osSendEvent() service. (Actually, this includes user tasks, which
-       run the software interrupt rtos_sendEvent().) It looks for the triggered event
-       and runs the associated tasks if it has a priority higher then the priority of the
-       currently running task.
-         The operation looks uncomplicated for an event of higher priority. We acknowledge
-       the event and run the tasks. Looking for and acknowleding means a read-modify-write
-       operation and since the events can at any time be accessed by interrupts of higher
-       priority we need a critical section for this.
+       processor and runs the associated tasks if it has a priority higher then the
+       priority of the currently running task.
+         The operation looks uncomplicated for an event processor of higher priority. We
+       acknowledge the event and run the tasks. Looking for and acknowleding means a
+       read-modify-write operation and since the event processors can at any time be
+       accessed by interrupts of higher priority we need a critical section for this.
          First complexity is an interrupt, which triggers another event processor while we
        are processing the tasks of the first one. If this has in turn a higher priority
        then it's no new consideration but just a matter of recursive invocation of this
        same function. However, if it has a priority lower than that of the event processor
        in progress (and its tasks), then we (and not the preempting context, which triggers
-       the event processor) are obliged to run the tasks of this event, too, but - because
-       of the lower priority - only later, after the current set of tasks. (Note, "later",
-       there is no HW/SW-interrupt any more to get the new event(s) be processed - so we
-       need a loop here to not forget those events.) The tricky thing is how to span the
-       critical sections:
-         If we find the first event (searching from highest towards lower priorities) then
-       we apply the CS just to acknowledge the event but bringimg the event processor from
-       idle into "in progress". When done with all the tasks of the event we normally
-       release the event processor; we change the status from "in progress" to "idle" - of
-       course again in a CS. The exception from the "normally" are countable events. While
-       being in progress, the processor can be re-triggered by new multiplicities of the
-       same event. In this case, the processor returns only to state "triggered". This CS
-       for this state change must be merged with the CS at the beginning of the next cycle,
-       the CS to acknowledge the next found event. The reason why:
+       the event processor) are obliged to run the tasks of this event processor, too, but
+       - because of the lower priority - only later, after the current set of tasks. (Note,
+       "later", there is no HW/SW-interrupt any more to get the new event(s) be processed -
+       so we need a loop here to not forget those events.) The tricky thing is how to span
+       the critical sections:
+         If we find the first event processor (searching from highest towards lower
+       priorities) then we apply the CS just to acknowledge the event but bringing the
+       event processor from idle into "in progress". When done with all the tasks of the
+       event processor we normally release the event processor; we change the status from
+       "in progress" to "idle" - of course again in a CS. The exception from the "normally"
+       are countable events. While being in progress, the processor can be re-triggered by
+       new multiplicities of the same event. In this case, the processor returns only to
+       state "triggered". This CS for this state change must be merged with the CS at the
+       beginning of the next cycle, the CS to acknowledge the next found event. The reason
+       why:
          As soon as we release an event processor, it can be triggered again and in
        particular before we have left this function and killed its stack frame (a stack
        frame of significant size as this function still is element of an ISR). The newly
        triggered event processor would mean a recursive call of this function, so another
        stack frame for the same event. The same could then happen to the recursive function
        invocation and so forth - effectively there were no bounds anymore for the stack
-       consumption, which is a fatal risk. Merging the CSs for releasing event A and
-       acknowledging event B (of lower priority) means that the stack frame of this
-       invokation is inherited by the next processed event B before a recursive call can
-       process the next occurance of A. Which is alright; this leads to the pattern that
-       there can be outermost one stack frame per event priority and this is the possible
-       minimum.
+       consumption, which is a fatal risk. Merging the CSs for releasing event processor A
+       and acknowledging event B (of lower priority) means that the stack frame of this
+       invokation is inherited by the next processed event processor B before a recursive
+       call can process the next occurance of A. Which is alright; this leads to the
+       pattern that there can be outermost one stack frame per event processor priority and
+       this is the possible minimum.
          The same consideration requires that the CS for the final release of the event
        processor must not be left before return from the function. Return from the function
        still means several instructions until the stack frame is killed and event setting
@@ -2342,20 +2132,23 @@ SECTION(.text.ivor.rtos_osProcessTriggeredEvProcs) void rtos_osProcessTriggeredE
        effectively at the very end of the ISR, with the rfi instruction.
          Another consideration makes it useful that we are already inside the first
        acknowledge-CS when entering the function. This CS includes the decision (in
-       sendEvent), whether or not a recursive scheduler call is required. Being here,
-       and because of the CS, this information is still coherent with the events' state. We
-       can place some assertions, the behavior is more transparent and the implementation
-       more reliable. Without an CS we could see this: Event A is set and makes this
-       scheduler invoked. Event B can be triggered before the scheduler finds the due
-       event. It is preempted by a recursive scheduler invocation. The preempting scheduler
-       would handle both events, B first then A. After the preemption the event A is no
-       longer due and the scheduler would have to return without doing anything. Which is
-       neither a problem nor an advantage (same overall effort and timing), but there are
-       less invariants for checking. Note, this is still an option if minimizing the CS
-       is rated higher than transparency of behavior. */
+       sendEvent), whether or not a recursive scheduler call is required. Being here, and
+       because of the CS, this information is still coherent with the event processors'
+       state. We can place some assertions, the behavior is more transparent and the
+       implementation more reliable. Without an CS we could see this: Event Processor A is
+       set and makes this scheduler invoked. Event Processor B can be triggered before the
+       scheduler finds the due event processor. It is preempted by a recursive scheduler
+       invocation. The preempting scheduler would handle both event processors, B first
+       then A. After the preemption the event processor A is no longer due and the
+       scheduler would have to return without doing anything. Which is neither a problem
+       nor an advantage (same overall effort and timing), but there are less invariants for
+       checking. Note, this is still an option if minimizing the CS is rated higher than
+       transparency of behavior. */
 
     rtos_kernelInstanceData_t * const pIData = rtos_osGetInstancePtr();
 
+    assert(pEvProc != NULL  &&  pEvProc != getEventProcByIdx(pIData->noEventProcs));
+    
     /* Here, we are inside a critical section. External Interrupt handling is disabled. */
     assert(rtos_osGetAllInterruptsSuspended());
 
@@ -2364,12 +2157,12 @@ SECTION(.text.ivor.rtos_osProcessTriggeredEvProcs) void rtos_osProcessTriggeredE
        setting the pointer back to "unset". */
     assert((uintptr_t)pIData->pNextEvProcToSchedule == (uintptr_t)-1);
 
-    /* Safe the current state: It'll be updated with each of the events, we find to be
-       served, but finally we will have to restore these values here. */
+    /* Safe the current state: It'll be updated with each of the event processors, we find
+       to be served, but finally we will have to restore these values here. */
     const rtos_eventProcDesc_t * const pCurrentEvProc = pIData->pCurrentEvProc;
     const unsigned int prioAtEntry = pIData->currentPrio;
 
-    /* Basically, we iterate the events in order of decreasing priority. To handle
+    /* Basically, we iterate the event processors in order of decreasing priority. To handle
        re-triggering of event processors of same priority in a fair manner, we cyclically
        visit all of them until none of them is still triggered. pDone denotes the beginning
        of a check cycle. The check cycle starts over when we have to shortly leave the CS -
@@ -2398,10 +2191,11 @@ SECTION(.text.ivor.rtos_osProcessTriggeredEvProcs) void rtos_osProcessTriggeredE
             pIData->pCurrentEvProc = pEvProc;
             pIData->currentPrio = pEvProc->priority;
 
-            /* Now handle the event, i.e., launch and execute all associated tasks. This is
-               of course not done inside the critical section. We leave it now. */
+            /* Now handle the event processor, i.e., launch and execute all associated
+               tasks. This is of course not done inside the critical section. We leave it
+               now. */
             rtos_osResumeAllInterrupts();
-            launchAllTasksOfEvent(pEvProc);
+            launchAllTasksOfEvProc(pEvProc);
 
             /* The executed tasks can have temporarily changed the current priority, but
                here it needs to be the event processor's priority again.
@@ -2409,16 +2203,16 @@ SECTION(.text.ivor.rtos_osProcessTriggeredEvProcs) void rtos_osProcessTriggeredE
                but didn't restore it again. */
             assert(pIData->currentPrio == pEvProc->priority);
 
-            /* The event is entirely processed, we can release it. This must not be done
-               before we are again in the next critical section. */
+            /* The event processor is entirely processed, we can release it. This must not
+               be done before we are again in the next critical section. */
             rtos_osSuspendAllInterrupts();
 
             if(pEvProc->eventCounterMask != 0u)
             {
-                /* The event has received more countable events while its associated tasks
-                   were executing (or were being preempted by tasks of higher priority).
-                   The event remains triggered and the new events will be forwarded to the
-                   tasks as task parameter. */
+                /* The event processor has received more countable events while its
+                   associated tasks were executing (or were being preempted by tasks of
+                   higher priority). The event processor remains triggered and the new
+                   events will be forwarded to the tasks as task parameter. */
                 pEvProc->state = evState_triggered;
                 pEvProc->taskParam = pEvProc->eventCounterMask;
                 pEvProc->eventCounterMask = 0u;
@@ -2476,7 +2270,6 @@ SECTION(.text.ivor.rtos_osProcessTriggeredEvProcs) void rtos_osProcessTriggeredE
     pIData->currentPrio = prioAtEntry;
 
 } /* End of rtos_osProcessTriggeredEvProcs */
-#endif
 
 
 /**
@@ -2577,7 +2370,7 @@ uint32_t rtos_osSuspendAllTasksByPriority(uint32_t suspendUpToThisTaskPriority)
  * Caution, this function lowers the current task priority level to the stated value
  * regardless of the initial value for the task. Accidentally lowering the task priority
  * level below the configured task priority (i.e., the priority inherited from the triggering
- * event) will have unpredictable consequences.
+ * event processor) will have unpredictable consequences.
  *   @remark
  * Different to the user mode variant of the function, rtos_resumeAllTasksByPriority(),
  * there is no restoration of the current priority level at task termination time. For OS
@@ -2597,23 +2390,23 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority)
     rtos_kernelInstanceData_t * const pIData = rtos_osGetInstancePtr();
     if(resumeDownToThisTaskPriority < pIData->currentPrio)
     {
-        /* Identify the events, which could possibly require the recursive call of the
-           scheduler.
+        /* Identify the event processors, which could possibly require the recursive call
+           of the scheduler.
              Note, there is a significant difference in the implementation here for the OS
            tasks and the system call that implements the same concept for the user tasks.
-           The OS code just identifies the events that may have been triggered meanwhile
-           and calls the scheduler to let it decide whether there's really something to do.
-           Often, this won't be the case. (Which is possible for the other reason, too,
-           that the check code is not inside the critical section).
+           The OS code just identifies the event processors that may have been triggered
+           meanwhile and calls the scheduler to let it decide whether there's really
+           something to do. Often, this won't be the case. (Which is possible for the other
+           reason, too, that the check code is not inside the critical section).
              The system call implementation really figures out whether there is at least
-           one event that requires scheduling. It looks at the state of all possible
-           candidates. Effectively, it re-implements part of the scheduler itself. The
-           reason is the significant overhead, which results from calling a C function from
-           a system call. In the majority of cases, the system call will find that calling
-           the scheduler is not needed so that this effectively is a significant
+           one event processor that requires scheduling. It looks at the state of all
+           possible candidates. Effectively, it re-implements part of the scheduler itself.
+           The reason is the significant overhead, which results from calling a C function
+           from a system call. In the majority of cases, the system call will find that
+           calling the scheduler is not needed so that this effectively is a significant
            optimization. The OS code here would not benefit from the same strategy. */
-        rtos_eventProcDesc_t * const pEvToSchedulePossibly =
-                                                rtos_osGetEventByPriority(pIData->currentPrio);
+        rtos_eventProcDesc_t * const pEvProcToSchedulePossibly =
+                                            rtos_osGetEvProcByPriority(pIData->currentPrio);
         pIData->currentPrio = resumeDownToThisTaskPriority;
 
         rtos_osSuspendAllInterrupts();
@@ -2622,7 +2415,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority)
            This doesn't matter, not even with respect to overhead and the number of
            function invocations. Not taking check and change into the CS just means to have
            a smaller CS. */
-        rtos_osProcessTriggeredEvProcs(pEvToSchedulePossibly);
+        rtos_osProcessTriggeredEvProcs(pEvProcToSchedulePossibly);
         rtos_osResumeAllInterrupts();
     }
 } /* rtos_osResumeAllTasksByPriority */
@@ -2637,8 +2430,8 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority)
  * failing activations on a per event processor base. The current value can be queried with
  * this function.
  *   @return
- * Get the current number of triggers of the given event, which have failed since start of
- * the RTOS scheduler. The counter is saturated and will not wrap around.\n
+ * Get the current number of triggers of the given event processor, which have failed since
+ * start of the RTOS scheduler. The counter is saturated and will not wrap around.\n
  *   The returned count can be understood as number of task overrun events for all
  * associated tasks.
  *   @param idEventProc
@@ -2671,14 +2464,14 @@ unsigned int rtos_getNoActivationLoss(unsigned int idEventProc)
  * A cyclic or event task can query its base priority.
  *   @return
  * Get the base priority of the task, which calls this function. It's the priority of the
- * event it is associated with.
+ * event processor it is associated with.
  *   @remark
  * This function can be called from an OS task only. Any attempt to call it from a user
  * task will cause a privileged exception.
  *   @remark
  * The function must not be called from an ISR. The result would be undefined as there is
- * no event, which such a handler function would be associated with. However, with respect
- * to safety or stability, there's no problem in doing this.
+ * no event processor, which such a handler function would be associated with. However,
+ * with respect to safety or stability, there's no problem in doing this.
  */
 unsigned int rtos_osGetTaskBasePriority(void)
 {
@@ -2703,9 +2496,9 @@ unsigned int rtos_osGetTaskBasePriority(void)
  *   @remark
  * The function must not be called from an ISR or from a callback, which is started by an
  * ISR and using the service rtos_osRunTask(). The result would be undefined as there is no
- * event, which such a function would be associated with. However, with respect to safety
- * or stability, there's no problem in doing this and therefore no privileges have been
- * connected to this service.
+ * event processor, which such a function would be associated with. However, with respect
+ * to safety or stability, there's no problem in doing this and therefore no privileges
+ * have been connected to this service.
  */
 unsigned int rtos_getCurrentTaskPriority(void)
 {

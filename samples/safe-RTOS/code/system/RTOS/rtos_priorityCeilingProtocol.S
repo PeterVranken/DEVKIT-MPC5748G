@@ -25,7 +25,7 @@
 /* Module interface
  *   rtos_scBscHdlr_suspendAllTasksByPriority
  *   rtos_suspendAllTasksByPriority
- *   rtos_osGetEventByPriority
+ *   rtos_osGetEvProcByPriority
  *   rtos_scBscHdlr_resumeAllTasksByPriority
  *   rtos_resumeAllTasksByPriority
  * Local functions
@@ -91,7 +91,7 @@
     .balign     2
 
 rtos_scBscHdlr_suspendAllTasksByPriority:
-    
+
      /** @remark Configuration setting RTOS_MAX_LOCKABLE_TASK_PRIORITY can be made core
          dependend if this is required: Just make this function implementation and
          rtos_scBscHdlr_resumeAllTasksByPriority a macro and have an instantiation per
@@ -112,7 +112,7 @@ rtos_scBscHdlr_suspendAllTasksByPriority:
     e_cmpl16i   r4, RTOS_MAX_LOCKABLE_TASK_PRIORITY /* Upper boundary */
 #endif
     e_bgt       rtos_osSystemCallBadArgument  /* r4>MAX: Abort task, demanded prio too high */
-   
+
     mfspr       r5, SPR_G3_CDATA        /* r5: rtos_osGetInstancePtr() */
     e_lwz       r3, O_ID_CUR_PRIO(r5)   /* r3: Current prio value, before change. For return */
     se_cmpl     r4, r3
@@ -124,7 +124,7 @@ sat_return:
 /* End of rtos_scBscHdlr_suspendAllTasksByPriority */
 
 
-    
+
 
 /**
  *   @func rtos_suspendAllTasksByPriority
@@ -147,13 +147,13 @@ rtos_suspendAllTasksByPriority:
     se_li       r3, RTOS_SYSCALL_SUSPEND_ALL_TASKS_BY_PRIORITY
     se_sc
     se_blr      /* This system call doesn't touch the LR */
-    
+
 /* End of rtos_suspendAllTasksByPriority */
 
 
 
 /**
- * eventDesc_t *rtos_osGetEventByPriority(uint32_t priority);
+ * eventDesc_t *rtos_osGetEvProcByPriority(uint32_t priority);
  *
  * Helper: Get the first event in the global event list, which has the given or a smaller
  * priority. All its successors in the list will have either the same or a lower priority
@@ -179,10 +179,10 @@ rtos_suspendAllTasksByPriority:
  * ISRs and OS tasks.
  */
     .section    .text.ivor
-    .globl      rtos_osGetEventByPriority
+    .globl      rtos_osGetEvProcByPriority
     .balign     2
-    
-rtos_osGetEventByPriority:
+
+rtos_osGetEvProcByPriority:
 
 #ifdef DEBUG
     se_cmpli    r3, 1   /* assert(priority >= 1  &&  priority <= RTOS_MAX_TASK_PRIORITY); */
@@ -200,7 +200,7 @@ rtos_osGetEventByPriority:
     e_lwz       r3, O_ID_MAP_PRIO_TO_EV_PROC(r5) /* r3: rtos_mapPrioToEvProc[priority] */
     se_blr
 
-/* End of rtos_osGetEventByPriority */
+/* End of rtos_osGetEvProcByPriority */
 
 
 
@@ -265,23 +265,22 @@ rtos_scBscHdlr_resumeAllTasksByPriority:
     se_bge      rat_return              /* r4>=r3: No change of current prio */
     e_stw       r4, O_ID_CUR_PRIO(r5)   /* Store checked, demanded value in prio var */
     se_mr       r7, r4      /* r6+r7 are persistent with respect to next function call */
-#warning Refactoring needed: rtos_osGetEventByPriority -> rtos_osGetEvProcByPriority
-    se_bl       rtos_osGetEventByPriority   /* r3: prio@entry -> pEvProc with that prio */
-    
+    se_bl       rtos_osGetEvProcByPriority   /* r3: prio@entry -> pEvProc with that prio */
+
     /* We will now visit the returned event processor, and all of its successors, to see
        whether at least one has been triggered. If so, we need to recursively call the
        scheduler to process this event processor (and maybe others, which can be left to
        the scheduler). The iteration ends when we see an event processor of priority lower
        than or equal to the new, restored current priority; the current scheduler instance
        (which brought us here) will take care. */
-    se_mr       r4, r3      /* r4: pEv under progress */
-    
+    se_mr       r4, r3      /* r4: pEvProc under progress */
+
 #ifdef DEBUG
     /* The iteration ends at latest at the guard element at the end of the list, which has
        priority zero. Moreover, before that we need to stop at an event processor of
        currently scheduled priority. We can add an assertion. */
     se_mr       r3, r7      /* r3: restored value of current prio */
-    se_bl       rtos_osGetEventByPriority   /* r3: restored prio -> pEvent with that prio */
+    se_bl       rtos_osGetEvProcByPriority   /* r3: restored prio -> pEvProc with that prio */
     se_mr       r5, r3      /* r5: Guard pointer for assertion */
 #endif
 
@@ -321,7 +320,7 @@ rat_callSchedulerRecursively:
     e_bl        rtos_ivr8_switchBasicToFullHandler  /* Context switch to full conformance
                                                        and return here. r4..r10 are retained */
     /* Here we are in a full conformance handler. r3 contains the PID of calling process. */
-    
+
     .extern     rtos_osProcessTriggeredEvProcs
     se_mr       r3, r4      /* r3: PID -> pEvent with prio@entry */
     wrteei      0           /* Call of rtos_osProcessTriggeredEvProcs requires MSR[EE] = 0 */
@@ -335,7 +334,7 @@ rat_return:
     e_stw       r3, _cntResumeNoScheduler@sda21(r13)
 #endif
     se_rfi
-    
+
 /* End of rtos_scBscHdlr_resumeAllTasksByPriority */
 
 
@@ -354,7 +353,7 @@ rat_return:
     .section    .text.rtos_resumeAllTasksByPriority
     .globl      rtos_resumeAllTasksByPriority
     .balign     2
-    
+
     /* Define the stack frame contents as offsets of data objects. Note the minimum offset
        of 8 due to the storage of stack pointer and link register. */
     //#define O_myVar         (8+0)
@@ -369,7 +368,7 @@ rtos_resumeAllTasksByPriority:
     e_stwu      sp, -SIZE_OF_SF(sp)
     se_mflr     r0
     se_stw      r0, O_LR(sp)
-    
+
     se_mr       r4, r3
     se_li       r3, RTOS_SYSCALL_RESUME_ALL_TASKS_BY_PRIORITY
     se_sc
@@ -387,5 +386,5 @@ rtos_resumeAllTasksByPriority:
 
 /* End of rtos_resumeAllTasksByPriority */
 
-  
+
 
