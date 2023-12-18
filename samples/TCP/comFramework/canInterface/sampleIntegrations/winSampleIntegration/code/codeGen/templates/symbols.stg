@@ -1,0 +1,72 @@
+//
+// symbols.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The names of the symbols in the C files are provided. They can be addressed by brief
+// but meaningful names from superordinated templates but will nonetheless have all
+// required disambiguation syllables in the C code, which are appropriate. This hiding of
+// details makes the superordinated templates much better readable and maintainable.
+//
+// Copyright (C) 2015-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// The repeatedly used symbol names of different objects, mainly the callback functions.
+// The typical objects, which are required for name disambiguation are addressed by scoping
+// under the usual names.
+symbol ::= [ "initInterface": "cbk_initInterface"
+           , "cbkInitFrame": {onInitFrame_<bus>_<frameId()>}
+           , "cbkReceiveFrame": {onReceiveFrame_<bus>_<frameId()>}
+           , "cbkTimeoutFrame": {onTimeoutFrame_<bus>_<frameId()>}
+           , "cbkDueCheck": {onDueCheckEventFrame_<bus>_<frameId()>}
+           , "cbkSendFrame": {onSendFrame_<bus>_<frameId()>}
+           , "fctPackPdu": {pck_pack_<bus.name>_<pdu.name>_<pdu.id>}
+           , "fctUnpackPdu": {pck_unpack_<bus.name>_<pdu.name>_<pdu.id>}
+           , "hTimerTimeout": {_hTimerTimeout_<bus>_<frameId()>}
+           , "hTimerDueCheck": {_hTimerDueCheck_<bus>_<frameId()>}
+           , "signal": {<signal>}
+           , "structAPIFrame": {pck_API_<bus>_<frame>_<frameId()>}
+           , "structAPIFrame_t": {<symbol.structAPIFrame>_t}
+           , "structFrame_t": {pck_<bus>_<frame>_<frameId()>_t}
+           , "stsTransRaw": "stsTransmission"
+           , "stsTrans": {<symbol.structAPIFrame>.<symbol.stsTransRaw>}
+           , "stsTrans_t": "cbk_stsTransmission_t"
+           , "evFrameLastFrame": {_lastSentFrContents_<bus>_<frame>_<frameId()>}
+           , default: "codeGenerationError_badKindOfSymbol"
+           ]
+
+// The repeatedly used frame and signal related #define's are access through a map, which
+// improves maintainability and readability of the templates.
+define ::= [ "pduSize": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_DLC}
+           , "checksumLength": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_CHECKSUM_LENGTH}
+           , "checksumStartBit": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_CHECKSUM_STARTBIT}
+           , "checksumIsMotorola": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_CHECKSUM_IS_BIG_ENDIAN}
+           , "checksumStartValue": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_CHECKSUM_START_VALUE}
+           , "sqcLength": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_SQC_LENGTH}
+           , "sqcFrom": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_SQC_FROM}
+           , "sqcTo": {<bus.name; format="upper">_<frame.name; format="upper">_<FRAME_ID()>_SQC_TO}
+           , "signalBinToDbl": {PCK_<bus.name; format="upper">_<FRAME_ID()>_<signal.name; format="upper">_BIN_TO_DBL}
+           , "signalDblToBin": {PCK_<bus.name; format="upper">_<FRAME_ID()>_<signal.name; format="upper">_DBL_TO_BIN}
+           , "signalFactor": {PCK_<bus.name; format="upper">_<FRAME_ID()>_<signal.name; format="upper">_FACTOR}
+           , "signalOffset": {PCK_<bus.name; format="upper">_<FRAME_ID()>_<signal.name; format="upper">_OFFSET}
+           , "signalMin": {PCK_<bus.name; format="upper">_<FRAME_ID()>_<signal.name; format="upper">_MIN}
+           , "signalMax": {PCK_<bus.name; format="upper">_<FRAME_ID()>_<signal.name; format="upper">_MAX}
+           , default: "codeGenerationError_badDefine"
+           ]
+
+// Two helper templates disambiguate 11 and 29 Bit CAN IDs.
+frameId() ::= "<if(frame.isExtId)>x<endif><frame.id>"
+FRAME_ID() ::= "<if(frame.isExtId)>X<endif><frame.id>"

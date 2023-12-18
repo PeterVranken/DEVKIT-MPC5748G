@@ -1,0 +1,792 @@
+/*
+ * CAN cluster ecSample
+ *
+ * This file has been created with comFramework - codeGenerator version 1.11.2,
+ * see http://sourceforge.net/projects/comframe/
+ *
+ * Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Declaration of variable PT_1024_stsTransmission */
+/begin MEASUREMENT PT_1024_stsTransmission
+    "Transmission status of frame StateEcu01 (1024, 0x400) on bus PT"
+    UBYTE
+    CONV[PT_1024_stsTransmission] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0 /* LowerLimit */
+    32 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu01_1024_sts.stsTransmission" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1024_stsTransmission]
+    "Linear mapping, used for variable PT_1024_stsTransmission"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0 0 0 -1
+/end COMPU_METHOD
+
+
+
+/* Declaration of variable PT_1024_checksum */
+/begin MEASUREMENT PT_1024_checksum
+    "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff"
+    UBYTE
+    CONV[PT_1024_checksum] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    255.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu01_1024_sts.signals.checksum" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1024_checksum]
+    "Linear mapping, used for variable PT_1024_checksum"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1024_speedOfRotation */
+/begin MEASUREMENT PT_1024_speedOfRotation
+    "Speed of rotation of the engine"
+    UWORD
+    CONV[PT_1024_speedOfRotation] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    6500.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu01_1024_sts.signals.speedOfRotation" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1024_speedOfRotation]
+    "Linear mapping, used for variable PT_1024_speedOfRotation"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -0.1
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1024_sequenceCounter */
+/begin MEASUREMENT PT_1024_sequenceCounter
+    "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14"
+    UBYTE
+    CONV[PT_1024_sequenceCounter] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    14.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu01_1024_sts.signals.sequenceCounter" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1024_sequenceCounter]
+    "Linear mapping, used for variable PT_1024_sequenceCounter"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          
+
+
+/* Declaration of variable PT_1040_stsTransmission */
+/begin MEASUREMENT PT_1040_stsTransmission
+    "Transmission status of frame StateEcu02 (1040, 0x410) on bus PT"
+    UBYTE
+    CONV[PT_1040_stsTransmission] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0 /* LowerLimit */
+    32 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu02_1040_sts.stsTransmission" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1040_stsTransmission]
+    "Linear mapping, used for variable PT_1040_stsTransmission"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0 0 0 -1
+/end COMPU_METHOD
+
+
+
+/* Declaration of variable PT_1040_checksum */
+/begin MEASUREMENT PT_1040_checksum
+    "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff"
+    UBYTE
+    CONV[PT_1040_checksum] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    255.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu02_1040_sts.signals.checksum" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1040_checksum]
+    "Linear mapping, used for variable PT_1040_checksum"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1040_sequenceCounter */
+/begin MEASUREMENT PT_1040_sequenceCounter
+    "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 15"
+    UBYTE
+    CONV[PT_1040_sequenceCounter] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    15.0 /* LowerLimit */
+    1.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu02_1040_sts.signals.sequenceCounter" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1040_sequenceCounter]
+    "Linear mapping, used for variable PT_1040_sequenceCounter"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1040_torque */
+/begin MEASUREMENT PT_1040_torque
+    "Current engine torque as estimated by the ECU"
+    SWORD
+    CONV[PT_1040_torque] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    -500.0 /* LowerLimit */
+    500.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StateEcu02_1040_sts.signals.torque" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1040_torque]
+    "Linear mapping, used for variable PT_1040_torque"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -0.5
+/end COMPU_METHOD
+
+
+          
+
+
+/* Declaration of variable PT_2032_stsTransmission */
+/begin MEASUREMENT PT_2032_stsTransmission
+    "Transmission status of frame UserLimits (2032, 0x7f0) on bus PT"
+    UBYTE
+    CONV[PT_2032_stsTransmission] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0 /* LowerLimit */
+    32 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.stsTransmission" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_stsTransmission]
+    "Linear mapping, used for variable PT_2032_stsTransmission"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0 0 0 -1
+/end COMPU_METHOD
+
+
+
+/* Declaration of variable PT_2032_sequenceCounter */
+/begin MEASUREMENT PT_2032_sequenceCounter
+    "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around from 14 to 1"
+    UBYTE
+    CONV[PT_2032_sequenceCounter] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    1.0 /* LowerLimit */
+    14.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.signals.sequenceCounter" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_sequenceCounter]
+    "Linear mapping, used for variable PT_2032_sequenceCounter"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_2032_minSpeedOfRotation */
+/begin MEASUREMENT PT_2032_minSpeedOfRotation
+    "User set minimum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the speed falls below this limit"
+    UWORD
+    CONV[PT_2032_minSpeedOfRotation] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    6500.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.signals.minSpeedOfRotation" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_minSpeedOfRotation]
+    "Linear mapping, used for variable PT_2032_minSpeedOfRotation"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.6
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_2032_maxSpeedOfRotation */
+/begin MEASUREMENT PT_2032_maxSpeedOfRotation
+    "User set maximum for speeed of rotation. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded"
+    UWORD
+    CONV[PT_2032_maxSpeedOfRotation] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    6500.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxSpeedOfRotation" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_maxSpeedOfRotation]
+    "Linear mapping, used for variable PT_2032_maxSpeedOfRotation"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.6
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_2032_checksum */
+/begin MEASUREMENT PT_2032_checksum
+    "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff"
+    UBYTE
+    CONV[PT_2032_checksum] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    255.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.signals.checksum" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_checksum]
+    "Linear mapping, used for variable PT_2032_checksum"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_2032_minPower */
+/begin MEASUREMENT PT_2032_minPower
+    "User set minimum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the power falls below this limit"
+    UWORD
+    CONV[PT_2032_minPower] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    -10.0 /* LowerLimit */
+    240.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.signals.minPower" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_minPower]
+    "Linear mapping, used for variable PT_2032_minPower"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 -10.0 0 0 -0.5
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_2032_maxPower */
+/begin MEASUREMENT PT_2032_maxPower
+    "User set maximum for the engine power. A CAN frame with according status bit is broadcasted by the supervising instance if the limit is exceeded"
+    UWORD
+    CONV[PT_2032_maxPower] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    -10.0 /* LowerLimit */
+    240.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_UserLimits_2032_sts.signals.maxPower" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_2032_maxPower]
+    "Linear mapping, used for variable PT_2032_maxPower"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 -10.0 0 0 -0.5
+/end COMPU_METHOD
+
+
+          
+
+
+/* Declaration of variable PT_1536_stsTransmission */
+/begin MEASUREMENT PT_1536_stsTransmission
+    "Transmission status of frame InfoPowerDisplay (1536, 0x600) on bus PT"
+    UBYTE
+    CONV[PT_1536_stsTransmission] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0 /* LowerLimit */
+    32 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.stsTransmission" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1536_stsTransmission]
+    "Linear mapping, used for variable PT_1536_stsTransmission"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0 0 0 -1
+/end COMPU_METHOD
+
+
+
+/* Declaration of variable PT_1536_checksum */
+/begin MEASUREMENT PT_1536_checksum
+    "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff"
+    UBYTE
+    CONV[PT_1536_checksum] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    255.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.checksum" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1536_checksum]
+    "Linear mapping, used for variable PT_1536_checksum"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1536_sequenceCounter */
+/begin MEASUREMENT PT_1536_sequenceCounter
+    "Sequence counter of message origin. Each update of the message contents results in a cylically increased counter value. The counter wraps around after 14"
+    UBYTE
+    CONV[PT_1536_sequenceCounter] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    14.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.sequenceCounter" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1536_sequenceCounter]
+    "Linear mapping, used for variable PT_1536_sequenceCounter"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1536_power */
+/begin MEASUREMENT PT_1536_power
+    "The computed, current output power of the engine The computed, current output power of the engine"
+    UWORD
+    CONV[PT_1536_power] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    -500000.0 /* LowerLimit */
+    500000.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.power" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1536_power]
+    "Linear mapping, used for variable PT_1536_power"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 -500000.0 0 0 -32.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1536_state */
+/begin MEASUREMENT PT_1536_state
+    "The status of the power computation. If the input information is invalid or suspicious or if there is an overflow in the computation then the computed power is unreliable. This status information will indicate whether the power information is reliabale or not and why not"
+    UBYTE
+    CONV[PT_1536_state] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    2.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_InfoPowerDisplay_1536_sts.signals.state" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1536_state]
+    "Linear mapping, used for variable PT_1536_state"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          
+
+
+/* Declaration of variable PT_1537_stsTransmission */
+/begin MEASUREMENT PT_1537_stsTransmission
+    "Transmission status of frame StatusPowerDisplay (1537, 0x601) on bus PT"
+    UBYTE
+    CONV[PT_1537_stsTransmission] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0 /* LowerLimit */
+    32 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.stsTransmission" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1537_stsTransmission]
+    "Linear mapping, used for variable PT_1537_stsTransmission"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0 0 0 -1
+/end COMPU_METHOD
+
+
+
+/* Declaration of variable PT_1537_noDlcErrors */
+/begin MEASUREMENT PT_1537_noDlcErrors
+    "Number of recognized DLC errors in CAN input"
+    UWORD
+    CONV[PT_1537_noDlcErrors] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    2047.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noDlcErrors" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1537_noDlcErrors]
+    "Linear mapping, used for variable PT_1537_noDlcErrors"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1537_noCheckSumErrors */
+/begin MEASUREMENT PT_1537_noCheckSumErrors
+    "Number of recognized checksum errors in CAN input"
+    UWORD
+    CONV[PT_1537_noCheckSumErrors] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    2047.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noCheckSumErrors" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1537_noCheckSumErrors]
+    "Linear mapping, used for variable PT_1537_noCheckSumErrors"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1537_noSqcErrors */
+/begin MEASUREMENT PT_1537_noSqcErrors
+    "Number of recognized sequence errors in CAN input"
+    UWORD
+    CONV[PT_1537_noSqcErrors] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    2047.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.noSqcErrors" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1537_noSqcErrors]
+    "Linear mapping, used for variable PT_1537_noSqcErrors"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1537_sequenceCounter */
+/begin MEASUREMENT PT_1537_sequenceCounter
+    "Sequence counter of message. The counter is incremented prior to sending the frame. The counter wraps around from 126 to 1. 0 and 127 are invalid values"
+    UBYTE
+    CONV[PT_1537_sequenceCounter] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    1.0 /* LowerLimit */
+    126.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.sequenceCounter" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1537_sequenceCounter]
+    "Linear mapping, used for variable PT_1537_sequenceCounter"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1537_checksum */
+/begin MEASUREMENT PT_1537_checksum
+    "Message related checksum. The sum is defined such that the arithmetic sum of all message bytes (including the check sum itself) and the start value yields 0xff"
+    UBYTE
+    CONV[PT_1537_checksum] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    255.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_StatusPowerDisplay_1537_sts.signals.checksum" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1537_checksum]
+    "Linear mapping, used for variable PT_1537_checksum"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          
+
+
+/* Declaration of variable PT_1538_stsTransmission */
+/begin MEASUREMENT PT_1538_stsTransmission
+    "Transmission status of frame LimitsPowerDisplay (1538, 0x602) on bus PT"
+    UBYTE
+    CONV[PT_1538_stsTransmission] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0 /* LowerLimit */
+    32 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.stsTransmission" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1538_stsTransmission]
+    "Linear mapping, used for variable PT_1538_stsTransmission"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0 0 0 -1
+/end COMPU_METHOD
+
+
+
+/* Declaration of variable PT_1538_sequenceCounter */
+/begin MEASUREMENT PT_1538_sequenceCounter
+    "Sequence counter of message origin. Each update of the message contents results in a cylically decreased counter value. The counter wraps around from 1 to 6"
+    UBYTE
+    CONV[PT_1538_sequenceCounter] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    6.0 /* LowerLimit */
+    1.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.sequenceCounter" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1538_sequenceCounter]
+    "Linear mapping, used for variable PT_1538_sequenceCounter"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1538_belowMinSpeedOfRotation */
+/begin MEASUREMENT PT_1538_belowMinSpeedOfRotation
+    "Boolean: True if and only if the speed of rotation is currently below the user set minimum"
+    UBYTE
+    CONV[PT_1538_belowMinSpeedOfRotation] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    1.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinSpeedOfRotation" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1538_belowMinSpeedOfRotation]
+    "Linear mapping, used for variable PT_1538_belowMinSpeedOfRotation"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1538_aboveMaxSpeedOfRotation */
+/begin MEASUREMENT PT_1538_aboveMaxSpeedOfRotation
+    "Boolean: True if and only if the speed of rotation is currently above the user set maximum"
+    UBYTE
+    CONV[PT_1538_aboveMaxSpeedOfRotation] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    1.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxSpeedOfRotation" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1538_aboveMaxSpeedOfRotation]
+    "Linear mapping, used for variable PT_1538_aboveMaxSpeedOfRotation"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1538_belowMinPower */
+/begin MEASUREMENT PT_1538_belowMinPower
+    "Boolean: True if and only if the engine power is currently below the user set minimum"
+    UBYTE
+    CONV[PT_1538_belowMinPower] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    1.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.belowMinPower" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1538_belowMinPower]
+    "Linear mapping, used for variable PT_1538_belowMinPower"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          /* Declaration of variable PT_1538_aboveMaxPower */
+/begin MEASUREMENT PT_1538_aboveMaxPower
+    "Boolean: True if and only if the engine power is currently above the user set maximum"
+    UBYTE
+    CONV[PT_1538_aboveMaxPower] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    0.0 /* LowerLimit */
+    1.0 /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "cap_canBus_PT.PT_LimitsPowerDisplay_1538_sts.signals.aboveMaxPower" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[PT_1538_aboveMaxPower]
+    "Linear mapping, used for variable PT_1538_aboveMaxPower"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 0.0 0 0 -1.0
+/end COMPU_METHOD
+
+
+          
+
+
+
+
+
+/begin FUNCTION CANCluster_ecSample
+    "All CAN signals of cluster ecSample"
+    /begin REF_CHARACTERISTIC
+    /end REF_CHARACTERISTIC
+    /begin LOC_MEASUREMENT
+        PT_1024_stsTransmission
+        PT_1024_checksum
+        PT_1024_speedOfRotation
+        PT_1024_sequenceCounter
+        PT_1040_stsTransmission
+        PT_1040_checksum
+        PT_1040_sequenceCounter
+        PT_1040_torque
+        PT_2032_stsTransmission
+        PT_2032_sequenceCounter
+        PT_2032_minSpeedOfRotation
+        PT_2032_maxSpeedOfRotation
+        PT_2032_checksum
+        PT_2032_minPower
+        PT_2032_maxPower
+        PT_1536_stsTransmission
+        PT_1536_checksum
+        PT_1536_sequenceCounter
+        PT_1536_power
+        PT_1536_state
+        PT_1537_stsTransmission
+        PT_1537_noDlcErrors
+        PT_1537_noCheckSumErrors
+        PT_1537_noSqcErrors
+        PT_1537_sequenceCounter
+        PT_1537_checksum
+        PT_1538_stsTransmission
+        PT_1538_sequenceCounter
+        PT_1538_belowMinSpeedOfRotation
+        PT_1538_aboveMaxSpeedOfRotation
+        PT_1538_belowMinPower
+        PT_1538_aboveMaxPower
+    /end LOC_MEASUREMENT
+/end FUNCTION

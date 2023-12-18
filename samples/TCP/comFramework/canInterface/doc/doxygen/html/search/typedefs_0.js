@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['ede_5fatomicunsignedint_5ft_0',['ede_atomicUnsignedInt_t',['../ede__event_dispatcher_engine_8config_8h.html#a124b7daa71a5d329213c459f68203f89',1,'ede_eventDispatcherEngine.config.h']]],
+  ['ede_5fcallback_5ft_1',['ede_callback_t',['../ede__event_dispatcher_engine_8h.html#ad4f52d381964483c4161b8acc7bb598a',1,'ede_eventDispatcherEngine.h']]],
+  ['ede_5fcallbackcontext_5ft_2',['ede_callbackContext_t',['../ede__event_dispatcher_engine_8h.html#a3b9d6c6b8ea95bfd1581bff336f18358',1,'ede_eventDispatcherEngine.h']]],
+  ['ede_5fdispatchersystem_5ft_3',['ede_dispatcherSystem_t',['../ede__event_dispatcher_engine_8c.html#aca0c655f3fe403fb6a024efc5cf8fa52',1,'ede_eventDispatcherEngine.c']]],
+  ['ede_5feventdispatcher_5ft_4',['ede_eventDispatcher_t',['../ede__event_dispatcher_engine_8c.html#a7b8ada5a56ea28293ae25dd4fa43ab90',1,'ede_eventDispatcherEngine.c']]],
+  ['ede_5feventreceiverport_5ft_5',['ede_eventReceiverPort_t',['../ede__external_interfaces_8h.html#a6e39e5014d43ac64bad9b756fc4223d4',1,'ede_externalInterfaces.h']]],
+  ['ede_5feventsender_5ft_6',['ede_eventSender_t',['../ede__event_sender_8c.html#a3ced2f8d5ec2344cfaeadc4c4b986a05',1,'ede_eventSender.c']]],
+  ['ede_5feventsenderport_5ft_7',['ede_eventSenderPort_t',['../ede__external_interfaces_8h.html#abace79314b9e984d6ce440816a63f0d6',1,'ede_externalInterfaces.h']]],
+  ['ede_5fexternalevent_5ft_8',['ede_externalEvent_t',['../ede__external_interfaces_8h.html#a45eb50aa058d762cc9ed553795f93084',1,'ede_externalInterfaces.h']]],
+  ['ede_5fhandleconstdispatchersystem_5ft_9',['ede_handleConstDispatcherSystem_t',['../ede__event_dispatcher_engine_8h.html#aa57c811b7b1b41219c699d9d6652a121',1,'ede_eventDispatcherEngine.h']]],
+  ['ede_5fhandledispatchersystem_5ft_10',['ede_handleDispatcherSystem_t',['../ede__event_dispatcher_engine_8h.html#a0cb1fc00f09a5921434b9da748eb44d9',1,'ede_eventDispatcherEngine.h']]],
+  ['ede_5fhandlesender_5ft_11',['ede_handleSender_t',['../ede__event_sender_8h.html#aab46fbce36a9ae7c406ff72f2b4ac149',1,'ede_eventSender.h']]],
+  ['ede_5fhandletimer_5ft_12',['ede_handleTimer_t',['../ede__event_dispatcher_engine_8h.html#a63e9256208333c366bb2d5f49f0ba2f2',1,'ede_eventDispatcherEngine.h']]],
+  ['ede_5fkindofevent_5ft_13',['ede_kindOfEvent_t',['../ede__event_dispatcher_engine_8config_8h.html#a77c0796970c19f653ef7d7d95d3d90c1',1,'ede_eventDispatcherEngine.config.h']]],
+  ['ede_5fmapsenderevhandletoidx_5ft_14',['ede_mapSenderEvHandleToIdx_t',['../ede__external_interfaces_8h.html#aab497276396d027d3a8484e6c0025544',1,'ede_externalInterfaces.h']]],
+  ['ede_5fmemorypool_5ft_15',['ede_memoryPool_t',['../ede__external_interfaces_8h.html#a04d9f9cb62134e8e4138c253c1c9448e',1,'ede_externalInterfaces.h']]],
+  ['ede_5fsenderhandleevent_5ft_16',['ede_senderHandleEvent_t',['../ede__event_dispatcher_engine_8config_8h.html#ada49b99ab4bcca0e08fdac728087eb65',1,'ede_eventDispatcherEngine.config.h']]],
+  ['event_5ft_17',['event_t',['../ede__event_dispatcher_engine_8c.html#a59f5f6b9c6023baebf9c49c328b639a1',1,'ede_eventDispatcherEngine.c']]],
+  ['eventsrc_5ft_18',['eventSrc_t',['../ede__event_dispatcher_engine_8c.html#a8c6938b1e374a1241df72525d44a1fd1',1,'ede_eventDispatcherEngine.c']]],
+  ['eventsrcext_5ft_19',['eventSrcExt_t',['../ede__event_dispatcher_engine_8c.html#aab04af094a25d802589e60ecbaaccc2d',1,'ede_eventDispatcherEngine.c']]]
+];

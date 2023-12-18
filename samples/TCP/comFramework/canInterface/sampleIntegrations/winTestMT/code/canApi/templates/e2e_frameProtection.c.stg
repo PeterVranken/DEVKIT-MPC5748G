@@ -1,0 +1,488 @@
+//
+// e2e_frameProtection.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates in this file will generate a pair of end-to-end protection functions for
+// each CAN frame.
+//
+// Copyright (C) 2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+import "lib/mod.stg"
+import "symbols.stg"
+import "globalInterface.stg"
+
+moduleDescription() ::= <<
+ * This module contains the set of functions pairs for the end-to-end protection of the CAN
+ * frames. A CRC computing and a CRC validating function is generated for each CAN frame.
+>>
+
+
+// This is one of the root templates; the complete C file is rendered.
+//
+e2eProtection_c(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["\n", moduleDescription()])>
+<! The list of functions is put after the file frame shaped by modC !>
+<iteratePdusOfCluster(cluster,"both","fctsPdu")><\\>
+
+#if E2E_ENABLE_TEST_CODE
+/**
+ * Test function for E2E protection code.\n
+ *   All E2E test functions for all the frames in the cluster are executed.\n
+ *   @return
+ * The function returns the Boolean check result. The test is passed if the function
+ * returns \a true.
+ */
+<bt("bool_t")> e2e_testAll()
+{
+    <bt("bool_t")> success = true;
+
+    <iteratePdusOfCluster(cluster,"both","fctTestAll")><\\>
+
+    return success;
+
+} /* End of e2e_testAll */
+#endif /* E2E_ENABLE_TEST_CODE */
+>>
+
+
+// This is one of the root templates; the complete header file is rendered.
+//
+e2eProtection_h(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modH(["\n", moduleDescription()])>
+>>
+
+
+// Configure the templates mod.stg:modC/H, which shape the lists of included files.
+@modC.includes() ::= <<
+#include \<stdio.h>
+#include \<stdlib.h>
+#include \<string.h>
+#include \<assert.h>
+
+#include "<file.baseTypes_h>"
+#include "crc_checksum.h"
+#include "cap_canApi.h"
+
+>>
+
+
+@modC.defines() ::= <<
+/** A random function, which supports all integer types. The name of the integral type is
+    an argument to the macro. */
+#define rand_t(type) _Generic( (type)0                                                      \
+                             , uint64_t: (((uint64_t)rand()\<\<32) | (uint64_t)rand())        \
+                             , int64_t: (int64_t)(((uint64_t)rand()\<\<32) | (uint64_t)rand())\
+                             , default: (type)rand()                                        \
+                             )
+
+>>
+
+
+@modH.includes() ::= <<
+#include "<file.baseTypes_h>"
+#include "cap_canApi.h"
+
+>>
+
+
+@modH.defines() ::= <<
+/** Enable the compilation of some module self-test functions. */
+#ifndef E2E_ENABLE_TEST_CODE
+# define E2E_ENABLE_TEST_CODE 1
+#endif
+
+>>
+
+@modH.prototypes() ::= <<
+<iteratePdusOfCluster(cluster,"both","fctsPduDecl")><\\>
+#if E2E_ENABLE_TEST_CODE
+/** Run the test functions for all the frames. */
+<bt("bool_t")> e2e_testAll();
+#endif /* E2E_ENABLE_TEST_CODE */
+
+
+>>
+
+
+// Generate the set of required functions for a single frame. Nothing is emitted for
+// frames, which do not have a checksum field.
+//   Note, the code generation for this does not support multiplexed signal sets!
+fctsPdu(pdu) ::= <<
+/**
+ * E2E protect frame <frame> (<bus>, <frame.id>) by reference.\n
+ *   All signals of the frame but the CRC checksum are read from the referenced frame's
+ * struct and are 
+ * serialized into a temporary buffer. The CRC of this buffer is computed and written into
+ * the according field of the frame's struct.
+ *   @param pFrameStruct
+ * The frame's struct by reference. This struct contains all signal values and these values
+ * are E2E protected.
+<if(!pdu.specialSignalMap.checksum)>
+ *   @remark
+ * This function is an empty stub, which does nothing. Frame <frame> doesn't
+ * have a checksum defined.
+<endif>
+ */
+void <fct.e2eProtectFrame>(<symbol.structFrame_t> *pFrameStruct<if(!pdu.specialSignalMap.checksum)> ATTRIB_UNUSED<endif>)
+{
+<if(pdu.specialSignalMap.checksum)>
+    /* The required size of the temporary buffer is the sum of the sizes of all fields of
+       the frame's API struct. Instead of computing this value we take the size of the
+       complete API struct, which is surely an upper bounds of the unknown sum.
+         CRC computation starts with a frame individual start value and the CAN ID as a 4
+       Byte word, low byte first. */
+    <bt("uint8_t")> serializedData[5+sizeof(<symbol.structFrame_t>)] =
+        { [0] = <if(isEmpty.(attribVal.chksumDataId))>0 /** @todo There's no CRC start value attribute defined yet in the DBC file */<else><attribVal.chksumDataId><endif>
+        , [1] = (<frame.id>ul \>>  0) & 0xff
+        , [2] = (<frame.id>ul \>>  8) & 0xff
+        , [3] = (<frame.id>ul \>> 16) & 0xff
+        , [4] = (<frame.id>ul \>> 24) & 0xff
+        };
+
+    /* Copy the binary value of each signal into the serialization buffer. There's no gap
+       between two values, i.e., machine alignment constraints are disregarded; this
+       requires the use of memcpy. */
+    <bt("uint8_t")> *pData = &serializedData[5];
+    <iterateSignalsOfFrame(frame,"normal","all","serializeSignal")><\\>
+
+    /* Compute the CRC across the serialized data buffer and write the result back into the
+       API struct of the frame. */
+    const size_t noBytes = pData - &serializedData[0];
+    assert(noBytes \<= sizeof(serializedData));
+    pFrameStruct-><pdu.specialSignalMap.checksum> = crc_checksumSAEJ1850_8Bit(&serializedData[0], noBytes);
+
+<endif>
+} /* End of <fct.e2eProtectFrame> */
+
+
+
+/**
+ * E2E protect the current value of frame <frame> in the global API.\n
+ *   All signals of the frame but the CRC checksum are read from the frame's API struct and
+ * serialized into a temporary buffer. The CRC of this buffer is computed and written into
+ * the according field of the frame's API struct.
+<if(!pdu.specialSignalMap.checksum)>
+ *   @remark
+ * This function is an empty stub, which does nothing. Frame <frame> doesn't
+ * have a checksum defined.
+<endif>
+ */
+void <fct.e2eProtectApiFrame>()
+{
+<if(pdu.specialSignalMap.checksum)>
+    <fct.e2eProtectFrame>(/* pFrameStruct */ &<define.referenceStructFrame>());
+
+<endif>
+} /* End of <fct.e2eProtectApiFrame> */
+
+
+
+/**
+ * E2E validation of frame <frame>.\n
+ *   All signals of the frame, ending with the CRC checksum, are read from the frame's API
+ * struct and serialized into a temporary buffer. The CRC of this buffer is computed and
+ * compared to the check value.
+ *   @return
+ * The function returns \a true if and only if the expected check value of the CRC is seen.
+ * If so, E2E protection approves the correct data contents of the frame.
+ *   @param pFrameStruct
+ * The frame's API struct by reference.
+<if(!pdu.specialSignalMap.checksum)>
+ *   @remark
+ * This function is an empty stub, which always returns \a true. Frame <frame> doesn't
+ * have a checksum defined.
+<endif>
+ */
+<bt("bool_t")> <fct.e2eCheckFrame>(const <symbol.structFrame_t> *pFrameStruct<if(!pdu.specialSignalMap.checksum)> ATTRIB_UNUSED<endif>)
+{
+<if(pdu.specialSignalMap.checksum)>
+    /* The required size of the temporary buffer is the sum of the sizes of all fields of
+       the frame's API struct. Instead of computing this value we take the size of the
+       complete API struct, which is surely an upper bounds of the unknown sum.
+         CRC computation starts with a frame individual start value and the CAN ID as a 4
+       Byte word, low byte first. */
+    <bt("uint8_t")> serializedData[6+sizeof(<symbol.structFrame_t>)] =
+        { [0] = <if(isEmpty.(attribVal.chksumDataId))>0 /** @todo There's no CRC start value attribute defined yet in the DBC file */<else><attribVal.chksumDataId><endif>
+        , [1] = (<frame.id>ul \>>  0) & 0xff
+        , [2] = (<frame.id>ul \>>  8) & 0xff
+        , [3] = (<frame.id>ul \>> 16) & 0xff
+        , [4] = (<frame.id>ul \>> 24) & 0xff
+        };
+
+    /* Copy the binary value of each signal but the checksum signal into the serialization
+       buffer. There's no gap between two values, i.e., machine alignment constraints are
+       disregarded; this requires the use of memcpy. */
+    <bt("uint8_t")> *pData = &serializedData[5];
+    <iterateSignalsOfFrame(frame,"normal","all","serializeSignal")><\\>
+
+    /* Append the received CRC checksum to the temporary buffer. */
+    assert(sizeof(pFrameStruct-><pdu.specialSignalMap.checksum>) == sizeof(*pData));
+    * pData++ = pFrameStruct-><pdu.specialSignalMap.checksum>;
+
+    /* Compute the CRC across the serialized data buffer and compare with the constant
+       check value. */
+    const size_t noBytes = pData - &serializedData[0];
+    assert(noBytes \<= sizeof(serializedData));
+    return crc_checksumSAEJ1850_8Bit(&serializedData[0], noBytes)
+           == CRC_SAE_J1850_8BIT_CHECK_VALUE;
+
+<else>
+    return true;
+    
+<endif>
+} /* End of <fct.e2eCheckFrame> */
+
+
+
+/**
+ * Do unpacking and E2E validation of frame <frame>.\n
+ *   The frame contents are locally unpacked. All signals of the frame, ending with the CRC
+ * checksum, are read from this buffer and serialized into a temporary buffer. The CRC of
+ * this buffer is computed and compared to the unpacked check value. If the checksum
+ * matches then the locally unpacked frame is copied into the global frame API. If there's a
+ * mismatch then the global API is not touched at all.
+ *   @return
+ * The function returns \a true if and only if the expected check value of the CRC is seen.
+ * If so, E2E protection approves the correct data contents of the frame.
+ *   @param frameContent
+ * The frame contents, i.e., the still packed frame as received on the bus.
+<if(!pdu.specialSignalMap.checksum)>
+ *   @remark
+ * Frame <frame> doesn't have a checksum defined. The function will 
+ * unconditionally unpack the frame into the global frame API and then return \a true.
+<endif>
+ */
+<bt("bool_t")> <fct.e2eUnpackAndCheckApiFrame>(const <bt("uint8_t")> frameContent[<frame.size>])
+{
+<if(pdu.specialSignalMap.checksum)>
+    /* Unpack the data locally. Don't use the target pointer here - we don't want to
+       propagate the signal values if they are not proven to be okay. */
+    <symbol.structFrame_t> frameStructLocal;
+    <fct.unpackFrame>(&frameStructLocal, &frameContent[0]);
+    
+    /* Run the E2E validation on the unpacked frame. */
+    if(<fct.e2eCheckFrame>(&frameStructLocal))
+    {
+        /* Copy the validated data to the global API for this frame. */
+        <define.referenceStructFrame>() = frameStructLocal;
+        return true;
+    }
+    else
+    {
+        /* Don't copy any data, just return an error message. */
+        return false;
+    }
+
+<else>
+    <fct.unpackFrame>
+                    ( /* pFrameStruct */ &<define.referenceStructFrame>()
+                    , &frameContent[0]
+                    );
+    return true;
+
+<endif>
+} /* End of <fct.e2eUnpackAndCheckApiFrame> */
+
+
+
+#if E2E_ENABLE_TEST_CODE
+/**
+ * Test function for E2E protection code for frame <frame>.\n
+ *   All signals of the frame, including the field with the CRC checksum, are filled with
+ * randomly chosen binary values. Specified min and max values are disregarded, the full
+ * binary range is used.
+ *   @param pFrameStruct
+ * The frame's API struct by reference. The fields of this struct are filled.
+ */
+void <fct.e2eRndFillFrame>(<symbol.structFrame_t> *pFrameStruct)
+{
+    <iterateSignalsOfFrame(frame,"all","all","randomFillSignal")><\\>
+
+} /* End of <fct.e2eRndFillFrame> */
+
+
+
+
+/**
+ * Test function for E2E protection code for frame <frame>.\n
+ *   All signals of the frame in the global CAN API, including the field with the CRC
+ * checksum, are filled with randomly chosen binary values. Specified min and max values
+ * are disregarded, the full binary range is used.
+ */
+void <fct.e2eRndFillApiFrame>()
+{
+    <fct.e2eRndFillFrame>(/* pFrameStruct */ &<define.referenceStructFrame>());
+
+} /* End of <fct.e2eRndFillApiFrame> */
+
+
+
+
+/**
+ * Test function for E2E protection code for frame <frame>.\n
+ *   All signals of the frame except for the field with the CRC checksum, are set to
+ * randomly chosen values. Specified min and max values are disregarded, the full
+ * binary range is used. The CRC checksum signal is set according to the random signal
+ * values.
+ *   @param frameContents
+ * The frame is returned in binary packed form. It could be sent to the bus in this form.
+<if(!pdu.specialSignalMap.checksum)>
+ *   @remark
+ * Frame <frame> doesn't have a checksum defined. The function can't
+ * protect the data. It returns a randomly filled, unprotected, packed frame.
+<endif>
+ */
+void <fct.e2eRndFillProtectAndPackFrame>(<bt("uint8_t")> frameContent[<frame.size>])
+{
+    /* Fill a local frame struct with random data. */
+    <symbol.structFrame_t> frameStruct;
+    <fct.e2eRndFillFrame>(&frameStruct);
+
+<if(pdu.specialSignalMap.checksum)>
+    /* Do E2E protection: The CRC is computed from the random signal values and written
+       into the CRC field <pdu.specialSignalMap.checksum> of the API
+       struct. */
+    <fct.e2eProtectFrame>(&frameStruct);
+
+<endif>
+    /* Pack the frame into the binary encoding, which would be used on the real CAN bus.<if(pdu.specialSignalMap.checksum)>
+       This includes normal signals and CRC checksum.<endif> */
+    <fct.packFrame>(&frameContent[0], &frameStruct);
+
+} /* End of <fct.e2eRndFillProtectAndPackFrame> */
+
+
+
+
+/**
+ * Test function for E2E protection code for frame <frame>.\n
+ *   All signals of the frame are randomly set. The frame is e2E protected, packed,
+ * unpacked and finally E2E checked.\n
+ *   @return
+ * The function returns the Boolean check result. The test is passed if the function
+ * returns \a true.
+<if(!pdu.specialSignalMap.checksum)>
+ *   @remark
+ * Frame <frame> doesn't have a checksum defined. The function can't really test the E2E
+ * protect, pack, unpack and E2E validation code but it at least runs through the pack and
+ * unpack code.
+<endif>
+ */
+<bt("bool_t")> <fct.e2eTestFrame>()
+{
+    <bt("uint8_t")> frameContent[<frame.size>];
+    
+    /* Produce a packed random frame, which is E2E protected. */
+    <fct.e2eRndFillProtectAndPackFrame>(&frameContent[0]);
+
+    /* Unpack the data again. */
+    <symbol.structFrame_t> frameStruct;
+    <fct.unpackFrame>(&frameStruct, &frameContent[0]);
+
+<if(pdu.specialSignalMap.checksum)>
+    /* Validate the unchanged data contents and return the result. */
+<else>
+    /* Dummy operation: Unpack the frame and return true. */
+<endif>
+    return <fct.e2eCheckFrame>(&frameStruct);
+
+} /* End of <fct.e2eTestFrame> */
+#endif /* E2E_ENABLE_TEST_CODE */
+
+
+
+>>
+
+
+// The declaration of the global functions of the module. Needs to be kept in sync with
+// template fctsPdu(pdu).
+fctsPduDecl(pdu) ::= <<
+/** E2E protect frame <frame>. */
+extern void <fct.e2eProtectFrame>(<symbol.structFrame_t> *pFrameStruct);
+
+/** E2E protect the current value of frame <frame> in the global CAN API. */
+extern void <fct.e2eProtectApiFrame>();
+
+/** E2E validation of frame <frame>. */
+extern <bt("bool_t")> <fct.e2eCheckFrame>(const <symbol.structFrame_t> *pFrameStruct);
+
+/** Unpack a frame and run E2E validation. */
+extern <bt("bool_t")> <fct.e2eUnpackAndCheckFrame>
+                                    ( <symbol.structFrame_t> *pFrameStruct
+                                    , const <bt("uint8_t")> frameContent[<frame.size>]
+                                    );
+
+/** Unpack a frame into the global CAN API and run E2E validation. */
+extern <bt("bool_t")> <fct.e2eUnpackAndCheckApiFrame>(const <bt("uint8_t")> frameContent[<frame.size>]);
+
+#if E2E_ENABLE_TEST_CODE
+/** Test function for E2E protection code for frame <frame>. Assign random signal values. */
+extern void <fct.e2eRndFillFrame>(<symbol.structFrame_t> *pFrameStruct);
+
+/** Test function for E2E protection code for frame <frame>. Assign random signal values to
+    the frame representation in the global CAN API. */
+extern void <fct.e2eRndFillApiFrame>();
+
+/** Get a randomly filled, packed frame <frame> with appropriately set CRC
+    checksum. */
+extern void <fct.e2eRndFillProtectAndPackFrame>(<bt("uint8_t")> frameContent[<frame.size>]);
+
+/** Test function for E2E protection code for frame <frame>. */
+extern <bt("bool_t")> <fct.e2eTestFrame>();
+#endif /* E2E_ENABLE_TEST_CODE */
+
+>>
+
+
+serializeSignal(signal,kind) ::= <<
+<if(!signal.is.checksum)><\\>
+memcpy( pData
+      , &pFrameStruct-><symbol.signal>
+      , sizeof(pFrameStruct-><symbol.signal>)
+      );
+pData += sizeof(pFrameStruct-><symbol.signal>);
+<endif>
+>>
+
+
+// Fill a signal with a binary random pattern.
+randomFillSignal(signal,kind) ::= <<
+<if(!strcmpMuxSel.kind)><\\>
+pFrameStruct-><symbol.signal> = rand_t(<bt(signal.type)>) & (((<bt(signal.type)>)0x1 \<\< <signal.length>)-1);
+<if(signal.isSigned)><\\>
+/* Sign extension required to properly represent negative values? */
+if((pFrameStruct-><symbol.signal> & ((<bt(signal.type)>)0x1 \<\< (<signal.length>-1))) != 0)
+    pFrameStruct-><symbol.signal> |= (<bt(signal.type)>)-1 <\\>
+                                     & ~(((<bt(signal.type)>)0x1 \<\< <signal.length>)-1);<\\>
+<endif><endif>
+
+
+
+>>
+
+
+// Part of module test function: Call of a single frame related test function.
+fctTestAll(pdu) ::= <<
+if(!<fct.e2eTestFrame>())
+    success = false;<\n>
+>>
+
+

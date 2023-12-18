@@ -1,0 +1,167 @@
+//
+// emacsOrgReport.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The contents of the network databases are presented in a human friendly way. The format
+// is *.org, which can easily be translated into HTML by Emacs. The generated file itself
+// will contain the instructions to do so. Otherwise *.org is a text based overview file.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+import "lib/typeMap.stg"
+
+emacsOrgReport(cluster, info) ::= <<
+# +title: Network Code Generation Report
+# +author: <info.application> <info.version>, see http://sourceforge.net/projects/comframe/
+# +date: <info.time>
+# +language: en
+# +startup: showall
+# +OPTIONS: ^:{} timestamp:nil # Try: (org-insert-export-options-template)
+# C-c C-e t
+# See http://stackoverflow.com/questions/13363267/how-to-remove-footer-details-in-org-mode-html-export
+#; +bind: org-export-html-postamble nil
+#; +STARTUP: showall
+# +STARTUP: hideblocks
+#
+# Generation of HTML from this source document:
+#   Open this document in Emacs. Issue two commands:
+#   M-x org-mode
+#   M-x org-export-as-html-and-open
+
+* General
+- Operating system: ~<info.envVarOS>~
+- USER: ~<info.envVarUSERNAME>~
+- Cluster name: ~<cluster.name>~
+- Node name, which code is generated for: ~<cluster.nodeName>~
+- Time of generation: <info.time><\\>
+<if(cluster.hasFloatingPointSignals)>
+- *Caution* The network databases contain floating point signals, which are not supported by the code generation templates yet<endif><\\>
+<if(cluster.hasScaledFloatingPointSignals)>
+- *Caution* The network databases contain scaled floating point signals, which are not supported by the code generation templates<endif>
+
+* Files
+** Generated report file
+- Name          : ~<info.output.name>~
+- Raw name      : ~<info.output.rawName>~
+- Mnemonic      : <info.output.mnm>
+- Name stem     : ~<info.output.nameStem>~
+- Extension     : ~<info.output.ext>~
+- User options: <info.optionMap:{name|<name>=<info.optionMap.(name)>}; wrap="\n                ", separator=", ">
+
+** Template file used for rendering the information
+- Name          : ~<info.templateFile.name>~
+
+* Cluster <cluster.name>
+<cluster.busAry:renderBus()>
+>>
+
+
+renderBus(bus) ::= << <\n>
+** Bus ~<bus.name>~
+- Network file name: ~<bus.networkFile.path>~
+- User options: <bus.optionMap:{name|<name>=<bus.optionMap.(name)>}; wrap="\n                ", separator=", ">
+- Nodes: <bus.nodeAry:{n|~<n.name>~}; separator=", ", wrap="\n         ">
+<if(bus.attribMap)><renderAttribMap(bus)><endif>
+*** Attribute definitions
+<bus.attribDefAry:renderAttribDef()>
+*** Frames
+<bus.frameAry:renderFrame()>
+>>
+
+
+renderAttribDef(aDef) ::= <<
+<aDef.i>. Attribute ~<aDef.name>~
+  - Object Type: <aDef.objType>
+<if(aDef.isInt)>  - Type Int
+    - Range: [<aDef.min; format="%.0f">..<aDef.max; format="%.0f">]
+<elseif(aDef.isString)>  - Type String
+<elseif(aDef.isFloat)>  - Type Float
+    - Range: [<aDef.min>..<aDef.max>]
+<elseif(aDef.isEnum)>  - Type Enum
+    - Range: [<aDef.min; format="%.0f">..<aDef.max; format="%.0f">]
+    - Name, value pairs:
+      <aDef.enumValAry:{ev|- <ev.name>: <ev.i0>}; separator="\n">
+<endif>
+  - Default value: <renderAttribVal(aDef.defVal)><\n>
+>>
+
+
+renderAttribMap(netObj) ::= <<
+<if(netObj.attribMap)>
+- Attribute values:
+<! To iterate across a map we need first iterate the keys and then get the values. !>
+<netObj.attribMap:{key|   - <renderAttrib(netObj.attribMap.(key))><if(netObj.attribMap.(key).isDefVal)> (default)<endif><\n>}>
+<endif>
+>>
+
+renderAttrib(a) ::= <<
+<a.name>: <renderAttribVal(a)>
+>>
+
+renderAttribVal(a) ::= <<
+<if(a.str)><a.str><endif><\\>
+<if(a.str && a.n)> (<endif><if(a.n)><a.n><endif><\\>
+<if(a.str && a.n)>)<endif>
+>>
+
+renderFrame(frame) ::= << <\n>
+**** <frame.i>) Frame ~<frame.name>~
+- CAN ID: <frame.id> (<frame.id; format="0x%03x">)
+- Size: <frame.size> Byte
+- Sender: ~<frame.sender>~
+<renderAttribMap(frame)>
+<if(rest(frame.pduAry))>ERROR Unexpected PDUs found. In a CAN cluster we have one and only one PDU per frame<\n><endif><first(frame.pduAry):{pdu|<renderPdu(pdu=pdu, sm=pdu.attribMap.frameSendMode)>}>
+>>
+
+
+renderPdu(pdu, sm) ::= <<
+<if(sm.is.regular)><\\>
+- SendMode: Regular
+  - Period: <pdu.attribMap.sendPeriod> ms
+<elseif(sm.is.event)><\\>
+- SendMode: Data change driven, regular if there are no changes
+  - Period: <pdu.attribMap.sendPeriod> ms
+  - Minimum distance in time: <pdu.attribMap.eventMinDistance> ms
+<elseif(sm.is.mixed)><\\>
+- SendMode: Data change driven
+  - Minimum distance in time: <pdu.attribMap.eventMinDistance> ms
+<else><\\>
+- Unknown transmission mode! Please, double-check your code generator configuration!
+<endif>
+<if(pdu.specialSignalMap)>- Filtered special signals:
+  <pdu.specialSignalMap:{name|<renderSpecialSignal(name,pdu.specialSignalMap.(name))>}><\\>
+<endif>
+- <pdu.noSignals> Signals (plus <pdu.noMuxSignalSets> multiplexed signal sets):
+|---
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values|
+|---
+<pdu.signalAry:renderSignal("")><\\>
+<if(pdu.muxSelector)>|---
+<renderSignal(pdu.muxSelector, "S")><endif><\\>
+<pdu.muxSignalSetAry:renderMuxSignalSet()><\\>
+|---
+>>
+
+renderSpecialSignal(name, s) ::= <<
+- <name>: <s.name><\n>
+>>
+
+renderMuxSignalSet(mxss) ::= <<
+|---
+<mxss.signalAry:renderSignal(mxss.muxValue)>
+>>
+
+renderSignal(s,mux) ::= "|<s.i>|<s.name>|<bt(s.type)>|<s.length>|<s.startBit>|<s.isMotorola>|<s.min>|<s.max>|<s.factor>|<s.offset>|<s.unit>|<s.noReceivers>|<s.isReceived>|<mux>|<s.noValueDescs>|<\n>"

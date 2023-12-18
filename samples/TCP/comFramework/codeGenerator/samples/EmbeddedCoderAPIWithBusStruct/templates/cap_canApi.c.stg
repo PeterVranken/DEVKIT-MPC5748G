@@ -1,0 +1,465 @@
+//
+// cap_canApi.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the data oriented CAN API with the Embedded
+// Coder generated APSW code. The integration of the API is supported by also generated
+// pack and unpack functions, one such pair for each frame.
+//
+// See template moduleDescription for more details.
+//
+// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// Override the dictionary of basic type names in the template library:
+//   First import is the type map without a relative path. This makes StringTemplate look
+// for the file in the directory of the importing group file -- prior to searching along
+// the Java CLASSPATH. We can be sure that our local version has priority over the other
+// one in the library folder in sample raceTechnology.
+import "typeMap.stg"
+
+import "lib/mod.stg"
+import "lib/codeGenC.stg"
+import "lib/iterations.stg"
+import "symbols.stg"
+import "globalInterface.stg"
+
+moduleDescription() ::= <<
+ * This file implements the data oriented CAN API between the Embedded Coder generated APSW
+ * code and the upper layers of the CAN stack. The global data structure is initialized
+ * with the initial signal values from the CAN network database.\n
+ *   The integration of the API with the CAN stack is supported by a set of pack and unpack
+ * functions; one such pair of functions is available for each CAN frame. The pack function
+ * composes the binary frame contents from the set of signal values found in the API and
+ * the counterpart function (unpack) decomposes received binary frame content data into
+ * distinct signal values, which are placed into the API.\n
+ *   The functions are globally accessible; their names are composed such that name clashes
+ * across different buses won't appear even if frames of same name and ID are
+ * transmitted.\n
+ *   Note, concurrency is not handled here. Particularly for CAN input, data reception and
+ * decomposition of the frame contents into signals might be an asynchronous event. If so,
+ * the caller of the unpack function would have to add appropriate code to implement mutual
+ * exclusion with the Embedded Coder generated APSW code, which also accesses the API data.
+ * Although less likely may the same hold for CAN output.
+>>
+
+// This is one of the root templates; the complete C file is rendered.
+//
+canApiDef(cluster, info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["\n", moduleDescription()])>
+<! The list of functions is put after the file frame shaped by modC !>
+<iteratePdusOfCluster(cluster,"both","packUnpackFct")>
+>>
+
+// This is the other root template; the complete C header file is rendered.
+//
+canApiDecl(cluster, info) ::= <<
+<! All code is shaped by overloading the regions of the template modH, see below !>
+<modH(["Declaration of API and pack/unpack functions for the CAN frames of cluster ", cluster.name, "."])>
+>>
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The included
+// files.
+@modC.includes() ::= <<
+#include \<string.h>
+#include \<assert.h>
+
+#include "<file.baseTypes_h>"
+
+>>
+
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The local
+// defines.
+@modC.defines() ::= <<
+/* Check the values of the frame and special signal related #define's. Compilation errors
+   can occur due to incompatibilites between the code generation templates and the actual
+   network databases. */
+#define <file.mnmApi; format="upper">_INCLUDES_PRECO_CHECKS
+#include "<file.precoCheck_h>"
+
+>>
+
+
+// In this sample of a CAN interface the API with the APSW is modeled as a large set of
+// global structs, one for each frame. The struct contains a list of signals as members
+// plus a status variable (related to the transmission of the frame). All of these structs
+// are bundled in an embracing CAN bus related struct. One global object of this type
+// exists for each CAN bus.
+//   The struct definitions are added to the generated code by modifying the according
+// place holder in the module frame template.
+@modC.data() ::= <<
+<iterateFramesOfCluster(cluster,"both","constPtrToStructFrameDef")>
+<listOfStructBusDefs(cluster)>
+>>
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// included files.
+@modH.includes() ::= <<
+#include "<file.baseTypes_h>"
+
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: Some
+// the compile configuration controlling defines plus many frame and signal related defines.
+@modH.defines() ::= <<
+#ifndef <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS
+/** Normally, a pack function is generated for sent frames only. If this define is set to a
+    value other than 0 then a pack function is generated for received Frames, too. */
+# define <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS 0
+#endif
+
+#ifndef <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS
+/** Normally, an unpack function is generated for received Frames only. If this define is set
+    to a value other than 0 then an unpack function is generated for sent Frames, too. */
+# define <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS 0
+#endif<\n>
+
+<iterateSignalsOfCluster(cluster,"all","all","definesSignalScaling")>
+<iteratePdusOfCluster(cluster,"both","definesPduProperties")>
+
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// type definitions for frames and buses.
+@modH.typedefs() ::= <<
+<typedefStsTransmission()>
+<listOfTypedefsStructFrameAndBus(cluster)>
+>>
+
+
+// The global data interface as customization of the header file template: The list of
+// external data declarations.
+@modH.data() ::= <<
+<iterateFramesOfCluster(cluster,"both","constPtrToStructFrameDecl")>
+<listOfStructBusDecls(cluster)>
+>>
+
+
+// The global function interface as customization of the header file template: The list of
+// prototypes of the pack and unpack functions.
+@modH.prototypes() ::= <<
+<iteratePdusOfCluster(cluster,"both","packFctDecl")>
+>>
+
+
+// Some defines for a signal, which make its scaling globally accessible.
+definesSignalScaling(signal,kind) ::= <<
+<if(!signal.isVoidScaling)>
+/** Convert the binary value of signal <signal> of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the world value. */
+#define <define.signalBinToDbl>(bin) \
+            ((double)(bin)<if(!signal.isVoidFactor)>*<define.signalFactor><endif><if(!signal.isVoidOffset)>+<define.signalOffset><endif>)
+
+/** Convert the world value of signal <signal> of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus> into the binary value as
+    transmitted via the CAN interface. */
+#define <define.signalDblToBin>(dbl) \
+            ((<bt(signal.type)>)(<if(!(signal.isVoidOffset||signal.isVoidFactor))>(<endif>(dbl)<if(!signal.isVoidOffset)>-<define.signalOffset><endif><if(!(signal.isVoidOffset||signal.isVoidFactor))>)<endif><if(!signal.isVoidFactor)>/<define.signalFactor><endif>))
+
+/** The gain factor of the scaling of signal <signal> of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+#define <define.signalFactor><\t>(<signal.factor>)
+
+/** The offset of the scaling of signal <signal> of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+#define <define.signalOffset><\t>(<signal.offset>)
+
+<endif>
+/** The minimum of the world value of signal <signal> of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+#define <define.signalMin><\t>(<if(!signal.isVoidScaling)><signal.min><else><signal.min; format="%.0f"><endif>)
+
+/** The maximum of the world value of signal <signal> of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+#define <define.signalMax><\t>(<if(!signal.isVoidScaling)><signal.max><else><signal.max; format="%.0f"><endif>)<\n>
+
+<if(info.optionMap.useStorageClassImportedExternPointer)>
+<!-- This access method can be used with MATLAB 2009a. It generates a pointer based
+     expression to access a field of the struct. Unfortunately, it generates an extern
+     declaration of the pointer expression, which hinders us to use a macro for this
+     expression. (With respect to generated C code would this be the most efficient
+     solution, in terms of both memory and CPU consumption.) Instead we have to provide a
+     real external pointer, which can luckily be a const in ROM.
+       The use of a ROM absed pointer table is somewhat more ineffcient as the GetSet
+     method, which is available on more recent MATLAB revisions than 2009a. Switch to
+     Get/Set if possible.
+       The required pointer is defined below in the data section. --!>
+<elseif(info.optionMap.useStorageClassGetSet)>
+<!-- This access method is perfect but must not be used with MATLAB 2009a: The Embedded
+     Coder has a bug, which makes it swallow the very last character of the field name - the
+     generated C code is syntactically incorrect. More recent revisions of MATLAB likely
+     fixed this problem and then this method is the recommendation to use. --!>
+/** Provide read access to a field of the struct, which bundles the signals of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. This struct is a nested
+    sub-element of the large the CAN bus describing struct <symbol.structBus>.\n
+      This define can be used with Embedded Coder's access method "GetSet (Custom)". */
+#define <define.getFctFieldOfStructFrame>(signalName) \
+            (<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.signalName)
+
+/** Provide write access to a field of the struct, which bundles the signals of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. This struct is a nested
+    sub-element of the large the CAN bus describing struct <symbol.structBus>.\n
+      This define can be used with Embedded Coder's access method "GetSet (Custom)". */
+#define <define.setFctFieldOfStructFrame>(signalName, newValue) \
+            (<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.signalName = (newValue))
+
+<elseif(info.optionMap.useStorageClassDefault)>
+<!-- This access method would be perfect with respect to the Embedded Coder generated C
+     code but it fails since the Embedded Coder generates an external declaration also,
+     which is incompatible with a macro based alias expression but require a true struct
+     object. This storage class must not be used. --!>
+/** Provide read/write access to the struct, which bundles the signals of frame
+    <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>, with a simple dotted
+    expression like <define.aliasOfStructFrame>.signalName. The addressed struct
+    is a nested sub-element of the large the CAN bus describing struct <symbol.structBus>.\n
+      This define can be used with Embedded Coder's access method "Default (Custom)". */
+#define <define.aliasOfStructFrame> \
+            <symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>
+
+<else>
+<info.error.(["Invalid command line: No storage class has been selected for the Embedded"
+             , " Coder. Pass argument -op with one out of"
+             , " useStorageClassImportedExternPointer, useStorageClassGetSet or"
+             , " useStorageClassDefault as value"
+             ])>
+<endif>
+>>
+
+
+// We need a list of defines related to the frame/PDU, which make some numeric properties
+// easily available to the generated C code without introducing meaningless literals in the
+// code.
+definesPduProperties(pdu) ::= <<
+/** The size in Byte of frame <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. */
+#define <define.pduSize><\t><pdu.size>
+
+<if(pdu.specialSignalMap.checksum)>
+/** The size in Bit of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.checksumLength><\t><pdu.specialSignalMap.checksum.length>
+
+/** The start bit of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.checksumStartBit><\t><pdu.specialSignalMap.checksum.startBit>
+
+/** The endianness of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.checksumIsMotorola><\t><pdu.specialSignalMap.checksum.isMotorola>
+
+/** The data ID of checksum signal of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.chksumDataId><\t><pdu.attribMap.(attribName.chksumDataId)>
+
+<endif>
+<if(pdu.specialSignalMap.SQC)>
+/** The size in Bit of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.sqcLength><\t><pdu.specialSignalMap.SQC.length>
+
+/** The minmum value of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.sqcFrom><\t><pdu.specialSignalMap.SQC.min; format="%.0f">
+
+/** The maximum value of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>. */
+#define <define.sqcTo><\t><pdu.specialSignalMap.SQC.max; format="%.0f">
+
+<endif>
+>>
+
+
+
+constPtrToStructFrameDecl(frame) ::= <<
+<if(info.optionMap.useStorageClassImportedExternPointer)>
+<!-- See above: This access method can be used with MATLAB 2009a. --!>
+/** Provide direct read/write access to the external struct, which bundles the signals of
+    frame <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. This struct is a nested
+    sub-element of the large the CAN bus describing struct <symbol.structBus>.\n
+      This pointer can be used with Embedded Coder's access method "ImportedExternPointer".
+      @remark This pointer should be a const data object. However, this is impossible for
+    the same reason, why the default custom storage can't be used: The Embedded Coder
+    generates an extern declaration, which doesn't consider the const attribute. Having it
+    here would lead to conflicting types. */
+extern <symbol.structFrame_t> *<symbol.ptrToStructFrame>;
+<endif>
+>>
+
+
+constPtrToStructFrameDef(frame) ::= <<
+<if(info.optionMap.useStorageClassImportedExternPointer)>
+<!-- See above: This access method can be used with MATLAB 2009a. --!>
+/** Provide direct read/write access to the external struct, which bundles the signals of
+    frame <frame> (<frame.id>, <frame.id;format="0x%03x">) on bus <bus>. This struct is a nested
+    sub-element of the large the CAN bus describing struct <symbol.structBus>.\n
+      This pointer can be used with Embedded Coder's access method "ImportedExternPointer".
+      @remark This pointer should be a const data object. However, this is impossible for
+    the same reason, why the default custom storage can't be used: The Embedded Coder
+    generates an extern declaration, which doesn't consider the const attribute. Having it
+    here would lead to conflicting types. */
+<symbol.structFrame_t> *<symbol.ptrToStructFrame> =
+        &<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>;
+<endif>
+>>
+
+
+// A (un)pack function pair of prototypes.
+packFctDecl(pdu) ::= <<
+<if(!pdu.isSent)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+<endif>
+/** Pack the signal values of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">)
+    into a byte array of <pdu.size> Byte. The signal values are read from the global interface
+    struct <symbol.structBus>.<symbol.structFrameSts>. */
+void <symbol.fctPackPdu>(<bt("uint8_t")> <msgAry()>[]);
+<if(!pdu.isSent)>#endif<endif>
+
+<if(!pdu.isReceived)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+<endif>
+/** Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) from
+    a byte array of <pdu.size> Byte. The signal values are written into the global interface struct
+    <symbol.structFrameSts>. */
+void <symbol.fctUnpackPdu>(const <bt("uint8_t")> <msgAry()>[]);
+<if(!pdu.isReceived)>
+#endif
+<endif>
+<\n>
+>>
+
+
+// A PDU is rendered as pair of pack and unpack function for its signal set.
+packUnpackFct(pdu) ::= <<
+<if(!pdu.isSent)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+<endif>
+/**
+ * Pack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name>
+ * into a byte array of <pdu.size> Byte.\n
+ *   The signal values are read from the global interface struct
+ * <symbol.structBus>.<symbol.structFrameSts>.
+ * @param <msgAry()>
+ *   The byte array. The packed signal values will be found in this array after return.
+ * Unused bits will be set to null.
+ */
+
+void <symbol.fctPackPdu>(<bt("uint8_t")> <msgAry()>[])
+{
+    <setPduDataAreaNull(pdu)>
+
+    <pdu.signalAry:packSignal(pdu,{<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<symbol.signal>}); separator="\n"><\\>
+<if(pdu.muxSelector)>
+    <pdu.muxSelector:packSignal(pdu,{<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<cMuxSelectorName()>})>
+    /* Pack the selected set of multiplexed signals. */
+    switch(<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<cMuxSelectorName()>)
+    {
+    <pdu.muxSignalSetAry:casePackMuxSignalSet()>
+    default: assert(1==0); // Undefined mux selector value encountered
+    }
+<endif>
+} /* End of <symbol.fctPackPdu> */
+<if(!pdu.isSent)>
+#endif
+<endif>
+
+
+
+<if(!pdu.isReceived)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+<endif>
+/**
+ * Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) on bus <bus.name>
+ * from a byte array of <pdu.size> Byte.\n
+ *   The signal values are written into the global interface struct
+ * <symbol.structBus>.<symbol.structFrameSts>.
+ * @param <msgAry()>
+ *   The byte array. The signal values are extracted from this array.
+ */
+
+void <symbol.fctUnpackPdu>(const <bt("uint8_t")> <msgAry()>[])
+{
+    /* Decode all normal, not multiplexed signals. */
+    <pdu.signalAry:unpackSignal()>
+<if(pdu.muxSelector)>
+    /* Decode the multiplex selector signal. */
+    <pdu.muxSelector:unpackSignal()>
+    /* Decode the selected set of multiplexed signals. */
+    switch(<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<cMuxSelectorName()>)
+    {
+    <pdu.muxSignalSetAry:caseUnpackMuxSignalSet()>
+    default: assert(1==0); // Undefined mux selector value encountered
+    }
+<endif>
+} /* End of <symbol.fctUnpackPdu> */
+<if(!pdu.isReceived)>
+#endif
+<endif>
+
+
+
+
+>> // End of template packUnpackFct
+
+
+// Apply the assignment unpackSignal of a signal value to the related global interface
+// variable for all conditionally decoded signals from a multiplexed signal set.
+caseUnpackMuxSignalSet(ss) ::= <<
+case <ss.muxValue>:
+    <ss.signalAry:unpackSignal()>
+    break;<\n>
+>>
+
+
+// A signal is unpacked and the value is assigned to the related global interface variable.
+//   Remark: The handling of user option suppressUnaffectedSignals is somewhat undefined
+// for the generation of unpack functions for outbound PDUs: The signal property
+// isReceived will generally be false, which means for suppressUnaffectedSignals=true to
+// not unpack the signal. But if we follow this what would be the value of an unpack
+// function then? Usually, such a function is barely useful in final production code to
+// fulfill functional needs but it might be helpful for testing code, where inverse
+// functions are required. As a workaround and to support those test situations we do not
+// filter signals for unpacking in case of outbound PDUs.
+unpackSignal(signal) ::= <<
+<if(!info.optionMap.suppressUnaffectedSignals || signal.isReceived || pdu.isSent)>
+<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<symbol.signal> =
+    <extractSignal(signal)>;
+<endif>
+>>
+
+
+// Apply the pack operation for all conditionally encoded signals of a multiplexed signal set.
+casePackMuxSignalSet(ss) ::= <<
+case <ss.muxValue>:
+    <ss.signalAry:packSignal(pdu,{<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<symbol.signal>}); separator="\n">
+    break;<\n>
+>>
+
+
+// Similar to <symbol.signal> but specifically for the multiplex selector signal (if any).
+// (<symbol.signal> can't be used directly as it makes use of attribute name scoping to
+// access the signal.)
+cMuxSelectorName() ::= <<
+<pdu.muxSelector:{signal|<symbol.signal>}>
+>>
+
+
+// A string telling the direction of transmission of a frame or a PDU.
+direction(pdu) ::= "<if(pdu.isSent)>outbound<elseif(pdu.isReceived)>inbound<else>unused<endif>"
+

@@ -1,0 +1,90 @@
+//
+// cst_canStatistics.h.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the set of defines, which make some total
+// numbers publically available, like number of CAN frames.
+//
+// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+import "lib/iterations.stg"
+import "symbols.stg"
+
+
+// This is one of the root templates; the complete C header file is rendered.
+//
+canStatistics_h(cluster, info) ::= <<
+<! All code is shaped by overloading the regions of the template modH, see below !>
+<modH(["Some useful statistics about the CAN frames of cluster ", cluster.name, "."])>
+>>
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// included files.
+@modH.includes() ::= <<
+#include "<file.baseTypes_h>"
+
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: Some
+// the compile configuration controlling defines.
+@modH.defines() ::= <<
+/** The total number of affected CAN frames in the cluster, i.e. either sent or received. */
+#define CST_NO_CAN_FRAMES (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_<bus; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of sent CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_SENT (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_SENT_<bus; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of received CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_RECEIVED (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_RECEIVED_<bus; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+<cluster.busAry:busStatistics()>
+>>
+
+
+@modH.typedefs() ::= <<
+>>
+
+
+// The global data interface as customization of the header file template: The list of
+// external declarations.
+@modH.data() ::= <<
+>>
+
+
+// The global function interface as customization of the header file template: The list of
+// prototypes of the pack and unpack functions.
+@modH.prototypes() ::= <<
+>>
+
+
+busStatistics(bus) ::= <<
+/** The total number of affected CAN frames in bus <bus>, i.e. either sent or received. */
+#define CST_NO_CAN_FRAMES_<bus; format="upper"> <info.calc.cstCnt_set_0><iterateFramesOfBus(bus,"both","addFrame")><info.calc.cstCnt>
+
+/** The number of sent CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_SENT_<bus; format="upper"> <info.calc.cstCnt_set_0><iterateFramesOfBus(bus,"sent","addFrame")><info.calc.cstCnt>
+
+/** The number of received CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_RECEIVED_<bus; format="upper"> <info.calc.cstCnt_set_0><iterateFramesOfBus(bus,"received","addFrame")><info.calc.cstCnt>
+<\n>
+>>
+
+
+addFrame(frame) ::= "<info.calc.cstCnt_add_1>"

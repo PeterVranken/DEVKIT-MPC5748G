@@ -1,0 +1,328 @@
+= Code Generation Report for CAN Network DEVKIT-MPC5775G
+:Author:    comFramework - codeGenerator version 1.11.3 (http://sourceforge.net/projects/comframe/)
+:toc:
+:toclevels: 4
+:xrefstyle: short
+:numbered:
+
+== General
+* Operating system: `Windows_NT`
+* USER: `vranken`
+* Cluster name: `DEVKIT-MPC5775G`
+* Node name, which code is generated for: `PowerDisplay`
+
+== Files
+=== Generated report file
+* Name        : `codeGenerationReport.adoc`
+* Raw name    : `codeGenerationReport`
+* Mnemonic    : 
+* Name stem   : `codeGenerationReport`
+* Extension   : `adoc`
+* User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true
+
+=== Template file used for rendering the information
+* Name          : `codeGenerationReport.adoc.stg`
+
+== Cluster DEVKIT-MPC5775G
+
+
+=== Bus `PWM`
+* Network file name: `dbcFiles\PWM.dbc`
+* User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true
+* Nodes: `DEVKIT`
+==== Attribute definitions
+1. Attribute `GenMsgSendType`
+ ** Object Type: frame
+  *** Type Enum
+  *** Range: [0..8]
+  *** Name, value pairs:
+   **** cyclic: 0
+   **** event: 1
+   **** cyclicOrEvent: 2
+   **** reserved: 3
+   **** reserved: 4
+   **** reserved: 5
+   **** reserved: 6
+   **** reserved: 7
+   **** noMsgSendType: 8
+ ** Default value: cyclic (0)
+2. Attribute `GenMsgCycleTime`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 10
+3. Attribute `checksumStartValue`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [0..255]
+ ** Default value: 0
+4. Attribute `GenMsgDelayTime`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 20
+5. Attribute `GenSigStartValue`
+ ** Object Type: signal
+  *** Type Float
+  *** Range: [-1.0E99..1.0E99]
+ ** Default value: 0.0
+
+==== Frames
+
+
+===== 1: `PWM_in`
+* CAN ID:  (0x1000)
+* Size: 8 Byte
+* Sender: `DEVKIT`
+* Attribute values:
+ ** GenMsgCycleTime: 100
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 0 (default)
+ ** GenMsgSendType: cyclic (0) (default)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|PA2_J3_pin3_periodTime|uint16_t|15|6|true|0.0|511.98437551|0.015625|0.0|ms|0|false||0
+|2|PA2_J3_pin3_isNew|boolean_t|1|7|false|0.0|0.0|1.0|0.0||0|false||0
+|3|PA6_J2_pin1_isNew|boolean_t|1|16|true|0.0|0.0|1.0|0.0||0|false||0
+|4|PA6_J2_pin1_dutyTime|uint16_t|15|17|false|0.0|511.984375|0.015625|0.0|ms|0|false||0
+|5|PA2_PA6_dutyCycle|uint16_t|15|39|true|0.0|100.0|0.00390625|0.0|%|0|false||0
+|6|PA2_J3_pin3_frequency|uint16_t|15|40|true|0.0|8191.75|0.25|0.0|Hz|0|false||0
+|=======
+
+===== 2: `PWM_out`
+* CAN ID:  (0x1001)
+* Size: 8 Byte
+* Sender: ``
+* Attribute values:
+ ** GenMsgCycleTime: 10 (default)
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 0 (default)
+ ** GenMsgSendType: event (1)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+* 12 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|LED_2_DS10_inhibit|boolean_t|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|LED_4_DS11_inhibit|boolean_t|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|LED_5_DS5_inhibit|boolean_t|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|PA1_J3_pin1_inhibit|boolean_t|1|3|false|0.0|1.0|1.0|0.0||1|true||0
+|5|LED_2_DS10_frequency|uint16_t|10|4|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
+|6|LED_4_DS11_frequency|uint16_t|10|14|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
+|7|LED_5_DS5_frequency|uint16_t|10|24|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
+|8|PA1_J3_pin1_frequency|uint16_t|10|34|false|2.0|10000.0|9.7752|0.0|Hz|1|true||0
+|9|LED_2_DS10_dutyCycle|uint8_t|5|44|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|10|LED_4_DS11_dutyCycle|uint8_t|5|49|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|11|LED_5_DS5_dutyCycle|uint8_t|5|54|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|12|PA1_J3_pin1_dutyCycle|uint8_t|5|59|false|0.0|0.0|3.2259|0.0|%|1|true||0
+|=======
+
+=== Bus `PT`
+* Network file name: `dbcFiles\sampleCanBus.dbc`
+* User options: suppressUnaffectedSignals=true, setUnusedPayloadBitsToOne=true
+* Nodes: `ECU`, `PowerDisplay`
+* Attribute values:
+ ** Author: peter_vranken@yahoo.de (default)
+
+
+==== Attribute definitions
+1. Attribute `Author`
+ ** Object Type: bus
+  *** Type String
+ ** Default value: peter_vranken@yahoo.de
+2. Attribute `GenMsgSendType`
+ ** Object Type: frame
+  *** Type Enum
+  *** Range: [0..8]
+  *** Name, value pairs:
+   **** cyclic: 0
+   **** event: 1
+   **** cyclicOrEvent: 2
+   **** reserved: 3
+   **** reserved: 4
+   **** reserved: 5
+   **** reserved: 6
+   **** reserved: 7
+   **** noMsgSendType: 8
+ ** Default value: cyclic (0)
+3. Attribute `GenMsgCycleTime`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 10
+4. Attribute `checksumStartValue`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [0..255]
+ ** Default value: 0
+5. Attribute `GenMsgDelayTime`
+ ** Object Type: frame
+  *** Type Int
+  *** Range: [5..10000]
+ ** Default value: 20
+6. Attribute `GenSigStartValue`
+ ** Object Type: signal
+  *** Type Float
+  *** Range: [-1.0E99..1.0E99]
+ ** Default value: 0.0
+
+==== Frames
+
+
+===== 1: `StateEcu01`
+* CAN ID:  (0x1024)
+* Size: 4 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** GenMsgCycleTime: 10
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 17
+ ** GenMsgSendType: cyclic (0)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+ ** Filtered special signals:
+  * SQC: sequenceCounter
+  * checksum: checksum
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|checksum|uint8_t|8|7|true|0.0|255.0|1.0|0.0||1|true||0
+|2|speedOfRotation|uint16_t|16|11|true|0.0|6500.0|0.1|0.0|rpm|1|true||0
+|3|sequenceCounter|uint8_t|4|12|false|0.0|14.0|1.0|0.0||1|true||0
+|=======
+
+===== 2: `StateEcu02`
+* CAN ID:  (0x1040)
+* Size: 4 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** GenMsgCycleTime: 25
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 218
+ ** GenMsgSendType: cyclic (0)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+ ** Filtered special signals:
+  * SQC: sequenceCounter
+  * checksum: checksum
+* 3 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|checksum|uint8_t|8|0|false|0.0|255.0|1.0|0.0||0|false||0
+|2|sequenceCounter|uint8_t|4|8|false|1.0|15.0|1.0|0.0||1|true||0
+|3|torque|int16_t|11|22|true|-500.0|500.0|0.5|0.0|Nm|1|true||0
+|=======
+
+===== 3: `UserLimits`
+* CAN ID:  (0x2032)
+* Size: 8 Byte
+* Sender: `ECU`
+* Attribute values:
+ ** GenMsgCycleTime: 10 (default)
+ ** GenMsgDelayTime: 65
+ ** checksumStartValue: 119
+ ** GenMsgSendType: event (1)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+ ** Filtered special signals:
+  * SQC: sequenceCounter
+  * checksum: checksum
+* 6 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|sequenceCounter|uint8_t|4|2|false|1.0|14.0|1.0|0.0||1|true||0
+|2|minSpeedOfRotation|uint16_t|12|6|false|0.0|6500.0|1.6|0.0|rpm|1|true||0
+|3|maxSpeedOfRotation|uint16_t|12|18|false|0.0|6500.0|1.6|0.0|rpm|1|true||0
+|4|checksum|uint8_t|8|39|true|0.0|255.0|1.0|0.0||1|true||0
+|5|minPower|uint16_t|9|47|true|-10.0|240.0|0.5|-10.0|KW|1|true||0
+|6|maxPower|uint16_t|9|53|true|-10.0|240.0|0.5|-10.0|KW|1|true||0
+|=======
+
+===== 4: `InfoPowerDisplay`
+* CAN ID:  (0x1536)
+* Size: 6 Byte
+* Sender: `PowerDisplay`
+* Attribute values:
+ ** GenMsgCycleTime: 30
+ ** GenMsgDelayTime: 20 (default)
+ ** checksumStartValue: 112
+ ** GenMsgSendType: cyclic (0)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+ ** Filtered special signals:
+  * SQC: sequenceCounter
+  * checksum: checksum
+* 4 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|checksum|uint8_t|8|0|false|0.0|255.0|1.0|0.0||0|false||0
+|2|sequenceCounter|uint8_t|4|8|false|0.0|14.0|1.0|0.0||0|false||0
+|3|power|uint16_t|15|13|false|-500000.0|500000.0|32.0|-500000.0|W|0|false||0
+|4|state|uint8_t|3|33|true|0.0|2.0|1.0|0.0||0|false||3
+|=======
+
+===== 5: `StatusPowerDisplay`
+* CAN ID:  (0x1537)
+* Size: 6 Byte
+* Sender: `PowerDisplay`
+* Attribute values:
+ ** GenMsgCycleTime: 1000
+ ** GenMsgDelayTime: 50
+ ** checksumStartValue: 113
+ ** GenMsgSendType: cyclicOrEvent (2)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+ ** Filtered special signals:
+  * SQC: sequenceCounter
+  * checksum: checksum
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|noDlcErrors|uint16_t|11|0|false|0.0|2047.0|1.0|0.0||0|false||0
+|2|noCheckSumErrors|uint16_t|11|11|false|0.0|2047.0|1.0|0.0||0|false||0
+|3|noSqcErrors|uint16_t|11|22|false|0.0|2047.0|1.0|0.0||0|false||0
+|4|sequenceCounter|uint8_t|7|39|true|1.0|126.0|1.0|0.0||0|false||0
+|5|checksum|uint8_t|8|47|true|0.0|255.0|1.0|0.0||0|false||0
+|=======
+
+===== 6: `LimitsPowerDisplay`
+* CAN ID:  (0x1538)
+* Size: 1 Byte
+* Sender: `PowerDisplay`
+* Attribute values:
+ ** GenMsgCycleTime: 10 (default)
+ ** GenMsgDelayTime: 20
+ ** checksumStartValue: 0 (default)
+ ** GenMsgSendType: event (1)
+
+
+* Unknown transmission mode! Please, double-check your code generator configuration!
+ ** Filtered special signals:
+  * SQC: sequenceCounter
+* 5 Signals (plus 0 multiplexed signal sets):
+[frame="none",width="90%",options="header"]
+|=======
+|ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
+|1|sequenceCounter|uint8_t|3|0|false|1.0|6.0|1.0|0.0||0|false||0
+|2|belowMinSpeedOfRotation|boolean_t|1|3|false|0.0|1.0|1.0|0.0||0|false||0
+|3|aboveMaxSpeedOfRotation|boolean_t|1|4|false|0.0|1.0|1.0|0.0||0|false||0
+|4|belowMinPower|boolean_t|1|5|false|0.0|1.0|1.0|0.0||0|false||0
+|5|aboveMaxPower|boolean_t|1|6|false|0.0|1.0|1.0|0.0||0|false||0
+|=======

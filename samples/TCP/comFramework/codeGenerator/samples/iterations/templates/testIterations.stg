@@ -1,0 +1,53 @@
+//
+// testIterations.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Test new features of the library file iterations.stg
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+
+testFrameRefIterations(cluster,info) ::= <<
+Buses:
+  <iterateBusesOfCluster(cluster,"renderBus")><\\>
+
+All Frames:
+  <iterateFramesOfCluster(cluster,"all","renderFrame")><\\>
+All Frames in lexical order:
+  <iterateFramesOfClusterByName(cluster,"all","renderFrame")><\\>
+All frames of first bus in lexical order:
+  <iterateFramesOfBusByName(first(cluster.busAry),"all","renderFrame")><\\>
+All frames of last bus in inverse lexical order:
+  <iterateFramesOfBusByNameReverse(last(cluster.busAry),"all","renderFrame")><\\>
+All Frames in inverse lexical order:
+  <iterateFramesOfClusterByNameReverse(cluster,"all","renderFrame")><\\>
+All Frames in order of CAN ID:
+  <iterateFramesOfClusterById(cluster,"all","renderFrame")><\\>
+All Frames in inverse order of CAN ID:
+  <iterateFramesOfClusterByIdReverse(cluster,"all","renderFrame")><\\>
+All Frames in order of parsing:
+  <cluster.frameInFileOrderAry:{frameRef|<frameRef.bus:{bus|<renderFrame(frameRef.frame)>}>}>
+>>
+
+
+renderBus(bus) ::= "<bus> with <bus.noFrames> frames and <bus.noAttribDefs> attribute definitions<\n>"
+renderFrame(frame) ::= <<
+<frame>, <frame.id><if(frame.isExtId)>x<endif> (<frame.id; format="0x%03x"><if(frame.isExtId)>x<endif>) on bus <bus><\\>
+<if(!frame.isReceived && !frame.isSent)> (CAUTION: foreign frame)<endif><\n>
+>>

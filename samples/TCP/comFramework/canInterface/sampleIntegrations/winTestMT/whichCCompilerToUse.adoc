@@ -1,0 +1,33 @@
+= Which C Compiler to use?
+
+The software in this folder requires a compiler, which offers the pthread
+environment. Elder GCC ports for Windows typically don't do. The makefiles
+are compatible with the mingw port of make, so mingw ports of the GCC
+suite will generally perform best.
+
+The software in this folder can be compiled using MinGW-w64 GCC 8.1.0,
+downloaded from
+https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download
+(24.2.2021). This URL has been reached by redirection from
+http://mingw-w64.org/doku.php (visited same day).
+
+Both variants of the MinGW-w64 project's GCC, 32 Bit (both, executables
+and produced binaries) and 64 Bit (both, executables and produced
+binaries), have been used to successfully build and run the code.
+
+The software was successfully compiled using the TDM port of GCC, too. See
+https://jmeubank.github.io/tdm-gcc/download/ for a download of 32 Bit and
+64 Bit GCC ports for Windows.
+
+CAUTION: Using TDM's GCC, the runtime performance of the built software
+was drastically worse in comparison to MinGW'S GCC.
+
+The timing of the threads is pretty good with MinGW'S GCC. Even the 1ms
+task performs not too bad and the 10ms and slower task nearly show
+real-time performance. (Use verbosity level INFO to see the timing
+statistics.) Using TDM, timing of all the tasks is poor and deadlines are
+permanently hurt, up to several hundred Milliseconds. This has the
+consequence of exorbitant numbers of CAN timing errors being reported.
+
+The differences between the two compiler's are likely because of their
+individual implementations of the pthread environment.

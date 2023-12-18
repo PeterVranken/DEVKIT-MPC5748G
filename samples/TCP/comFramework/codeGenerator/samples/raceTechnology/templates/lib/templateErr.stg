@@ -1,0 +1,47 @@
+//
+// templateErr.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates in this file simplify unified output or errors and warnings during
+// template expansion. The emitted text is preceded by some information, where the message
+// comes from.
+//   Caution: A prerequiste of these templates is that the general information
+// is available under the default template attribute name "info".
+//
+// Copyright (C) 2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// A header for errors and warnings, which localizes the source of the error message.
+terr_msgIntro() ::= "<info.templateFile.canonicalFile>, <info.templateName>: "
+
+// Emit an error message. Using this template at least once, will make the code generation
+// process finally fail to produce an output file.
+//   msg: A string type attribute. You may use some quoted literal text like in
+// <error("This is an error!")> or the braces to generate your message by recursive
+// invokation of the template expansion, e.g.,
+// <error({This is a message with embedded <otherInfo()>!}). In this example, <otherInfo()>
+// would be a valid other template returning some useful text.
+error(msg) ::= "<info.error.([terr_msgIntro(), msg])>"
+
+// Emit a warning.
+//   msg: A string type attribute. See other template <error()> for some hints and examples.
+warning(msg) ::= "<info.warn.([terr_msgIntro(), msg])>"
+
+// Emit an informative message.
+//   msg: A string type attribute. See other template <error()> for some hints and examples.
+infoMsg(msg) ::= "<info.info.([terr_msgIntro(), msg])>"
+

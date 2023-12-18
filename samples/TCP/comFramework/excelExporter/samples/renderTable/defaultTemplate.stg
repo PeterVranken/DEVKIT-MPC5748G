@@ -1,0 +1,77 @@
+//
+// defaultTemplate.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// This file produces a default template group file for the use with excelExporter.
+//
+// Copyright (C) 2017-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "$", "$"
+
+defaultTemplate(cluster,info) ::= <<
+//
+// $info.output$
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// TODO Document what this template file is intended for
+//
+// Copyright (C) 2017-$info.year$ Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+//import ".stg"
+
+// This template selects the only worksheet in the workbook for rendering. As long as this
+// suffices the template can be used without change. You would need to change this template
+// otherwise; you could e.g. address to particular worksheets by name. See documentation of
+// class cluster in the data model describing Javadoc. Common alternatives are:
+//   <renderSheet(cluster.theOnlyWorkbook.myParticularWorksheet)>
+//   <renderSheet(cluster.myParticularWorkbook.myParticularWorksheet)>
+renderTable(cluster,info) ::= <<
+<renderSheet(cluster.theOnlyWorksheet)>
+\>>
+
+
+// TODO Change this template to specify the appearance of the worksheet
+renderSheet(sheet) ::= <<
+This is sheet <sheet.name_> of workbook <sheet.parentBook.name_> (<sheet.excelFile>):
+<sheet.rowAry:renderRow()><\\\\>
+
+\>>
+
+// TODO Change this template to specify the appearance of a single row of the worksheet.
+// Use template expressions like <row.X> and <row.Y> to address to the contents of the
+// cells in columns X and Y, respectively
+renderRow(row) ::= <<
+This is how row <row.iRow> looks like. TODO: Edit template renderRow(row) in <\\\\>
+StringTemplate template group file <info.templateFile> to design the appearance of the row<\\n>
+\>>
+
+>>
+// End of root level template defaultTemplate

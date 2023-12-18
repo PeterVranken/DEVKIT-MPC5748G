@@ -1,0 +1,107 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: DEVKIT
+
+
+BO_ 1000 PWM_in: 8 DEVKIT
+ SG_ PA2_J3_pin3_isNew : 7|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ PA2_J3_pin3_periodTime : 6|15@0+ (0.015625,0) [0|511.98437551] "ms" Vector__XXX
+ SG_ PA6_J2_pin1_isNew : 16|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ PA6_J2_pin1_dutyTime : 17|15@1+ (0.015625,0) [0|511.984375] "ms" Vector__XXX
+ SG_ PA2_J3_pin3_frequency : 40|15@0+ (0.25,0) [0|8191.75] "Hz" Vector__XXX
+ SG_ PA2_PA6_dutyCycle : 39|15@0+ (0.00390625,0) [0|100] "%" Vector__XXX
+
+BO_ 1001 PWM_out: 8 Vector__XXX
+ SG_ LED_2_DS10_frequency : 4|10@1+ (0.97752,0) [2|1000] "Hz"  DEVKIT
+ SG_ LED_2_DS10_dutyCycle : 44|5@1+ (3.2259,0) [0|0] "%"  DEVKIT
+ SG_ LED_4_DS11_frequency : 14|10@1+ (0.97752,0) [2|1000] "Hz"  DEVKIT
+ SG_ LED_4_DS11_dutyCycle : 49|5@1+ (3.2259,0) [0|0] "%"  DEVKIT
+ SG_ LED_5_DS5_frequency : 24|10@1+ (0.97752,0) [2|1000] "Hz"  DEVKIT
+ SG_ LED_5_DS5_dutyCycle : 54|5@1+ (3.2259,0) [0|0] "%"  DEVKIT
+ SG_ PA1_J3_pin1_frequency : 34|10@1+ (9.7752,0) [2|10000] "Hz"  DEVKIT
+ SG_ PA1_J3_pin1_dutyCycle : 59|5@1+ (3.2259,0) [0|0] "%"  DEVKIT
+ SG_ LED_2_DS10_inhibit : 0|1@1+ (1,0) [0|1] ""  DEVKIT
+ SG_ LED_4_DS11_inhibit : 1|1@1+ (1,0) [0|1] ""  DEVKIT
+ SG_ LED_5_DS5_inhibit : 2|1@1+ (1,0) [0|1] ""  DEVKIT
+ SG_ PA1_J3_pin1_inhibit : 3|1@1+ (1,0) [0|1] ""  DEVKIT
+
+
+
+CM_ BO_ 1000 "The DEVKIT_MPC5748G measures period time and duty cycle at MCU pins PA2 and PA6 (extension port J3, pin3 and J2, pin1), repectively. This message reports the emasurement results";
+CM_ SG_ 1000 PA2_J3_pin3_isNew "This bit is asserted when a new measurement result has been obtained by the hardware. Particularly in case of low input frequencies it can happen that this is not the case. If the reported measurement result is not updated, not new, for a long while, the receiver of the information should assume a zero input frequency";
+CM_ SG_ 1000 PA2_J3_pin3_periodTime "Period time measured at extension port J3, pin 3, of board DEVKIT-MPC5748G";
+CM_ SG_ 1000 PA6_J2_pin1_isNew "This bit is asserted when a new measurement result has been obtained by the hardware. Particularly in case of low input frequencies it can happen that this is not the case. If the reported measurement result is not updated, not new, for a long while, the receiver of the information should assume a zero input frequency";
+CM_ SG_ 1000 PA6_J2_pin1_dutyTime "Duty time (i.e., pulse high time) measured at extension port J2, pin 1, of board DEVKIT-MPC5748G";
+CM_ SG_ 1000 PA2_J3_pin3_frequency "Frequency measured at extension port J3, pin 3, of board DEVKIT-MPC5748G";
+CM_ SG_ 1000 PA2_PA6_dutyCycle "Only if the inputs PA2, extension port J3, pin 3, and PA6, extension port J2, pin 1,  measure the identical input signal then this is the measured duty cycle of the input. Otherwise the value is undefined";
+CM_ BO_ 1001 "The DEVKIT_MPC5748G has three user LEDs, DS10, DS11 and DS5, which are connected to eMIOS PWM outputs. These LEDs can be controlled with this CAN message. A forth PWM channel, which can be controlled, is accessible at extension port J3, pin1";
+CM_ SG_ 1001 LED_2_DS10_frequency "Frequency of LED2, DS10";
+CM_ SG_ 1001 LED_2_DS10_dutyCycle "Duty cycle of LED2, DS10";
+CM_ SG_ 1001 LED_4_DS11_frequency "Frequency of LED4, DS11";
+CM_ SG_ 1001 LED_4_DS11_dutyCycle "Duty cycle of LED4, DS11";
+CM_ SG_ 1001 LED_5_DS5_frequency "Frequency of LED5, DS5";
+CM_ SG_ 1001 LED_5_DS5_dutyCycle "Duty cycle of LED5, DS5";
+CM_ SG_ 1001 PA1_J3_pin1_frequency "Frequency at MCU pin PA1,i.e., extension port J3, pin1";
+CM_ SG_ 1001 PA1_J3_pin1_dutyCycle "Duty cycle at MCU pin PA1,i.e., extension port J3, pin1";
+CM_ SG_ 1001 LED_2_DS10_inhibit "Inhibit the CAN interface for LED2, DS10. If this bit is asserted then the port can be controlled from the command line interface";
+CM_ SG_ 1001 LED_4_DS11_inhibit "Inhibit the CAN interface for LED4, DS11. If this bit is asserted then the port can be controlled from the command line interface";
+CM_ SG_ 1001 LED_5_DS5_inhibit "Inhibit the CAN interface for LED5, DS5. If this bit is asserted then the port can be controlled from the command line interface";
+CM_ SG_ 1001 PA1_J3_pin1_inhibit "Inhibit the CAN interface for MCU pin PA1, extension port J3, pin1. If this bit is asserted then the port can be controlled from the command line interface";
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","event","cyclicOrEvent","reserved","reserved","reserved","reserved","reserved","noMsgSendType";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 5 10000;
+BA_DEF_ BO_  "checksumStartValue" INT 0 255;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 5 10000;
+BA_DEF_ SG_  "GenSigStartValue" FLOAT -1e+99 1e+99;
+BA_DEF_DEF_  "GenMsgSendType" "cyclic";
+BA_DEF_DEF_  "GenMsgCycleTime" 10;
+BA_DEF_DEF_  "checksumStartValue" 0;
+BA_DEF_DEF_  "GenMsgDelayTime" 20;
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_ "GenMsgCycleTime" BO_ 1000 100;
+BA_ "GenMsgSendType" BO_ 1001 1;
+BA_ "GenSigStartValue" SG_ 1001 LED_2_DS10_frequency 1.5;
+BA_ "GenSigStartValue" SG_ 1001 LED_2_DS10_dutyCycle 30;
+BA_ "GenSigStartValue" SG_ 1001 LED_4_DS11_frequency 2.5;
+BA_ "GenSigStartValue" SG_ 1001 LED_4_DS11_dutyCycle 55;
+BA_ "GenSigStartValue" SG_ 1001 LED_5_DS5_frequency 4;
+BA_ "GenSigStartValue" SG_ 1001 LED_5_DS5_dutyCycle 15;
+BA_ "GenSigStartValue" SG_ 1001 PA1_J3_pin1_frequency 1000;
+BA_ "GenSigStartValue" SG_ 1001 PA1_J3_pin1_dutyCycle 50;
+BA_ "GenSigStartValue" SG_ 1001 LED_2_DS10_inhibit 1;
+BA_ "GenSigStartValue" SG_ 1001 LED_4_DS11_inhibit 1;
+BA_ "GenSigStartValue" SG_ 1001 LED_5_DS5_inhibit 1;
+BA_ "GenSigStartValue" SG_ 1001 PA1_J3_pin1_inhibit 1;
+

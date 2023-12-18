@@ -1,0 +1,73 @@
+//
+// libHTML.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Some fixed portions of HTML code are bundled in this file. It's not a real library
+// despite of the file name; reusablity beyond this sample is likely not given.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "!","#"
+
+
+preamble() ::= <<
+<\!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+>>
+
+javaScriptCode() ::= <<
+<script type="text/javascript" language="javascript">
+  $(".expand").click(function () {
+    $(this).toggle();
+    $(this).next().toggle();
+    $(this).parent().parent().children("ul").last().toggle();
+  });
+  $(".collapse").click(function () {
+    $(this).toggle();
+    $(this).prev().toggle();
+    $(this).parent().parent().children("ul").last().toggle();
+  });
+
+  $("input[type='checkbox']").click(function () {
+    if ($(this).attr("checked") == false) {
+      $(this).parent().parent().find("input[type='checkbox']").each(function () {
+          $(this).removeAttr("checked");
+      });
+    }
+    else {
+      $(this).parent().parent().find("input[type='checkbox']").each(function () {
+          $(this).attr("checked", "checked");
+      });
+    }
+  });
+</script>
+>>
+
+openElectricNode(nodeTitle) ::= <<
+<li>
+ <div>
+     <img alt="" class="expand" src="images/plus.png" />
+     <img alt="" class="collapse" src="images/minus.png" />
+ </div>
+ <div><span style="padding-left:5px">!nodeTitle#
+ </div>
+ <ul>
+>>
+
+closeElectricNode() ::= <<
+ </ul>
+</li>
+>>

@@ -1,0 +1,75 @@
+//
+// mulTab.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// This sample template demonstrates that using excelExporter without any Excel input can
+// be useful. Either the StringTemplate V4 template is fully self-contained or it depends
+// only on a few data items, which can be passed in as user options.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+
+// This sample make intensive use of the numeric scratch pad. To shorten the access to this
+// object we introduce an additional sub-template level. The sub-template has calc as an
+// argument and for all nested templates the scratch pad is accessible by scoping under
+// this name.
+renderCluster(cluster,info) ::= <<
+Table size: <info.optionMap.tabLen> times 10
+<renderTable(info.optionMap.tabLen,info.calc)>
+>>
+
+
+// Rending the table mainly means to loop along all its rows. Since StringTemplate V4
+// doesn't offer explicit loops we need to abuse the recursion. We use the scratch pad to
+// implement the loop counter.
+renderTable(n,calc) ::= <<
+<! Store the end of table number in the scratch pad. !>
+<calc.({n_set_<n>})><\\>
+<! Initialize our counter to 1. !>
+<calc.cntLoop_set_1><\\>
+<renderRow()>
+>>
+
+
+// One data row of the table is generated. Here we present another way to implement
+// self-contained StringTemplate V4 templates: The data values (1..10) are provided as an
+// attribute literal directly in the template code.
+//   Using an attribute literal is done for instructive purpose only. Instead, using the
+// scratch pad again, would be more general in that the second boundary would become a
+// dynamic entity, too.
+renderRow() ::= <<
+<! End of recursion when our counter reaches n !>
+<if(calc.cntLoop_isLE_n)><\\>
+<! Emit the table row !>
+<calc.cntLoop_get>:<["1","2","3","4","5","6","7","8","9","10"]:renderProduct(calc.cntLoop_get)>
+<! Increment the counter and do the recursion !>
+<calc.cntLoop_add_1><renderRow()><endif>
+>>
+
+
+// Compute and emit a single product. The computation is done with the scratch pad. As an
+// alternative to the explicit product operation we could apply an upcounter with given
+// step size; it had to be initialized as such in the calling template.
+renderProduct(a,b) ::= <<
+<! Put one operand into the scratch pad. !>
+<calc.({a_set_<a>})><\\>
+<! Multiply the other operand in place. !>
+<calc.({a_mul_<b>})><\\>
+<! Emit result. !>
+<\t><calc.a>
+>>

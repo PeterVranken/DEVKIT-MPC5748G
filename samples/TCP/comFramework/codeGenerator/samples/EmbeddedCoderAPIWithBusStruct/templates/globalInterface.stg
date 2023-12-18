@@ -1,0 +1,236 @@
+//
+// globalInterface.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the APSW interface, i.e. the structs, which
+// contain the unpacked signals. The Embedded Code generated code will access the CAN in-
+// and output in this data oriented API.
+//
+// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// To safely overlaod the base type dictionary from the raceTechnology library put the
+// input of the local version first.
+import "typeMap.stg"
+
+import "lib/iterations.stg"
+import "symbols.stg"
+
+typedefStsTransmission() ::= <<
+/** The different status bits of the CAN transmission status word. */
+typedef enum <file.mnmApi>_enumStsTransmission_t
+{
+    /** No bit is set, no error or problem or else is reported. */
+    <file.mnmApi>_stsTransm_okay = 0,
+
+    /** The frame has never been received since startup of the interface. Only for inbound
+        frames. */
+    <file.mnmApi>_stsTransm_neverReceived = 1,
+
+    /** The frame could not be sent, send buffer full. Only for outbound frames. */
+    <file.mnmApi>_stsTransm_errSendBufferFull = 1,
+    
+    /** The frame has not been received timely. */
+    <file.mnmApi>_stsTransm_errTimeout = 2,
+
+    /** The received frame has a data error; the checksum doesn't match. No signals will be
+        extracted. */ 
+    <file.mnmApi>_stsTransm_errChecksum = 4,
+
+    /** The sequence counter of the received frame indicates a lost frame. */
+    <file.mnmApi>_stsTransm_errSequence = 8,
+
+    /** The received frame doesn't have the expected size. No signals can be extracted. */
+    <file.mnmApi>_stsTransm_errDLC = 16
+
+} <file.mnmApi>_enumStsTransmission_t;
+
+
+/** The type of the transmission status. The encoding of the information is done bit-wise,
+    see enumeration \a <file.mnmApi>_enumStsTransmission_t. The status variable is neither defined as an
+    enumeration nor as a bit field in order to permit the use of binary operations to
+    filter and combine status bits. Furthermore, having a defined word width means safer
+    interfacing with the Embedded Coder. */
+typedef <bt("uint8_t")> <symbol.stsTransmission_t>;
+<\n>
+>> // End of template typedefStsTransmission
+
+
+// The list of typedefs of frame, frame API and bus structs, to be used in the global
+// interface of the CAN code.
+listOfTypedefsStructFrameAndBus(cluster) ::= <<
+<iterateFramesOfCluster(cluster,"both","typedefStructFrame")><\\>
+<iterateFramesOfCluster(cluster,"both","typedefStructAPIFrame")>
+<iterateBusesOfCluster(cluster,"typedefStructAPIBus")>
+>>
+
+// The list of declarations of the global frame structs, which serve as API to the APSW.
+listOfStructBusDecls(cluster) ::= <<
+<iterateBusesOfCluster(cluster,"structBusDecl")>
+>>
+
+
+// The list of declarations of the global frame structs, which serve as API to the APSW.
+structBusDecl(bus) ::= <<
+/** Signals and transmission status of CAN frames on bus <bus>. This global variable
+    is used as API between the lower layers of the CAN stack and the APSW. */
+extern <symbol.structBus_t> <symbol.structBus>;
+<\n>
+>>
+
+// The list of definitions of the global CAN bus structs, which serve as API to the APSW.
+listOfStructBusDefs(cluster) ::= <<
+<iterateBusesOfCluster(cluster,"structBusDef")>
+>>
+
+// The definitions of the bus struct in the C source file, i.e. the instantiation of the
+// single, global variable of the type. This includes the initializer expression.
+structBusDef(bus) ::= <<
+/** Signals and transmission status of the CAN frames on bus <bus>. This global
+    variable is used as API between the platform's CAN interface and the APSW. */
+<symbol.structBus_t> <symbol.structBus> =
+{
+    <iterateFramesOfBus(bus,"both","structFrameStsInitializer")>
+}; /* End of <symbol.structBus_t> <symbol.structBus> */
+
+<\n>
+>>
+
+
+// The typedef of the struct, which collects all frame structs of the given bus.
+typedefStructAPIBus(bus) ::= <<
+/** The frames and signals of CAN bus <bus>. A global variable of this type is used
+    as API between the lower layers of the CAN stack and the APSW. */
+typedef <structBus(bus)> <symbol.structBus_t>;
+
+<\n>
+>>
+
+
+// The struct definition, which bundles all frames of a bus.
+structBus(bus) ::= <<
+struct <symbol.structBus_t>
+{
+    <iterateFramesOfBus(bus,"both","fieldFrameOfStructAPIBus")>
+}
+>>
+
+// An a frame describing field of the bus struct.
+fieldFrameOfStructAPIBus(frame) ::= <<
+/** Signals and transmission status of <direction(frame)> CAN frame <frame>
+    (<frame.id>, <frame.id; format="0x%03x">) */
+<symbol.structFrameSts_t> <symbol.structFrameSts>;
+<\n>
+>>
+
+
+// The typedef of the struct, which serves as API to access the frame related information.
+// Mainly signals but also some status information.
+typedefStructAPIFrame(frame) ::= <<
+/** Signals and transmission status of <direction(frame)> CAN frame <frame>
+    (<frame.id>, <frame.id; format="0x%03x">) on bus <bus>. */
+typedef <structFrameSts(frame)> <symbol.structFrameSts_t>;
+
+<\n>
+>>
+
+
+// The initializer expression of the global, inner struct, which serves as API to access
+// the frame related information.
+structFrameStsInitializer(frame) ::= <<
+/** Signals and transmission status of <direction(frame)> CAN frame <frame>
+    (<frame.id>, <frame.id; format="0x%03x">) on bus <bus>. */
+.<symbol.structFrameSts> =
+{
+    .<symbol.fieldSignals> =
+    <structFrameInitializer(frame)>,
+
+    .<symbol.fieldStsTransmission> = <if(frame.isReceived)><file.mnmApi>_stsTransm_neverReceived<else><file.mnmApi>_stsTransm_okay<endif>
+},
+<\n>
+>>
+
+
+// The definition of the struct, which serves as API to access the frame related
+// information. Mainly signals but also some status information.
+structFrameSts(frame) ::= <<
+struct <symbol.structFrameSts_t>
+{
+    /** The collection of signals of the frame. */
+    <symbol.structFrame_t> <symbol.fieldSignals>;
+
+    /** The transmission status. */
+    <symbol.stsTransmission_t> <symbol.fieldStsTransmission>;
+
+}
+>> // End of template structFrameSts
+
+
+// The typedef of the struct, which collects and declares all signals of a frame.
+typedefStructFrame(frame) ::= <<
+/** The signals of <direction(frame)> CAN frame <frame> (<frame.id>, <frame.id; format="0x%03x">) on
+    bus <bus>. */
+typedef <structFrame(frame)> <symbol.structFrame_t>;
+
+<\n>
+>>
+
+
+// The struct definition, which collects and declares all signals of a frame.
+structFrame(frame) ::= <<
+struct <symbol.structFrame_t>
+{
+    <iterateSignalsOfFrame(frame,"all","all","signalDecl")><\\>
+}
+>> // End of template structFrame
+
+
+// The constant initializer expression for the inner struct of signals.
+structFrameInitializer(frame) ::= <<
+{
+    <iterateSignalsOfFrame(frame,"all","all","signalInitializer")><\\>
+}
+>>
+        
+
+// The declaration of a single signal.
+//   The conditional optimization not to handle signals, which are not related to the
+// network node, we generate code for, is weak: The user can by define demand to get
+// pack/unpack functions for all frames and then we need the interface variables at least
+// for the pack function. So we just add a comment here.
+signalDecl(signal,kind) ::= <<
+/** Signal <signal><if(strcmpMuxSel.(kind))> (mux selector)<elseif(strcmpMuxed.(kind))> (muxed)<endif>. */
+<bt(signal.type)> <symbol.signal>;<\\>
+<if(info.optionMap.suppressUnaffectedSignals && !signal.isReceived && !pdu.isSent)> /* Signal is not used by node <cluster.nodeName>. */<endif>
+<\n>
+>>
+
+
+// A constant initializer expression for a signal.
+signalInitializer(signal,kind) ::= <<
+.<symbol.signal><if(signal.attribMap.(attribName.sigInitVal))> = <initialValue(signal)><else> = 0 <\\>
+/* Initial value not found in database; check signal attribute "initialValue" */<\\>
+<endif>,<\n>
+>>
+
+
+// Generate the initial binary value of a (scaled) signal from its DBC specified world value.
+initialValue(signal) ::= <<
+<if(!signal.isVoidScaling)><define.signalDblToBin>(<endif><\\>
+<attribute.sigInitVal><\\>
+<if(!signal.isVoidScaling)>)<endif>
+>>

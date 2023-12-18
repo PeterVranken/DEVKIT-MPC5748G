@@ -1,0 +1,153 @@
+//
+// ose_dataTables.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Generate the data tables, which are required by the CAN transmission simulation in the
+// emulated operating system.\n
+//   Note, there is another template, which generates similar CAN frame related data
+// tables, too. See file cdt_canDataTables.c.stg. The two template group file have been
+// kept separate by intention: This file here is only required for the operating system
+// emulation and is not a sample of a template in a real integration. The other file
+// however is and could become a starting point for an integration of the CAN interface on
+// a real platform.
+//
+// Copyright (C) 2017-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+import "lib/mod.stg"
+import "attributes.stg"
+import "symbols.stg"
+import "globalInterface.stg"
+
+moduleDescription() ::= <<
+ * This module contains the data tables, which are required by the CAN transmission
+ * simulation in the emulated operating system. The hand-coded module \a
+ * ose_operatingSystemEmulation declares the data tables as extern and the code generator
+ * generates then from the CAN databases. This way the simulation knowns, which CAN frames
+ * to simulate and how to.
+>>
+
+
+// This is one of the root templates; the complete C file is rendered.
+//
+dataTables_c(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["\n", moduleDescription()])>
+<! The list of functions is put after the file frame shaped by modC !>
+>>
+
+
+// This is one of the root templates; the complete header file is rendered.
+//
+dataTables_h(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modH(["\n", moduleDescription()])>
+>>
+
+
+// Configure the templates mod.stg:modC/H, which shape the lists of included files.
+@modC.includes() ::= <<
+#include \<stdio.h>
+#include \<stdlib.h>
+#include \<string.h>
+#include \<assert.h>
+
+#include "<file.baseTypes_h>"
+#include "<file.canApi_h>"
+#include "e2e_frameProtection.h"
+#include "ede_eventDispatcherEngine.h"
+#include "ose_unpackAndCheckFrame.h"
+#include "ose_operatingSystemEmulation.h"
+
+>>
+
+@modH.includes() ::= <<
+#include "<file.baseTypes_h>"
+#include "ose_operatingSystemEmulation.h"
+
+>>
+
+
+@modH.defines() ::= <<
+>>
+
+@modC.defines() ::= <<
+>>
+
+@modH.data() ::= <<
+>>
+
+@modC.data() ::= <<
+/** This is the external instantiation of the data table of module \a
+    ose_operatingSystemEmulation, which is required by that module to do the
+    implementation of the simulation of CAN reception. */
+const ose_receivedCanFrame_t ose_receivedCanFrameAry[] =
+{
+    <iteratePdusOfCluster(cluster,"received","receivedCanFrameAryEntry")><\\>
+};
+
+/** The number of entries in the external data table \a ose_receivedCanFrameAry. */
+const unsigned int ose_noReceivedCanFrames = sizeof(ose_receivedCanFrameAry)
+                                             / sizeof(ose_receivedCanFrameAry[0]);
+
+/** This is the external instantiation of the data table of module \a
+    ose_operatingSystemEmulation, which is required by that module to do the
+    implementation of CAN output. Particularly some information is required to do the E2E
+    validation for these frames. */
+const ose_sentCanFrame_t ose_sentCanFrameAry[] =
+{
+    <iteratePdusOfCluster(cluster,"sent","sentCanFrameAryEntry")><\\>
+};
+
+/** The number of entries in the external data table \a ose_sentCanFrameAry. */
+const unsigned int ose_noSentCanFrames = sizeof(ose_sentCanFrameAry)
+                                         / sizeof(ose_sentCanFrameAry[0]);
+
+>>
+
+@modH.prototypes() ::= <<
+>>
+
+@modC.prototypes() ::= <<
+>>
+
+
+receivedCanFrameAryEntry(pdu) ::= <<
+[<info.calc.idxReceivedCanFrameAryEntry>] =
+    { .idxCanBus = <define.busId>
+    , .canId = <frame.id>
+    , .isExtId = <frame.isExtId>
+    , .DLC = <frame.size>
+    , .fctGetFrameContents = <fct.e2eRndFillProtectAndPackFrame>
+    , .sendMode = <attribVal.sendMode>
+    , .tiCycle = <attribVal.sendPeriod>
+    , .tiMinDistance = <if(isEmpty.(attribVal.eventMinDistance))>10 /** @todo There's no attribute for message minimum distance defined yet in the DBC file */<else><attribVal.eventMinDistance><endif>
+    },<\n>
+>>    
+
+sentCanFrameAryEntry(pdu) ::= <<
+[<info.calc.idxSentCanFrameAryEntry>] =
+    { .idxCanBus = <define.busId>
+    , .canId = <frame.id>
+    , .isExtId = <frame.isExtId>
+    , .fctDoE2eValidation = <fct.oseUnpackAndCheckFrame>
+    , .sendMode = <attribVal.sendMode>
+    , .tiCycle = <attribVal.sendPeriod>
+    , .tiMinDistance = <if(isEmpty.(attribVal.eventMinDistance))>10 /** @todo There's no attribute for message minimum distance defined yet in the DBC file */<else><attribVal.eventMinDistance><endif>
+    },<\n>
+>>    

@@ -1,0 +1,218 @@
+//
+// cap_canApi.a2l.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The signals of the CAN API are rendered as ASAM MCD-2 MC file. All signals in the CAN
+// API and some of the frame related status elements are exposed to an MCD tool as a long
+// list of flat signals.
+//   The link from the signals to the map file is written as dot separated expression,
+// which is at the same time the syntax of a C expression to access the signal. This
+// notation is understood by A2L addess updaters like the Vector Informatik ASAP2 tool
+// chain. They understand it correct as nested structs and are able to construct the right
+// ECU address from a meaningful map file, *.elf in particular.
+//
+// Copyright (C) 2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// Override the dictionary of basic type names in the template library:
+//   First import is the type map without a relative path. This makes StringTemplate look
+// for the file in the directory of the importing group file -- prior to searching along
+// the Java CLASSPATH. We can be sure that our local version has priority over the other
+// one in the library folder in sample raceTechnology.
+import "typeMap.stg"
+
+import "lib/iterations.stg"
+import "symbols.stg"
+
+// This is the root template; the complete CAN API is rendered as ASAM2 MCD file.
+canApiA2lDecl(cluster, info) ::= <<
+/*
+ * CAN cluster <cluster>
+ *
+ * This file has been created with <info.application> version <info.version>,
+ * see http://sourceforge.net/projects/comframe/
+ *
+ * Copyright (C) <info.year> Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see \<http://www.gnu.org/licenses/>.
+ */
+
+<iteratePdusOfCluster(cluster,"all","renderPdu")><\n>
+
+/begin FUNCTION CANCluster_<cluster.name>
+    "All CAN signals of cluster <cluster.name>"
+    /begin REF_CHARACTERISTIC
+    /end REF_CHARACTERISTIC
+    /begin LOC_MEASUREMENT
+        <iteratePdusOfCluster(cluster,"all","functionEntriesPdu")>    /end LOC_MEASUREMENT
+/end FUNCTION<\n>
+>>
+
+
+a2lSymbol ::= [ "stsTransmission": {<bus>_<frame.id>_<symbol.fieldStsTransmission>}
+              , "signal": {<bus>_<frame.id>_<symbol.signal>}
+              , default: {<info.error.("Internal template error: Invalid input to dictionary a2lSymbol")>}
+              ]
+
+cExpr ::= [ "stsTransmission": {<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldStsTransmission>}
+          , "signal": {<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<symbol.signal>}
+          , default: {<info.error.("Internal template error: Invalid input to dictionary cExpr")>}
+          ]
+
+renderPdu(pdu) ::= <<
+<renderVar( name=a2lSymbol.stsTransmission
+          , expr=cExpr.stsTransmission
+          , description={Transmission status of frame <frame.name> (<frame.id>, <frame.id; format="0x%x">) on bus <bus.name>}
+          , type="uint8_t"
+          , gain="1"
+          , offset="0"
+          , min="0"
+          , max="32")>
+
+<iterateSignalsOfPdu(pdu=pdu,mux="all",dir="both",T="renderSignal")><\n>
+
+
+>>
+
+
+functionEntriesPdu(pdu) ::= <<
+<a2lSymbol.stsTransmission>
+<iterateSignalsOfPdu(pdu=pdu,mux="all",dir="both",T="functionEntriesSignal")>
+>>
+
+renderSignal(signal, kind) ::= <<
+<renderVar( name=a2lSymbol.signal
+          , expr=cExpr.signal
+          , description=signal.desc
+          , type=signal.type
+          , gain=signal.factor
+          , offset=signal.offset
+          , min=signal.min
+          , max=signal.max)>
+          
+>>
+
+functionEntriesSignal(signal, kind) ::= <<
+<a2lSymbol.signal><\n>
+>>
+
+
+renderVar(name, expr, description, type, gain, offset, min, max) ::= <<
+/* Declaration of variable <name> */
+/begin MEASUREMENT <name>
+    "<description>"
+    <asap2Type.(type)>
+    CONV[<name>] /* Conversion: see next section */
+    0 /* Resolution */
+    0 /* Possible variation from exact value in percent */
+    <min> /* LowerLimit */
+    <max> /* UpperLimit */
+    ECU_ADDRESS 0x0000
+    SYMBOL_LINK "<expr>" 0
+/end MEASUREMENT
+
+/begin COMPU_METHOD CONV[<name>]
+    "Linear mapping, used for variable <name>"
+    RAT_FUNC
+    "%10" /* Format */
+    "" /* Unit */
+    COEFFS 0 -1 <offset> 0 0 -<gain>
+/end COMPU_METHOD
+
+
+>>
+
+
+
+asap2Type ::= 
+[
+  "bool_t"   : "UBYTE",
+  "uint8_t"  : "UBYTE",
+  "sint8_t"  : "SBYTE",
+  "uint16_t" : "UWORD",
+  "sint16_t" : "SWORD",
+  "uint32_t" : "ULONG",
+  "sint32_t" : "SLONG",
+  "uint64_t" : "A_UINT64",
+  "sint64_t" : "A_INT64",
+  "float32_t": "FLOAT32_IEEE",
+  "float64_t": "FLOAT64_IEEE",
+  default: {<info.error.("Error in template, bad type name used in dictionary asap2Type")>}
+]
+
+
+
+sizeof ::= 
+[
+  "bool_t"   : "1",
+  "uint8_t"  : "1",
+  "sint8_t"  : "1",
+  "uint16_t" : "2",
+  "sint16_t" : "2",
+  "uint32_t" : "4",
+  "sint32_t" : "4",
+  "uint64_t" : "8",
+  "sint64_t" : "8",
+  "float32_t": "4",
+  "float64_t": "8",
+  default: {<info.error.("Error in template, bad type name used in dictionary asap2Type")>}
+]
+
+
+typeMax ::= 
+[
+  "bool_t"   : "1",
+  "uint8_t"  : "255",
+  "sint8_t"  : "127",
+  "uint16_t" : "65535",
+  "sint16_t" : "32767",
+  "uint32_t" : "4294967296",
+  "sint32_t" : "2147483647",
+  "uint64_t" : "TODO: Type's max value still missing in template",
+  "sint64_t" : "TODO: Type's max value still missing in template",
+  "float32_t": "TODO: Type's max value still missing in template",
+  "float64_t": "TODO: Type's max value still missing in template",
+  default: {<info.error.("Error in template, bad type name used in dictionary typeMax")>}
+]
+
+
+typeMin ::= 
+[
+  "bool_t"   : "0",
+  "uint8_t"  : "0",
+  "sint8_t"  : "-128",
+  "uint16_t" : "0",
+  "sint16_t" : "-32768",
+  "uint32_t" : "0",
+  "sint32_t" : "-2147483648",
+  "uint64_t" : "0: Type's min value still missing in template",
+  "sint64_t" : "TODO: Type's min value still missing in template",
+  "float32_t": "TODO: Type's min value still missing in template",
+  "float64_t": "TODO: Type's min value still missing in template",
+  default: {<info.error.("Error in template, bad type name used in dictionary typeMin")>}
+]

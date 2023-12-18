@@ -1,0 +1,52 @@
+//
+// sortedTable.stg
+//
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The file is a simple demonstration of the sorting facilities of excelExporter.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+precos() ::= <<
+<if(!cluster.theOnlyWorksheet.exists)><\\>
+    <info.error.([ "Template ", info.templateFile.name
+                 , " only works with a single parsed worksheet. Please double check your"
+                 , " command line"
+                 ]
+                )
+    ><\\>
+<endif>
+<if(cluster.theOnlyWorksheet.groupAry.exists)><\\>
+    <info.warn.([ "Template ", info.templateFile.name
+                , " is designed for flat tables. Rows, which are held in nested groups"
+                , " will be ignored. Please double check your command line"
+                ]
+               )
+    ><\\>
+<endif>
+>>
+
+table(cluster,info) ::= <<
+<precos()><\\>
+Data of run "<cluster.name_.givenName>":
+<cluster.theOnlyWorksheet.rowAry:row()>
+>>
+
+row(r) ::= <<
+<r.i_>) Excel line: <r.iRow>, ID: <r.ID>, Title: "<r.Title>", Author: <r.Author>, Genre: <r.Genre>, <r.("Number of Pages")> Pages<\n>
+>>

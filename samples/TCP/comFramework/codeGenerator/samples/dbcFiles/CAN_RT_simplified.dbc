@@ -1,0 +1,133 @@
+VERSION "HIPBNYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY/4/%%%/4/'%**4YYY///"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: ECU SB DL1MK3 IMU06 IRTemp
+
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ Analog_13 : 0|16@0+ (0.001,0) [0|0] "" Vector__XXX
+ SG_ RT_DL1MK3_Analog1 : 0|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ Validity_RTK_Accuracy : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Trigger_Timestamp_Type : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Accuracy_Trigger_Timestamp : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ GPS_High_Resolution_Time : 0|40@1+ (1e-006,0) [0|604800] "s" Vector__XXX
+
+BO_ 215 rt_SB_INS_Vel_Body_Axes_mux: 8 SB
+ SG_ INS_Vel_Sideways_2D : 40|23@1- (0.0001,0) [-838|838] "m/s"  ECU
+ SG_ INS_Vel_Forwards_2D_org m1: 17|21@1- (0.0001,0) [-838|838] "m/s"  ECU
+ SG_ Accuracy_INS_Vel_Body_org m1: 8|8@1+ (1,0) [0|255] ""  ECU
+ SG_ Bit4 : 4|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Byte2_Bit0 : 16|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Byte4_Bits67 M: 39|2@0+ (1,0) [1|3] "Mpx selection"  ECU
+ SG_ Bit7 : 7|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Validity_INS_Vel_Sideways : 1|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Validity_INS_Vel_Forwards : 0|1@1+ (1,0) [0|1] ""  ECU
+ SG_ INS_Vel_Forwards_2D_no2 m2: 17|21@1- (0.0001,0) [-104|104] "m/s"  ECU
+ SG_ Accuracy_INS_Vel_Body_no3 m3: 15|15@0+ (0.001,0) [0|32.768] ""  ECU
+ SG_ INS_Vel_Forwards_2D_no3 m3: 24|14@1- (0.01,0) [-81.92|81.91] "m/s"  ECU
+ SG_ Accuracy_INS_Vel_Body_no2 m2: 8|8@1+ (1,0) [0|255] ""  ECU
+
+BO_ 2156795682 RT_SB_INS_Vel_Body_Axes: 8 SB
+ SG_ INS_Vel_Sideways_2D : 40|23@1- (0.0001,0) [-838|838] "m/s"  ECU
+ SG_ INS_Vel_Forwards_2D : 18|19@1+ (0.0001,0) [-838|838] "m/s"  ECU
+ SG_ Accuracy_INS_Vel_Body : 8|8@1+ (1,0) [0|255] ""  ECU
+ SG_ Bit4 : 4|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Byte2_Bit0 : 16|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Byte4_Bits67 : 39|2@0+ (3,0) [0|9] ""  ECU
+ SG_ Bit7 : 7|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Validity_INS_Vel_Sideways : 1|1@1+ (1,0) [0|1] ""  ECU
+ SG_ Validity_INS_Vel_Forwards : 0|1@1+ (1,0) [0|1] ""  ECU
+
+BO_ 2156725794 RT_SB_Trig_Initial_Condition: 8 SB
+ SG_ MFDD_Start_Threshold : 48|8@1+ (1,0) [0|100] "%"  DL1MK3,IMU06
+ SG_ MFDD_End_Threshold : 56|8@1+ (1,0) [0|100] "%"  DL1MK3,IMU06
+ SG_ Initial_Heading : 32|16@1- (0.01,0) [-180|180] "degrees"  IMU06
+ SG_ Initial_Speed : 8|24@1+ (0.0001,0) [0|1675] "m/s"  DL1MK3
+ SG_ Validity_Initial_Heading : 1|1@1+ (1,0) [0|1] ""  DL1MK3,IMU06
+ SG_ Validity_Initial_Speed : 0|1@1+ (1,0) [0|1] ""  DL1MK3,IRTemp
+
+BO_ 2155876388 RT_DL1MK3_Speed: 7 DL1MK3
+ SG_ Direction : 17|2@0+ (2,-1) [-1|1] ""  ECU
+ SG_ Speed : 18|32@1- (1e-005,0) [-20000|20000] "m/s"  ECU
+ SG_ Accuracy_Speed : 8|8@1+ (1,0) [0|255] ""  ECU
+ SG_ Validity_Speed : 0|1@1+ (1,0) [0|0] ""  ECU
+
+BO_ 2156658980 RT_DL1MK3_GPS_Time: 8 ECU
+ SG_ GPS_Time : 16|32@1+ (0.001,0) [0|604800] "s"  DL1MK3
+ SG_ GPS_Week : 48|16@1+ (1,0) [0|65535] ""  DL1MK3
+ SG_ Accuracy_GPS_Time : 8|8@1+ (1,0) [0|255] ""  SB
+ SG_ Validity_GPS_Week : 1|1@1+ (1,0) [0|1] ""  DL1MK3
+ SG_ Validity_GPS_Time : 0|1@1+ (1,0) [0|1] ""  SB
+
+BO_ 2157317156 RT_DL1MK3_Measure_Time_12: 3 DL1MK3
+ SG_ Measured_Time_12 : 0|24@1+ (1,0) [0|0] ""  Vector__XXX
+
+BO_ 2157316644 RT_DL1MK3_Measure_Time_10: 3 ECU
+ SG_ Measured_Time_10 : 0|24@1+ (1,0) [0|0] ""  ECU
+
+CM_ BU_ ECU "Vehicle control unit";
+CM_ BU_ SB "Sensor board";
+CM_ BU_ DL1MK3 "Measurment equipment";
+CM_ BU_ IMU06 "Immobilizer unit";
+CM_ BU_ IRTemp "Infrared temperature sensor";
+CM_ BO_ 3221225472 "This is a message for not used signals, created by Vector CANdb++ DBC OLE DB Provider.";
+CM_ SG_ 3221225472 Validity_RTK_Accuracy "Valid when bit is set, invalid when bit is clear.";
+CM_ SG_ 3221225472 Accuracy_Trigger_Timestamp "Dimensionless.  Lower values imply but do not guarantee better accuracy than higher values.";
+CM_ SG_ 3221225472 GPS_High_Resolution_Time "GPS time of week to micro-second resolution.";
+CM_ SG_ 2156795682 INS_Vel_Sideways_2D "Sideways Velocity in the vehicle body axes, 2D (no vertical component) .  +ve for motion to the vehicle RHS.";
+CM_ SG_ 2156795682 INS_Vel_Forwards_2D "Forwards Velocity in the vehicle body axes, 2D (no vertical component) .";
+CM_ SG_ 2156795682 Accuracy_INS_Vel_Body "Accuracy of INS body axis velocities (forward velocity and sideways velocity)";
+CM_ SG_ 2156795682 Validity_INS_Vel_Sideways "Valid when bit is set, invalid when bit is clear.";
+CM_ SG_ 2156795682 Validity_INS_Vel_Forwards "Valid when bit is set, invalid when bit is clear.";
+CM_ SG_ 2155876388 Direction "Dimensionless. Direction of speed. 1 means forward, -1 means reverse";
+CM_ SG_ 2155876388 Accuracy_Speed "Dimensionless. Lower values imply but do not guarantee better accuracy than higher values.";
+CM_ SG_ 2155876388 Validity_Speed "Valid when bit is set, invalid when bit is clear.";
+CM_ SG_ 2156658980 GPS_Time "GPS time is the time in seconds since midnight GMT on Saturday night.";
+CM_ SG_ 2156658980 Validity_GPS_Week "Valid when bit is set, invalid when bit is clear.";
+CM_ SG_ 2156658980 Validity_GPS_Time "Valid when bit is set, invalid when bit is clear.";
+BA_DEF_ BO_  "frameSendMode" ENUM  "regular","event","mixed";
+BA_DEF_ BO_  "sendPeriod" INT 5 10000;
+BA_DEF_ BO_  "crcStartValue" INT 1 255;
+BA_DEF_ BO_  "eventMinDistance" INT 5 10000;
+BA_DEF_  "Author" STRING ;
+BA_DEF_DEF_  "frameSendMode" "regular";
+BA_DEF_DEF_  "sendPeriod" 10;
+BA_DEF_DEF_  "crcStartValue" 1;
+BA_DEF_DEF_  "eventMinDistance" 10;
+BA_DEF_DEF_  "Author" "www.race-technology.com";
+BA_ "frameSendMode" BO_ 3221225472 1;
+BA_ "sendPeriod" BO_ 3221225472 100;
+BA_ "frameSendMode" BO_ 2156795682 2;
+BA_ "sendPeriod" BO_ 2156795682 1000;
+BA_ "crcStartValue" BO_ 2156795682 23;
+BA_ "eventMinDistance" BO_ 2156795682 50;
+BA_ "sendPeriod" BO_ 2155876388 20;
+BA_ "sendPeriod" BO_ 2156658980 10000;
+BA_ "frameSendMode" BO_ 2156658980 0;
+BA_ "frameSendMode" BO_ 2157316644 1;
+BA_ "crcStartValue" BO_ 2157316644 63;
+BA_ "eventMinDistance" BO_ 2157316644 75;
+VAL_ 3221225472 Trigger_Timestamp_Type 1 "Rising edge" 0 "Falling edge" ;

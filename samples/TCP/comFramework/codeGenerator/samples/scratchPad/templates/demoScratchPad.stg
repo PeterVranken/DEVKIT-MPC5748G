@@ -1,0 +1,378 @@
+//
+// demoCounters.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Test and demonstrate the counter and arithmetic capabilities of the numeric scratch pad.
+//   The scratch pad is a data map and a field of the basic object info. In a
+// StringTemplate V4 template it can be addressed to by <info.calc>. Different to all other
+// fields of the data model does this field not bring any information into the code
+// generation process; the scratch pad is empty when code generation starts. Also different
+// to all the rest of the data model can this field be used in a bi-directional manner:
+// Values can be stored, manipulated and retrieved. Here, the term value solely relates to
+// integer numbers.<p>
+//   Although restricted to integers and simple operations does the concept of the scratch
+// pad break with the concept of the code generation so far. Code generation is not longer
+// a matter of solely rendering given fixed information but can actively produce own data
+// from the given fixed data. Moreover, information can be stored and retrieved later from
+// other sub-templates of the generation process.<p>
+//   The main intention of the scratch pad is at the same time one of the most simple
+// operations. In C code programming null based indexes are quite often used in contexts
+// like ours, where lists of same structured elements are handled. It is for example natural
+// to hold information concerning CAN frames in an array of frame objects and address to
+// the information at runtime by a cheap indexed array access. Not the worst but at the
+// same time the only way to do this with the code generator without the scratch pad is to
+// let it first generate an enumeration and to then only use the symbolic enumeration value
+// names as numbers. The other conventional way of doing, shaping a list of distinct
+// #define directives, was not generally possible. Consequently, frame indexes could not be
+// accessed at time of preprocessing, which hinders efficient error checking at compile
+// time, where it would sometime be useful and desired.<p>
+//   The StringTemplate V4 attributes <i> and <i0> don't really help out. They are hard to
+// apply, since they are only defined in the context of anonymous templates and cumbersome
+// to propagate to their sub-templates and - much worse - don't help at all when filtering
+// of elements of collections takes place - and this is often the case. Take the frames
+// example. <i0> could be applied only if we really process all frames. If we decide to
+// have a list (an array) of received frames only and use conditional code to skip all non
+// received one, then the index <i0> gets annoying gaps. And vice versa: if we want to
+// process all frames without filtering but want to merge the collections of more than a
+// single CAN bus then we end up with a similar problem. Now the index <i0> starts
+// repeatedly from null again, each time our iteration enters a new bus.<p>
+//   The scratch pad offers counters, which start at any number and increment with any step
+// size (including negative). Once created, they exist persistently during the entire code
+// generation process and independent of the template or sub-template they are used in. An
+// iteration first visiting one bus and then visiting another bus can easily reuse the same
+// counter and yield a linear index across both parts of the overall iteration.<p>
+//   The more general (but still rather basic) numeric operations of the scratch pad
+// further support typical tasks like boundary checks and in-range decisions. Examples
+// could be error reporting at code generation time if a CAN frame has a non supported
+// repetition rate or conditional template code, which decides to handle all frames of
+// repetition rates 8-12ms with the generated regular 10ms code. Without the scratch pad
+// these things would probably be generated as runtime code.<p>
+//   The scratch solely supports numeric operations on integer numbers (Boolean operations
+// can be modelled by using numeric operations). It reaches its limits when processing
+// floating point numbers as sometimes found in the data model. See e.g. min and max values
+// or the scaling of signals.<p>
+//
+// Documentation:<p>
+//   The scratch pad and how to use it is briefly documented in the Javadoc of the data
+// model. Please refer to the explanation of field calc of class Info.<p>
+//   An overview is given in the project Wiki pages.<p>
+//   Examples can be found mainly in this file.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+
+
+demoScratchPad(cluster,info) ::= <<
+<! There's no information in the scratch pad when code generation starts. !>
+<info.info.(["Initially we have ", info.noCalcNumbers, " numbers in the scratch pad"])>
+Initially we have <info.noCalcNumbers> numbers in the scratch pad.
+
+We initialize number "hex" to the largest possible integer. Note, the hexadecimal number
+representation is always positive. Printing this number decimal would show the negative
+value from the two-complement's interpretation of the bit pattern.
+<! Please note the \\ template at the end of the line; it is most typical in the context of
+   scratch-pad operations: Many operations just work by side-effect on the map of numbers
+   but must not have any impact on the generated output of the template. Without the \\
+   each scratch pad operation would produce a blank line in the output. !>
+<info.calc.hex_set_0xffffffffffffffff><\\>
+hex = <info.calc.hex> = <info.calc.hex; format="0x%x">
+Now we have <info.noCalcNumbers> number(s) in the scratch pad:<info.calc:{name|<" "><name>}>
+
+Negative numbers can be expressed by suffix n. This makes it most easy to assign positive
+and negative literals to numbers. If the assignment is the first reference to a number then
+it is created in the map. We set x <! Note: the next template doesn't produce any visible output !><info.calc.x_set_16n>to <info.calc.x> and y <info.calc.y_set_23>to <info.calc.y>.
+
+We copy <info.calc.z_set_y>the value of y into the new variable z and add z <info.calc.x_add_z>to x. Note, all operations are
+done in place, trinary operations like a=b*c are not supported. (And there's no evident
+reason for that, maybe we add it in a future refinement.) As a result we have x=<info.calc.x>,
+y=<info.calc.y> and z=<info.calc.z>. More examples of the basic operations:
+
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_3n><info.calc.b>, a+b=<info.calc.a_add_b><info.calc.a>
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_3n><info.calc.b>, a-b=<info.calc.a_sub_b><info.calc.a>
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_3n><info.calc.b>, a*b=<info.calc.a_mul_b><info.calc.a>
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_3n><info.calc.b>, a/b=<info.calc.a_div_b><info.calc.a>
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_5n><info.calc.b>, a/b=<info.calc.a_div_b><info.calc.a>
+
+Hexadecimal literals are expressed by a leading 0x. They simplify the demonstration of the
+binary operators:
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, b=<info.calc.b_set_7><info.calc.b; format="0x%x">, a&b=<info.calc.a_and_b><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, b=<info.calc.b_set_7><info.calc.b; format="0x%x">, a|b=<info.calc.a_or_b><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, b=<info.calc.b_set_7><info.calc.b; format="0x%x">, a^b=<info.calc.a_xor_b><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, ~a=<info.calc.a_not><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, a\<\<5=<info.calc.a_sl_5><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, a\>>2=<info.calc.a_asr_2><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x12><info.calc.a; format="0x%x">, a>\>>2=<info.calc.a_sr_2><info.calc.a; format="0x%x"> (>\> means arithmetic shift, >\>> means signless shift)
+a=<info.calc.a_set_0x81234567abcdef01><info.calc.a; format="0x%x">, a\>>2=<info.calc.a_asr_2><info.calc.a; format="0x%x">
+a=<info.calc.a_set_0x81234567abcdef01><info.calc.a; format="0x%x">, a>\>>2=<info.calc.a_sr_2><info.calc.a; format="0x%x">
+
+The comparisons query numbers in the map but do not change them. The result is returned to
+the template engine and needs to be evaluated by conditional template expressions. (Here, we
+don't need conditional code as the StringTemplate V4 rendering of Booleans is just what we
+need anyway):
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_3n><info.calc.b>
+a==b is <info.calc.a_isE_b>
+a!=b is <info.calc.a_isNE_b>
+a\<b is <info.calc.a_isL_b>
+a\<=b is <info.calc.a_isLE_b>
+a>b is <info.calc.a_isG_b>
+a>=b is <info.calc.a_isGE_b>
+
+a=<info.calc.a_set_12><info.calc.a>, b=<info.calc.b_set_12><info.calc.b>
+a==b is <info.calc.a_isE_b>
+a!=b is <info.calc.a_isNE_b>
+a\<b is <info.calc.a_isL_b>
+a\<=b is <info.calc.a_isLE_b>
+a>b is <info.calc.a_isG_b>
+a>=b is <info.calc.a_isGE_b>
+
+Please note, the default operand of all comparisons is null. You can check if number a is
+negative by a simple \<info.calc.a_isL>: a is <if(info.calc.a_isL)>negative<else>positive<endif>.
+
+Normally, and this is what we saw so far, reading the value of a number on the scratch pad
+doesn't have an impact on the scratch pad contents. Sticky operations are those, which are
+repeated every time immediately after the related number is read. This is how we implement
+counters:
+i=<info.calc.i_set_0><info.calc.i_sadd_1><info.calc.i>
+At this point, i has the value <info.calc.i_get> in the map although we just before got 1 as result
+from the read operation: the +1 operation has been repeated as side-effect but as
+post-operation of the read. See the effect by repeatedly reading i:
+i=<info.calc.i>
+i=<info.calc.i>
+i=<info.calc.i>
+i=<info.calc.i>
+For debbuging and other purpose it is still possible to read the internal value of i
+without side-effect, another operator is applied. See here: i=<info.calc.i_get>=<info.calc.i_get>=<info.calc.i_get>. However, using the
+normal read-reference to i accurately continues counting by applying the sticky
+post-operation:
+i=<info.calc.i>
+i=<info.calc.i>
+i=<info.calc.i>
+i=<info.calc.i>
+
+For convenience only, we permit to omit parts of the commands, e.g., the operand or we
+permit to read-reference a number without explicit initialization with the operator set.
+Where a typical use case is seen, this is permitted. In other cases it is not permitted and
+the code generator will fail with some explanatory feedback. The usual assumption is that a
+template requires a linear counter. We can start a null based up counter by just
+referencing a never explicitly created number:
+neverUsedBefore=<info.calc.neverUsedBefore>
+neverUsedBefore=<info.calc.neverUsedBefore>
+neverUsedBefore=<info.calc.neverUsedBefore>
+The sticky operation is cleared by any non sticky operation:
+neverUsedBefore*1=<info.calc.neverUsedBefore_mul_1><info.calc.neverUsedBefore_get> (Sticky add is cleared by *1)
+neverUsedBefore=<info.calc.neverUsedBefore>
+neverUsedBefore=<info.calc.neverUsedBefore>
+neverUsedBefore=<info.calc.neverUsedBefore>
+The basic operation +,- and * can be sticky. We can easily implement up, down and
+logarithmic counters. There's no sticky division.
+
+To further support the counting we define the default values for the operations + and -
+as 1 and for * as 2. (The latter because a logarithmic counter will in our context mostly
+be needed as power-of-two counter.) Most other operations use the invariant number as
+default. We don't encourage to make use of these default values.
+  Please note, if a counter is created by first assigning the initial value and then applying
+the count step as sticky operation then the initially assigned value needs to anticipate
+and compensate for the preparatory first sticky operation. As an example we have an
+upcounter from 5<info.calc.cnt_set_4><info.calc.cnt_sadd>:
+<info.calc.cnt>
+<info.calc.cnt>
+<info.calc.cnt>
+<info.calc.cnt>
+and a downcounter from 2<info.calc.cnt_set_3><info.calc.cnt_ssub>:
+<info.calc.cnt>
+<info.calc.cnt>
+<info.calc.cnt>
+<info.calc.cnt>
+A power-of-two counter from one can't compensate for the first multiplication and needs to
+rely on the defaults of the sticky multiplication<info.calc.cntP2_smul>:
+<info.calc.cntP2>
+<info.calc.cntP2>
+<info.calc.cntP2>
+<info.calc.cntP2>
+This works for a power-of-3 counter, too<info.calc.cntP3_smul_3>:
+<info.calc.cntP3>
+<info.calc.cntP3>
+<info.calc.cntP3>
+<info.calc.cntP3>
+Here, the concept reaches its limits. The implementation of a power-of-3 counter starting
+at 2 would become much more cumbersome and requires a combination of scratch pad operations
+and conditional template code. Or a sequence of scratch pad operations in each counting
+step.
+
+The introduction of the scratch pad breaks with a principal concept of the code generation
+so far: The template engine just renders available, preprocessed data but doesn't do data
+processing itself. This means for sub-templates that they can be used to generate some text
+output, which is returned to the calling template for embedding it into the calling
+template's own output. A sub-template can however not return anything but text, in
+particular it can not return the result of a Boolean expression it computes. The following
+template design fails by concept:
+
+filterSentEventFrames(frame) ::= \<\<
+\<if(frame.isSent && frame.attribMap.frameSendMode.is.event)>\<true>\<else>\<false>\<endif>
+\>>
+
+renderBus(bus) ::= \<\<
+\<bus.frameAry:{f|\<if(filterSentEventFrames(f))>\<genCodeForSentEvFr(f)>\<endif>}>
+\>>
+
+Although filterSentEventFrames tries to produce Boolean attributes (using \<true> not true)
+are these attributes not returned as such to the calling template. Instead, the Boolean
+attribute is rendered as text as soon as the delimiting > is passed in template processing.
+The if clause in the calling template tests either the text true or the text false and
+both evaluates to true. No filtering takes place.
+
+Using the scratch pad this design becomes an option. A sub-template can still not return
+any information but text to the caller but it can leave a (numeric) result in the scratch
+pad and the caller can reference it there. (It's even possible to let the sub-template
+return a text fragment, which is used by the caller to reference the meant information in
+the scratch pad.) Our example becomes:
+
+filterSentEventFrames(frame) ::= \<\<
+\<if(frame.isSent && frame.attribMap.frameSendMode.is.event)>\<info.calc.isSentEvFr_set_1>\<else>\<info.calc.isSentEvFr_set_0>\<endif>
+\>>
+
+genCodeForSentEvFr(f) ::= "\<\n>Frame \<f> is an outbound event frame"
+
+renderBus(bus) ::= \<\<
+\<bus.frameAry:{f|\<filterSentEventFrames(f)>\<if(info.calc.isSentEvFr_isG)>\<genCodeForSentEvFr(f)>\<endif>}>
+\>>
+
+This is what our example produces:<renderBus(first(cluster.busAry))>
+
+With the exception of counter support, the scratch pad would be useless if we wouldn't have
+the possibility to operate on data from the CAN network database, i.e., on fields of the
+data model. This is possible using the StringTemplate V4 map operator map.(\<attribute>).
+The name of the key into the map is computed by expanding \<attribute>. We can easily use
+the template contructs to let the template engine build any of the scratch pad commands
+seen above; the required operand is the number literal we get from rendering a field of the
+data model. Example:
+
+The total number of frames is \<cluster.noFrames>=<cluster.noFrames>. We can combine the literal string
+"noFrames_set_" with \<cluster.noFrames> and get the valid assignment command <{noFrames_set_<cluster.noFrames>}>
+for the scratch pad. To make this run, we have to place the attribute
+\<info.calc.({noFrames_set_\<cluster.noFrames>})> into our template<info.calc.({noFrames_set_<cluster.noFrames>})>. From now on a number
+called noFrames exists in the scratch pad and can be referenced.
+
+This pattern can be used for integer numbers and Booleans from the data model. It's still
+possible for fields of type double or Double and using the formatter expression
+format="%.0f" but this truncates the fraction of the number and won't be of much use.
+
+Please note the global name space in the scratch pad. Different to in the data model are
+numbers not related to a specific context or object. You might overcome this by building
+number names from object names; \<info.calc.({\<bus.name>NoFrames_set_\<bus.noFrames>})>
+could for example be applied to get a bus related number of frames. While this is basically
+correct it can easily fail due to the different syntax rules for symbol names: The data
+model usually uses C style symbols, which may contain the underscore. The scratch pad can't
+tolerate the underscore as it needs it to separate the number name from operation and
+operand. It accepts any sequence beginning with a letter followed by letters and decimal
+digits as number name. The previous example will work correctly only if the actual bus name
+complies with this rule.
+
+Operating on numeric fields of the data model together with the new concept of having
+sub-templates as kind of sub-routines that compute and return data can be exploited to
+separate the scratch pad constructs from the rest of the template. This improves
+readability of the template and facilitates maintenance of the somewhat cumbersome scratch
+pad constructs. Here's a "sub-routine" to check the range of an integer attribute from the
+data model:
+
+  // This template doesn't emit anything but it places the Boolean number inRange
+  // into the global scratch pad, which indicates if x is element of [a,b].
+  isInRange(x,a,b) ::= \<\<
+  \<info.calc.({x_set_\<x>})>\<\\>
+  \<info.calc.({a_set_\<a>})>\<\\>
+  \<info.calc.({b_set_\<b>})>\<\\>
+  \<if(info.calc.x_isGE_a && info.calc.x_isLE_b)>\<\\>
+    \<info.calc.inRange_set_true>\<\\>
+  \<else>\<\\>
+    \<info.calc.inRange_set_false>\<\\>
+  \<endif>
+  \>>
+
+This is what it does (-1: true, 0: false):
+isInRange(2,1,6)=<isInRange("2","1","6")><info.calc.inRange>
+isInRange(9,1,6)=<isInRange("9","1","6")><info.calc.inRange>
+isInRange(1,1,6)=<isInRange("1","1","6")><info.calc.inRange>
+isInRange(0,1,6)=<isInRange("0","1","6")><info.calc.inRange>
+isInRange(6,1,6)=<isInRange("6","1","6")><info.calc.inRange>
+isInRange(7,1,6)=<isInRange("7","1","6")><info.calc.inRange>
+isInRange(-77777777,1,6)=<isInRange("-77777777","1","6")><info.calc.inRange>
+isInRange(cluster.noFrames,1,6)=<isInRange(cluster.noFrames,"1","6")><info.calc.inRange>
+isInRange(cluster.noFrames,5,10)=<isInRange(cluster.noFrames,"5","10")><info.calc.inRange>
+
+Another conceptual new element, which is enabled by the scratch pad is loop control.
+StringTemplate V4 doesn't have explicit loops, but it permits recursion. By aborting a
+recursion we actually get some kind of for or while loop. Note, that this can easily lead
+to application abort because of stack overflow in case of a large number of cycles. As an
+example, we generate a lookup table for 16 Bit bit masks:
+
+<generateBitMaskTable()>
+
+Finally we have <info.noCalcNumbers> numbers in the scratch pad:<\\>
+<info.calc:{name|<\n>  <name> = <info.calc.({<name>_get})> <\\>
+                              = <info.calc.({<name>_get}); format="0x%x">}>
+<info.info.(["Finally we have ", info.noCalcNumbers, " numbers in the scratch pad", info.calc:{name|, <name>=<info.calc.([name, "_get"])>}])>
+>>
+
+
+// The templates from the numeric filter example. Don't change the code here without doing
+// the same change above, where this code is quoted.
+filterSentEventFrames(frame) ::= <<
+<if(frame.isSent && frame.attribMap.frameSendMode.is.event)><info.calc.isSentEvFr_set_1><else><info.calc.isSentEvFr_set_0><endif>
+>>
+renderBus(bus) ::= <<
+<bus.frameAry:{f|<filterSentEventFrames(f)><if(info.calc.isSentEvFr_isG)><genCodeForSentEvFr(f)><endif>}>
+>>
+genCodeForSentEvFr(f) ::= "<\n>Frame <f> is an outbound event frame"
+
+
+// The template from the "sub-routine" example. Don't change the code here without doing
+// the same change above, where this code is quoted.
+
+// This template doesn't emit anything but it places the Boolean number inRange into the
+// global scratch pad, which indicates if x is element of [a,b].
+isInRange(x,a,b) ::= <<
+<info.calc.({x_set_<x>})><\\>
+<info.calc.({a_set_<a>})><\\>
+<info.calc.({b_set_<b>})><\\>
+<if(info.calc.x_isGE_a && info.calc.x_isLE_b)><\\>
+  <info.calc.inRange_set_true><\\>
+<else><\\>
+  <info.calc.inRange_set_false><\\>
+<endif>
+>>
+
+
+// This is a sample template, which generates a table of bit-masks. It is called from the
+// text but not quoted. It may be changed here without changing the text as long as the
+// described behavior doesn't change.
+generateBitMaskTable_recursion() ::= <<
+<if(info.calc.mask_isLE_0xffff)>
+[<info.calc.idx>] = <info.calc.mask; format="0x%04x">,
+<info.calc.mask_sl><\\>
+<generateBitMaskTable_recursion()><\\>
+<endif>
+>>
+generateBitMaskTable() ::= <<
+<info.calc.mask_set_1><\\>
+<info.calc.idx_set_1n><\\>
+<info.calc.idx_sadd_1><\\>
+uint16_t maskAry = 
+{
+    <generateBitMaskTable_recursion()>}
+>>

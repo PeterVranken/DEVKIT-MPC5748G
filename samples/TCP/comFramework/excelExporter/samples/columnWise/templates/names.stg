@@ -1,0 +1,85 @@
+//
+// names.stg
+//
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The file demonstrates how to iterate along columns.
+//   The template code of this sample is distributed over two files: This file contains the
+// iterations to collect the data items. The other template file nameGenerator.java.stg is
+// designed to be as close to the aimed Java source code as possible in order to not
+// obscure what the aimed output is. This simplifies the maintenance of the generated Java
+// source code.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+import "nameGenerator.java.stg"
+
+precos() ::= <<
+<if(!cluster.theOnlyWorksheet.exists)><\\>
+    <info.error.([ "Template ", info.templateFile.name
+                 , " only works with a single parsed worksheet. Please double check your"
+                 , " command line"
+                 ]
+                )
+    ><\\>
+<endif>
+<if(cluster.theOnlyWorksheet.groupAry)><\\>
+    <info.warn.([ "Template ", info.templateFile.name
+                , " is designed for flat tables. Rows, which are held in nested groups"
+                , " will be ignored. Please double check your command line"
+                ]
+               )
+    ><\\>
+<endif>
+>>
+
+// Render the filtered information of the currently visisted row.
+//   In our example, all selectable columns are structurally identical and use the same
+// local template code for rendering - just the rendered information differs. In general,
+// different columns will typically have different meaning and will require different
+// template code for adequate rendering. In this case an additional level of
+// <if/elseif/endif> would be required to branch into the appropriate sub-template.
+//   The needed condition is the string comparison with the fixed, known name of the
+// column. This can be done with a dictionary returning the Boolean constants:
+//   isMale ::= ["Male": true, default: false]
+//   isFemale ::= ["Female": true, default: false]
+// The condition is formulated like:
+//   <if(isMale.(propName))><myMaleTemplate()><else><myFemaleTemplate()><endif>
+arrayElement(rowObj) ::= <<
+<if(rowObj.(propName))> "<rowObj.(propName)>",<info.calc.({no<propName>_add_1})><endif>
+>>
+
+
+// Prepare the selected list of names by iterating along the according column. To do so we
+// need to visit all row objects and query for the presence of the desired property.
+//   The desired property is passed in by name as template argument propName.
+prepareNameList(propName) ::= <<
+{<cluster.theOnlyWorksheet.rowAry:arrayElement(); wrap="\n ">
+}
+>>
+
+
+names(cluster,info) ::= <<
+<precos()><\\>
+<! Initialize name counters. !>
+<info.calc.noFemale_set_0><info.calc.noMale_set_0><\\>
+<javaSource(prepareNameList("Female"),prepareNameList("Male"))>
+<! Report number of found names. !>
+<info.info.([info.calc.noFemale, " female names found in Excel input"])><\\>
+<info.info.([info.calc.noMale, " male names found in Excel input"])>
+>>
+

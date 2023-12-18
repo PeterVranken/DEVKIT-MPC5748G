@@ -1,0 +1,139 @@
+//
+// demoIterations.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Test and demonstrate the library file iterations.stg
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+
+demoIterations(cluster,info) ::= <<
+Buses:
+  <iterateBusesOfCluster(cluster,"renderBus")><\\>
+
+All Frames:
+  <iterateFramesOfCluster(cluster,"all","renderFrame")><\\>
+All Frames in lexical order:
+  <iterateFramesOfClusterByName(cluster,"all","renderFrame")><\\>
+All Frames in inverse lexical order:
+  <iterateFramesOfClusterByNameReverse(cluster,"all","renderFrame")><\\>
+All Frames in order of CAN ID:
+  <iterateFramesOfClusterById(cluster,"all","renderFrame")><\\>
+All Frames in inverse order of CAN ID:
+  <iterateFramesOfClusterByIdReverse(cluster,"all","renderFrame")><\\>
+All Frames in order of parsing:
+  <cluster.frameInFileOrderAry:{frameRef|<frameRef.bus:{bus|<renderFrame(frameRef.frame)>}>}><\\>
+Transmitted Frames:
+  <iterateFramesOfCluster(cluster,"both","renderFrame")><\\>
+Foreign Frames:
+  <iterateFramesOfCluster(cluster,"foreign","renderFrame")><\\>
+Loopback Frames:
+  <iterateFramesOfCluster(cluster,"loopback","renderFrame")><\\>
+Inbound Frames:
+  <iterateFramesOfCluster(cluster,"received","renderFrame")><\\>
+Outbound Frames:
+  <iterateFramesOfCluster(cluster,"sent","renderFrame")><\\>
+
+All PDUs:
+  <iteratePdusOfCluster(cluster,"all","renderPdu")><\\>
+Transmitted PDUs:
+  <iteratePdusOfCluster(cluster,"both","renderPdu")><\\>
+Foreign PDUs:
+  <iteratePdusOfCluster(cluster,"foreign","renderPdu")><\\>
+Loopback PDUs:
+  <iteratePdusOfCluster(cluster,"loopback","renderPdu")><\\>
+Inbound PDUs:
+  <iteratePdusOfCluster(cluster,"received","renderPdu")><\\>
+Outbound PDUs:
+  <iteratePdusOfCluster(cluster,"sent","renderPdu")><\\>
+
+All multiplexed signal sets:
+  <iterateMuxSSetsOfCluster(cluster,"all","renderMuxSSet")><\\>
+Transmitted multiplexed signal sets:
+  <iterateMuxSSetsOfCluster(cluster,"both","renderMuxSSet")><\\>
+Foreign multiplexed signal sets:
+  <iterateMuxSSetsOfCluster(cluster,"foreign","renderMuxSSet")><\\>
+Loopback multiplexed signal sets:
+  <iterateMuxSSetsOfCluster(cluster,"loopback","renderMuxSSet")><\\>
+Inbound multiplexed signal sets:
+  <iterateMuxSSetsOfCluster(cluster,"received","renderMuxSSet")><\\>
+Outbound multiplexed signal sets:
+  <iterateMuxSSetsOfCluster(cluster,"sent","renderMuxSSet")><\\>
+
+All signals:
+  <iterateSignalsOfCluster(cluster,"all","all","renderSignal")><\\>
+All transmitted signals:
+  <iterateSignalsOfCluster(cluster,"all","both","renderSignal")><\\>
+All foreign signals:
+  <iterateSignalsOfCluster(cluster,"all","foreign","renderSignal")><\\>
+All loopback signals:
+  <iterateSignalsOfCluster(cluster,"all","loopback","renderSignal")><\\>
+All inbound signals:
+  <iterateSignalsOfCluster(cluster,"all","received","renderSignal")><\\>
+All outbound signals:
+  <iterateSignalsOfCluster(cluster,"all","sent","renderSignal")><\\>
+
+All normal signals:
+  <iterateSignalsOfCluster(cluster,"normal","all","renderSignal")><\\>
+Transmitted normal signals:
+  <iterateSignalsOfCluster(cluster,"normal","both","renderSignal")><\\>
+Foreign normal signals:
+  <iterateSignalsOfCluster(cluster,"normal","foreign","renderSignal")><\\>
+Loopback normal signals:
+  <iterateSignalsOfCluster(cluster,"normal","loopback","renderSignal")><\\>
+Inbound normal signals:
+  <iterateSignalsOfCluster(cluster,"normal","received","renderSignal")><\\>
+Outbound normal signals:
+  <iterateSignalsOfCluster(cluster,"normal","sent","renderSignal")><\\>
+
+All multiplex selector signals:
+  <iterateSignalsOfCluster(cluster,"muxSel","all","renderSignal")><\\>
+Transmitted multiplex selector signals:
+  <iterateSignalsOfCluster(cluster,"muxSel","both","renderSignal")><\\>
+Foreign multiplex selector signals:
+  <iterateSignalsOfCluster(cluster,"muxSel","foreign","renderSignal")><\\>
+Loopback multiplex selector signals:
+  <iterateSignalsOfCluster(cluster,"muxSel","loopback","renderSignal")><\\>
+Inbound multiplex selector signals:
+  <iterateSignalsOfCluster(cluster,"muxSel","received","renderSignal")><\\>
+Outbound multiplex selector signals:
+  <iterateSignalsOfCluster(cluster,"muxSel","sent","renderSignal")><\\>
+
+All multiplexed signals:
+  <iterateSignalsOfCluster(cluster,"muxed","all","renderSignal")><\\>
+Transmitted multiplexed signals:
+  <iterateSignalsOfCluster(cluster,"muxed","both","renderSignal")><\\>
+Foreign multiplexed signals:
+  <iterateSignalsOfCluster(cluster,"muxed","foreign","renderSignal")><\\>
+Loopback multiplexed signals:
+  <iterateSignalsOfCluster(cluster,"muxed","loopback","renderSignal")><\\>
+Inbound multiplexed signals:
+  <iterateSignalsOfCluster(cluster,"muxed","received","renderSignal")><\\>
+Outbound multiplexed signals:
+  <iterateSignalsOfCluster(cluster,"muxed","sent","renderSignal")>
+>>
+
+renderBus(bus) ::= "<bus> with <bus.noFrames> frames and <bus.noAttribDefs> attribute definitions<\n>"
+renderFrame(frame) ::= "<frame>, <frame.id> (<frame.id; format=\"0x%03x\"><if(frame.isExtId)>x<endif>) on bus <bus><\n>"
+renderPdu(pdu) ::= "<pdu>, in: <pdu.isReceived>, out: <pdu.isSent>, no signals: <pdu.noSignals><\n>"
+renderMuxSSet(muxSSet) ::= <<
+PDU: <pdu>, selector: <pdu.muxSelector>, switch value: <muxSSet.muxValue>, <\\>
+  signals: <muxSSet.signalAry:{s|<s>}; wrap="\n", separator=", "><\n>
+>>
+renderSignal(signal,kind) ::= "<signal> (<kind><if(strcmpMuxed.(kind))> on <muxSSet.muxValue><endif>), in: <signal.isReceived>, out: <pdu.isSent><\n>"

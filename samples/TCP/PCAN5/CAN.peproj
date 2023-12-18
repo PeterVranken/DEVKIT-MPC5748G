@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PCANExplorerProject Version="5.0" Name="CAN">
+    <Connections AutoReset="0" IgnoreRTRLength="0" ProcessRTR="1">
+        <Connection Bus="1" Enabled="1" Protocol="0" CalcBusLoad="1" SymbolsFileName="PWM.dbc" BitRate="28" Connection="USB Interface 500kBd@pcan_usb" Name="USB Interface 500kBd"/>
+        <Connection Bus="2" Enabled="0" Protocol="0" CalcBusLoad="1" BitRate="20" Connection="USB Interface 1MBd@pcan_usb" Name="USB Interface 1MBd"/>
+        <Connection Bus="3" Enabled="0" Protocol="0" BitRate="284" Connection="USB Interface 250kBd@pcan_usb" Name="USB Interface 250kBd"/>
+    </Connections>
+    <MessageFilters/>
+    <TransmitList>
+        <TransmitListItem Bus="1" CanId="1024" Type="0" DLC="4" Data="0005D520" Creator="Benutzer"/>
+        <TransmitListItem Bus="1" CanId="2032" Type="0" DLC="8" Data="9C6DDC3A00003480" CycleTime="1500" IsPaused="1" Creator="Benutzer"/>
+        <TransmitListItem Bus="1" CanId="2032" Type="0" DLC="8" Data="0800000000000000" Creator="Benutzer"/>
+        <TransmitListItem Bus="1" CanId="1001" Type="0" DLC="8" Data="20C00002FC376E8A" Creator="User"/>
+        <TransmitListItem Bus="1" CanId="0" Type="0" DLC="8" Data="0000000000000000" Creator="User"/>
+    </TransmitList>
+    <Files>
+        <File RelativePath="..\code\application\canStack\dbcFiles\sampleCanBus.dbc"/>
+        <File RelativePath="..\code\application\canStack\dbcFiles\PWM.dbc"/>
+    </Files>
+</PCANExplorerProject>

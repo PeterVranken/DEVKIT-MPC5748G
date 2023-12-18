@@ -1,0 +1,66 @@
+Installation of binary distribution of Java application comFramework codeGenerator
+----------------------------------------------------------------------------------
+
+The code generator belonging to project comFramework is a stand-alone Java
+application. An installed Java 18 or higher is a prerequisite of running
+the code generator. You can get the Java Open JDK at
+https://jdk.java.net/18/ (May 2022). Download the archive (e.g.
+https://download.java.net/java/GA/jdk18.0.1.1/65ae32619e2f40f3a9af3af1851d6e19/2/GPL/openjdk-18.0.1.1_windows-x64_bin.zip
+for Windows x64 users).
+
+Unzip the archive to a location of your choice and consider adding this
+location to the operating system's search path. Either the Java
+executable, java.exe, needs to be in the Windows search path or the Java
+installation path -- where bin\java(.exe) is located in -- is assigned to
+a new environment variable COMFRAMEWORK_JAVA_HOME. Given, you're Java
+executable would be c:\ProgramFiles\jdk18.0.1.1\bin\java.exe, then you
+could issue the command
+
+    setx COMFRAMEWORK_JAVA_HOME c:\ProgramFiles\jdk18.0.1.1
+
+from a Command Prompt window. (Now you need to open another shell window
+to proceed; the current one will not take the new setting.) Please note,
+that the proposed command will install the new environment variable only
+for the current user. A machine wide setting by putting /m at the end of
+the command line requires administrator rights.
+
+Now, the comFramework archive is unzipped to any location. Installation
+paths containing blanks should be avoided.
+
+The installation path of comFramework's code generator (i.e. a path like
+...\comFramework\codeGenerator, where folder dist is located in) is
+assigned to a new environment variable COMFRAMEWORK_CODEGENERATOR_HOME.
+The script that launches the Java application, will set the Java CLASSPATH
+based on this root directory. Java will fail to locate the required jar
+files if the environment variable is not properly set. Given, you'd copied
+the archive's contents to the folder c:\ProgramFiles, then you could issue
+the command
+
+    setx COMFRAMEWORK_CODEGENERATOR_HOME c:\ProgramFiles\comFramework\codeGenerator
+
+from a Command Prompt window.
+
+The application launcher is a Windows script named codeGenerator.cmd. It
+is located in the folder codeGenerator\dist. It's a very simple script and
+Linux and Mac OS users won't have any problems to write the same script in
+their respective shell script languages. The script becomes most useful if
+the folder dist is added to the system search path (i.e. environment
+variable PATH would be extended by
+c:\ProgramFiles\comFramework\codeGenerator\dist in the example above).
+Consider to type
+
+    pathman c:\ProgramFiles\comFramework\codeGenerator\dist
+
+in a shell window.
+
+Alternatively, the tiny script codeGenerator.cmd can be copied to all
+locations where the code generator is about to be used.
+
+If you decided to extend your PATH variable then you should test your
+installation by opening a new shell window, cd'ing to an arbitrary working
+directory and submitting the command:
+
+    codeGenerator.cmd --help
+
+The application should be started and it should respond with its usage
+text.

@@ -1,0 +1,193 @@
+//
+// treeView.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The data contents of an Excel file is rendered as a tree.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "!","#"
+
+import "libHTML.stg"
+
+// Aimed pattern:
+// 
+// Node:
+// 
+// li
+//     div Images
+//     div Title
+//     ul
+//       Node*
+//     /ul
+// /li
+// 
+// The tree view is a recursive list of nodes. A node is a <li> element inside a <ul> list.
+// It starts with a kind of declaration of being an electric node. This is done by two or
+// three <div> items, that connect the node to the actice Java script code and which set
+// the title. (The title must be short and not exceed a single line.) The embracing <ul>
+// list can contain both, ordinary <li> elements and the electric nodes decribed here.
+//   The electric node can have a <ul> list as next element. This make the data structure
+// recursive: The <ul> list of an electric node may contain a set of child electric nodes
+// as <li> elements.
+
+
+treeView(cluster,info) ::= <<
+!preamble()#
+  <head>
+    <title>Contents of Excel file(s)</title>
+    <script language="javascript" type="text/javascript" src="jquery-1.4.1.js"></script>
+    <\!-- width:NNNpx is the wrap column -->
+    <\!-- Move display:none from .expand to .collapse to have all nodes initially expanded -->
+    <style type="text/css">
+      .wfm { width:1000px }
+      ul { list-style:none; }
+      li { padding-top:10px }
+      ul, li, div { float:left }
+      ul, li { width:100% }
+      .expand { width:15px;height:15px; }
+      .collapse { width:15px;height:15px;display:none }
+      li ul { display:none }
+    </style>
+  </head>
+  <body>
+    <div class="wfm">
+      <h1>Contents of Excel file(s)</h1>
+      Rendered by !info.application# !info.version# on !info.time#
+      <ul>
+        !renderCluster()#
+      </ul>
+    </div>
+    !javaScriptCode()#
+  </body>
+</html>
+>>
+
+
+// Render a name object of Java class Indentifier.
+renderName(nameObj) ::= <<
+!nameObj.givenName#!if(!nameObj.identEquals)# (ident: !nameObj.ident#)!endif#!\\#
+!if(!nameObj.identStrictEquals)# (strict: !nameObj.identStrict#)!endif#
+>>
+
+
+// Print the object ID of an object.
+renderObjId(obj) ::= "(ID !obj.objId#)"
+
+
+renderSheetGroupByName(name) ::= <<
+!openElectricNode({Group !renderName(cluster.sheetGroupMap.(name).parent)#})#
+  !cluster.sheetGroupMap.(name):renderGroup()#
+!closeElectricNode()#!\n#
+>>
+
+
+renderCluster() ::= <<
+<li>Cluster !renderName(cluster.name_)# !renderObjId(cluster)#</li>
+!if(cluster.theOnlyWorkbook)#
+!openElectricNode("The only workbook of the cluster")#
+  !renderBook(cluster.theOnlyWorkbook)#
+!closeElectricNode()#!\n#
+!endif#
+!if(cluster.theOnlyWorksheet)#
+!openElectricNode("The only worksheet of the cluster")#
+  !renderGroup(cluster.theOnlyWorksheet)#
+!closeElectricNode()#!\n#
+!endif#
+!if(cluster.sheetGroupMap)#
+!openElectricNode(["The cluster has ", cluster.noSheetGroups, " global sheet groups"])#
+  !cluster.sheetGroupMap:renderSheetGroupByName()#
+!closeElectricNode()#!\n#
+!endif#
+!cluster.bookAry:renderBook()#
+>>
+
+
+renderBook(book) ::= <<
+!openElectricNode({!book.i_#) Workbook !renderName(book.name_)# !renderObjId(book)#})#
+<li>Excel input file !book.excelFile.absolutePath#</li>
+!if(book.optionMap)#
+  !openElectricNode("User Options")#
+    <li>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Option</th> <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          !book.optionMap:{name|<tr><td>!name#</td> <td>!book.optionMap.(name)#</td></tr>!\n#}#!\\#
+        </tbody>
+      </table>
+    </li>
+  !closeElectricNode()#
+!endif#
+  !book.sheetAry:renderGroup()#!\\#
+!closeElectricNode()#!\n#
+>>
+
+
+renderGroup(gr) ::= <<
+!openElectricNode({!gr.i_#) !if(gr.isRoot)#Worksheet!else#Group!endif# !renderName(gr.name_)# !renderObjId(gr)#})#
+!if(gr.isRoot)#
+  <li>File: !gr.excelFile#</li>
+  <li>Book: !renderName(gr.parentBook.name_)#</li>
+  <li>Tab: !gr.tabName#</li>
+!endif#
+!if(gr.rowAry)#
+!openElectricNode({!gr.noRows# Row objects})#
+  !gr.rowAry:renderRowObj()#!\\#
+!closeElectricNode()#
+!else#
+  <li>(!if(gr.isRoot)#The root level group!else#This group!endif# owns no row objects)</li>
+!endif#
+!if(gr.groupAry)#
+!openElectricNode({!gr.noGroups# Sub-groups})#
+  !gr.groupAry:renderGroup()#
+!closeElectricNode()#
+!else#
+  <li>(!if(gr.isRoot)#The root level group!else#This group!endif# owns no sub-groups)</li>
+!endif#
+!closeElectricNode()#!\n#
+>>
+
+
+renderRowObj(row) ::= <<
+!openElectricNode({!row.i_#) Excel line !row.iRow# (ID !row.objId#)})#
+<li>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Index</th> <th>Column</th> <th>Property</th> <th>Type</th> <th>Value</th> !\\#
+        <th>Comment</th> !\\#
+        <th>ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      !row.cellAry:renderProp()#!\\#
+    </tbody>
+  </table>
+</li>
+!closeElectricNode()#!\n#
+>>
+
+renderProp(prop) ::= <<
+<tr>
+  <td>!prop.i_#</td> <td>!prop.iCol#</td> <td>!prop.name_#</td> <td>!prop.type#</td> <td>!prop.text; format="xml-encode"#</td> !\\#
+  <td>!if(prop.comment)#!prop.comment; format="xml-encode"# (!prop.authorOfComment#)!endif#</td> !\\#
+  <td>!prop.objId#</td>
+</tr>!\n#
+>>

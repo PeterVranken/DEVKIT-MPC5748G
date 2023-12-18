@@ -1,0 +1,35 @@
+Diese Datei nicht mehr nutzen: Die Einträge sind als "issues" in GitHub
+eingetragen. (https://github.com/PeterVranken/exploreEthernet/issues)
+
+MPU: Zugangsrechte zu uncached sind geöffnet. NXP Thread beachten. ENET
+ist wohl ein Supervisor.
+
+Doppelte Treiberinitialisierung rauswerfen. Wie verträgt sich das LwIP
+Konzept des Treiberinitialisierens per Callback mit unserer MPU? Kann
+vorab initialisert werden und LwIP Callback diesbezüglich leer sein?
+
+test_lwipFromGit.c muss durch eine Anpassung von
+lwip-STABLE-2_2_0_RELEASE/contrib/examples/example_app/test.c ersetzt
+werden, weil sich diese Datei massiv weiterentwickelt hat. Dabei muss
+sorgsam auf die Präprozessorschalter geschaut werden, die die Services
+einschalten.
+  Bzw. beide Dateien vergleichen. In test.c wird kein ETH Adapter
+initialisiert und als netif in Betrieb genommen. Die NXP Version hat die
+Funktion interface_init, die für unsere ENET Anbindung wichtig ist.
+  Kann auch eine Datei der Art ilw_initLwIP.c werden, wo wir das machen,
+was wir wirklich brauchen und nicht länger alle Präprozessorschalter
+mitschleppen. 
+
+Die Konfiguration, die noch aus dem NXP Code Generator stammt, muss mit
+den Präprozessorschaltern abgeglichen werden, die LwIP 2.2 verwendet.
+
+ENETIF neumachen, für safe-RTOS, ohne Polling. Ggf. schon mit Systemcalls
+für Senden und Empfangen und Quittieren, so dass LwIP mit seinen
+Anwendungen in den QM Prozess verschoben werden kann. Wenn später ein
+eigener ENET Treiber kommen sollte, dann wären dessen APIs wahrscheinlich
+strukturell ähnlich, so dass die Anpassung nur ein paar Umbenennungen
+wären.
+
+Eigener ENET Treiber. Weniger Umfang, dafür sauberer durchkonfiguriert.
+Vorher evtl. den NXP Treiber mit zusätzlichen IRQs betreiben (Rx, Tx
+ackn.) Was ist mit Fehlerabfagen?

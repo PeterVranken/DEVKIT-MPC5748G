@@ -1,0 +1,46 @@
+///
+// @file typeMap.stg
+// A translation table that supports environment dependent names of the
+// basic C types. Any type reference in the application templates should be writen like
+// {@code <bt("uint8")>}, where the argument of template bt can either be a string or a
+// type designation from the rendered data model.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// Most embedded environments have their own naming of the basic types; the standard C
+// names are barely used. This is supported by a simple translation table.
+baseTypeMap ::=
+[
+    "bool_t"   : "bool",
+    "uint8_t"  : "uint8_t",
+    "uint16_t" : "uint16_t",
+    "uint32_t" : "uint32_t",
+    "uint64_t" : "uint64_t",
+    "sint8_t"  : "int8_t",
+    "sint16_t" : "int16_t",
+    "sint32_t" : "int32_t",
+    "sint64_t" : "int64_t",
+    "float32_t": "float",
+    "float64_t": "double",
+    default    : "internalError_badTypeName"
+]
+
+// To shorten the call of the translation table into C types we provide a convenience
+// template. Use expressions like <bt("uint16_t")> anywhere in your templates, where you refer
+// to base types.
+bt(type) ::= "<baseTypeMap.(type)>"

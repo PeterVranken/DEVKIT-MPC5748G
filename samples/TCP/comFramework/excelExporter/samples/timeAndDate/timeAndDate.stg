@@ -1,0 +1,68 @@
+//
+// timeAndDate.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Two Excel workbooks are read, which contain tabular data with calendar dates. The date
+// information is stored as Java date objects in the data model and it can be rendered in
+// various formats using a format string.
+//   The condensed formats from Java class DateRenderer are supported, see
+// https://docs.oracle.com/javase/7/docs/api/java/text/DateFormat.html. They may be
+// prepended by either "date:" or "time:" to filter just one of the two - otherwise you get
+// a time designation with time and date.
+//   The more flexible format strings from Java class SimpleDateFormat are supported, too,
+// see https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html.
+//
+// Copyright (C) 2017-2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+renderTable(cluster,info) ::= <<
+<renderSheetPresidents(cluster.US.presidents)>
+
+<renderSheetMoon(cluster.moon.fullMoon)>
+>>
+
+renderSheetPresidents(sheet) ::= <<
+<! Note, in Excel dates before 1900 are not recognized or stored as such !>
+This were the U.S. presidents since 1900:
+
+<sheet.rowAry:renderRowPresident()>
+
+(The rendered information has been taken from http://www.presidentsusa.net/birth.html,<\\>
+downloaded on Aug 8, 2017.)
+>>
+
+renderRowPresident(row) ::= <<
+<if(row.Birth_Date.isDate)>
+<row.i_; format="The %2d. president of the U.S.">, <row.President>, has been born in <row.Birth_Place.text> on <row.Birth_Date.date; format="MMMM dd, yyyy">.<\\>
+<if(row.Death_Date.isDate)> He died on <row.Death_Date.date; format="MMM dd"> in <row.Location_of_Death.text>, <row.Death_Date.date; format="yyyy">.
+<endif>
+<endif>
+>>
+
+
+renderSheetMoon(sheet) ::= <<
+The dates of full moon in 2017:
+
+<sheet.rowAry:renderRowMoon()><\\>
+
+(The rendered information has been taken from http://www.vollmond.info/de/vollmond-kalender.html,
+downloaded on Aug 24, 2017.)
+>>
+
+renderRowMoon(row) ::= <<
+<row.i_; format="%2d">) <row.dateOfFullMoon>. This is <row.dateOfFullMoon.date> or <\\>
+<row.dateOfFullMoon.date; format="full">. <\\>
+<row.dateOfFullMoon.date; format="'Full moon is on a' EEEE 'at' HH:mm">. <\n>
+>>

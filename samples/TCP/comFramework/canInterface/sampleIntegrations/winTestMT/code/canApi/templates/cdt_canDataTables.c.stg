@@ -1,0 +1,276 @@
+//
+// cdt_canDataTables.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// Generate the data tables, which form the database for the callbacks of the dispatchers.
+// The information from the DBC files about frames is provided through these (constant)
+// tables to the callback implementation.
+//
+// Copyright (C) 2017-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/iterations.stg"
+import "lib/mod.stg"
+import "attributes.stg"
+import "symbols.stg"
+import "globalInterface.stg"
+
+moduleDescription() ::= <<
+ * This module contains data tables, which contain all relevant information from the CAN
+ * network database files about frames and signals. Mainly the callback functions of the
+ * event dispatchers will access the tables to implement the frame-indvidual behavior like
+ * different timing patterns, different checksum protections, different size, etc.
+>>
+
+
+// This is one of the root templates; the complete C file is rendered.
+//
+dataTables_c(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["\n", moduleDescription()])>
+<! The list of functions is put after the file frame shaped by modC !>
+>>
+
+
+// This is one of the root templates; the complete header file is rendered.
+//
+dataTables_h(cluster,info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modH(["\n", moduleDescription()])>
+>>
+
+
+@modH.includes() ::= <<
+#include "<file.baseTypes_h>"
+#include "ede_eventDispatcherEngine.h"
+#include "cst_canStatistics.h"
+#include "cap_canApi.h"
+
+>>
+
+
+// Configure the templates mod.stg:modC/H, which shape the lists of included files.
+@modC.includes() ::= <<
+#include \<stdio.h>
+#include \<stdlib.h>
+#include \<string.h>
+#include \<assert.h>
+
+#include "<file.baseTypes_h>"
+#include "<file.canApi_h>"
+#include "cst_canStatistics.h"
+#include "ose_operatingSystemEmulation.h"
+#include "e2e_frameProtection.h"
+
+>>
+
+@modH.defines() ::= <<
+/** Helper to get CAN IDs: Get a 11 Bit standard CAN ID object from the raw number. */
+#define CDT_STD_CAN_ID(id11Bit)         ((cdt_canId_t){.isExtId=0, .id=(id11Bit)})
+
+/** Helper to get CAN IDs: Get a 29 Bit standard CAN ID object from the raw number. */
+#define CDT_EXT_CAN_ID(id29Bit)         ((cdt_canId_t){.isExtId=1, .id=(id29Bit)})
+
+/** Helper to get CAN IDs: Get CAN ID object from raw number and Boolean \a isExt. */
+#define CDT_CAN_ID(ID, isExt)           ((cdt_canId_t){.isExtId=(isExt), .id=(ID)})
+
+>>
+
+@modC.defines() ::= <<
+>>
+
+@modH.typedefs() ::= <<
+/** CAN ID: The number and the Boolean distinction between 11 and 29 Bit ID. */
+typedef union cdt_canId_t
+{
+    /** An anonymous struct provides the normally used access to the fields. */
+    struct
+    {
+        /** The CAN ID.\n
+              Note, this field is intentionally not modelled as 29 Bit integer in order to
+            avoid undefined values for unused bit: This supports efficient binary
+            comparison of CAN IDs. */
+        unsigned long id:31;
+
+        /** The Boolean distinction, whether we have an 11 or a 29 Bit CAN ID. */
+        unsigned long isExtId:1;
+    };
+    
+    /** An alternative 32 Bit integer access supports efficient CAN ID comparisons (equal
+        or not). */
+    unsigned long uniqueCanId:32;
+
+} cdt_canId_t;
+
+_Static_assert(sizeof(cdt_canId_t) == sizeof(uint32_t), "Unexpected size of data object");
+
+/** The description of a CAN frame as required for implementation of its send/receive
+    behavior in the callbacks of the event dispatchers. */
+typedef struct cdt_canFrame_t
+{
+    /** The CAN bus, which the reception event is simulated for. */
+    unsigned int idxCanBus;
+
+    /** The CAN ID. */
+    cdt_canId_t canId;
+
+    /** The send direction. Only transmitted, affected frames are listed; if it is not
+        received then it is sent. */
+    <bt("bool_t")> isReceived;
+
+    /** The size of the frame contents in Byte. */
+    unsigned int size;
+
+    /** An external function, which is called to unpack a received CAN frame into the
+        global CAN API and to run the E2E validation on the received contents. */
+    <bt("bool_t")> (*fctUnpackApiFrameAndValidate)(const uint8_t frameContentAry[]);
+
+    /** An external function, which randomly fills all signal values in the global CAN API
+        for the frame. */
+    void (*fctRandomFillApiFrame)();
+
+    /** An external function, which is called to E2E protect the frame. */
+    void (*fctProtectApiFrame)();
+
+    /** An external function, which is called to pack the frame. */
+    void (*fctPackApiFrame)(uint8_t frameContentAry[]);
+
+    /** The transmission timing pattern to be applied to the frame. */
+    <symbol.enumSendMode_t> sendMode;
+
+    /** The index of the frame in its particular group. A group are all frames, which are
+        implemented by the same (hand-coded) handler in the CAN interface. The index
+        supports easy and efficient implementation of handler owned, frame related context
+        data. */
+    unsigned int idxHandlerCtxData;
+
+    /** The pointer to the transmission info of the given frame in the global CAN API. */
+    <symbol.structInfoTransmission_t> *pInfoTransmission;
+
+    /** The nominal cycle time in ms if the frame is not purely event triggered. */
+    unsigned int tiCycle;
+
+    /** The minimum distance of reception events if the frame is event triggered. */
+    unsigned int tiMinDistance;
+
+} cdt_canFrame_t;
+
+>>
+
+@modC.typedefs() ::= <<
+>>
+
+@modH.data() ::= <<
+/** A global table with the description of all affected CAN frames as required for
+    implementation of their send/receive behavior in the callbacks of the event
+    dispatchers. */
+extern const cdt_canFrame_t cdt_canFrameAry[CST_NO_CAN_FRAMES];
+
+>>
+
+@modC.data() ::= <<
+/** A global table with the description of all affected CAN frames as required for
+    implementation of their send/receive behavior in the callbacks of the event
+    dispatchers. */
+const cdt_canFrame_t cdt_canFrameAry[CST_NO_CAN_FRAMES] =
+{
+    /* Received frames come first. This is essential in order to have the same indexes for
+       these frames in the operating system (which uses a second generated, identically
+       ordered table of received frames for registration) and the CAN interface. This makes
+       a handle mapping obsolete. */
+    <iteratePdusOfCluster(cluster,"received","canFrameAryEntry")><\\>
+
+    /* Here start the sent frames. The index relationship with the operating system handles
+       is described by a simple, known offset (which is the number of received frames). */
+    <iteratePdusOfCluster(cluster,"sent","canFrameAryEntry")><\\>
+};
+
+<verifyIdxRangeHandlerContextData()>
+>>
+
+@modH.prototypes() ::= <<
+>>
+
+@modC.prototypes() ::= <<
+>>
+
+
+// This project makes use of hand-written event handlers for the processing of the frames.
+// Usually, the handlers differ for in- and outbound frames and for the different
+// transmission pattern. The implementation partly requires local data, like tick counters to
+// implement the timing. To support the implementation of such a handler, we add an group
+// index for each frame; where a group bundles all frames being processed of one handler.
+// This index permits to have simple access to compact, frame-local data for each frame.
+//   The implementation of the template mainly is the conditional code required to assign
+// each frame to one of the groups or handlers. What it emits is just the index as a number
+// literal.
+idxHandlerContextData(pdu) ::= <<
+<if(pdu.isReceived)><\\>
+<if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataInRegular><\\>
+<elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataInEvent><\\>
+<elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataInMixed><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<endif><\\>
+<elseif(pdu.isSent)><\\>
+<if(isTrue.(attribVal.sendModeRegular))><info.calc.idxHdlCtxDataOutRegular><\\>
+<elseif(isTrue.(attribVal.sendModeEvent))><info.calc.idxHdlCtxDataOutEvent><\\>
+<elseif(isTrue.(attribVal.sendModeMixed))><info.calc.idxHdlCtxDataOutMixed><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<endif><\\>
+<else><info.error.({<info.templateFile>: Unexpected transmission direction})><\\>
+<endif>
+>>
+
+// Some protective code against inconsistencies of different templates. The counting above
+// in idxHandlerContextData needs to be implemented in consistency with the frame
+// statistics implemented in cst_canStatistics.h.stg.
+verifyIdxRangeHandlerContextData() ::= <<
+#if (<info.calc.idxHdlCtxDataInRegular>) != CST_NO_CAN_FRAMES_RECEIVED_REGULAR \
+    ||  (<info.calc.idxHdlCtxDataInEvent>) != CST_NO_CAN_FRAMES_RECEIVED_EVENT \
+    ||  (<info.calc.idxHdlCtxDataInMixed>) != CST_NO_CAN_FRAMES_RECEIVED_MIXED \
+    ||  (<info.calc.idxHdlCtxDataOutRegular>) != CST_NO_CAN_FRAMES_SENT_REGULAR \
+    ||  (<info.calc.idxHdlCtxDataOutEvent>) != CST_NO_CAN_FRAMES_SENT_EVENT \
+    ||  (<info.calc.idxHdlCtxDataOutMixed>) != CST_NO_CAN_FRAMES_SENT_MIXED
+# error Invalid index ranges detected. Looks like an inconsistency in your code <\\>
+        generation templates
+#endif
+
+
+>>
+
+
+canFrameAryEntry(pdu) ::= <<
+[<info.calc.idxCdtCanFrameAryEntry>] =
+    { .idxCanBus = <define.busId>
+<if(frame.isExtId)>
+    , .canId = CDT_EXT_CAN_ID(<frame.id>)
+<else>
+    , .canId = CDT_STD_CAN_ID(<frame.id>)
+<endif>
+    , .isReceived = <frame.isReceived>
+    , .size = <frame.size>
+    , .fctUnpackApiFrameAndValidate = <fct.e2eUnpackAndCheckApiFrame>
+    , .fctRandomFillApiFrame = <fct.e2eRndFillApiFrame>
+    , .fctProtectApiFrame = <if(pdu.specialSignalMap.checksum)><fct.e2eProtectApiFrame><else>NULL<endif>
+    , .fctPackApiFrame = <fct.packApiFrame>
+    , .sendMode = <attribVal.sendMode>
+    , .idxHandlerCtxData = <idxHandlerContextData(pdu)>
+    , .pInfoTransmission = &<define.referenceStructFrameSts>().<symbol.fieldInfoTransmission>
+    , .tiCycle = <attribVal.sendPeriod>
+    , .tiMinDistance = <if(isEmpty.(attribVal.eventMinDistance))>10 /** @todo There's no attribute for message minimum distance defined yet in the DBC file */<else><attribVal.eventMinDistance><endif>
+    },<\n>
+>>

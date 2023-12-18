@@ -1,0 +1,48 @@
+//
+// attributeNames.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The names of the user attributes are defined here. This file needs customization each
+// time the code generation is used for set of DBC files with different definition of user
+// attributes.
+//
+// Copyright (C) 2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+// The attribute names required by the other templates:
+//   frSendMode: The frame based enumeration attribute, which selects one of the supported
+// transmission modes, like periodic or on data change. The supported values strongly
+// depend on the environment, which the CAN API is integrated in.
+//   frSendPeriod: The send period in ms of cyclic frames or event frames with cyclic
+// fallback condition. The meaning depends on the supported transmission modes.
+//   eventMinDistance: A timing constraint for data change frames. The meaning depends on
+// the supported transmission modes.
+//   chksumDataId: The data ID of the checksum computation. Effectively a kind a start
+// value for the checksum computation. The meaning depends on the supported checksum
+// algorithms.
+//   sigInitVal: The signal attribute stating the initial value of the signal. This
+// value will be used in the CAN API until the frame, which the signal belongs to, is
+// received the first time. For outbound signals, this value will be used until the APSW
+// updates the API accordingly.
+attribName ::= [ "frSendMode": "frameSendMode"
+               , "frSendPeriod": "sendPeriod"
+               , "eventMinDistance": "eventMinDistance"
+               , "chksumDataId": "checksumStartValue"
+               , "sigInitVal": "initialValue"
+               , default: "codeGenerationError_badAttributeName"
+               ]
+

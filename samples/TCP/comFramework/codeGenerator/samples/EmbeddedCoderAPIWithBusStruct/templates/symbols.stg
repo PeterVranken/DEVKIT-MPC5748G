@@ -1,0 +1,101 @@
+//
+// symbols.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The names of the symbols in the C files are provided. They can be addressed by brief
+// but meaningful names from superordinated templates but will nonetheless have all
+// required disambiguation syllables in the C code, which are appropriate. This hiding of
+// details makes the superordinated templates much better readable and maintainable.
+//
+// Copyright (C) 2015-2016 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "attributeNames.stg"
+
+// Repeatedly used file names are held in this map. All code generation templates will use
+// the map when referencing to files and fragments of their names (particularly the module
+// prefixes). Modifications of generated file names can be done easily and consistent.
+file ::= [ "baseTypes_h": "types.h"
+         , "mnmApi": "cap"
+         , "canApi": {<file.mnmApi>_canApi}
+         , "canApi_h": {<file.canApi>.h}
+         , "canApi_c": {<file.canApi>.c}
+         , "precoCheck_h": {<file.mnmApi>_precoCheck.h}
+         , default: "codeGenerationError_unknownFileName"
+         ]
+
+// The repeatedly used symbol names of different objects, mainly the callback functions.
+// The typical objects, which are required for name disambiguation are addressed by scoping
+// under the usual names.
+//   structAPIFrame/structAPIFrame_t: The symbols are not only used in the name-protected
+// context of the bus structs but also as global types. The symbols
+// structFrame_t/sigObjFrame are used as global #define's. Insofar are all of these symbols
+// ambiguous if frames with same name and ID are used on different buses. Which may easily
+// happen if the ECU has gateway functionality. If so will it become necessary to add the
+// bus name to these symbols.
+symbol ::= [ "signal": {<signal><if(signal.isMuxedSignal)>_m<signal.muxValue><endif>}
+           , "sigObjBus": {canBus_<bus>}
+           , "busObjBus": {<file.mnmApi>_<symbol.sigObjBus>_t}
+           , "structBus": {<file.mnmApi>_<symbol.sigObjBus>}
+           , "structBus_t": {<symbol.busObjBus>}
+           , "sigObjFrame": {<bus>_<frame>_<frame.id>}
+           , "busObjFrame": {<file.mnmApi>_<symbol.sigObjFrame>_t}
+           , "structFrame_t": {<symbol.busObjFrame>}
+           , "sigObjFrameSts": {<symbol.sigObjFrame>_sts}
+           , "busObjFrameSts": {<file.mnmApi>_<symbol.sigObjFrameSts>_t}
+           , "structFrameSts": {<symbol.sigObjFrameSts>}
+           , "structFrameSts_t": {<symbol.busObjFrameSts>}
+           , "fieldStsTransmission": "stsTransmission"
+           , "fieldSignals": "signals"
+           , "stsTransmission_t": {<file.mnmApi>_stsTransmission_t}
+           , "ptrToStructFrame": {<file.mnmApi>_p<bus>_<frame>_<frame.id>}
+           , "fctPackPdu": {<file.mnmApi>_pack_<bus.name>_<pdu.name>_<pdu.id>}
+           , "fctUnpackPdu": {<file.mnmApi>_unpack_<bus.name>_<pdu.name>_<pdu.id>}
+           , default: "codeGenerationError_unknownSymbol"
+           ]
+
+// The repeatedly used frame and signal related #define's are access through a map, which
+// improves maintainability and readability of the templates.
+define ::= [ "signalBinToDbl": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_BIN_TO_DBL}
+           , "signalDblToBin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_DBL_TO_BIN}
+           , "signalFactor": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_FACTOR}
+           , "signalOffset": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_OFFSET}
+           , "signalMin": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_MIN}
+           , "signalMax": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.id>_<signal.name; format="upper">_MAX}
+           , "aliasOfStructFrame": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>}
+           , "getFctFieldOfStructFrame": {<file.mnmApi>_getSignal_<bus>_<frame>_<frame.id>}
+           , "setFctFieldOfStructFrame": {<file.mnmApi>_setSignal_<bus>_<frame>_<frame.id>}
+           , "pduSize": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_DLC}
+           , "checksumLength": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_CHECKSUM_LENGTH}
+           , "checksumStartBit": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_CHECKSUM_STARTBIT}
+           , "checksumIsMotorola": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_CHECKSUM_IS_BIG_ENDIAN}
+           , "chksumDataId": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_CHECKSUM_START_VALUE}
+           , "sqcLength": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_SQC_LENGTH}
+           , "sqcFrom": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_SQC_FROM}
+           , "sqcTo": {<file.mnmApi; format="upper">_<bus.name; format="upper">_<frame.name; format="upper">_<frame.id>_SQC_TO}
+           , default: "codeGenerationError_badDefine"
+           ]
+
+// The other templates access a user attribute's value through this dictionary. The value
+// must not be retrieved directly form the net object (which needs to be in scope) but it is
+// required to do this indirectly through the other dictionary attribName: This dictionary
+// is held in a separate file, which can easily customized, when the code generation is
+// applied to another environment with other attribute definitions.
+attribute ::= ["sigInitVal": {<if(signal.isVoidScaling)><signal.attribMap.(attribName.sigInitVal).n; format="%.0f"><else><signal.attribMap.(attribName.sigInitVal).n><endif>}
+              , default: "codeGenerationError_badAttributeName"
+              ]
+

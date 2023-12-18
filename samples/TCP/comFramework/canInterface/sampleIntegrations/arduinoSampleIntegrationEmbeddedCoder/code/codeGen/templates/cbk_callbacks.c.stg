@@ -1,0 +1,823 @@
+//
+// cbk_callbacks.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the set of callbacks for the CAN interface
+// engine, which implement the network database specific parts of the interface. See
+// template moduleDescription for more details.
+//
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+import "lib/iterations.stg"
+import "attributes.stg"
+import "symbols.stg"
+import "globalInterface.stg"
+
+moduleDescription() ::= <<
+ * This file contains the set of callbacks for the CAN interface engine, which implement
+ * the network database specific parts of the interface.\n
+ *   This sample integration supports in- and outbound frames and these may have three
+ * transmission modes:\n
+ *
+ * - Regular. Normal frames, which are transmitted regularly. For inbound frames this means
+ *   a timeout timer, which has an elapse time relative to the nominal period of the
+ *   frame. On reception this timer is re-triggered. If it elapses a timeout error is
+ *   reported at the API to the APSW.\n
+ *     For outbound frames it means a periodic timer, which unconditionally sends the
+ *   frame\n
+ * - Event based. This actually means data change triggered. An outbound frame is checked
+ *   in every tick, whether at least one of the signal values has changed. If so and only if
+ *   so, it is sent out. A local, static buffer is applied to implement the change
+ *   recognition. A timing condition is specified, too. A minimum distance of two sent
+ *   frames is regarded; this defines a maximum send frequency even in case of permanent
+ *   data changes. A timer object with dependent elapse time is use to control this
+ *   behavior: After sending a frame the next data-change test is scheduled only after the
+ *   minimum delay time, but normally, if no data-change has been found, the same timer
+ *   will elapse again in the next computation time tick. Now the data-change test is
+ *   repeated soon in order to avoid long latency times after data changes.\n
+ *     For inbound frames event based means that we don't use any timer and can't generate
+ *   a timeout event. The API to the APSW is updated if the frame comes in and never else\n
+ * - Mixed mode. Basically a data change triggered frame but with a fallback: It is
+ *   transmitted after a (typically long) while of no data changes. It behaves like a
+ *   regular frame of low period time if no data changes appear at all.\n
+ *     For inbound frames this means the same behavior as for regular frames with the only
+ *   exception of applying another timeout value. Now the timeout is determined by the
+ *   maximum distance in time due to the fallback rule.\n
+ *     For outbound frames it means a combination of two timers. The solution for event
+ *   based frames is extended by a second timer, the timeout timer. It elapses after the
+ *   maximum distance in time due to the fallback rule and is re-triggered on every actual
+ *   send event (regardless whether due to data-change or due to fallback). If it elapses
+ *   it sends the frame\n
+ *
+ * The transmission mode and the related timings are specified in the network database by
+ * frame attributes:\n
+ *
+ * - <attribName.sendMode>: The transmission mode as an enumeration. Permitted values are: regular,
+ *   event and mixed
+ * - <attribName.sendPeriod>: The constant period time of regular frames in Milli seconds. Irrelevant
+ *   for event mode frames. For mixed mode frames it is the maximum distance in time
+ *   between two transmissions in ms (i.e. if no data change appears)
+ * - <attribName.eventMinDistance>: Irrelevant for regular frames. For all others this is the minimum
+ *   distance in time between two transmissions in ms (i.e. if permanent data changes
+ *   appears)
+ *
+ * All timing is done in the grid or granularity of the clock tick of the dispatcher. CAN
+ * network databases strongly tend to use Milli seconds as time unit for their attributes
+ * (as we do in our sample integration). If the dispatcher is clocked every Milli second
+ * then all timing will be most accurate. If it is clocked slower (for sake of less
+ * overhead) then all events are postponed till the next dispatcher clock tick. This is
+ * often an acceptable optimization of the code. Regular frames, which found on periodic
+ * counters will still be accurate on average: If the dispatcher is clocked every ten Milli
+ * seconds and a frame had a period of 25 ms then it would be sent every alternatingly two or
+ * three clock ticks. The other transmission mode found on single shot timers and here the
+ * time spans would be rounded up; a minimum distance of 25 ms would actually become
+ * 30 ms.
+ *
+ * All frames may have a single checksum and a single sequence counter. Both are normal
+ * signals of the frame but they could unambiguously be identified as checksum or sequence
+ * counter by name (regular expression matching at code generation time).\n
+ *   The checksum signal can be supported only if it is an eight Bit signal, which is
+ * located on byte position. This is because checksums are understood byte oriented not
+ * signal value oriented. If the signal doesn't meet this demand then the generated code
+ * will fail to compile.\n
+ *   The checksum is assumed to apply to all the content bytes of the frame; checksums
+ * defined for sub-sets of signals or signal groups can't be supported. The kind of
+ * checksum (sum, CRC, etc.) is out of scope. An external function implements the checksum
+ * computation and validation and defines the kind of checksum. Different kinds of
+ * checksums for different frames are not supported but this would be an easy and
+ * straightforward extension; another database attribute could be introduced and just be
+ * passed to the external function.\n
+ *   The checksum computation is supported by a frame attribute in the network database:
+ *
+ * - <attribName.chksumDataId>: A one Byte number, which is used as start value for the checksum
+ *   computation. It should be chosen differently for all frames so that taking the
+ *   contents of frame A for those of frame B would lead to a checksum error
+ *
+ * The sequence counter is supported only if it is a signal of up to eight Bit.
+ * Supporting longer signals is as easy as changing the type of some data elements from
+ * uint8 to uint16 but even sequence counters of more than 4 Bit are barely used.\n
+ *   The sequence counter operates cyclically and can have different boundaries and both
+ * counting directories. These properties are controlled by the signal's min and max value
+ * in the network database. Min always has the meaning of the first value in the cycle and
+ * max always is the last value in the cycle (both including). Consequently, if min > max
+ * then the counter acts as a down counter. (It's not clear if setting min > max will lead
+ * to error messages or warnings in other, unrelated tools, which operate on the network
+ * database.)
+ *
+ * The API with the APSW is data based. A static struct exists for each frame. It contains
+ * the signal values and the status word, a bit vector. For received frames the following
+ * status or errors are known (see \a <symbol.stsTransmission_t>):
+ *
+ * - Never received: An initially set status bit, which is never set but reset on the first
+ *   reception of the frame
+ * - Wrong DLC: The frame can't be decoded. No further check or data evaluation is done.
+ *   The signal values in the API won't be updated on reception
+ * - Wrong checksum: The frame contents are invalid and consequently, the signal values are
+ *   not decoded and will not overwrite those in the API
+ * - Wrong sequence counter: The received frame is not the direct successor of the last
+ *   recently received frame of same ID. However, the frame as such is alright and it is
+ *   unpacked and the signal values are written into the API
+ *
+ * Sent frames only know a single error in our sample environment: The operating system's
+ * CAN send function just returns a \a false to indicate an undetermined error, like
+ * message buffer full or bus-off. This bit is written into the status word in the API to
+ * the APSW.
+>>
+
+
+// This is one of the root templates; the complete C file is rendered.
+//
+callbacksDef(cluster, info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["\n", moduleDescription()])>
+<! The list of functions is put after the file frame shaped by modC !>
+<iteratePdusOfCluster(cluster,"received","cbkReceiveFrame")>
+<iteratePdusOfCluster(cluster,"received","cbkTimeoutFrame")>
+<iteratePdusOfCluster(cluster,"sent","cbkSendFrame")>
+<iteratePdusOfCluster(cluster,"sent","cbkDueCheckEventFrame")>
+<iteratePdusOfCluster(cluster,"both","cbkInitFrame")>
+<fctInitInterface()>
+>>
+
+// This is the other root template; the complete C header file is rendered.
+//
+callbacksDecl(cluster, info) ::= <<
+<! All code is shaped by overloading the regions of the template modH, see below !>
+<modH(["Declaration of callbacks for the CAN interface engine for cluster ", cluster.name, "."])>
+>>
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The included
+// files.
+@modC.includes() ::= <<
+#include \<stdio.h>
+#include \<stdlib.h>
+#include \<string.h>
+
+#include "<file.baseTypes_h>"
+#include "rtos_assert.h"
+#include "csh_canShield.h"
+#include "ede_eventDispatcherEngine.h"
+#include "cde_stubs.h"
+#include "chk_checksum.h"
+#include "<file.canApi_h>"
+#include "apt_applicationTask.h"
+
+>>
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The local
+// defines.
+@modC.defines() ::= <<
+/** The common setting for timeout errors of inbound frames, used only until the very first
+    reception: The timeout condition is defined relative to the nominal repetition time for
+    regular frames or to the maximum distance of frames for event frames. */
+#define RELATIVE_TIMEOUT_INITIAL_FRAME_RECEPTION 10
+
+/** The common setting for timeout errors of inbound frames: The timeout condition is
+    defined relative to the nominal repetition time for regular frames or to the maximum
+    distance of frames for event frames. */
+#define RELATIVE_TIMEOUT_FRAME_RECEPTION 3
+
+/** Timer objects, which need the shortest possible elapse time, can use this define as
+    period. The value ensures that the timer will elapse already in the next clock tick of
+    the dispatcher. */
+#define TI_NEXT_TICK 1
+
+/** Double-check that the code generation templates are configured to use the right suffix
+    for global objects. Go to file symbols.stg, dictionary file, if you get an error here. */
+<precoTestStringsEqual(mnm(),{<file.mnmCbk>_},{Bad template configuration: Mismatch of module suffix, see <file.mnmCbk>_ but require <mnm()>})>
+>>
+
+
+@modC.data() ::= <<
+/* The list of timer handles for the implementation of message processing. They are shared
+   between the different frame related callbacks. */
+<iterateFramesOfCluster(cluster, "both", "definitionHandleTimer")>
+
+/* Event based outbound frames are implemented by saving the sent data contents in the
+   instance of sending and comparing the current API data with the saved data. A difference
+   will trigger next sending. These are the static buffers, where the frame contents are
+   saved. */
+<iterateFramesOfCluster(cluster, "both", "definitionLastSendData")>
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// included files.
+@modH.includes() ::= <<
+#include "types.h"
+#include "ede_eventDispatcherEngine.h"<\n>
+>>
+
+@modH.typedefs() ::= <<
+>>
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// prototypes of the global (callback) functions.
+@modH.prototypes() ::= <<
+/** Initialization of the interface: Register all affected frames. */
+void <symbol.initInterface>();
+
+>>
+
+
+// Some preprocessor code is generated which effectively does a string compare at compile
+// time. If the two strings are not equal then the compilation is aborted. Both strings
+// need to contain only characters allowed for symbols. Otherwise the compilation aborts,
+// too.
+precoTestStringsEqual(a,b,errMsg) ::= <<
+#define TMP_DEF_STRCMP_<a>
+#ifndef TMP_DEF_STRCMP_<b>
+# error <errMsg>
+#endif
+#undef TMP_DEF_STRCMP_<a>
+>>
+
+
+// Generate a timer handle as required for the implementation of the reception of regular
+// frames (or event triggered frames with minimum repetition rate). The handles are used in
+// more than one frame related callbacks and are therefore defined on module scope.
+definitionHandleTimer(frame) ::= <<
+<if(frame.isReceived && isTrue.(attribVal.sendModeRegular) || isTrue.(attribVal.sendModeMixed))><\\>
+static ede_handleTimer_t <symbol.hTimerTimeout> = EDE_INVALID_TIMER_HANDLE;
+<endif><\\>
+<if(frame.isSent && !isTrue.(attribVal.sendModeRegular))><\\>
+static ede_handleTimer_t <symbol.hTimerDueCheck> = EDE_INVALID_TIMER_HANDLE;
+<endif>
+>>
+
+
+// This template generates static data buffers, where the sent contents of event frames are
+// saved. Event based outbound frames are implemented by saving the sent data contents in the
+// instance of sending and comparing the current API data with the saved data.
+definitionLastSendData(frame) ::= <<
+<if(frame.isSent && !isTrue.(attribVal.sendModeRegular))><\\>
+static <symbol.structFrame_t> <symbol.evFrameLastFrame> =
+    <structFrameInitializer(frame)>;<\n>
+<endif>
+>>
+
+
+// This template generates a documented list of prototypes for a frame as usable in the
+// header file.
+listOfFrameCbkPrototypes(frame) ::= <<
+/** The frame <frame> (<frame.id>, <frame.id; format="0x%03x">) related initialization. */
+void <symbol.cbkInitFrame>(const ede_callbackContext_t *pContext);
+
+<if(frame.isReceived)>
+/** The callback at reception of frame <frame> (<frame.id>, <frame.id; format="0x%03x">). */
+void <symbol.cbkReceiveFrame>(const ede_callbackContext_t *pContext);
+
+<endif>
+>>
+
+
+// This generates a number, which is the timeout value of a frame in Milli seconds.
+// Timeout means a time span, in which the frame is received or sent at latest. Pure event
+// triggered frames don't use a timeout counter and won't call this template.
+//   The returned time designation is used for the timeout timers.
+tiTimeout(frame) ::= <<
+<if(isTrue.(attribVal.sendModeRegular) || isTrue.(attribVal.sendModeMixed))><\\>
+<attribVal.sendPeriod><\\>
+<else>
+<! For pure event mode frames we must not use a timeout. Generate an error !><\\>
+errorInTemplate_donTUseTimeoutForEventFrames<\\>
+<endif>
+>>
+
+
+// This generates a number, which is the "due check time" of an outbound frame in Milli
+// seconds. Due check time means the maximum time span, after which the next check of the
+// frame contents is done inorder to find out if there's a data change that make the frame
+// due for sending.
+//   The returned time designation is used for the check timers.
+tiDueCheck(frame) ::= <<
+<if(isTrue.(attribVal.sendModeEvent) || isTrue.(attribVal.sendModeMixed))><\\>
+<attribVal.eventMinDistance><\\>
+<else>
+<! For regular frames we must not use a due check timer. Generate an error !><\\>
+errorInTemplate_donTUseDueCheckTimerForRegularFrames<\\>
+<endif>
+>>
+
+
+
+// Generate an on frame receive callback for a frame of interest. For CAN transmission
+// frame and PDU are the same and the template operates on the PDU object, which provides
+// more information.
+cbkReceiveFrame(pdu) ::= <<
+/**
+ * Frame related callback for frame <frame> (<frame.id>, <frame.id; format="0x%03x">),
+ * which is invoked by the interface engine on reception of that frame.\n
+ *   The data is extracted, validated if applicable (checksum, sequence counter), the
+ * signals are unpacked and written into the global APSW interface and the timer for
+ * timeout recognition is handled.
+ *   @param pContext
+ * The dispatcher context this callback is invoked from.
+ */
+static void <symbol.cbkReceiveFrame>(const ede_callbackContext_t *pContext)
+{
+    ASSERT(ede_getKindOfEvent(pContext) == APT_EV_RX_CAN_MSG);
+
+<if(info.optionMap.generateLoggingCode)>
+    /* This logging code is specific for the Windows sample integration and would be
+       discarded in an integration on a real platform. */
+    LOG_DEBUG( main_hGlobalLogger
+             , "%.1f ms: "
+               "cbk::<symbol.cbkReceiveFrame>: "
+               "Reception of frame <frame> on bus <bus>"
+             , oss_tiSim / 1000.0
+             );
+
+<endif>
+<if(pdu.specialSignalMap.SQC)>
+    /* Unwanted sequence error artefacts will always be seen after another error, which
+       inibited the decoding of the predecessors's sequence counter value. If we have these
+       errors, we need to reinitialize the sequence error validation. */
+    <bt("bool_t")> reinitSQCValidation = (<symbol.stsTransmission> & ~<file.mnmApi>_stsTransm_errSequence) != 0;
+
+<endif>
+<if(isTrue.(attribVal.sendModeRegular) || isTrue.(attribVal.sendModeMixed))>    <\\>
+    /* Frame received: Reset a possible never received and timeout error bit and let the
+       timeout condition count from null. */
+    <symbol.stsTransmission> &=
+                            ~(<file.mnmApi>_stsTransm_neverReceived
+                              | <file.mnmApi>_stsTransm_errTimeout
+                             );
+    ede_retriggerSingleShotTimer( pContext
+                                , <symbol.hTimerTimeout>
+                                , RELATIVE_TIMEOUT_FRAME_RECEPTION * <attribVal.sendPeriod> /* ms */
+                                );
+
+<else>
+    /* Frame received: Reset a possible never received bit. */
+    <symbol.stsTransmission> &= ~<file.mnmApi>_stsTransm_neverReceived;
+
+<endif>
+    /* Get access to the data bytes. */
+    unsigned int sizeOfFrameContents;
+    const uint8_t * const frameContents = ede_getEventData(pContext, &sizeOfFrameContents);
+
+    /* Do the DLC check: If the number of received bytes doesn't match the expected fixed
+       size then we can't do any other evaluation. */
+    if(sizeOfFrameContents == <define.pduSize>)
+    {
+        /* Reset a possible DLC error bit. */
+        <symbol.stsTransmission> &= ~<file.mnmApi>_stsTransm_errDLC;
+
+<if(pdu.specialSignalMap.checksum)>
+        /* Validate the checksum. */
+        if(chk_validateChecksum( frameContents
+                               , <define.pduSize>
+                               , /* idxChecksumByte */ <define.checksumStartBit> / 8
+                               , <define.checksumDataId>
+                               )
+          )
+        {
+            /* Reset a possible checksum error bit. */
+            <symbol.stsTransmission> &= ~<file.mnmApi>_stsTransm_errChecksum;
+
+<else>
+        // if(true): No checksum validation is defined for this frame.
+        {
+<endif>
+            /* Unpack the signals. The result is directly written into the global struct
+               <symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>, which serves as interface with
+               the APSW. */
+            <symbol.fctUnpackPdu>(frameContents);
+<if(pdu.specialSignalMap.SQC)>
+
+            /* Check the sequence counter. */
+            static uint8_t lastSqc_ = 0;
+            if(chk_validateSequenceCounter( <symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<pdu.specialSignalMap.SQC>
+                                          , &lastSqc_
+                                          , <define.sqcFrom>
+                                          , <define.sqcTo>
+                                          , reinitSQCValidation
+                                          )
+              )
+            {
+                /* No sequence error. Reset possible error bit. */
+                <symbol.stsTransmission> &= ~<file.mnmApi>_stsTransm_errSequence;
+            }
+            else
+            {
+                /* Sequence error. Set error bit in API to the APSW. */
+                <symbol.stsTransmission> |= <file.mnmApi>_stsTransm_errSequence;
+<if(info.optionMap.generateLoggingCode)>
+
+                /* This logging code is specific for the Windows sample integration and
+                   would be discarded in an integration on a real platform. */
+                LOG_DEBUG( main_hGlobalLogger
+                         , "%.1f ms: "
+                           "cbk::<symbol.cbkReceiveFrame>: "
+                           "Sequence error detected for frame <frame> on bus <bus>"
+                         , oss_tiSim / 1000.0
+                         );
+<endif>
+            }
+<endif>
+        }
+<if(pdu.specialSignalMap.checksum)>
+        else
+        {
+<if(info.optionMap.generateLoggingCode)>
+            /* This logging code is specific for the Windows sample integration and would
+               be discarded in an integration on a real platform. */
+            LOG_DEBUG( main_hGlobalLogger
+                     , "%.1f ms: "
+                       "cbk::<symbol.cbkReceiveFrame>: "
+                       "Checksum error detected for frame <frame> on bus <bus>"
+                     , oss_tiSim / 1000.0
+                     );
+
+<endif>
+            /* Set the checksum error bit. */
+            <symbol.stsTransmission> |= <file.mnmApi>_stsTransm_errChecksum;
+        }
+<endif>
+    }
+    else
+    {
+<if(info.optionMap.generateLoggingCode)>
+        /* This logging code is specific for the Windows sample integration and would be
+           discarded in an integration on a real platform. */
+        LOG_DEBUG( main_hGlobalLogger
+                 , "%.1f ms: "
+                   "cbk::<symbol.cbkReceiveFrame>: "
+                   "DLC error detected for frame <frame> on bus <bus>, received %u instead"
+                   " of %u bytes"
+                 , oss_tiSim / 1000.0
+                 , sizeOfFrameContents
+                 , <frame.size>
+                 );
+
+<endif>
+        /* The DLC error is set but the data content related errors are reset: we can't
+           evaluate the data and can't therefore make a statement. */
+        <symbol.stsTransmission> &= ~(<file.mnmApi>_stsTransm_errChecksum | <file.mnmApi>_stsTransm_errSequence);
+        <symbol.stsTransmission> |= <file.mnmApi>_stsTransm_errDLC;
+    }
+} /* End of <symbol.cbkReceiveFrame> */<\n><\n><\n><\n>
+>>
+
+
+// Generate an on timeout callback for an inbound frame of interest. For CAN frame and PDU are
+// the same and the template operates on the PDU object, which provides more information.
+cbkTimeoutFrame(pdu) ::= <<
+<if(isTrue.(attribVal.sendModeRegular) || isTrue.(attribVal.sendModeMixed))><\\>
+/**
+ * Frame related timer callback for frame <frame> (<frame.id>, <frame.id; format="0x%03x">),
+ * which is invoked by the interface engine on timeout of that frame.\n
+ *   The timeout error is set.
+ *   @param pContext
+ * The dispatcher context this callback is invoked from.
+ */
+static void <symbol.cbkTimeoutFrame>(const ede_callbackContext_t *pContext)
+{
+    ASSERT(ede_getKindOfEvent(pContext) == EDE_EV_TIMER_ELAPSED);
+
+    /* Timeout event for frame received. Set the timeout error bit. */
+    <symbol.stsTransmission> |= <file.mnmApi>_stsTransm_errTimeout;
+<if(info.optionMap.generateLoggingCode)>
+
+    /* This logging code is specific for the Windows sample integration and would be
+       discarded in an integration on a real platform. */
+    LOG_DEBUG( main_hGlobalLogger
+             , "%.1f ms: "
+               "cbk::<symbol.cbkTimeoutFrame>: "
+               "Timeout reported for frame <frame> on bus <bus>"
+             , oss_tiSim / 1000.0
+             );
+<endif>
+} /* End of <symbol.cbkTimeoutFrame> */<\n><\n><\n><\n>
+<endif>
+>>
+
+
+// Generate an on timeout callback for an outbound frame of interest. The callback
+// unconditionally sends the frame.
+//   For CAN frame and PDU are the same and the template operates on the PDU object, which
+// provides more information.
+cbkSendFrame(pdu) ::= <<
+/**
+ * Send frame <frame> (<frame.id>, <frame.id; format="0x%03x">).\n
+<if(isTrue.(attribVal.sendModeRegular))> <\\>
+ *   This is a regularly invoked timer callback from the interface engine.\n
+<elseif(isTrue.(attribVal.sendModeEvent))> <\\>
+ *   The function is called from the due check callback in case of a recognized data
+ * change.\n
+<elseif(isTrue.(attribVal.sendModeMixed))> <\\>
+ *   The function is either directly invoked from the interface engine as the callback of
+ * the fallback timer or called from the due check callback in case of a recognized data
+ * change.\n
+<endif>
+ *   The frame contents are completed by checksum and sequence counter (if appropriate) and
+ * sent.
+ *   @param pContext
+ * The dispatcher context this callback is invoked from.
+ */
+static void <symbol.cbkSendFrame>(const ede_callbackContext_t *pContext)
+{
+    ASSERT(ede_getKindOfEvent(pContext) == EDE_EV_TIMER_ELAPSED);
+
+<if(pdu.specialSignalMap.SQC)>
+    /* Update the sequence counter. */
+    chk_updateSequenceCounter( &<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>.<pdu.specialSignalMap.SQC>
+                             , <define.sqcFrom>
+                             , <define.sqcTo>
+                             );
+
+<endif>
+<if(isTrue.(attribVal.sendModeEvent) || isTrue.(attribVal.sendModeMixed))>    <\\>
+    /* Save the contents of the event frame in order to recognize future data changes. */
+    memcpy( &<symbol.evFrameLastFrame>
+          , &<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>
+          , sizeof(<symbol.evFrameLastFrame>)
+          );
+
+<endif>
+    /* Pack the signals. The signal values are read from the global struct
+       <symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>, which serves as interface with the APSW. */
+    <bt("uint8_t")> frameContents[<frame.size>];
+    <symbol.fctPackPdu>(frameContents);
+
+<if(pdu.specialSignalMap.checksum)>
+    /* Update the checksum in the packed data. */
+    chk_computeChecksum( &frameContents[0]
+                       , <define.pduSize>
+                       , /* idxChecksumByte */ <define.checksumStartBit> / 8
+                       , <define.checksumDataId>
+                       );
+
+<endif>
+    /* Send the frame. */
+    if(<if(frame.isExtId)>csh_sendExtCanFrame(<else>csh_sendStdCanFrame((uint16_t)<endif>cde_getCanId(pContext).id, frameContents, /* DLC */ <frame.size>))
+    {
+        /* Bit operation not required here, there's only one error bit for outbound frames. */
+        <symbol.stsTransmission> = <file.mnmApi>_stsTransm_okay;
+    }
+    else
+        <symbol.stsTransmission> = <file.mnmApi>_stsTransm_errSendBufferFull;
+<if(isTrue.(attribVal.sendModeEvent) || isTrue.(attribVal.sendModeMixed))><\\>
+
+    /* The frame was sent. The next time we repeat the due check is determined by the
+       minimum time distance, which is a property of the frame taken from the network
+       database. */
+    ede_retriggerSingleShotTimer( pContext
+                                , <symbol.hTimerDueCheck>
+                                , /* tiNewFromNow */ <tiDueCheck(frame)> /* ms */
+                                );
+<endif>
+<if(isTrue.(attribVal.sendModeMixed))><\\>
+
+    /* Retrigger the fallback timer for the next timeout of the mixed mode frame. Caution:
+       Don't use NULL for hTimer here, since the function is called not only from the
+       timeout counter's on-elapse callback but from the due check counter's callback as
+       well. NULL would unintendedly reference the due check counter in the latter case. */
+    ede_retriggerSingleShotTimer( pContext
+                                , <symbol.hTimerTimeout>
+                                , /* tiNewFromNow */ <tiTimeout(frame)> /* ms */
+                                );
+<endif>
+<if(info.optionMap.generateLoggingCode)>
+
+    /* This logging code is specific for the Windows sample integration and would be
+       discarded in an integration on a real platform. */
+    LOG_DEBUG( main_hGlobalLogger
+             , "%.1f ms: "
+               "cbk::<symbol.cbkSendFrame>: "
+               "Send frame <frame> on bus <bus>: %s"
+             , oss_tiSim / 1000.0
+             , <symbol.stsTransmission> == <file.mnmApi>_stsTransm_okay
+               ? "okay"
+               : "Send buffer full or bus-off"
+             );
+<endif>
+} /* End of <symbol.cbkSendFrame> */<\n><\n><\n><\n>
+>>
+
+
+
+// Generate an on due check callback for an outbound data changed triggered frame. The
+// frame contents are checked for intermediate changes and the frame is sent in case.
+//   For CAN frame and PDU are the same and the template operates on the PDU object, which
+// provides more information.
+cbkDueCheckEventFrame(pdu) ::= <<
+<if(isTrue.(attribVal.sendModeEvent) || isTrue.(attribVal.sendModeMixed))><\\>
+/**
+ * Frame related timer callback for frame <frame> (<frame.id>, <frame.id; format="0x%03x">),
+ * which is regularly invoked by the interface engine.\n
+ *   The frame contents are checked for intermediate changes and the frame is sent in case.
+ *   @param pContext
+ * The dispatcher context this callback is invoked from.
+ */
+static void <symbol.cbkDueCheck>(const ede_callbackContext_t *pContext)
+{
+    ASSERT(ede_getKindOfEvent(pContext) == EDE_EV_TIMER_ELAPSED);
+
+    /* Compare frame contents as sent last recently with current API data: A change means a
+       send event. */
+    <bt("bool_t")> isDue =
+                memcmp( &<symbol.evFrameLastFrame>
+                      , &<symbol.structBus>.<symbol.structFrameSts>.<symbol.fieldSignals>
+                      , sizeof(<symbol.evFrameLastFrame>)
+                      )
+                != 0;
+
+    if(isDue)
+    {
+        /* Unconditionally send the frame. The due check timer is retriggered in
+           function <symbol.cbkSendFrame>. */
+        <symbol.cbkSendFrame>(pContext);
+    }
+    else
+    {
+        /* The frame wasn't sent this time. Repeat the data-change check as early as
+           possible, this is the meaning of an event frame. */
+        ede_retriggerSingleShotTimer( pContext
+                                    , /* hTimer */ NULL
+                                    , /* tiNewFromNow */ TI_NEXT_TICK
+                                    );
+    }
+} /* End of <symbol.cbkDueCheck> */<\n><\n><\n><\n>
+<endif>
+>>
+
+
+
+// Generate an initialization callback for a frame of interest. For CAN frame and PDU are
+// the same and the template operates on the PDU object, which provides more information.
+cbkInitFrame(pdu) ::= <<
+/**
+ * Frame related callback for frame <frame> (<frame.id>, <frame.id; format="0x%03x">),
+ * which is invoked by the interface engine at initialization time.\n
+ *   The callback for processing of external events is installed and the required timers
+ * are configured.
+ *   @param pContext
+ * The dispatcher context this callback is invoked from.
+ */
+static void <symbol.cbkInitFrame>(const ede_callbackContext_t *pContext)
+{
+    ASSERT(ede_getKindOfEvent(pContext) == EDE_EV_EVENT_SOURCE_<if(frame.isReceived)>EXT<else>INT<endif>_INIT);
+
+<if(frame.isReceived)>
+    /* Install the event handler for processing of external frame reception events. */
+    ede_installCallback(pContext, <symbol.cbkReceiveFrame>);
+
+<! Pure event triggered frames don't need a timeout counter !>
+<if(isTrue.(attribVal.sendModeRegular) || isTrue.(attribVal.sendModeMixed))>    <\\>
+    /* Start the timeout timer. A longer timeout value is used for the first reception. */
+    <symbol.hTimerTimeout> = ede_createSingleShotTimer
+                                    ( pContext
+                                    , RELATIVE_TIMEOUT_INITIAL_FRAME_RECEPTION * <tiTimeout(frame)> /* ms */
+                                    , <symbol.cbkTimeoutFrame>
+                                    , /* killAtDueTime */ false
+                                    );
+    ASSERT(<symbol.hTimerTimeout> != EDE_INVALID_TIMER_HANDLE);
+
+<endif>
+<else>
+<if(isTrue.(attribVal.sendModeEvent) || isTrue.(attribVal.sendModeMixed))>    <\\>
+    /* Start the due check timer.<if(isTrue.(attribVal.sendModeMixed))> This timer needs to be created prior to the timeout
+       timer: If both are due in the same dispatcher clock tick then the due check will be
+       served first and will have the chance to retrigger the timeout timer before its
+       callback is invoked; double sending of the frame is avoided in this case.<endif> */
+    <symbol.hTimerDueCheck> = ede_createSingleShotTimer
+                                    ( pContext
+                                    , TI_NEXT_TICK
+                                    , <symbol.cbkDueCheck>
+                                    , /* autoKill */ false
+                                    );
+    ASSERT(<symbol.hTimerDueCheck> != EDE_INVALID_TIMER_HANDLE);
+
+<endif>
+<if(isTrue.(attribVal.sendModeRegular))>    <\\>
+    /* Start the regular send timer. */
+#ifdef DEBUG
+    ede_handleTimer_t hTimer =
+#endif
+    ede_createPeriodicTimer( pContext
+                           , <tiTimeout(frame)> /* ms */
+                           , <symbol.cbkSendFrame>
+                           );
+    ASSERT(hTimer != EDE_INVALID_TIMER_HANDLE);
+
+<elseif(isTrue.(attribVal.sendModeMixed))>    <\\>
+    /* Start a fallback timer to trigger sending if no data change was recognized. */
+    <symbol.hTimerTimeout> = ede_createSingleShotTimer
+                                    ( pContext
+                                    , <tiTimeout(frame)> /* ms */
+                                    , <symbol.cbkSendFrame>
+                                    , /* autoKill */ false
+                                    );
+    ASSERT(<symbol.hTimerTimeout> != EDE_INVALID_TIMER_HANDLE);
+
+<endif>
+<endif>
+<if(info.optionMap.generateLoggingCode)>
+    /* This logging code is specific for the Windows sample integration and would be
+       discarded in an integration on a real platform. */
+    LOG_DEBUG( main_hGlobalLogger
+             , "%.1f ms: "
+               "cbk::<symbol.cbkInitFrame>: "
+               "Initialization of frame <frame> on bus <bus>"
+             , oss_tiSim / 1000.0
+             );
+<endif>
+} /* End of <symbol.cbkInitFrame> */<\n><\n><\n><\n>
+>>
+
+
+
+// Generate the initialization function, which registers all frames of interest at the
+// interface engine.
+fctInitInterface() ::= <<
+/**
+ * Register all frames of cluster <cluster> at the interface engine, which are
+ * either sent or received by the implemented network node <cluster.nodeName>.
+ */
+void <symbol.initInterface>()
+{
+    unsigned int idxMto = 0;
+    unsigned int idxEdeEvSrc ATTRIB_DBG_ONLY;
+
+<! Note, Rx message are handled as external events, Tx are internal events for the
+   dispatcher. External and internal events have distinct index spaces and therefore the
+   order of registration, Rx prior to Tx, matters with respect to the assumed and run-time
+   checked handle relations. !>
+<iterateFramesOfCluster(cluster,"received","initFrame")>
+    const unsigned int noRegisteredRxMsgs ATTRIB_DBG_ONLY = idxMto;
+
+<iterateFramesOfCluster(cluster,"sent","initFrame")><\\>
+} /* End of <symbol.initInterface> */<\n><\n><\n><\n>
+>>
+
+
+// Generate the code statements for registering a single frame in the interface engine.
+initFrame(frame) ::= <<
+    /* Declare frame <frame> (<frame.id>, <frame.id; format="0x%03x">) at the operating system level. */
+<if(frame.isReceived || frame.isSent)>
+<if(frame.isExtId)>
+    csh_registerExtCanFrame( idxMto
+                           , /* isReception */ <frame.isReceived>
+                           , /* canExtIdFilter */ <frame.id>
+                           , /* canIdMask */ 0x1fffffff
+                           );
+
+<else>
+    csh_registerStdCanFrame( idxMto
+                           , /* isReception */ <frame.isReceived>
+                           , /* canStdIdFilter */ <frame.id>
+                           , /* canIdMask */ 0x7ff
+                           );
+
+<endif>
+<else>
+#error Internal code generation error: Only affected frames should be handled
+<endif>
+<if(frame.isExtId)>
+    /* The CAN ID is propagated as "refEventSourceData" to the later evaluation. For Arduino,
+       this is a 16 Bit type, which can't convey an extended ID. */
+    /// @todo Generate a persistent data structure with the CAN ID and reference it through refEventSourceData
+#error Extended CAN IDs are not supported yet by this implementation<\n>
+<endif>
+    /* Having collected all required information the frame is now registered in the
+       interface engine. */
+<if(frame.isReceived)>
+    idxEdeEvSrc = ede_registerExternalEventSource
+                                ( apt_hDispatcherSystem
+                                , /* idxDispatcher */ APT_IDX_DISPATCHER_FRAME_EVENTS
+                                , /* kindOfEvent */ APT_EV_RX_CAN_MSG
+                                , /* senderHandleEvent */ idxMto
+                                , /* callback */ <symbol.cbkInitFrame>
+                                , /* refEventSourceData */ <frame.id>u /* CAN ID */
+                                );
+    ASSERT(idxEdeEvSrc == idxMto + APT_EV_RX_CAN_MSG);
+<else>
+    idxEdeEvSrc = ede_registerInternalEventSource
+                                ( apt_hDispatcherSystem
+                                , /* idxDispatcher */ APT_IDX_DISPATCHER_FRAME_EVENTS
+                                , /* callback */ <symbol.cbkInitFrame>
+                                , /* refEventSourceData */ <frame.id>u /* CAN ID */
+                                );
+    ASSERT(idxEdeEvSrc + noRegisteredRxMsgs == idxMto);
+<endif>
+    ++ idxMto;
+<\n>
+>>

@@ -1,0 +1,2 @@
+gcc -DDEBUG -DMCI_USE_DIRECT_LOOKUP_FOR_STD_ID=0 -DMCI_USE_MAP_FOR_SENT_FRAMES=1 -ggdb3 -O0 -o getIdxFrameByCanId_small.exe mci_mapCanIdToIdx.c mci_mapCanIdToIdx_dataTables.c main.c
+gcc -DDEBUG -DMCI_USE_DIRECT_LOOKUP_FOR_STD_ID=1 -DMCI_USE_MAP_FOR_SENT_FRAMES=1 -ggdb3 -O0 -o getIdxFrameByCanId_fast.exe mci_mapCanIdToIdx.c mci_mapCanIdToIdx_dataTables.c main.c

@@ -1,0 +1,188 @@
+//
+// targetLinkDDPool.extended.xml.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// A dSPACE TargetLink interface description of the generated, global data interface is
+// emitted.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "{", "}"
+
+import "symbols.stg"
+import "lib/typeMap.stg"
+import "lib/iterations.stg"
+
+
+tlInterfaceDescription(cluster, info) ::= <<
+<?xml version="1.0" encoding="UTF-8"?>
+<ddObj Name="Pool" Kind="Pool" xmlns="http://www.dspace.de/DataDictionaryExtended">
+  <ddObj Name="Variables" Kind="VariableGroup">
+    <ddObj Name="{cluster}" Kind="VariableGroup">
+      <ddObj Name="inbound" Kind="VariableGroup">
+        {iteratePdusOfCluster(cluster,"received","variablePdu")}      </ddObj>
+      <ddObj Name="outbound" Kind="VariableGroup">
+        {iteratePdusOfCluster(cluster,"sent","variablePdu")}      </ddObj>
+    </ddObj>
+  </ddObj>
+  <ddObj Name="Typedefs" Kind="TypedefGroup">
+    <ddObj Name="{cluster}" Kind="TypedefGroup">
+      {iteratePdusOfCluster(cluster,"both","typedefsPdu")}    </ddObj>
+  </ddObj>
+  <ddObj Name="Modules" Kind="ModuleGroup">
+    <ddObj Name="pck_packCanFrame" Kind="Module">
+      <ddObj Name="ModuleInfo" Kind="DSDDEmbedded">
+        <ddProperty Name="NameTemplate">$D</ddProperty>
+        <ddProperty Name="CodeGenerationBasis">ModelBased</ddProperty>
+        <ddProperty Name="Responsibility">Default</ddProperty>
+      </ddObj>
+      <ddObj Name="FileSpecifications" Kind="DSDDEmbedded">
+        <ddObj Name="FileSpecification" Kind="FileSpecification">
+          <ddProperty Name="EmitFile">off</ddProperty>
+          <ddProperty Name="FileKind">HeaderFile</ddProperty>
+        </ddObj>
+      </ddObj>
+      <ddObj Name="IncludedFiles" Kind="DSDDEmbedded"></ddObj>
+    </ddObj>
+  </ddObj>
+</ddObj>
+>>
+
+
+// Representation of frames in comments.
+frameAndId() ::= "{frame} ({frame.id}, {frame.id;format=\"0x%03x\"})"
+
+
+variablePdu(pdu) ::= <<
+<ddObj Name="{symbol.structAPIFrame}" Kind="Variable">
+  <ddProperty Name="Description">Global (external) struct, which forms the data based API to access the signal values of frame {frameAndId()}.&#10;{frame.desc; format="xml-encode"}</ddProperty>
+  <ddProperty Name="Class">EXTERN_GLOBAL</ddProperty>
+  <ddProperty Name="Type">{cluster}/{symbol.structAPIFrame_t}</ddProperty>
+  <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+  <ddProperty Name="Width"></ddProperty>
+  <ddProperty Name="Value"></ddProperty>
+  <ddProperty Name="Min"></ddProperty>
+  <ddProperty Name="Max"></ddProperty>
+  <ddProperty Name="Address"></ddProperty>
+  <ddProperty Name="NameTemplate">$D</ddProperty>
+  <ddObj Name="Components" Kind="DSDDEmbedded">
+    <ddObj Name="stsTransmission" Kind="Variable">
+      <ddProperty Name="Description"></ddProperty>
+      <ddProperty Name="Class">default</ddProperty>
+      <ddProperty Name="Type">UInt8</ddProperty>
+      <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+      <ddProperty Name="Width"></ddProperty>
+      <ddProperty Name="Value"></ddProperty>
+      <ddProperty Name="Min"></ddProperty>
+      <ddProperty Name="Max"></ddProperty>
+      <ddProperty Name="Address"></ddProperty>
+      <ddProperty Name="NameTemplate">$D</ddProperty>
+    </ddObj>
+    <ddObj Name="signals" Kind="Variable">
+      <ddProperty Name="Description"></ddProperty>
+      <ddProperty Name="Class">default</ddProperty>
+      <ddProperty Name="Type">{cluster}/{symbol.structFrame_t}</ddProperty>
+      <ddProperty Name="Scaling">VOID_SCALING</ddProperty>
+      <ddProperty Name="Width"></ddProperty>
+      <ddProperty Name="Value"></ddProperty>
+      <ddProperty Name="Min"></ddProperty>
+      <ddProperty Name="Max"></ddProperty>
+      <ddProperty Name="Address"></ddProperty>
+      <ddProperty Name="NameTemplate">$D</ddProperty>
+      <ddObj Name="Components" Kind="DSDDEmbedded">
+        {iterateSignalsOfPdu(pdu,"all","all","variableSignal")}      </ddObj>
+    </ddObj>
+  </ddObj>
+</ddObj>{\n}
+>>
+
+
+variableSignal(signal,kind) ::= <<
+<ddObj Name="{signal}" Kind="Variable">
+  <ddProperty Name="Description">Instance of signals.{signal}.&#10;{signal.desc; format="xml-encode"}</ddProperty>
+  <ddProperty Name="Class">default</ddProperty>
+  <ddProperty Name="Type">{tlType(signal.type)}</ddProperty>
+  <ddProperty Name="Scaling">{if(signal.isVoidScaling)}VOID_SCALING{else}./LocalScaling{endif}</ddProperty>
+  <ddProperty Name="Width"></ddProperty>
+  <ddProperty Name="Value"></ddProperty>
+  <ddProperty Name="Min">{signal.min}</ddProperty>
+  <ddProperty Name="Max">{signal.max}</ddProperty>
+  <ddProperty Name="Address"></ddProperty>
+  <ddProperty Name="NameTemplate">$D</ddProperty>
+{if(!signal.isVoidScaling)}
+  {localScaling(signal)}
+{endif}
+</ddObj>{\n}
+>>
+
+
+localScaling(signal) ::= <<
+<ddObj Name="LocalScaling" Kind="Scaling">
+  <ddProperty Name="Description">Local linear scaling for signal {signal}</ddProperty>
+  <ddProperty Name="ConversionType">LINEAR</ddProperty>
+  <ddProperty Name="LSB">{signal.factor}</ddProperty>
+  <ddProperty Name="Offset">{signal.offset}</ddProperty>
+  <ddProperty Name="Format">%.3f</ddProperty>
+</ddObj>
+>>
+
+
+typedefsPdu(pdu) ::= <<
+<ddObj Name="{symbol.structAPIFrame_t}" Kind="Typedef">
+  <ddProperty Name="Description">This typedef describes all signals plus the transmission status of frame {frameAndId()}</ddProperty>
+  <ddProperty Name="IsBaseType">off</ddProperty>
+  <ddProperty Name="BaseType">Struct</ddProperty>
+  <ddProperty Name="Width"></ddProperty>
+  <ddProperty Name="CreateTypedef">on</ddProperty>
+  <ddProperty Name="ModuleRef">pck_packCanFrame</ddProperty>
+  <ddObj Name="Components" Kind="DSDDEmbedded">
+    <ddObj Name="{symbol.stsTransRaw}" Kind="TypedefComponent">
+      <ddProperty Name="Description">Transmission status of frame {frameAndId()}</ddProperty>
+      <ddProperty Name="Type">UInt8</ddProperty>
+      <ddProperty Name="Width"></ddProperty>
+      <ddProperty Name="Volatile">off</ddProperty>
+      <ddProperty Name="Const">off</ddProperty>
+      </ddObj>
+      <ddObj Name="signals" Kind="TypedefComponent">
+      <ddProperty Name="Description">This inner struct contains the actual signals of frame {frameAndId()}</ddProperty>
+      <ddProperty Name="Type">{cluster}/{symbol.structFrame_t}</ddProperty>
+      <ddProperty Name="Width"></ddProperty>
+      <ddProperty Name="Volatile">off</ddProperty>
+      <ddProperty Name="Const">off</ddProperty>
+    </ddObj>
+  </ddObj>
+</ddObj>
+<ddObj Name="{symbol.structFrame_t}" Kind="Typedef">
+  <ddProperty Name="Description">This inner typedef describes the actual signals of frame {frameAndId()}</ddProperty>
+  <ddProperty Name="IsBaseType">off</ddProperty>
+  <ddProperty Name="BaseType">Struct</ddProperty>
+  <ddProperty Name="Width"></ddProperty>
+  <ddProperty Name="CreateTypedef">off</ddProperty>
+  <ddObj Name="Components" Kind="DSDDEmbedded">
+    {iterateSignalsOfPdu(pdu,"all","all","typedefSignal")}  </ddObj>
+</ddObj>{\n}
+>>
+
+
+typedefSignal(signal,kind) ::= <<
+<ddObj Name="{signal}" Kind="TypedefComponent">
+  <ddProperty Name="Description">{signal.desc; format="xml-encode"}</ddProperty>
+  <ddProperty Name="Type">{tlType(signal.type)}</ddProperty>
+  <ddProperty Name="Width"></ddProperty>
+  <ddProperty Name="Volatile">off</ddProperty>
+  <ddProperty Name="Const">off</ddProperty>
+</ddObj>{\n}
+>>

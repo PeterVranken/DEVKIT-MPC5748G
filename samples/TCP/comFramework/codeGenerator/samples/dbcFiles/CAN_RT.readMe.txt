@@ -1,0 +1,16 @@
+CAN_RT.dbc: Downloaded from
+http://www.race-technology.com/can_.dbc_file_2_31059.html on Mar 23, 2015.
+This is one of the very few publically available CAN database files, which
+can be presented here for testing and demonstration.
+
+CAN_RT_repaired.dbc: The original network database contains some errors.
+An invalid CAN ID is used and several signals occupy bits, which are not
+in the frame. This has been corrected in file CAN_RT_repaired.dbc.
+
+CAN_RT_attributed.dbc: Modified file to have a more meaningful and
+variable network specifictation. Some attributes have been specified,
+which demonstrate the support of send type and time. Sender and receiver
+information, which was missing has been completed.
+
+CAN_RT_simplified.dbc: Strongly shortened file. Useful only for
+development purpose, to avoid very large files all the time.

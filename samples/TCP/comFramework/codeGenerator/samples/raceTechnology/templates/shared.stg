@@ -1,0 +1,53 @@
+//
+// shared.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// This file contains subordinated templates which are used from different principal group
+// template files.
+//
+// Copyright (C) 2015 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/typeMap.stg"
+import "lib/mod.stg"
+
+
+// The interface in this sample uses global variables as base elements of data exchange.
+// This requires attention on the generated name; signal names are typically not unique in
+// a DBC file. Even the combination with the frame ID will not work in general as the same
+// frames typically appear in one cluster if gateway functionality (routing signals
+// from one bus to another bus) is involved. To be most safe and general we assemble the
+// variable name from bus name, frame ID and signal name.
+//   The bus and PDU objects bus and pdu and the signal objects are accessed by argument
+// name scoping.
+//   Remark: We saw pathologic DBC files, where several signals inside the same frame had
+// the same name. Not a fault, they appeared multiply in different alternative multiplex
+// switch sets. To disambiguate this clash we conditionally add _m<signal.muxValue> to the
+// name pattern. The conditional suffix should be removed, where multiplexed signals are in
+// use but names are unambiguously defined in the database.
+cSigName() ::= <<
+<mnm()><bus.name>_<pdu.id; format="%03x">_<signal.name><if(signal.isMuxedSignal)>_m<signal.muxValue><endif>
+>>
+
+
+// Similar to cSigName() but specifically for the multiplex selector signal (if any).
+// (cSigName() can't be used directly as it makes use of attribute name scoping to access
+// the signal s.)
+//   The bus and PDU objects bus and pdu are accessed by argument name scoping.
+cMuxSelectorName() ::= <<
+<pdu.muxSelector:{signal|<cSigName()>}>
+>>

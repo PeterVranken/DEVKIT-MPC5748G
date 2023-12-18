@@ -1,0 +1,262 @@
+//
+// cap_precoCheck.h.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+// A header file is generated, which contains a number of compile time checks of static
+// elements of the network database, which need to be fulfilled for successful compilation
+// and execution of the generated code.\n
+//   See template moduleDescription for more details.
+//
+// Copyright (C) 2015-2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+import "lib/iterations.stg"
+import "attributes.stg"
+import "symbols.stg"
+
+moduleDescription() ::= <<
+ * This header file contains a number of compile time checks of static elements of the
+ * network database, which need to be fulfilled for successful compilation and execution of
+ * the generated code.\n
+ *   The file is included by the generated file <file.canApi_c> after setting a number of
+ * #define's that are related to frames and signals. These defines are checked for valid
+ * values. The checks are completed by some tests of the attributes, which the code
+ * generation depends on. It's highly probable that these tests will emit a compile time
+ * error if the code generation is done with an arbitrary other network file.
+ *   @remark
+ * All checks relate to static properties of the network database. If these tests can be
+ * done by code generation template expressions (mainly the test of Boolean object
+ * properties and test of existence of objects) then this way is preferred. A failing test
+ * will generate an error directive, a successful test will not emit anything.\n
+ *   Code generation templates are limited and cumbersome in doing numeric comparisons. If
+ * those are required than the code generation process tends to generate according C
+ * preprocessor conditions with #error directives inside.\n
+ *   Since the former kind of tests is frequently used you will not see anything in this
+ * file about most of the tests! Error code will show up only if the error has been
+ * detected in the network file.
+>>
+
+// This is the root templates; the complete header file is rendered.
+//
+precoCheck(cluster, info) ::= <<
+<! First put a file header with the reusable library template modH !>
+<modH(["\n", moduleDescription()])>
+<! The other elements of the file are added by overwriting regions !>
+>>
+
+// The included files.
+@modH.includes() ::= <<
+#include "<file.canApi_h>"
+>>
+
+
+// The defines. Here the gros of our test code is placed.
+@modH.defines() ::= <<
+/** This is not a common, global header file. It must only be included by \a 
+    <file.canApi_c>. Check. */
+#ifdef <file.mnmApi; format="upper">_INCLUDES_PRECO_CHECKS
+# undef <file.mnmApi; format="upper">_INCLUDES_PRECO_CHECKS
+#else
+# error This header must be included only by <file.canApi_c>
+#endif
+
+/** Double-check that the code generation templates are configured to use the right suffix
+    for global objects. Go to file symbols.stg, dictionary file, if you get an error here. */
+<precoTestStringsEqual(mnm(),{<file.mnmApi>_},{Bad template configuration: Mismatch of module suffix, see <file.mnmApi>_ but require <mnm()>})>
+
+<iterateBusesOfCluster(cluster,"checkAttribs")>
+<iterateFramesOfCluster(cluster,"loopback","rejectLoopbackFrames")><\\>
+<iteratePdusOfCluster(cluster,"both","checkChksumDef")>
+<iteratePdusOfCluster(cluster,"both","checkSqcDef")>
+>>
+
+
+// Some preprocessor code is generated which effectively does a string compare at compile
+// time. If the two strings are not equal then the compilation is aborted. Both strings
+// need to contain only characters allowed for symbols. Otherwise the compilation aborts,
+// too.
+precoTestStringsEqual(a,b,errMsg) ::= <<
+#define <file.mnmApi; format="upper">_TMP_DEF_STRCMP_<a>
+#ifndef <file.mnmApi; format="upper">_TMP_DEF_STRCMP_<b>
+# error <errMsg>
+#endif
+#undef <file.mnmApi; format="upper">_TMP_DEF_STRCMP_<a>
+>>
+
+
+// Attributes: They are tested for existence and correct type. If more than a single
+// network database file is processed then all must defined congruent attribute sets.
+//   Typical code generation configuration errors are reported not only by compilation
+// error but also by console output of the code generator application. Note, here we only
+// use warning level in order to not inhibit the code generation.
+checkAttribs(bus) ::= <<
+<if(bus.attribDefMap.(attribName.sigInitVal))>
+<checkAttribSignalInitVal(bus.attribDefMap.(attribName.sigInitVal))>
+<else>
+<! Don't generate a compilation error, the initial value of signals is not mandatory !>
+<info.warn.({Input file <bus.networkFile> doesn't contain signal attribute <\\>
+             <attribName.sigInitVal>. All initial values will be zero. Check code <\\>
+             generation configuration in template group file attributes.stg}
+           )
+>
+<endif>
+<if(bus.attribDefMap.(attribName.sendMode))>
+<checkAttribFrameSendMode(bus.attribDefMap.(attribName.sendMode))>
+<else>
+<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.sendMode>})>
+#error Input file <bus.networkFile.Name>\
+ does not contain frame attribute <attribName.sendMode>. Check code generation\
+ configuration in template group file attributes.stg
+<endif>
+<if(bus.attribDefMap.(attribName.sendPeriod))>
+<if(!bus.attribDefMap.(attribName.sendPeriod).isFrame
+    || !bus.attribDefMap.(attribName.sendPeriod).isInt)>
+#error Input file <bus.networkFile.Name>, attribute <attribName.sendPeriod> needs\
+ to be a frame related attribute of type integer
+<endif>
+<else>
+<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.sendPeriod>})>
+#error Input file <bus.networkFile.Name> does not contain frame attribute\
+ <attribName.sendPeriod>. Check code generation configuration in template group file\
+ attributes.stg
+<endif>
+<if(bus.attribDefMap.(attribName.chksumDataId))>
+<if(!bus.attribDefMap.(attribName.chksumDataId).isFrame
+    || !bus.attribDefMap.(attribName.chksumDataId).isInt)>
+<! A check of the range 0..255 would be possible, too, but only by always generating C
+   preprocessor code conducting the test. Moreover, the attribute range specification
+   is weak in that actual attribute value can exceed the range. !>
+#error Input file <bus.networkFile.Name>, <attribName.chksumDataId> needs to be a frame related attribute of type integer
+<endif>
+<else>
+<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.chksumDataId>})>
+#error Input file <bus.networkFile.Name> does not contain frame attribute\
+ <attribName.chksumDataId>. Check code generation configuration in template group file\
+ attributes.stg
+<endif>
+<if(bus.attribDefMap.(attribName.eventMinDistance))>
+<if(!bus.attribDefMap.(attribName.eventMinDistance).isFrame
+    || !bus.attribDefMap.(attribName.eventMinDistance).isInt)>
+#error Input file <bus.networkFile.Name>, <attribName.eventMinDistance> needs to be a frame related attribute of type integer
+<endif>
+<else>
+<info.warn.({Input file <bus.networkFile>: Missing attribute <attribName.eventMinDistance>})>
+#error Input file <bus.networkFile.Name> does not contain frame attribute\
+ <attribName.eventMinDistance>. Check code generation configuration in template group file\
+ attributes.stg
+<endif>
+>>
+
+
+// Check signal attribute inital value for expected type.
+checkAttribSignalInitVal(attribDef) ::= <<
+<if(!attribDef.isSignal  ||  !attribDef.isFloat)>
+#error Input file <bus.networkFile.Name>, attribute <attribName.sigInitVal>: Needs to be <\\>
+       a signal related attribute of type Float
+<endif>
+>>
+
+// Check attribute frameSendMode for expected type. Since we do not have a numeric test we
+// do a string compare on the concatenation of numeric value and name of value for the
+// expected number of enum values. The test could actually be less strict. If the expected
+// value's are present but had other numeric values it wouldn't really harm. However it
+// points to some kind of inconsistency, worth to be double-checked.
+valDef(def) ::= "<[def.i, \"_\", def.name]>"
+valDefOkay ::= [ "1_regular": true
+               , "2_event": true
+               , "3_mixed": true
+               , default: false
+               ]
+checkAttribFrameSendMode(sm) ::= <<
+<if(!sm.isFrame 
+    || !sm.isEnum 
+    || !valDefOkay.(valDef(first(sm.enumValAry)))
+    || !valDefOkay.(valDef(first(rest(sm.enumValAry))))
+    || !valDefOkay.(valDef(first(rest(rest(sm.enumValAry)))))
+    || !!rest(rest(rest(sm.enumValAry)))
+   )
+>
+#error Input file <bus.networkFile.Name>, frame attribute <attribName.sendMode>: <\\>
+       Expect a frame related attribute with enum values regular (1), event (2) and mixed (3)
+<endif>
+>>
+
+
+rejectLoopbackFrames(frame) ::= <<
+#error Input file <bus.networkFile.Name>, frame <frame> (<frame.id>, <\\>
+       <frame.id;format="0x%03x">): This frame is <\\>
+       sent and received by node <cluster.nodeName> at the same time. Loopback frames <\\>
+       are not supported by the code generation templates<\n>
+>>
+
+
+// A precondition for checksums is that they have eight Bit and are positioned at a byte
+// position. Generate an accoridng test for all frames, which have a checksum signal.
+checkChksumDef(pdu) ::= <<
+<if(pdu.specialSignalMap.checksum)>
+/** Check the definition of the checksum of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>.\n
+      A precondition for checksums is that they have eight Bit and are positioned at a byte
+    position. */
+#if <define.checksumLength> != 8               \
+    || (!<define.checksumIsMotorola>        \
+        && <define.checksumStartBit>%8 != 0    \
+        || <define.checksumIsMotorola>      \
+           && <define.checksumStartBit>%8 != 7 \
+       )
+# error Input file <bus.networkFile.Name>, frame <frame> (<frame.id>, <\\>
+        <frame.id;format="0x%03x">): Checksums are supported only as an eight Bit <\\>
+        integer on byte boundary
+#endif
+<! Checksum signals must not be signed. This property is not available as #define but
+   tested at code generation time. The error directive will only show up if the error is
+   seen at code generation time !>
+<if(pdu.specialSignalMap.checksum.isSigned)>
+#error Input file <bus.networkFile.Name>, frame <frame> (<frame.id>, <\\>
+       <frame.id;format="0x%03x">): Checksums must be unsigned
+<endif>
+<endif>
+>>
+
+
+// The precondition for sequence counters is that must have no more than eight Bit. They
+// must be unsigned and have a void scaling.
+checkSqcDef(pdu) ::= <<
+<if(pdu.specialSignalMap.SQC)>
+/** Check the definition of the sequence counter of frame <frame> (<frame.id>, <frame.id;format="0x%03x">)
+    on bus <bus>.\n
+      A precondition for sequence counters is that they have only up to eight Bit. */
+#if <define.sqcLength> > 8
+# error Input file <bus.networkFile.Name>, frame <frame> (<frame.id>, <\\>
+        <frame.id;format="0x%03x">): Sequence counters must be no longer than eight <\\>
+        Bit, found <pdu.specialSignalMap.SQC.length> Bit
+#endif
+<! Sequence counters signals must not be signed and they need to have a void scaling. These
+   properties are not available as #define but tested at code generation time. The error
+   directives will only show up if an error is seen at code generation time !>
+<if(pdu.specialSignalMap.SQC.isSigned)>
+#error Input file <bus.networkFile.Name>, frame <frame> (<frame.id>, <\\>
+       <frame.id;format="0x%03x">): Sequence counter must be unsigned
+<endif>
+<if(!pdu.specialSignalMap.SQC.isVoidScaling)>
+#error Input file <bus.networkFile.Name>, frame <frame> (<frame.id>, <\\>
+       <frame.id;format="0x%03x">): Sequence counter must be an unscaled integer
+<endif>
+<endif>
+>>
+
+

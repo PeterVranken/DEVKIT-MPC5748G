@@ -1,0 +1,327 @@
+//
+// cif.c.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the set of pack and unpack functions for the
+// CAN frames: For each frame a function is generated to compose the binary frame contents
+// from the set of signal values (pack) and the counterpart function, which decomposes
+// received binary frame content data into distinct signal values (unpack).
+// The functions are globally accessible, so their names are composed such that name
+// clashes across different buses won't appear.
+//
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+// Include the environment independent library templates.
+//   Instead of using an explicit sub-directory specification you could also put the
+// library group files into the application's search path. The search path is the Java
+// CLASSPATH. This way the libraries would really be shared between different environemnts.
+import "lib/iterations.stg"
+import "lib/mod.stg"
+import "lib/codeGenC.stg"
+
+import "shared.stg"
+
+
+// This is one of the root templates; the complete C file is rendered.
+//
+canIfDef(cluster, info) ::= <<
+<! First put a file header with the reusable library template modC !>
+<modC(["Implementation of CAN interface for cluster ", cluster.name, "."])>
+<! The list of functions is put after the file frame shaped by modC !>
+<if(cluster.hasFloatingPointSignals)><floatingPointSignalHelpers()>
+
+<endif>
+<cluster.busAry:renderBus(false,rest(cluster.busAry))>
+>>
+
+// This is the other root template; the complete C header file is rendered.
+//
+canIfDecl(cluster, info) ::= <<
+<! All code is shaped by overloading the regions of the template modH, see below !>
+<modH(["Global interface of CAN pack/unpack functions for cluster ", cluster.name, "."])>
+>>
+
+
+// Configure the template mod.stg:modC, which shapes the file frame contents: The included
+// files.
+@modC.includes() ::= <<
+#include \<string.h>
+#include \<assert.h>
+
+#include "types.h"<\n>
+>>
+
+
+// In this simple example the CAN interface is modeled as a large set of global variables,
+// one for each signal. The variable declarations/definitions are added to the generated
+// code by modifying the according place holder in the module frame template.
+@modC.data() ::= <<
+/* The global signal variables. These variables form the interface towards the application
+   software. They are filled by the unpack functions and the pack functions encode the
+   values found in these variables in the PDUs. */
+<iterateSignalsOfCluster(cluster,"all","all","signalDef")>
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// included files.
+@modH.includes() ::= <<
+#include "types.h"<\n>
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: Some
+// the compile configuration controlling defines.
+@modH.defines() ::= <<
+#ifndef <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS
+/** Normally, a pack function is generated for sent PDUs only. If this define is set to a
+    value other than 0 then a pack function is generated for received PDUs, too. */
+# define <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS 0
+#endif
+
+#ifndef <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS
+/** Normally, an unpack function is generated for received PDUs only. If this define is set
+    to a value other than 0 then an unpack function is generated for sent PDUs, too. */
+# define <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS 0
+#endif<\n>
+>>
+
+
+// The global data interface as customization of the header file template: The list of
+// external declarations.
+@modH.data() ::= <<
+/* The global signal variables. These variables form the interface towards the application
+   software. They are filled by the unpack functions and the pack functions encode the
+   values found in these variables in the PDUs. */
+<iterateSignalsOfCluster(cluster,"all","all","signalDecl")>
+>>
+
+
+// The global function interface as customization of the header file template: The list of
+// prototypes of the pack and unpack functions.
+@modH.prototypes() ::= <<
+/* The global pack and unpack functions. These functions form the interface towards the basic
+   software. */
+
+<iteratePdusOfCluster(cluster,"all","packFctDecl")>
+>>
+
+
+
+// A single variable declaration or definition, related to a single signal.
+//   The conditional optimization not to handle signals, which are not related to the
+// network node, we generate code for, is weak: The user can by define demand to get
+// pack/unpack functions for all frames and then we need the interface variables at least
+// for the pack function. So we just add a comment here.
+signalDef(signal,kind) ::= "<signalDefDecl(signal,true)>"
+signalDecl(signal,kind) ::= "<signalDefDecl(signal,false)>"
+signalDefDecl(signal, isDef) ::= <<
+<if(!isDef)>extern <endif><bt(signal.type)> <cSigName()><if(isDef)> = 0<endif>;<\\>
+<if(info.optionMap.suppressUnaffectedSignals && !signal.isReceived && !pdu.isSent)> /* Signal is not used. */<endif><\n>
+>>
+
+
+// Some conditionally generated helper functions for handling (very rare) floating point
+// signals.
+floatingPointSignalHelpers() ::= <<
+/**
+ * Reinterpret cast, which delivers the interpretation of an integral 32 Bit expression as
+ * IEEE 754 32 Bit floating point value.
+ * @return
+ *   Get the floating point interpretation of the value \a fAsU32.
+ * @param fAsU32
+ *   A 32 Bit binary object, which is considered an IEEE 754 floating point object despite
+ * of its formal data type.
+ * @warning
+ *   The implementation of the function requires that the underlaying runtime environment
+ * uses IEEE 754 floating point arithmetics.
+ */
+static inline <bt("float32_t")> reinterpret_cast_f32(<bt("uint32_t")> fAsU32)
+{
+    return *(const <bt("float32_t")>*)&fAsU32;
+}
+
+
+/**
+ * Reinterpret cast, which delivers the interpretation of an integral 64 Bit expression as
+ * IEEE 754 64 Bit floating point value.
+ * @return
+ *   Get the floating point interpretation of the value \a fAsU64.
+ * @param fAsU64
+ *   A 64 Bit binary object, which is considered an IEEE 754 floating point object despite
+ * of its formal data type.
+ * @warning
+ *   The implementation of the function requires that the underlaying runtime environment
+ * uses IEEE 754 floating point arithmetics.
+ */
+static inline <bt("float64_t")> reinterpret_cast_f64(<bt("uint64_t")> fAsU64)
+{
+    return *(const <bt("float64_t")>*)&fAsU64;
+}
+
+>>
+
+
+
+// A (un)pack function pair of prototypes.
+packFctDecl(pdu) ::= <<
+/** Pack the signal values of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">)
+    in the global signal interface into a byte array of <pdu.size> Byte. */
+<if(!pdu.isSent)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+<endif>
+void <cFctName(true)>(<bt("uint8_t")> <msgAry()>[]);
+<if(!pdu.isSent)>#endif<endif>
+
+/** Unpack the signals of <direction(pdu)> PDU <pdu.name> (<frame.id>, <frame.id; format="0x%03x">) from
+    a byte array of <pdu.size> Byte into the global signal interface. */
+<if(!pdu.isReceived)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+<endif>
+void <cFctName(false)>(const <bt("uint8_t")> <msgAry()>[]);
+<if(!pdu.isReceived)>
+#endif
+<endif>
+<\n>
+>>
+
+
+
+// The frames of a bus are rendered in terms of related pack and unpack functions for their
+// PDUs.
+renderBus(bus,generateAllFcts, doTitle) ::= <<
+<if(doTitle)>
+/*
+ * The pack and unpack functions for bus <bus.name> follow up.
+ */
+<endif><bus.frameAry:renderFrame()><\\>
+ >>
+
+
+// A frame is rendered in terms of related pack and unpack functions for its PDUs.
+renderFrame(frame) ::= <<
+<\n><\n><frame.pduAry:renderPdu()>
+>>
+
+
+// A PDU is rendered as pair of pack and unpack function for its signal set.
+renderPdu(pdu) ::= <<
+<if(!pdu.isSent)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_PACK_FCTS != 0
+<endif>
+/**
+ * Pack the signals of <direction(pdu)> PDU <pdu.name> (bus <bus.name>, frame ID <frame.id>) into a
+ * byte array of <pdu.size> Byte.\n
+ *   The signal values are read from the global signal interface.
+ * @param <msgAry()>
+ *   The byte array. The packed signal values will be found in this array after return.
+ * Unused bits will be set to zero.
+ */
+
+void <cFctName(true)>(<bt("uint8_t")> <msgAry()>[])
+{
+    <setPduDataAreaNull(pdu)>
+
+    <pdu.signalAry:packSignal(pdu,cSigName()); separator="\n"><\\>
+<if(pdu.muxSelector)>
+    <pdu.muxSelector:packSignal(pdu,cMuxSelectorName())>
+    /* Pack the selected set of multiplexed signals. */
+    switch(<cMuxSelectorName()>)
+    {
+    <pdu.muxSignalSetAry:casePackMuxSignalSet()>
+    default: assert(1==0); // Undefined mux selector value encountered
+    }
+<endif>
+} /* End of <cFctName(true)> */
+<if(!pdu.isSent)>
+#endif
+<endif>
+
+
+
+<if(!pdu.isReceived)>
+#if <MNM()>UNCONDITIONALLY_GENERATE_UNPACK_FCTS != 0
+<endif>
+/**
+ * Unpack the signals of <direction(pdu)> PDU <pdu.name> (bus <bus.name>, frame ID <frame.id>) from
+ * a byte array of <pdu.size> Byte.\n
+ *   The signal values are written into the global signal interface.
+ * @param <msgAry()>
+ *   The byte array. The signal values are extracted from this array.
+ */
+
+void <cFctName(false)>(const <bt("uint8_t")> <msgAry()>[])
+{
+    /* Decode all normal, not multiplexed signals. */
+    <pdu.signalAry:unpackSignal()>
+<if(pdu.muxSelector)>
+    /* Decode the multiplex selector signal. */
+    <pdu.muxSelector:unpackSignal()>
+    /* Decode the selected set of multiplexed signals. */
+    switch(<cMuxSelectorName()>)
+    {
+    <pdu.muxSignalSetAry:caseUnpackMuxSignalSet()>
+    default: assert(1==0); // Undefined mux selector value encountered
+    }
+<endif>
+} /* End of <cFctName(false)> */
+<if(!pdu.isReceived)>
+#endif
+<endif>
+>>
+
+
+// The name of a pack/unpack function.
+cFctName(isPack) ::= <<
+<mnm()><if(!isPack)>un<endif>pack_<bus.name>_<pdu.name>_<pdu.id; format="%03x">
+>>
+
+
+// Apply the assignment unpackSignal of a signal value to the related global interface
+// variable for all conditionally decoded signals from a multiplexed signal set.
+caseUnpackMuxSignalSet(ss) ::= <<
+case <ss.muxValue>:
+    <ss.signalAry:unpackSignal()>
+    break;<\n>
+>>
+
+
+// A signal is unpacked and the value is assigned to the related global interface variable.
+//   Remark: The handling of user option suppressUnaffectedSignals is somewhat undefined
+// for the generation of unpack functions for outbound PDUs: The signal property
+// isReceived will generally be false, which means for suppressUnaffectedSignals=true to
+// not unpack the signal. But if we follow this what would be the value of an unpack
+// function then? Usually, such a function is barely useful in final production code to
+// fulfill functional needs but it might be helpful for testing code, where inverse
+// functions are required. As a workaround and to support those test situations we do not
+// filter signals for unpacking in case of outbound PDUs.
+unpackSignal(signal) ::= <<
+<if(!info.optionMap.suppressUnaffectedSignals || signal.isReceived || pdu.isSent)>
+<cSigName()> = <extractSignal(signal)>;
+<endif>
+>>
+
+
+// Apply the pack operation for all conditionally encoded signals of a multiplexed signal set.
+casePackMuxSignalSet(ss) ::= <<
+case <ss.muxValue>:
+    <ss.signalAry:packSignal(pdu,cSigName()); separator="\n">
+    break;<\n>
+>>
+
+
+// A string telling the direction of transmission of a PDU.
+direction(pdu) ::= "<if(pdu.isSent)>outbound<elseif(pdu.isReceived)>inbound<else>unused<endif>"

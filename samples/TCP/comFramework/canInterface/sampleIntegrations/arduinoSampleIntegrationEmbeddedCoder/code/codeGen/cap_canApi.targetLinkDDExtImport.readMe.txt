@@ -1,0 +1,54 @@
+The file cap_canApi.targetLinkDDExtImport.xml is not used in this sample
+integration. It is the equivalent of the other generated file
+../APSW/initEcBusObjects.m for dSPACE TargetLink:
+
+In this project we have designed the APSW with a MathWorks Simulink model
+configured for code generation with MathWorks Embedded Coder. The
+configuration is stored in file initEcBusObjects.m. If the Simulink model
+was configured for code generation with dSPACE TargetLink, which is
+similarly possible, then the CAN interface related configuration
+cap_canApi.targetLinkDDExtImport.xml would be imported into TargetLink.
+The XML extended import into TargetLink's Data Dictionary would be run.
+
+The XML file serves as a demonstration only. Those, who design their
+software with TargetLink may find is useful as a starting point for
+integration of the CAN interface with their APSW.
+
+The required import settings are:
+
+- In MATLAB type dsddman to open the DD's GUI
+- In the tree view, select DD node DD0, this is were the import goes to
+- Click File/Import/from XML file ..., dialog "Import from XML File" opens
+- File name: cap_canApi.targetLinkDDExtImport.xml
+- File type: XML Files (*.xml) (this is preselected by the menu entry)
+- Import into: / (this is preselected by the selection of the DD node)
+- Import as child of DD object specified above: Set check-mark
+- Mode: extended
+- Stylesheet: off
+- Schema: auto
+- Import strategy: Merge
+
+CAUTION: The last item, the import strategy is set to Overwrite by
+default. This is most dangerous in our case because we would kill many
+essential, already existing elements of the DD.
+
+The GUI dialog is equivalent to some MATLAB script code as follows. Using
+the script code may support the integration:
+
+    % Note, the merge strategy is required because the XML uses variable group "Pool" as
+    % outermost folder. In any real project will Pool always contain a lot of entries
+    % besides our CAN interface specification. Without setting strategy merge our import
+    % would replace the complete contents of Pool with our imported data and hence discard
+    % all other stuff.
+    dsdd( 'Import' ...
+        , 'Format', 'XML' ...
+        , 'File', 'cap_canApi.targetLinkDDExtImport.xml' ...
+        , 'parent', '//DD0' ...
+        , 'ImportStrategy', 'merge' ...
+        , 'Mode', 'extended' ...
+        )
+
+In general, you should never import an external XML file into the DD
+without having made a backup of your DD file. There are many possibilities
+to use this command to damage the contents of your DD. There's no undo
+operation available!

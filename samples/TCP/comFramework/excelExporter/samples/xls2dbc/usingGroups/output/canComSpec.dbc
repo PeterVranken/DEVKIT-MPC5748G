@@ -1,0 +1,94 @@
+VERSION "Created by excelExporter 1.0.5"
+
+NS_ : 
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+
+BS_:
+
+BU_: ECU
+
+BO_ 127 ABS_STATUS: 8 Vector__XXX
+  SG_ checksum : 0|8@1+ (1,0) [1|255] "" ECU
+  SG_ SQC : 8|4@1+ (1,0) [0|14] "" ECU
+  SG_ status : 13|2@0+ (1,0) [0|3] "" ECU
+
+BO_ 1234 ECU_SPEED: 4 ECU
+  SG_ checksum : 0|8@1+ (1,0) [1|255] "" Vector__XXX
+  SG_ direction : 14|3@0- (1,0) [-1|2] "" Vector__XXX
+  SG_ speedOfRotation : 16|16@1+ (0.1,-8000) [-8000|8000] "rpm" Vector__XXX
+  SG_ SQC : 8|4@1+ (1,0) [0|14] "" Vector__XXX
+
+BO_ 1000 ECU_TQ: 5 ECU
+  SG_ checksum : 32|8@1+ (1,0) [1|255] "" Vector__XXX
+  SG_ direction : 2|2@0+ (1,0) [0|2] "" Vector__XXX
+  SG_ SQC : 4|4@1+ (1,0) [1|15] "" Vector__XXX
+  SG_ torque : 15|24@0- (0.05,0) [-1000|1000] "Nm" Vector__XXX
+
+CM_ BO_ 127 "ABS status, received every 100ms under normal conditions but up to every 5ms in case if ABS interactions";
+CM_ SG_ 127 checksum "CRC8 checksum";
+CM_ SG_ 127 SQC "Sequence counter";
+CM_ SG_ 127 status "Status of ABS control. 0: Normal operation, 1: Brake interaction, 2: Initializing, 3: Out of service";
+CM_ BO_ 1234 "Send from ECU to power display";
+CM_ SG_ 1234 checksum "CRC8 checksum";
+CM_ SG_ 1234 direction "1: Normal direction, -1: Inverse direction, 2: Invalid value or undetermined";
+CM_ SG_ 1234 speedOfRotation "Speed of rotation of engine";
+CM_ SG_ 1234 SQC "Sequence counter";
+CM_ BO_ 1000 "Send from ECU to power display";
+CM_ SG_ 1000 checksum "CRC8 checksum";
+CM_ SG_ 1000 direction "0: Normal, 1: drag torque, 2: invalid value or undetermined";
+CM_ SG_ 1000 SQC "Sequence counter";
+CM_ SG_ 1000 torque "Engine torque";
+BA_DEF_ "Author" STRING;
+BA_DEF_ BO_ "frameSendMode" ENUM  "regular","event","mixed";
+BA_DEF_ BO_ "sendPeriod" INT 5 10000;
+BA_DEF_ BO_ "crcStartValue" INT 1 255;
+BA_DEF_ BO_ "eventMinDistance" INT 5 10000;
+BA_DEF_ SG_ "initialSignalValue" FLOAT -1e38 1e38;
+BA_DEF_DEF_ "Author" "http://sourceforge.net/projects/comframe/";
+BA_DEF_DEF_ "frameSendMode" "regular";
+BA_DEF_DEF_ "sendPeriod" 10;
+BA_DEF_DEF_ "crcStartValue" 1;
+BA_DEF_DEF_ "eventMinDistance" 10;
+BA_DEF_DEF_ "initialSignalValue" 0.0;
+BA_ "frameSendMode" BO_ 127 2;
+BA_ "sendPeriod" BO_ 127 100;
+BA_ "eventMinDistance" BO_ 127 5;
+BA_ "crcStartValue" BO_ 127 87;
+BA_ "initialSignalValue" SG_ 127 checksum 0;
+BA_ "initialSignalValue" SG_ 127 SQC 15;
+BA_ "initialSignalValue" SG_ 127 status 2;
+BA_ "frameSendMode" BO_ 1234 2;
+BA_ "sendPeriod" BO_ 1234 50;
+BA_ "eventMinDistance" BO_ 1234 10;
+BA_ "crcStartValue" BO_ 1234 27;
+BA_ "initialSignalValue" SG_ 1234 direction 2;
+BA_ "initialSignalValue" SG_ 1234 speedOfRotation 800;
+BA_ "initialSignalValue" SG_ 1234 SQC 15;
+BA_ "frameSendMode" BO_ 1000 0;
+BA_ "sendPeriod" BO_ 1000 25;
+BA_ "crcStartValue" BO_ 1000 56;
+BA_ "initialSignalValue" SG_ 1000 direction 2;
+BA_ "initialSignalValue" SG_ 1000 SQC 0;
+BA_ "initialSignalValue" SG_ 1000 torque 0;
+VAL_ 127 status 0 "normalOperation" 1 "brakeInteraction" 2 "initializing" 3 "outOfService";
+VAL_ 1234 direction 1 "normal" -1 "inverse" 2 "invalid";
+VAL_ 1000 direction 0 "normal" 1 "dragTorque" 2 "invalid";

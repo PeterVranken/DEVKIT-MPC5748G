@@ -1,0 +1,62 @@
+//
+// symbols.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The names of the symbols in the C files are provided. They can be addressed by brief
+// but meaningful names from superordinated templates but will nonetheless have all
+// required disambiguation syllables in the C code, which are appropriate. This hiding of
+// details makes the superordinated templates much better readable and maintainable.
+//   Moreover, this template group file can be imported by several superordinated template
+// group files in order to ensure consistent naming of symbols in different parts of the
+// generated code.
+//
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+
+// The repeatedly used symbol names of different objects. The usual template objects, which
+// are required for name disambiguation are addressed by scoping under the usual names.
+symbol ::= [ "enumIdxBus_t": {<mnm()>idxCanBus_t}
+           , "enumIdxFrame_t": {idxFrameInCanInterfaceEngine_t}
+           , "idxBus": {<mnm()>idxBus_<bus.name>}
+           , "noBuses": {<mnm()>noBuses}
+           , "enumFrame": {mci_idxFr_<bus.name>_<frame.name>_<frameId()>}
+           , "pairIdAndIdx_t": {<mnm()>pairCanIdAndIdx_t}
+           , "lookupTableFrameIdxByBusAndId": {<mnm()>lookupTableFrameIdxByBusAndStdId}
+           , "mapFrameIdxByBusAndId": {<mnm()>mapFrameIdxByBusAndId}
+           , "rowLengthAry": {<symbol.mapFrameIdxByBusAndId>_rowLengthAry}
+           , "mapFrameIdxByBusAndId": {<mnm()>mapFrameIdxByBusAndId}
+           , "mapFrameIdxById": {_mapFrameIdxById_<bus>}
+           , "fctLookupFrIdxByStdId": {<mnm()>getFrameIdxByCanBusAndStdId}
+           , default: "codeGenerationError_badKindOfSymbol"
+           ]
+
+// The repeatedly used bus, frame and signal related #define's are access through a map, which
+// improves maintainability and readability of the templates.
+define ::= [ "swSupportExtCanIds": {<MNM()>SUPPORT_EXTENDED_CAN_IDS}
+           , "swSupportExtCanIds": {<MNM()>SUPPORT_EXTENDED_CAN_IDS}
+           , "useDirectLookup": {<MNM()>USE_DIRECT_LOOKUP_FOR_STD_ID}
+           , "supportSentFrames": {<MNM()>USE_MAP_FOR_SENT_FRAMES}
+           , "isEnumFrameDefExtern": {<MNM()>ENUM_FRAMES_IS_DEFINED}
+           , default: "codeGenerationError_badDefine"
+           ]
+
+// Some helper templates disambiguate 11 and 29 Bit CAN IDs.
+frameId() ::= "<frame.id><if(frame.isExtId)>x<endif>"
+FRAME_ID() ::= "<frame.id><if(frame.isExtId)>X<endif>"
+pduId() ::= "<pdu.id><if(pdu.isExtId)>x<endif>"

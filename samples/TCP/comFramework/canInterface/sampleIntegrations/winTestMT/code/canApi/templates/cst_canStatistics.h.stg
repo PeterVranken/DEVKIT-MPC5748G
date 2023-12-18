@@ -1,0 +1,169 @@
+//
+// cst_canStatistics.h.stg
+// This is a template group file for StringTemplate V4, see www.stringtemplate.org.
+//
+// The templates describe the generation of the set of defines, which make some total
+// numbers publically available, like number of CAN frames.
+//
+// Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Lesser General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or any later
+// version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+delimiters "<", ">"
+
+import "lib/mod.stg"
+import "lib/iterations.stg"
+import "attributes.stg"
+import "symbols.stg"
+
+
+// This is one of the root templates; the complete C header file is rendered.
+//
+canStatistics_h(cluster, info) ::= <<
+<! All code is shaped by overloading the regions of the template modH, see below !>
+<modH(["Some useful statistics about the CAN frames of cluster ", cluster.name, "."])>
+>>
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: The
+// included files.
+@modH.includes() ::= <<
+#include "<file.baseTypes_h>"
+
+>>
+
+
+// Configure the template mod.stg:modH, which shapes the header file frame contents: Some
+// the compile configuration controlling defines.
+@modH.defines() ::= <<
+/** The number of CAN buses in the cluster. */
+#define CST_NO_CAN_BUSES <info.calc.noBuses_set_0><cluster.busAry:{b|<info.calc.noBuses_add_1>}><info.calc.noBuses>
+
+/** The total number of affected CAN frames in the cluster, i.e. either sent or received. */
+#define CST_NO_CAN_FRAMES (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of sent CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_SENT (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_SENT_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of received CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_RECEIVED (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_RECEIVED_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of received regular CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_RECEIVED_REGULAR (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_RECEIVED_REGULAR_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of received event CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_RECEIVED_EVENT (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_RECEIVED_EVENT_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of received mixed mode CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_RECEIVED_MIXED (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_RECEIVED_MIXED_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of sent regular CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_SENT_REGULAR (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_SENT_REGULAR_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of sent event CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_SENT_EVENT (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_SENT_EVENT_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+/** The number of sent mixed mode CAN frames in the cluster. */
+#define CST_NO_CAN_FRAMES_SENT_MIXED (<cluster.busAry:{bus|CST_NO_CAN_FRAMES_SENT_MIXED_<bus.name; format="upper">}; separator=" + ", wrap="\\\n    ">)
+
+
+<cluster.busAry:busStatistics()>
+>>
+
+
+@modH.typedefs() ::= <<
+>>
+
+
+// The global data interface as customization of the header file template: The list of
+// external declarations.
+@modH.data() ::= <<
+>>
+
+
+// The global function interface as customization of the header file template: The list of
+// prototypes of the pack and unpack functions.
+@modH.prototypes() ::= <<
+>>
+
+
+busStatistics(bus) ::= <<
+<countBusObjects([])><\\>
+<iterateFramesOfBus(bus,"both","countBusObjects")><\\>
+/** The total number of affected CAN frames in bus <bus>, i.e. either sent or received. */
+#define CST_NO_CAN_FRAMES_<bus.name; format="upper"> <info.calc.noFramesOfBus>u
+
+/** The number of sent CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_SENT_<bus.name; format="upper"> <info.calc.noFramesSentOfBus>u
+
+/** The number of received CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_RECEIVED_<bus.name; format="upper"> <info.calc.noFramesReceivedOfBus>u
+
+/** The number of received regular CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_RECEIVED_REGULAR_<bus.name; format="upper"> <info.calc.noFramesInRegularOfBus>u
+
+/** The number of received event CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_RECEIVED_EVENT_<bus.name; format="upper"> <info.calc.noFramesInEventOfBus>u
+
+/** The number of received mixed mode CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_RECEIVED_MIXED_<bus.name; format="upper"> <info.calc.noFramesInMixedOfBus>u
+
+/** The number of sent regular CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_SENT_REGULAR_<bus.name; format="upper"> <info.calc.noFramesOutRegularOfBus>u
+
+/** The number of sent event CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_SENT_EVENT_<bus.name; format="upper"> <info.calc.noFramesOutEventOfBus>u
+
+/** The number of sent mixed mode CAN frames in bus <bus>. */
+#define CST_NO_CAN_FRAMES_SENT_MIXED_<bus.name; format="upper"> <info.calc.noFramesOutMixedOfBus>u
+<\n>
+
+>>
+
+
+addFrame(frame) ::= "<info.calc.cstCnt_add_1>"
+
+// Count different sub-sets of frames for a given bus. If the calling attribute frame is
+// empty then all counters are reset and new counting (e.g. of other bus) can be initiated.
+countBusObjects(frame) ::= <<
+<if(!frame)><\\>
+<info.calc.noFramesOfBus_set_0><\\>
+<info.calc.noFramesReceivedOfBus_set_0><\\>
+<info.calc.noFramesSentOfBus_set_0><\\>
+<info.calc.noFramesInRegularOfBus_set_0><\\>
+<info.calc.noFramesInEventOfBus_set_0><\\>
+<info.calc.noFramesInMixedOfBus_set_0><\\>
+<info.calc.noFramesOutRegularOfBus_set_0><\\>
+<info.calc.noFramesOutEventOfBus_set_0><\\>
+<info.calc.noFramesOutMixedOfBus_set_0><\\>
+<else><\\>
+<info.calc.noFramesOfBus_add_1><\\>
+<if(frame.isReceived)><\\>
+<info.calc.noFramesReceivedOfBus_add_1><\\>
+<if(isTrue.(attribVal.sendModeRegular))><info.calc.noFramesInRegularOfBus_add_1><\\>
+<elseif(isTrue.(attribVal.sendModeEvent))><info.calc.noFramesInEventOfBus_add_1><\\>
+<elseif(isTrue.(attribVal.sendModeMixed))><info.calc.noFramesInMixedOfBus_add_1><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<endif><\\>
+<elseif(frame.isSent)><\\>
+<info.calc.noFramesSentOfBus_add_1><\\>
+<if(isTrue.(attribVal.sendModeRegular))><info.calc.noFramesOutRegularOfBus_add_1><\\>
+<elseif(isTrue.(attribVal.sendModeEvent))><info.calc.noFramesOutEventOfBus_add_1><\\>
+<elseif(isTrue.(attribVal.sendModeMixed))><info.calc.noFramesOutMixedOfBus_add_1><\\>
+<else><info.error.({<info.templateFile>: Unexpected value <attribVal.sendMode> found for frame attribute <attribName.sendMode>})><\\>
+<endif><\\>
+<else><info.error.({<info.templateFile>: Unexpected transmission direction})><\\>
+<endif>
+<endif>
+>>
+

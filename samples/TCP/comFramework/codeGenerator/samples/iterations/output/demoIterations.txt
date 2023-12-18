@@ -1,0 +1,659 @@
+Buses:
+  RT_simplified with 7 frames and 5 attribute definitions
+  DUP with 10 frames and 3 attribute definitions
+
+All Frames:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+All Frames in lexical order:
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+All Frames in inverse lexical order:
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+All Frames in order of CAN ID:
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+All Frames in inverse order of CAN ID:
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+All Frames in order of parsing:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+Transmitted Frames:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+Foreign Frames:
+  RT_SB_Trig_Initial_Condition, 9242146 (0x8d0622x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_12, 9833508 (0x960c24x) on bus RT_simplified
+Loopback Frames:
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+Inbound Frames:
+  rt_SB_INS_Vel_Body_Axes_mux, 215 (0x0d7) on bus RT_simplified
+  RT_SB_INS_Vel_Body_Axes, 9312034 (0x8e1722x) on bus RT_simplified
+  RT_DL1MK3_Speed, 8392740 (0x801024x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  DRIVER_HEARTBEAT, 100 (0x064) on bus DUP
+  IO_DEBUG, 500 (0x1f4) on bus DUP
+  MOTOR_CMD, 101 (0x065) on bus DUP
+  MOTOR_STATUS, 400 (0x190) on bus DUP
+  SENSOR_SONARS, 200 (0x0c8) on bus DUP
+  SENSOR_SONARS_1, 200 (0x0c8x) on bus DUP
+  MOTOR_STATUS_1, 0 (0x000x) on bus DUP
+  MOTOR_STATUS_2, 0 (0x000) on bus DUP
+Outbound Frames:
+  RT_DL1MK3_GPS_Time, 9175332 (0x8c0124x) on bus RT_simplified
+  RT_DL1MK3_Measure_Time_10, 9832996 (0x960a24x) on bus RT_simplified
+  ECU_STATUS_1, 2047 (0x7ff) on bus DUP
+  ECU_STATUS_2, 2047 (0x7ffx) on bus DUP
+
+All PDUs:
+  rt_SB_INS_Vel_Body_Axes_mux, in: true, out: false, no signals: 6
+  RT_SB_INS_Vel_Body_Axes, in: true, out: false, no signals: 9
+  RT_SB_Trig_Initial_Condition, in: false, out: false, no signals: 6
+  RT_DL1MK3_Speed, in: true, out: false, no signals: 4
+  RT_DL1MK3_GPS_Time, in: false, out: true, no signals: 5
+  RT_DL1MK3_Measure_Time_12, in: false, out: false, no signals: 1
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+  DRIVER_HEARTBEAT, in: true, out: false, no signals: 1
+  IO_DEBUG, in: true, out: false, no signals: 4
+  MOTOR_CMD, in: true, out: false, no signals: 2
+  MOTOR_STATUS, in: true, out: false, no signals: 2
+  SENSOR_SONARS, in: true, out: false, no signals: 1
+  SENSOR_SONARS_1, in: true, out: false, no signals: 1
+  ECU_STATUS_1, in: false, out: true, no signals: 2
+  ECU_STATUS_2, in: false, out: true, no signals: 2
+  MOTOR_STATUS_1, in: true, out: false, no signals: 2
+  MOTOR_STATUS_2, in: true, out: false, no signals: 2
+Transmitted PDUs:
+  rt_SB_INS_Vel_Body_Axes_mux, in: true, out: false, no signals: 6
+  RT_SB_INS_Vel_Body_Axes, in: true, out: false, no signals: 9
+  RT_DL1MK3_Speed, in: true, out: false, no signals: 4
+  RT_DL1MK3_GPS_Time, in: false, out: true, no signals: 5
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+  DRIVER_HEARTBEAT, in: true, out: false, no signals: 1
+  IO_DEBUG, in: true, out: false, no signals: 4
+  MOTOR_CMD, in: true, out: false, no signals: 2
+  MOTOR_STATUS, in: true, out: false, no signals: 2
+  SENSOR_SONARS, in: true, out: false, no signals: 1
+  SENSOR_SONARS_1, in: true, out: false, no signals: 1
+  ECU_STATUS_1, in: false, out: true, no signals: 2
+  ECU_STATUS_2, in: false, out: true, no signals: 2
+  MOTOR_STATUS_1, in: true, out: false, no signals: 2
+  MOTOR_STATUS_2, in: true, out: false, no signals: 2
+Foreign PDUs:
+  RT_SB_Trig_Initial_Condition, in: false, out: false, no signals: 6
+  RT_DL1MK3_Measure_Time_12, in: false, out: false, no signals: 1
+Loopback PDUs:
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+Inbound PDUs:
+  rt_SB_INS_Vel_Body_Axes_mux, in: true, out: false, no signals: 6
+  RT_SB_INS_Vel_Body_Axes, in: true, out: false, no signals: 9
+  RT_DL1MK3_Speed, in: true, out: false, no signals: 4
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+  DRIVER_HEARTBEAT, in: true, out: false, no signals: 1
+  IO_DEBUG, in: true, out: false, no signals: 4
+  MOTOR_CMD, in: true, out: false, no signals: 2
+  MOTOR_STATUS, in: true, out: false, no signals: 2
+  SENSOR_SONARS, in: true, out: false, no signals: 1
+  SENSOR_SONARS_1, in: true, out: false, no signals: 1
+  MOTOR_STATUS_1, in: true, out: false, no signals: 2
+  MOTOR_STATUS_2, in: true, out: false, no signals: 2
+Outbound PDUs:
+  RT_DL1MK3_GPS_Time, in: false, out: true, no signals: 5
+  RT_DL1MK3_Measure_Time_10, in: true, out: true, no signals: 1
+  ECU_STATUS_1, in: false, out: true, no signals: 2
+  ECU_STATUS_2, in: false, out: true, no signals: 2
+
+All multiplexed signal sets:
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 1, signals: Accuracy_INS_Vel_Body_org, INS_Vel_Forwards_2D_org
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 2, signals: Accuracy_INS_Vel_Body_no2, INS_Vel_Forwards_2D_no2
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 3, signals: Accuracy_INS_Vel_Body_no3, INS_Vel_Forwards_2D_no3
+  PDU: SENSOR_SONARS, selector: SENSOR_SONARS_mux, switch value: 0, signals: SENSOR_SONARS_left, SENSOR_SONARS_middle, SENSOR_SONARS_right, SENSOR_SONARS_rear
+  PDU: SENSOR_SONARS, selector: SENSOR_SONARS_mux, switch value: 1, signals: SENSOR_SONARS_no_filt_left, SENSOR_SONARS_no_filt_middle, SENSOR_SONARS_no_filt_right, SENSOR_SONARS_no_filt_rear
+  PDU: SENSOR_SONARS_1, selector: SENSOR_SONARS_mux, switch value: 0, signals: SENSOR_SONARS_left, SENSOR_SONARS_middle, SENSOR_SONARS_right, SENSOR_SONARS_rear
+  PDU: SENSOR_SONARS_1, selector: SENSOR_SONARS_mux, switch value: 1, signals: SENSOR_SONARS_no_filt_left, SENSOR_SONARS_no_filt_middle, SENSOR_SONARS_no_filt_right, SENSOR_SONARS_no_filt_rear
+Transmitted multiplexed signal sets:
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 1, signals: Accuracy_INS_Vel_Body_org, INS_Vel_Forwards_2D_org
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 2, signals: Accuracy_INS_Vel_Body_no2, INS_Vel_Forwards_2D_no2
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 3, signals: Accuracy_INS_Vel_Body_no3, INS_Vel_Forwards_2D_no3
+  PDU: SENSOR_SONARS, selector: SENSOR_SONARS_mux, switch value: 0, signals: SENSOR_SONARS_left, SENSOR_SONARS_middle, SENSOR_SONARS_right, SENSOR_SONARS_rear
+  PDU: SENSOR_SONARS, selector: SENSOR_SONARS_mux, switch value: 1, signals: SENSOR_SONARS_no_filt_left, SENSOR_SONARS_no_filt_middle, SENSOR_SONARS_no_filt_right, SENSOR_SONARS_no_filt_rear
+  PDU: SENSOR_SONARS_1, selector: SENSOR_SONARS_mux, switch value: 0, signals: SENSOR_SONARS_left, SENSOR_SONARS_middle, SENSOR_SONARS_right, SENSOR_SONARS_rear
+  PDU: SENSOR_SONARS_1, selector: SENSOR_SONARS_mux, switch value: 1, signals: SENSOR_SONARS_no_filt_left, SENSOR_SONARS_no_filt_middle, SENSOR_SONARS_no_filt_right, SENSOR_SONARS_no_filt_rear
+Foreign multiplexed signal sets:
+Loopback multiplexed signal sets:
+Inbound multiplexed signal sets:
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 1, signals: Accuracy_INS_Vel_Body_org, INS_Vel_Forwards_2D_org
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 2, signals: Accuracy_INS_Vel_Body_no2, INS_Vel_Forwards_2D_no2
+  PDU: rt_SB_INS_Vel_Body_Axes_mux, selector: Byte4_Bits67, switch value: 3, signals: Accuracy_INS_Vel_Body_no3, INS_Vel_Forwards_2D_no3
+  PDU: SENSOR_SONARS, selector: SENSOR_SONARS_mux, switch value: 0, signals: SENSOR_SONARS_left, SENSOR_SONARS_middle, SENSOR_SONARS_right, SENSOR_SONARS_rear
+  PDU: SENSOR_SONARS, selector: SENSOR_SONARS_mux, switch value: 1, signals: SENSOR_SONARS_no_filt_left, SENSOR_SONARS_no_filt_middle, SENSOR_SONARS_no_filt_right, SENSOR_SONARS_no_filt_rear
+  PDU: SENSOR_SONARS_1, selector: SENSOR_SONARS_mux, switch value: 0, signals: SENSOR_SONARS_left, SENSOR_SONARS_middle, SENSOR_SONARS_right, SENSOR_SONARS_rear
+  PDU: SENSOR_SONARS_1, selector: SENSOR_SONARS_mux, switch value: 1, signals: SENSOR_SONARS_no_filt_left, SENSOR_SONARS_no_filt_middle, SENSOR_SONARS_no_filt_right, SENSOR_SONARS_no_filt_rear
+Outbound multiplexed signal sets:
+All signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Byte4_Bits67 (muxSel), in: true, out: false
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_12 (normal), in: false, out: false
+  Measured_Time_10 (normal), in: true, out: true
+  DRIVER_HEARTBEAT_cmd (normal), in: true, out: false
+  IO_DEBUG_test_unsigned (normal), in: true, out: false
+  IO_DEBUG_test_enum (normal), in: false, out: false
+  IO_DEBUG_test_signed (normal), in: false, out: false
+  IO_DEBUG_test_float (normal), in: false, out: false
+  MOTOR_CMD_steer (normal), in: true, out: false
+  MOTOR_CMD_drive (normal), in: false, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+All transmitted signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Byte4_Bits67 (muxSel), in: true, out: false
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+  DRIVER_HEARTBEAT_cmd (normal), in: true, out: false
+  IO_DEBUG_test_unsigned (normal), in: true, out: false
+  MOTOR_CMD_steer (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+All foreign signals:
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Measured_Time_12 (normal), in: false, out: false
+  IO_DEBUG_test_enum (normal), in: false, out: false
+  IO_DEBUG_test_signed (normal), in: false, out: false
+  IO_DEBUG_test_float (normal), in: false, out: false
+  MOTOR_CMD_drive (normal), in: false, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+All loopback signals:
+  Measured_Time_10 (normal), in: true, out: true
+All inbound signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Byte4_Bits67 (muxSel), in: true, out: false
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Measured_Time_10 (normal), in: true, out: true
+  DRIVER_HEARTBEAT_cmd (normal), in: true, out: false
+  IO_DEBUG_test_unsigned (normal), in: true, out: false
+  MOTOR_CMD_steer (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+All outbound signals:
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+
+All normal signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_12 (normal), in: false, out: false
+  Measured_Time_10 (normal), in: true, out: true
+  DRIVER_HEARTBEAT_cmd (normal), in: true, out: false
+  IO_DEBUG_test_unsigned (normal), in: true, out: false
+  IO_DEBUG_test_enum (normal), in: false, out: false
+  IO_DEBUG_test_signed (normal), in: false, out: false
+  IO_DEBUG_test_float (normal), in: false, out: false
+  MOTOR_CMD_steer (normal), in: true, out: false
+  MOTOR_CMD_drive (normal), in: false, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+Transmitted normal signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+  DRIVER_HEARTBEAT_cmd (normal), in: true, out: false
+  IO_DEBUG_test_unsigned (normal), in: true, out: false
+  MOTOR_CMD_steer (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+Foreign normal signals:
+  Validity_Initial_Speed (normal), in: false, out: false
+  Validity_Initial_Heading (normal), in: false, out: false
+  Initial_Speed (normal), in: false, out: false
+  Initial_Heading (normal), in: false, out: false
+  MFDD_Start_Threshold (normal), in: false, out: false
+  MFDD_End_Threshold (normal), in: false, out: false
+  Measured_Time_12 (normal), in: false, out: false
+  IO_DEBUG_test_enum (normal), in: false, out: false
+  IO_DEBUG_test_signed (normal), in: false, out: false
+  IO_DEBUG_test_float (normal), in: false, out: false
+  MOTOR_CMD_drive (normal), in: false, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  SENSOR_SONARS_err_count (normal), in: false, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+  MOTOR_STATUS_speed_kph (normal), in: false, out: false
+Loopback normal signals:
+  Measured_Time_10 (normal), in: true, out: true
+Inbound normal signals:
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_INS_Vel_Forwards (normal), in: true, out: false
+  Validity_INS_Vel_Sideways (normal), in: true, out: false
+  Bit4 (normal), in: true, out: false
+  Bit7 (normal), in: true, out: false
+  Accuracy_INS_Vel_Body (normal), in: true, out: false
+  Byte2_Bit0 (normal), in: true, out: false
+  INS_Vel_Forwards_2D (normal), in: true, out: false
+  Byte4_Bits67 (normal), in: true, out: false
+  INS_Vel_Sideways_2D (normal), in: true, out: false
+  Validity_Speed (normal), in: true, out: false
+  Accuracy_Speed (normal), in: true, out: false
+  Direction (normal), in: true, out: false
+  Speed (normal), in: true, out: false
+  Measured_Time_10 (normal), in: true, out: true
+  DRIVER_HEARTBEAT_cmd (normal), in: true, out: false
+  IO_DEBUG_test_unsigned (normal), in: true, out: false
+  MOTOR_CMD_steer (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+  MOTOR_STATUS_wheel_error (normal), in: true, out: false
+Outbound normal signals:
+  Validity_GPS_Time (normal), in: false, out: true
+  Validity_GPS_Week (normal), in: false, out: true
+  Accuracy_GPS_Time (normal), in: false, out: true
+  GPS_Time (normal), in: false, out: true
+  GPS_Week (normal), in: false, out: true
+  Measured_Time_10 (normal), in: true, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+  MOTOR_STATUS_wheel_error (normal), in: false, out: true
+  MOTOR_STATUS_speed_kph (normal), in: false, out: true
+
+All multiplex selector signals:
+  Byte4_Bits67 (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+Transmitted multiplex selector signals:
+  Byte4_Bits67 (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+Foreign multiplex selector signals:
+Loopback multiplex selector signals:
+Inbound multiplex selector signals:
+  Byte4_Bits67 (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+  SENSOR_SONARS_mux (muxSel), in: true, out: false
+Outbound multiplex selector signals:
+All multiplexed signals:
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+Transmitted multiplexed signals:
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+Foreign multiplexed signals:
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+  SENSOR_SONARS_left (muxed on 0), in: false, out: false
+  SENSOR_SONARS_middle (muxed on 0), in: false, out: false
+  SENSOR_SONARS_right (muxed on 0), in: false, out: false
+  SENSOR_SONARS_rear (muxed on 0), in: false, out: false
+  SENSOR_SONARS_no_filt_left (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_middle (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_right (muxed on 1), in: false, out: false
+  SENSOR_SONARS_no_filt_rear (muxed on 1), in: false, out: false
+Loopback multiplexed signals:
+Inbound multiplexed signals:
+  Accuracy_INS_Vel_Body_org (muxed on 1), in: true, out: false
+  INS_Vel_Forwards_2D_org (muxed on 1), in: true, out: false
+  Accuracy_INS_Vel_Body_no2 (muxed on 2), in: true, out: false
+  INS_Vel_Forwards_2D_no2 (muxed on 2), in: true, out: false
+  Accuracy_INS_Vel_Body_no3 (muxed on 3), in: true, out: false
+  INS_Vel_Forwards_2D_no3 (muxed on 3), in: true, out: false
+Outbound multiplexed signals:
