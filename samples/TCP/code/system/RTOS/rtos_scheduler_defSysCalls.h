@@ -41,7 +41,7 @@
     && !defined(RTOS_CORE_1_SYSCALL_TABLE_ENTRY_0003) \
     && !defined(RTOS_CORE_2_SYSCALL_TABLE_ENTRY_0003)
 
-# if RTOS_SYSCALL_TRIGGER_EVENT != 3
+# if RTOS_SYSCALL_SEND_EVENT != 3
 #  error Inconsistent definition of system call
 # endif
 

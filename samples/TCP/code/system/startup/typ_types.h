@@ -4,7 +4,7 @@
  * @file typ_types.h
  * Definition of global, basic types and convenience macros.
  *
- * Copyright (C) 2013-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2013-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

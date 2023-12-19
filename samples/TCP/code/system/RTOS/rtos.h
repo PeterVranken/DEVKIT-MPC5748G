@@ -140,9 +140,9 @@
 #define RTOS_TI_DEADLINE_MAX_IN_US  26843545
 
 /** An RTOS event can normally be triggered by user tasks belonging to a process of
-    sufficient privileges. See field \a minPIDToTriggerThisEvProc of struct \a
-    rtos_eventProcDesc_t. If it should not be accessible even by the process of highest
-    privileges than #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE can be specified for \a
+    sufficient privileges. See argument \a minPIDToTriggerThisEvProc of
+    rtos_osCreateEventProcessor(). If it should not be accessible even by the process of
+    highest privileges than #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE can be specified for \a
     minPIDToTriggerThisEvProc. */
 #define RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE    ((RTOS_NO_PROCESSES)+1u)
 
@@ -228,6 +228,17 @@
     function rtos_osGetIdxCore() if called from this core. */
 #define RTOS_CORE_Z2    2u
 
+/** \cond Two nested macros are used to convert a constant expression to a string which can
+    be used e.g. as part of some inline assembler code.\n
+      If for example PI is defined to be (355/113) you could use STR(PI) instead of
+    "(355/113)" in the source code. ARG2STR is not called directly. */
+#define ARG2STR(x) #x
+#define STR(x) ARG2STR(x)
+/** \endcond */
+
+/** @todo Consider switching the next code block off to find deprecated code locations,
+    which require migration. */
+#if 0
 /** Backward compatibility: An alias of rtos_osCreateEventProcessor() allows using the
     formerly used name rtos_osCreateEvent() of this API.
       @note The use of this alias name is deprecated. Use rtos_osCreateEventProcessor()
@@ -248,14 +259,6 @@
                                , (taskParam)                                                \
                                )
 
-/** \cond Two nested macros are used to convert a constant expression to a string which can
-    be used e.g. as part of some inline assembler code.\n
-      If for example PI is defined to be (355/113) you could use STR(PI) instead of
-    "(355/113)" in the source code. ARG2STR is not called directly. */
-#define ARG2STR(x) #x
-#define STR(x) ARG2STR(x)
-/** \endcond */
-
 /** Backward compatibility: An alias of rtos_osSendEvent() allows using the formerly used
     name rtos_osTriggerEvent() of this API.
       @note The use of this alias name is deprecated. Use rtos_osSendEvent() instead! */
@@ -266,6 +269,12 @@
       @note The use of this alias name is deprecated. Use rtos_sendEvent() instead! */
 #define rtos_triggerEvent(idEvent, taskParam) rtos_sendEvent(idEvent, taskParam)
 
+/** Backward compatibility: An alias of #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE allows using
+    the formerly used name RTOS_EVENT_NOT_USER_TRIGGERABLE of this macro.
+      @note The use of this alias name is deprecated. Use
+    #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE instead! */
+# define RTOS_EVENT_NOT_USER_TRIGGERABLE            (RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE)
+#endif
 /*
  * Global type definitions
  */
@@ -285,12 +294,12 @@ typedef enum rtos_errorCode_t
     , rtos_err_badEventTiming   /// Inconsistent or bad timing configuration stated for event
     , rtos_err_eventNotTriggerable  /// Bad configuration makes event unusable
     , rtos_err_configurationOfRunningKernel /// Attempt to (re-)configure a running kernel
-    , rtos_err_badEventId       /// The ID of the event is invalid. No such event exists
+    , rtos_err_badEventProcId   /// The ID of the event is invalid. No such event exists
     , rtos_err_badCountableTimerEventMask   /// Invalid mask specified for a countable timer event
     , rtos_err_badProcessId     /// The ID of the process is invalid. No such process exists
     , rtos_err_tooManyTasksRegistered   /// More than #RTOS_MAX_NO_TASKS registered
     , rtos_err_noEvOrTaskRegistered /// No event and/or no task defined at start of system
-    , rtos_err_eventWithoutTask /// A useless event exists, which has no task to activate
+    , rtos_err_evProcWithoutTask    /// A useless event exists, which has no task to activate
     , rtos_err_badTaskFunction  /// Bad task function NULL specified
     , rtos_err_taskBudgetTooBig     /// Task budget greater than #RTOS_TI_DEADLINE_MAX_IN_US
     , rtos_err_initTaskRedefined /// Attempt to redefine an already defined initialization task
@@ -1013,8 +1022,8 @@ static ALWAYS_INLINE void rtos_osLeaveCriticalSection(uint32_t msr)
  */
 static inline bool rtos_sendEvent(unsigned int idEventProc, uintptr_t taskParam)
 {
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall( RTOS_IDX_SC_TRIGGER_EVENT
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
                                 , idEventProc
                                 , /* noCountableTriggers */ 0u /* 0: "old style" trigger */
                                 , /* evMaskOrTaskParam */ taskParam
@@ -1076,8 +1085,8 @@ static inline bool rtos_sendEvent(unsigned int idEventProc, uintptr_t taskParam)
  */
 static inline bool rtos_sendEventCountable(unsigned int idEventProc, uint32_t evMask)
 {
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall( RTOS_IDX_SC_TRIGGER_EVENT
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
                                 , idEventProc
                                 , /* noCountableTriggers */ 1u
                                 , /* evMaskOrTaskParam */ evMask
@@ -1129,8 +1138,8 @@ static inline bool rtos_sendEventMultiple(unsigned int idEventProc, uint32_t evM
        be different to what's expected. */
     assert(count > 0u);
 
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall( RTOS_IDX_SC_TRIGGER_EVENT
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
                                 , idEventProc
                                 , /* noCountableTriggers */ count
                                 , /* evMaskOrTaskParam */ evMask

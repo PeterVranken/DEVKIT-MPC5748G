@@ -10,7 +10,7 @@
  * @note This file must not contain anything other than the include directives of all
  * system call defining header files.
  *
- * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

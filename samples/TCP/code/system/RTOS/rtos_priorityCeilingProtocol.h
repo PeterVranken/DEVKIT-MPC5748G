@@ -127,7 +127,7 @@ void rtos_resumeAllTasksByPriority(uint32_t resumeDownToThisPriority);
  * The function can be called from assembly and C code but only from supervisor contexts,
  * ISRs and OS tasks.
  */
-struct rtos_eventProcDesc_t *rtos_osGetEventByPriority(uint32_t priority);
+struct rtos_eventProcDesc_t *rtos_osGetEvProcByPriority(uint32_t priority);
 
 #endif  /* For C code compilation only */
 #endif  /* RTOS_PRIORITY_CEILING_PROTOCOL_INCLUDED */

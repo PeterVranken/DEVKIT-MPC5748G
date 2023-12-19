@@ -2,7 +2,7 @@
  * @file rtos_kernelInstanceData.c
  * Definition of global data of one instance of the RTOS on a multi-core MCU.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -112,11 +112,12 @@
               , .tiCycleInMs = 0u                                                           \
               , .priority = 0u                                                              \
               , .taskParam = 0u                                                             \
-              , .timerUsesTaskParam = true                                                  \
+              , .timerUsesCountableEvs = false                                              \
               , .timerTaskTriggerParam = 0u                                                 \
               , .eventCounterMask = 0u                                                      \
               , .noActivationLoss = 0u                                                      \
-              , .pNextScheduledEvent = NULL                                                 \
+              , .offsNextEvProcSamePrio = 0                                                 \
+              , .offsNextEvProcLowerPrio = 0                                                \
             },                                                                              \
         },                                                                                  \
                                                                                             \

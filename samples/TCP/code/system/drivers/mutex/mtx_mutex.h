@@ -23,7 +23,7 @@
  * on all three cores. The implementation combines decorated store with interrupt
  * suspension. Pros and cons are discussed in the function.
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -234,7 +234,7 @@ static inline void mtx_releaseMutex(mtx_mutex_t *pMutex)
  * The function is left with MSR[EE] = 0. The execution requires supervisor mode. Any
  * attempt to call it from a user mode context will cause a privileged exception.
  *   @remark
- * The function will in no wait keep track or supervise the correct pairing in use.
+ * The function will in no way keep track or supervise the correct pairing in use.
  * Operation will simply fail if this is not ensured.
  */
 static inline void mtx_osEnterIntercoreCriticalSection
@@ -289,7 +289,7 @@ static inline void mtx_osEnterIntercoreCriticalSection
  * The execution of the function requires supervisor mode. Any attempt to call it from a
  * user mode context will cause a privileged exception.
  *   @remark
- * The function will in no wait keep track or supervise the correct pairing in use.
+ * The function will in no way keep track or supervise the correct pairing in use.
  * Operation will simply fail if this is not ensured.
  */
 static inline void mtx_osLeaveIntercoreCriticalSection

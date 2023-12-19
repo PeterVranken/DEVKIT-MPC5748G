@@ -41,7 +41,7 @@ of notification.
 
 However, the second action, effectively an ISR on the notified core, has
 its own charme: The notifier receives a receipt when it is done. Memory
-mapped data flow without additional synchronization means and still
+mapped data flow without additional synchronization measures and still
 without race conditions can be easily implemented.
 
 TODOC:

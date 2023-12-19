@@ -1,4 +1,4 @@
-= CAN communication with DEVKIT-MPC5748G
+= TCP/IP and UDP/IP communication with DEVKIT-MPC5748G
 :Author:            Peter Vranken 
 :Email:             mailto:Peter_Vranken@Yahoo.de
 :toc:               left
@@ -12,6 +12,8 @@
 :warning-caption:   :warning:
 
 == About this DEVKIT-MPC5748G sample
+
+TODOC Give an outline of this sample and how to use it
 
 This DEVKIT-MPC5748G sample implements a reusable CAN communication I/O
 driver for MPC5748G and MPC5775B/E and demonstrates its use. Some

@@ -11,7 +11,7 @@
  * Either remove the file here or ensure by include path settings of your compiler that
  * your modified version of the file is used for compilation.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

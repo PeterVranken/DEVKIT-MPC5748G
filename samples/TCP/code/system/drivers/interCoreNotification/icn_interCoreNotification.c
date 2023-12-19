@@ -33,7 +33,7 @@
  * expensive RAM. In this driver, we use a C implementation file for configuration. Each
  * application needs to have its individual implementation file.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

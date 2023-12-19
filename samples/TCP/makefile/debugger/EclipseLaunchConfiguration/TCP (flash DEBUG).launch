@@ -55,9 +55,9 @@
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.cyc_usb.SPECIFY_NETWORK_CARD" value="false"/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.doContinue" value="true"/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.doGdbServerAllocateSemihostingConsole" value="true"/>
-<booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.enableSemihosting" value="false"/>
-<booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.enableSemihostingIoclientGdbClient" value="false"/>
-<booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.enableSemihostingIoclientTelnet" value="true"/>
+<booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.enableSemihosting" value="true"/>
+<booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.enableSemihostingIoclientGdbClient" value="true"/>
+<booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.enableSemihostingIoclientTelnet" value="false"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.gdbClientOtherCommands" value="set mem inaccessible-by-default off&#13;&#10;set tcp auto-retry on&#13;&#10;set tcp connect-timeout 240&#13;&#10;set remotetimeout 60"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.gdbClientOtherOptions" value=""/>
 <intAttribute key="com.pemicro.debug.gdbjtag.ppc.gdbServerTelnetPortNumber" value="51794"/>
@@ -90,7 +90,7 @@
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.preserveMemoryTo2" value="3"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.CYCLONE_IP" value=""/>
 <booleanAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.DO_RESET_DELAY" value="false"/>
-<intAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.INTERFACE_PORT" value="0"/>
+<intAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.INTERFACE_PORT" value="-1"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.INTERFACE_PORT_STRING" value="USB1"/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.NETWORK_CARD_IP" value=""/>
 <stringAttribute key="com.pemicro.debug.gdbjtag.ppc.sda.POWER_DOWN_DELAY" value=""/>
@@ -137,7 +137,7 @@
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageOffset" value=""/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.ipAddress" value="localhost"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.jtagDevice" value="GNU E200 PEMicro Interface"/>
-<booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.loadImage" value="false"/>
+<booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.loadImage" value="true"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.loadSymbols" value="true"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.pcRegister" value=""/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setPcRegister" value="false"/>
@@ -156,19 +156,19 @@
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="0"/>
 <stringAttribute key="org.eclipse.cdt.launch.COREFILE_PATH" value=""/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_REGISTER_GROUPS" value=""/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="bin\ppc\PRODUCTION\DEVKIT-MPC5748G-integrationLWIP.elf"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="integrationLWIP"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="bin\ppc\DEBUG\DEVKIT-MPC5748G-TCP.elf"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="TCP"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.freescale.s32ds.cross.gnu.e200.exe.debug.933051862.1588261809"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/integrationLWIP"/>
+<listEntry value="/TCP"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
-<listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
+<listEntry value="com.freescale.s32ds.e200.launchGroup.flash"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;&gt;&#13;&#10;&lt;gdbmemoryBlockExpression address=&quot;16322800&quot; label=&quot;0x00f910f0&quot;/&gt;&#13;&#10;&lt;/memoryBlockExpressionList&gt;&#13;&#10;"/>
+<stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;/&gt;&#13;&#10;"/>
 <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
 </launchConfiguration>

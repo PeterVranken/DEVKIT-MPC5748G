@@ -215,7 +215,7 @@ static inline uint8_t std_setBitInByteAtomic(unsigned int bit, uint8_t *address)
 {
     /* Assertion required: A bad argument value would modify the instruction if we get an
        overlap with the topmost four decoration bits. */
-    assert(bit < 32);
+    assert(bit < 8);
     
     /* Decoration for Load-and-Set-1 (LAS1), see RM 18.3.1.2.3. */
     const uint32_t decoration = 0x60000000 | (bit << 22);

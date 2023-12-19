@@ -40,7 +40,7 @@
  */
 
 /** System call index of function rtos_sendEvent(), offered by this module. */
-#define RTOS_SYSCALL_TRIGGER_EVENT                      3
+#define RTOS_SYSCALL_SEND_EVENT                     3
 
 
 /*
@@ -105,11 +105,11 @@ typedef struct rtos_eventProcDesc_t
     /** If an event processor is triggered by a timer event then this flag decides whether
         the task parameter is an arbitrary value (integer or pointer and meaningless to the
         RTOS) or a countable event. */
-    bool timerUsesTaskParam;
+    bool timerUsesCountableEvs;
 
     /** This is the value of argument \a evMaskOrTaskParam of rtos_osSendEvent() when an
         event is triggered by a timer event. The interpretation of the value as either task
-        parameter or countable event depends on field \a timerUsesTaskParam. */
+        parameter or countable event depends on field \a timerUsesCountableEvs. */
     uint32_t timerTaskTriggerParam;
 
     /** Countable events, which are accumulated when posted while the event is not idle,
@@ -134,9 +134,15 @@ typedef struct rtos_eventProcDesc_t
         it is read only. Only the scheduler code must update the field. */
     unsigned int noActivationLoss;
 
-    /** Support the scheduler: If this event has been processed then check event * \a
-        this->pNextScheduledEvent as next one. */
-    struct rtos_eventProcDesc_t *pNextScheduledEvent;
+    /** Support the scheduler: If this event has been processed then it may want to check
+        its successor of same priority. This field is the byte offset to that successor
+        element. */
+    int16_t offsNextEvProcSamePrio;
+    
+    /** Support the scheduler: If this event has been processed then it may want to check
+        its successor of next lower priority. This field is the byte offset to that
+        successor element. */
+    int16_t offsNextEvProcLowerPrio;
 
 } rtos_eventProcDesc_t;
 

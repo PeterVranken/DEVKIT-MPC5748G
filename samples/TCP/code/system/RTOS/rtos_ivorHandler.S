@@ -698,7 +698,7 @@ rtos_isr_endIfPreemptable:
     e_stw       r3, INTC_EOIR0@l(r4)        /* Write 0 to INTC_EOIR */
 
     /* The decision about task switches is taken in the C code implementation of the
-       scheduler, rtos_osProcessTriggeredEvents(). However, before we do the expensive
+       scheduler, rtos_osProcessTriggeredEvProcs(). However, before we do the expensive
        function call we evaluate an indicator.
          The pointer either points to an event to schedule or it is set to 0xffff_ffff. */
     mfspr       r5, SPR_G3_CDATA            /* r5: rtos_osGetInstancePtr() */
@@ -724,7 +724,7 @@ rtos_isr_endIfPreemptable:
        critical section, which we had started before signalling end of IRQ to the INTC. */
     se_subi     r4, 1               /* r4: UINT_MAX, i.e., indication of "pointer unset" */
     e_stw       r4, O_ID_NEXT_EV_TO_SCH(r5)     /* Clear pointer to triggered Event */
-    e_bl        rtos_osProcessTriggeredEvents   /* r3: Event to be scheduler first */
+    e_bl        rtos_osProcessTriggeredEvProcs  /* r3: Event to be scheduler first */
     
 iv4_noCallOfScheduler:
     /* Restore the process ID. A sync operation is not required since we are not switching
@@ -1101,11 +1101,11 @@ rut_endWithoutErr:
     wrteei      1
     
     /* The end of the user task is not necessarily the end of processing the causing event;
-       several tasks can be associated with a single event, which means that they are
-       consecutively run in one and the same OS context. We must not rely on the current
-       priority value as left by the ending task. We need to restore already before a
-       potential entry in a subsequent user task. Note, these operations are nearly always
-       useless. */
+       several tasks can be associated with a single event processor, which means that they
+       are consecutively run in one and the same OS context. We must not rely on the
+       current priority value as left by the ending task. We need to restore already before
+       a potential entry in a subsequent user task. Note, these operations are nearly
+       always useless. */
     se_lwz      r0, RUT_O_CPR(sp)       /* r0: Prio of user task start */
     mfspr       r5, SPR_G3_CDATA        /* r5: rtos_osGetInstancePtr() */
     e_lwz       r3, O_ID_CUR_PRIO(r5)   /* r3: Current prio value, to be checked */
@@ -1115,10 +1115,10 @@ rut_endWithoutErr:
 #endif
     se_beq      rut_noRestoreCPR        /* r0==r3: No restore of current prio required */
     e_stw       r0, O_ID_CUR_PRIO(r5)   /* Restore priority in global instance data */
-    .extern     rtos_osGetEventByPriority
-    e_bl        rtos_osGetEventByPriority/* r3: prio before restore -> pEvent with that prio */
-    wrteei      0             /* Call of rtos_osProcessTriggeredEvents requires MSR[EE] = 0 */
-    e_bl        rtos_osProcessTriggeredEvents /* Check for possible task switches */
+    .extern     rtos_osGetEvProcByPriority
+    e_bl        rtos_osGetEvProcByPriority/* r3: prio before restore->pEvProc with that prio */
+    wrteei      0             /* Call of rtos_osProcessTriggeredEvProcs requires MSR[EE] = 0 */
+    e_bl        rtos_osProcessTriggeredEvProcs  /* Check for possible task switches */
     wrteei      1
 rut_noRestoreCPR:
 

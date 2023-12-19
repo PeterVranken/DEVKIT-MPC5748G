@@ -54,7 +54,7 @@
 #
 
 # The name of the project is used for several build products.
-project := DEVKIT-MPC5748G-integrationLWIP
+project := DEVKIT-MPC5748G-TCP
 
 # Specify a blank separated list of directories holding source files. The directories are
 # searched recursively for C/C++ and assembler source files.
@@ -129,6 +129,8 @@ defineList := USE_NEWLIB \
               CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
               TURN_ON_CPU0 \
               LINK_IN_RAM
+
+$(info TODO Check if -DTURN_ON_CPU0 has any relevance)
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

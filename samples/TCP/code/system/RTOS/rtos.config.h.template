@@ -4,7 +4,7 @@
  * @file rtos.config.h
  * This file contains the application depended compile-time configuration of the RTOS.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -76,7 +76,7 @@
       @remark The maximum task priority is not core specific. It impacts the build-up of
     the kernel instance data set, which needs to be identical on all cores. You will need
     to specify the maximum of what is required on all cores. */
-#define RTOS_MAX_TASK_PRIORITY                  (RTOS_MAX_NO_EVENTS)
+#define RTOS_MAX_TASK_PRIORITY                  (RTOS_MAX_NO_EVENT_PROCESSORS)
 
 /** This the highest priority that user tasks can have, which user code can shape a
     critical section with. If a task has a higher priority then user code can't hinder it
@@ -100,7 +100,7 @@
     specific. It impacts the build-up of the kernel instance data set, which needs to be
     identical on all cores. You will need to specify the maximum of what is required on all
     cores. */
-#define RTOS_MAX_NO_EVENTS                      8
+#define RTOS_MAX_NO_EVENT_PROCESSORS            8
 
 /** The maximum, total number of user tasks, which can be activated by an event processor.
     The chosen number is a compile time configuration setting and there are no constraints
