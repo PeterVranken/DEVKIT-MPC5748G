@@ -126,6 +126,14 @@ is externally connected to a transceiver and a connector. Connect your CAN
 equipment to connector P5 of the DEVKIT-MPC5748G and try the CAN
 communication.
 
+=== TCP
+
+Sample application
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/TCP["TCP"]
+integrates the Internet Protocol stack https://savannah.nongnu.org/news/?group=lwip[lwIP 2.2^]
+and demonstrates how to provide a simple Web-page or how to use TCP/IP and
+UDP/IP for communication with other network nodes.
+
 All samples are self-contained. There are some common elements, which are
 (nearly) same in all samples, like startup code and makefile. It would be
 natural to put them in a shared directory and reuse them across the

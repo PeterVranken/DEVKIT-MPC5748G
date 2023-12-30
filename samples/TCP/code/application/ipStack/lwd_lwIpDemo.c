@@ -78,6 +78,7 @@
 #include "MPC5748G.h"
 #include "bsw_basicSoftware.h"
 #include "lwip_lwIPMainFunction.h"
+#include "clg_canLoggerOnTCP.h"
 
 /*
  * Defines
@@ -126,7 +127,20 @@ static const uint8_t RODATA(_myIPAddr)[4] = {192u, 168u, 1u, 200u};
 void lwd_lwIpDemo_init(void)
 {
     lwip_initIPStack();
-
+    
+    /* The initialization function of the CAN logger application. */
+    if(clg_initCanLoggerTcp())
+    {    
+        iprintf("CAN logger service successfully started. Try: telnet DEVKIT-MPC5748G"
+                " 1234\r\n"
+               );
+    }
+    else
+    {
+        iprintf("CAN logger service can't be started. A Telnet connection won't be"
+                " possible. Out of memory?\r\n"
+               );
+    }
 } /* lwd_lwIpDemo_init */
 
 
@@ -176,7 +190,19 @@ void lwd_lwIpDemo_main( unsigned int noNotificationsRx
 
     if(noNotificationsTimer > 0u)
     {
-        /* Handle TCP and other LwIP timers. */
-        lwip_onTimerTick();
+        /* The step function of the CAN logger application. */
+        clg_mainFunction();
+
+        static uint8_t SBSS_P1(cnt100ms_) = 0u;
+        if(cnt100ms_ == 0u)
+        {
+            /* Handle TCP and other LwIP timers. */
+            lwip_onTimerTick();
+
+            /* Reload timer. */
+            cnt100ms_ = 10u - 1u;
+        }
+        else
+            -- cnt100ms_;
     }
 } /* lwd_lwIpDemo_main */

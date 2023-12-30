@@ -229,9 +229,11 @@ int32_t bsw_taskEthernetInternal(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskPara
 {
     assert(PID == bsw_pidUser);
 
+#if 0
     if((taskParam & ~0x010101u) != 0u)
         iprintf("bsw_taskEthernetInternal: 0x%06lX\r\n", taskParam);
-        
+#endif
+
     /* We can send up to 255 without risking a task activation loss. Theoretically,
        this assertion is wrong but practically the condition almost is an invariant.
       (It's only meant a demonstrative software.) */

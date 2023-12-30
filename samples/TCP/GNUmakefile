@@ -127,10 +127,7 @@ incDirList := \
 defineList := USE_NEWLIB \
               CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
               CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
-              TURN_ON_CPU0 \
-              LINK_IN_RAM
-
-$(info TODO Check if -DTURN_ON_CPU0 has any relevance)
+#              LINK_IN_RAM
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

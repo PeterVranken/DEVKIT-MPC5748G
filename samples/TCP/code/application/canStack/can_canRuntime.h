@@ -64,9 +64,6 @@
     for this define. */
 #define CAN_SIZE_OF_HEAP_FOR_CAN_INTERFACE  8192 /* Byte */
 
-/** The index of the dispatcher that serves the 10ms APSW task with CAN related events. */
-#define CAN_IDX_DISPATCHER_10MS             0
-
 /** This value extends the enumeration of CAN related events. It means a bus-off
     notification. */ 
 #define CAN_EV_BUS_OFF                      (CDE_EV_FIRST_CUSTOM_EVENT+1)
@@ -84,10 +81,6 @@
 /*
  * Global data declarations
  */
-
-/** The system, which owns the dispatcher engines processing the CAN events in the 10ms and
-    in the 100ms APSW tasks. */
-extern ede_handleDispatcherSystem_t can_hDispatcherSystem;
 
 /** The total count of all ever received messages, including the lost one because of queue
     full events. */
@@ -112,5 +105,8 @@ extern volatile unsigned long can_noEvTxSendBufFull;
 
 /* Initialization of the CAN stack. */
 bool can_initCanStack(void);
+
+/** Step function of CAN runtime code. */
+void can_mainFunction_10ms(void);
 
 #endif  /* CAN_CANRUNTIME_INCLUDED */

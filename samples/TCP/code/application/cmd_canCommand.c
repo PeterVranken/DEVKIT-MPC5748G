@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
+ *   cmd_onReceiveMessage
  *   cmd_parseCanCommand
  * Local functions
  *   checkNoArgs
@@ -53,10 +54,6 @@
  * Defines
  */
  
-/** Size of listener: This is the maximum number of signals to listen to. The number should
-    be kept little in order to not flood the console with output about received signals. */
-#define MAX_NO_SIGNALS_TO_LISTEN_TO 10u
-
 /** Unfortunately, our C library doesn't support case insensitive string compare. Here's a
     preliminary work around. */
 #define stricmp(a,b)    (strcmp(a,b))
@@ -71,27 +68,13 @@
  * Local prototypes
  */
  
-/** Table entry of listener. It describes one signal to listen to. */
-typedef struct listenerSigDesc_t
-{
-    /** Signal by reference into the global table \a cdt_canSignalAry of all signals in the
-        CAN database. A value of UINT_MAX means table entry not in use. */
-    unsigned int idxSignal;
-
-    /** Time of adding signal to the listener. (The age of the signal is used to identify,
-        which one to drop in advantage of a newly added if the list is full.) */
-    unsigned int tiAdded;
-    
-} listenerSigDesc_t;
-
-
 /*
  * Data definitions
  */
  
 /** Listener: Table of signals to report reception events for. */
-static listenerSigDesc_t SDATA_P1(_listenerSignalAry)[MAX_NO_SIGNALS_TO_LISTEN_TO] =
-    { [0 ... ((MAX_NO_SIGNALS_TO_LISTEN_TO)-1)] =
+cmd_listenerSigDesc_t DATA_P1(cmd_listenerSignalAry)[CMD_MAX_NO_SIGNALS_TO_LISTEN_TO] =
+    { [0 ... ((CMD_MAX_NO_SIGNALS_TO_LISTEN_TO)-1)] =
         { .idxSignal = UINT_MAX,
           .tiAdded = 0,
         },
@@ -117,9 +100,9 @@ static unsigned int DATA_P1(_tiListenerAdd) = 0;
 void cmd_onReceiveMessage(unsigned int idxRxFr)
 {
     unsigned int idxSigInList;
-    for(idxSigInList=0; idxSigInList<sizeOfAry(_listenerSignalAry); ++idxSigInList)
+    for(idxSigInList=0; idxSigInList<sizeOfAry(cmd_listenerSignalAry); ++idxSigInList)
     {
-        const listenerSigDesc_t const *pSigInList = &_listenerSignalAry[idxSigInList];
+        const cmd_listenerSigDesc_t const *pSigInList = &cmd_listenerSignalAry[idxSigInList];
         if(pSigInList->idxSignal < sizeOfAry(cdt_canSignalAry))
         {
             /* Access the descriptor of the currently checked signal. */
@@ -486,7 +469,7 @@ static unsigned int parseCanSignalInDb( unsigned int argC
  *   @return
  * \a true If the signal is found, or \a false if it is not currently in the list.
  *   @param pIdxInList
- * If the signal is found, get its index in local table \a _listenerSignalAry of signals
+ * If the signal is found, get its index in local table \a cmd_listenerSignalAry of signals
  * to listen to. The value is placed in * \a pIdxInList.\n
  *   If the signal is not found, get the index in the same table, where to place a new
  * signal to listen to. This index points to an empty entry if still available or to the
@@ -506,14 +489,14 @@ static bool searchSignalToListenTo( unsigned int *pIdxInList
                , idxEldest = UINT_MAX;
     
     unsigned int idxSig;
-    for(idxSig=0; idxSig<sizeOfAry(_listenerSignalAry); ++idxSig)
+    for(idxSig=0; idxSig<sizeOfAry(cmd_listenerSignalAry); ++idxSig)
     {
-        const listenerSigDesc_t const *pSig = &_listenerSignalAry[idxSig];
+        const cmd_listenerSigDesc_t const *pSig = &cmd_listenerSignalAry[idxSig];
         if(pSig->idxSignal == idxSignalInGlobalTable)
         {
             /* Signal of interest is identified. */
             *pIdxInList = idxSig;
-            assert(*pIdxInList < sizeOfAry(_listenerSignalAry));
+            assert(*pIdxInList < sizeOfAry(cmd_listenerSignalAry));
             return true;
         }
         else if(pSig->idxSignal == UINT_MAX)
@@ -534,12 +517,12 @@ static bool searchSignalToListenTo( unsigned int *pIdxInList
     
     if(*pIdxInList == UINT_MAX)
     {
-        /* No empty space has been found in the (full) list, we return the indes to the
+        /* No empty space has been found in the (full) list, we return the index to the
            eldest entry, which should be overwritten. */
         *pIdxInList = idxEldest;
     }
     
-    assert(*pIdxInList < sizeOfAry(_listenerSignalAry));
+    assert(*pIdxInList < sizeOfAry(cmd_listenerSignalAry));
     return false;
     
 } /* End of searchSignalToListenTo */
@@ -586,13 +569,13 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
         }
         else
         {
-            assert(idxInList < sizeOfAry(_listenerSignalAry));
-            const unsigned int idxSignalInCanDbBefore = _listenerSignalAry[idxInList]
+            assert(idxInList < sizeOfAry(cmd_listenerSignalAry));
+            const unsigned int idxSignalInCanDbBefore = cmd_listenerSignalAry[idxInList]
                                                         .idxSignal;
-            _listenerSignalAry[idxInList] = (listenerSigDesc_t)      
-                                            { .idxSignal = idxSignalInCanDb,
-                                              .tiAdded = _tiListenerAdd++,
-                                            };
+            cmd_listenerSignalAry[idxInList] = (cmd_listenerSigDesc_t)      
+                                               { .idxSignal = idxSignalInCanDb,
+                                                 .tiAdded = _tiListenerAdd++,
+                                               };
             if(idxSignalInCanDbBefore < sizeOfAry(cdt_canSignalAry))
             {
                 const cdt_canSignal_t * const pSigBefore =
@@ -618,8 +601,8 @@ static void addSignalToListener(unsigned int idxSignalInCanDb, bool add)
         
         if(signalIsInList)
         {
-            assert(idxInList < sizeOfAry(_listenerSignalAry));
-            _listenerSignalAry[idxInList].idxSignal = UINT_MAX;
+            assert(idxInList < sizeOfAry(cmd_listenerSignalAry));
+            cmd_listenerSignalAry[idxInList].idxSignal = UINT_MAX;
             iprintf( "Signal %s (%s, %lu) has been removed from the listener\r\n"
                    , pSignal->name
                    , pMsg->name
@@ -732,8 +715,8 @@ bool cmd_parseCanCommand(unsigned int argC, const char *argV[])
         if(checkNoArgs(cmd, argC-1, 0, 0))
         {
             unsigned int idxInList;
-            for(idxInList=0; idxInList<sizeOfAry(_listenerSignalAry); ++idxInList)
-                _listenerSignalAry[idxInList].idxSignal = UINT_MAX;
+            for(idxInList=0; idxInList<sizeOfAry(cmd_listenerSignalAry); ++idxInList)
+                cmd_listenerSignalAry[idxInList].idxSignal = UINT_MAX;
 
             iprintf("All signals have been removed from the listener.\r\n");
         }                 

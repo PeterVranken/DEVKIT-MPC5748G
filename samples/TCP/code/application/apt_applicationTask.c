@@ -414,8 +414,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
     ++ _cntTask10ms;
     
     /* Call the step function of the CAN interface engine for this task. */
-    assert(can_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
-    ede_dispatcherMain(can_hDispatcherSystem, CAN_IDX_DISPATCHER_10MS);
+    can_mainFunction_10ms();
 
     /* Look for possible user input through serial interface. */
     static unsigned int DATA_P1(cntIdleLoops_) = 2800;

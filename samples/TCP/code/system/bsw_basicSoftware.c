@@ -433,7 +433,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
                     , /* priority */                 prioEv##name                           \
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE  \
                     ,                                (timerUsesCountableEvents)             \
-                    , /* timerTaskTriggerParam */    (timerUsesCountableEvents)? 0xFu: 0u   \
+                    , /* timerTaskTriggerParam */    (timerUsesCountableEvents)? 0x1u: 0u   \
                     )                                                                       \
            != rtos_err_noError                                                              \
           )                                                                                 \
@@ -467,7 +467,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     CREATE_REGULAR_EVENT(/* tiInMs */ 1000, /* tiFirstInMs */ 55)
     CREATE_EVENT( TriggerIPProtocolTask
                 , /* tiInMs */ 10u
-                , /* ti1stInMs */ 23u
+                , /* ti1stInMs */ 1u
                 , /* useCountableEvents */ true
                 )
 

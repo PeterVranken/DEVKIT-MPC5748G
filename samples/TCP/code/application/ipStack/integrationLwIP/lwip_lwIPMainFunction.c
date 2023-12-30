@@ -556,7 +556,7 @@ static void initNetIfsAndApps(void)
     
     assert(sts == ERR_OK);
     
-    /* Now inititalize the apps running on lwIP. */
+    /* Now initialize the apps running on lwIP. */
     initLwIPStandardApps();
 
 } /* initNetIfsAndApps */

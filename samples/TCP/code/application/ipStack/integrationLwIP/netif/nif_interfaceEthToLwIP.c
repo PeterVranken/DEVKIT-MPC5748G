@@ -342,11 +342,8 @@ static err_t sendPBufAsEthFrame(struct netif * const pNetIf, struct pbuf * const
  *   @param pPBuf
  * The custom pbuf to free by reference.
  */
-int tmp_noFreedCustomPBufs;
 static void onFreePBufEthRx(struct pbuf * const pPBuf)
 {
-    ++ tmp_noFreedCustomPBufs;
-
     /* Interface indexes always start at one per RFC 3493, section 4, but we use zero based
        indexes. */
     const uint8_t idxEthDev = pPBuf->if_idx - 1u;
@@ -356,7 +353,7 @@ static void onFreePBufEthRx(struct pbuf * const pPBuf)
 
     /* Indicate to the ETH driver that the payload area of the pbuf is again valid memory
        space for an Rx frame.
-         Note, we must not use pbuf->payload for identificatio of the released memory space.
+         Note, we must not use pbuf->payload for identification of the released memory space.
       lwIP changes this field during pbuf evaluation; it advances the pointer when parsing
       the protocol headers. */
     const struct ethRxCustomPBuf_t * const pCustomPBuf = (struct ethRxCustomPBuf_t*)pPBuf;

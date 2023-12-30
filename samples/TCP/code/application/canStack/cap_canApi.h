@@ -1194,7 +1194,18 @@ typedef enum cap_enumStsTransmission_t
     cap_stsTransm_errSequence = 8,
 
     /** The received frame doesn't have the expected size. No signals can be extracted. */
-    cap_stsTransm_errDLC = 16
+    cap_stsTransm_errDLC = 16,
+
+    /** The message has been received in this tick, where a tick is meant one interval of
+        calling the dispatcher engine of the CAN interface. Normally, the dispatcher will
+        be invoked synchronously with the application code, which would then mean that the
+        application step function sees this bit in and only in the very tick of a message
+        reception.\n
+          Note, this does not imply that the number of ticks, at which this bit is seen to
+        be set, is identical to the number of received CAN messages; there might still be
+        several receptions within one tick interval and the number of receptions might be
+        higher than the count of set bits. */
+    cap_stTransm_newDataAvailable = 32,
 
 } cap_enumStsTransmission_t;
 

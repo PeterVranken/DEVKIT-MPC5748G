@@ -19,7 +19,7 @@
  * values and message status in the global CAN API and sends due messages, filled with
  * information read from this API.
  *
- * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -36,6 +36,7 @@
  */
 /* Module interface
  *   can_initCanStack
+ *   can_mainFunction_10ms
  * Local functions
  *   onMsgReception
  *   onMsgInTimeout
@@ -70,6 +71,9 @@
 /*
  * Defines
  */
+
+/** The index of the dispatcher that serves the 10ms APSW task with CAN related events. */
+#define IDX_DISPATCHER_10MS     0
 
 /** This macro is a primitive way to define the timeout span for received messages. It maps
     the nominal maximum time span between two reception events onto the time span after
@@ -117,7 +121,8 @@ typedef struct hdlCtxDataOutMixed_t
 
 /** The system, which owns the dispatcher engines processing the CAN events in the 10ms and
     in the 100ms APSW tasks. */
-ede_handleDispatcherSystem_t SDATA_P1(can_hDispatcherSystem) = EDE_INVALID_DISPATCHER_SYSTEM_HANDLE;
+static ede_handleDispatcherSystem_t SDATA_P1(_hDispatcherSystem) =
+                                                        EDE_INVALID_DISPATCHER_SYSTEM_HANDLE;
 
 /** The handler for inbound messages requires local context data for regular and mixed mode
     messages. Here's an array of context data objects, one for each such message; the entries
@@ -221,8 +226,9 @@ static void onMsgReception(const ede_callbackContext_t *pContext)
         /* The reception event is only counted in case of valid data. Otherwise the global
            CAN API has not been updated with new signal values and no reception event must
            be notified. */
+        pRxFrDesc->pInfoTransmission->stsTransmission |= cap_stTransm_newDataAvailable;
         ++ pRxFrDesc->pInfoTransmission->noTransmittedMsgs;
-
+        
         /* This application makes use of a callback in order to be notified about any
            successful reception event. */
         cmd_onReceiveMessage(idxRxFr);
@@ -673,13 +679,13 @@ bool can_initCanStack(void)
     if(success)
     {
         success = ede_createDispatcherSystem
-                                ( &can_hDispatcherSystem
-                                , /* noEventDispatcherEngines */ CAN_IDX_DISPATCHER_10MS + 1u
+                                ( &_hDispatcherSystem
+                                , /* noEventDispatcherEngines */ IDX_DISPATCHER_10MS + 1u
                                 , /* maxNoEventSourcesExt */ CST_NO_CAN_MSGS_RECEIVED
                                 , /* maxNoEventSourcesInt */ CST_NO_CAN_MSGS_SENT
                                 , &memoryPool
                                 );
-        assert(!success ||  can_hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
+        assert(!success ||  _hDispatcherSystem != EDE_INVALID_DISPATCHER_SYSTEM_HANDLE);
     }
 
     /* Get the receiver port, which our dispatcher engine will connect to, from the BSW. */
@@ -709,8 +715,8 @@ bool can_initCanStack(void)
     }
     if(success)
     {
-        success = ede_createDispatcher( can_hDispatcherSystem
-                                      , /* idxDispatcher */ CAN_IDX_DISPATCHER_10MS
+        success = ede_createDispatcher( _hDispatcherSystem
+                                      , /* idxDispatcher */ IDX_DISPATCHER_10MS
                                       , /* tiTick */ 10 /* ms */
                                       , /* portAry */ &portDispatcher
                                       , /* noPorts */ 1u
@@ -776,8 +782,8 @@ bool can_initCanStack(void)
             unsigned int idxEde ATTRIB_DBG_ONLY;
             const ede_kindOfEvent_t kindOfEvent = pRxFrDesc->idxCanBus;
             idxEde = ede_registerExternalEventSource
-                                ( can_hDispatcherSystem
-                                , CAN_IDX_DISPATCHER_10MS
+                                ( _hDispatcherSystem
+                                , IDX_DISPATCHER_10MS
                                 , kindOfEvent
                                 , /* senderHandleEvent */ hOsMsg
                                 , /* callback */ onInitReceivedMsgs
@@ -826,8 +832,8 @@ bool can_initCanStack(void)
         {
             unsigned int idxEde ATTRIB_DBG_ONLY;
             idxEde = ede_registerInternalEventSource
-                                ( can_hDispatcherSystem
-                                , CAN_IDX_DISPATCHER_10MS
+                                ( _hDispatcherSystem
+                                , IDX_DISPATCHER_10MS
                                 , /* callback */ onInitSendMsgs
                                 , /* refEventSourceData */ (uintptr_t)hOsMsg
                                 );
@@ -838,3 +844,31 @@ bool can_initCanStack(void)
     return success;
 
 } /* End of can_initCanStack */
+
+
+/**
+ * Step function of the CAN interface. The dispatcher engine of the CAN interface is
+ * clocked and, afterwards, the decoded and pre-processed CAN information can be consumed
+ * by the APSW. Vice versa, the APSW provided functional results are encoded and timely
+ * sent by the engine. All data access can be done easy and directly since no race
+ * conditions occur.
+ */
+void can_mainFunction_10ms(void)
+{
+    /* Unassert all "new data available bits" prior to checking for fresh messages arriving
+       in this tick - which will then re-assert the bit for actually received messages.
+         Note, unasserting the bits here instead of from the message related callbacks is a
+       contradiction with the normal coding paradigm of the CAN stack. We still do this as
+       it is significantly cheaper to do it here; we mainly save the RAM for the otherwise
+       required timer objects. */
+    for(unsigned int idxMsgRx=0u; idxMsgRx<sizeOfAry(cdt_canRxMsgAry); ++idxMsgRx)
+    {
+        const cdt_canMessage_t * const pMsgDesc = &cdt_canRxMsgAry[idxMsgRx];
+        cap_infoTransmission_t * const pInfoTrns = pMsgDesc->pInfoTransmission;
+        pInfoTrns->stsTransmission &= ~cap_stTransm_newDataAvailable;
+    }
+
+    /* Call the step function of the CAN interface engine for this task. */
+    ede_dispatcherMain(_hDispatcherSystem, IDX_DISPATCHER_10MS);
+
+} /* can_mainFunction_10ms */

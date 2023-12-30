@@ -31,16 +31,34 @@
  * Defines
  */
 
+/** Size of listener: This is the maximum number of signals to listen to. The number should
+    be kept little in order to not flood the console with output about received signals. */
+#define CMD_MAX_NO_SIGNALS_TO_LISTEN_TO 10u
+
 
 /*
  * Global type definitions
  */
 
+/** Table entry of listener. It describes one signal to listen to. */
+typedef struct cmd_listenerSigDesc_t
+{
+    /** Signal by reference into the global table \a cdt_canSignalAry of all signals in the
+        CAN database. A value of UINT_MAX means table entry not in use. */
+    unsigned int idxSignal;
+
+    /** Time of adding signal to the listener. (The age of the signal is used to identify,
+        which one to drop in advantage of a newly added if the list is full.) */
+    unsigned int tiAdded;
+    
+} cmd_listenerSigDesc_t;
 
 /*
  * Global data declarations
  */
 
+/** Listener: Table of signals to report reception events for. */
+extern cmd_listenerSigDesc_t cmd_listenerSignalAry[CMD_MAX_NO_SIGNALS_TO_LISTEN_TO];
 
 /*
  * Global prototypes
