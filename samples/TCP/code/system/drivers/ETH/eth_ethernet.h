@@ -23,6 +23,12 @@
  * Defines
  */
 
+/** The driver enables only device ENET0, which is wired to the Ethernet plug on the
+    DEVKIT-MPC5748G. The MAC address of Ethernet device ENET0 is set during driver
+    initialization. The value to define is the initializer expression for an array of six
+    integers. */
+#define ETH_ENET0_MAC_ADDR          {0x12,0x34,0x56,0x78,0x9A,0xBC}
+
 /** The driver uses only one of the three rings of buffer descriptors, which are available
     for the MPC5748G. This is the zero based index of the ring in use.
       @remark This item should be zero. Any other value requires careful code review; the

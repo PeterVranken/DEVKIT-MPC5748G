@@ -12,7 +12,7 @@
  * @note References "RM48" (reference manual) in this module refer to "MPC5748G Reference
  * Manual", document number: MPC5748GRM, Rev. 7.1, 01/2019.
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -56,7 +56,7 @@
 
 #include "typ_types.h"
 #include "rtos.h"
-#include "bsw_basicSoftware.h" /// @todo Check if this header is allowed for I/O drivers
+#include "bsw_basicSoftware.h"
 #include "enet_driver.h"
 #include "enet_irq.h"
 #include "siu_siuPortDriver.h"
@@ -84,10 +84,6 @@
 /*
  * Data definitions
  */
-
-/** The MAC address of the Ethernet device (ENET0), which is connected to the Ethernet plug
-    on the DEVKIT-MPC5748G. */
-static const uint8_t RODATA(_enet0MacAddr)[6] = {0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
 
 /** Runtime data of the driver for device ENET0. */
 static enet_state_t BSS_OS(_enet0DriverRT);
@@ -492,8 +488,6 @@ void eth_scSmplHdlr_releaseRxFramePayloadBuffer( uint32_t pidOfCallingTask
  * The process ID of the calling task. This system call is available only to the QM
  * process, \a bsw_pidUser. An exception is raised if another process try to make the system
  * call.
- *   @param ppRingBufferElement
- * @todo Should become a handle.
  *   @param idxEthDev
  * The zero based index of the MAC, used for the communication. The MPC5748G has two MACs
  * but the specified index needs to address to a configured device. Otherwise, an exception
@@ -537,7 +531,7 @@ uintptr_t eth_scSmplHdlr_sendFrame( uint32_t pidOfCallingTask
            
         /// @todo Design error in driver API. Dedicated buffer descriptors are required for
         // read and write buffers. Otherwise no proper use of const is possible. We are
-        // force to cast the const away.
+        // forced to cast the const away.
         const enet_buffer_t frameDesc = { .data = (uint8_t*)payloadData,
                                           .length = sizeOfPayloadData,
                                         };
@@ -725,10 +719,11 @@ void eth_osInitEthernetDriver(void (*isrRxFrame)(uint32_t), void (*isrTxBuffer)(
     assert(enet0DriverCfg.miiMode == ENET_RMII_MODE);
 
     /* Initialize driver for one particular ENET instance. */
+    const uint8_t macAddr[6] = ETH_ENET0_MAC_ADDR;
     ENET_DRV_Init( /* idxEnetInstance */ 0u
                  , &_enet0DriverRT
                  , &enet0DriverCfg
                  , enet0BuffCfgAry
-                 , _enet0MacAddr
+                 , macAddr
                  );
 } /* eth_osInitEthernetDriver */

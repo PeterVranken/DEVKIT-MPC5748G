@@ -4,7 +4,7 @@
  * @file nif_interfaceEthToLwIP.h
  * Definition of global interface of module nif_interfaceEthToLwIP.c
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -25,6 +25,7 @@
  */
 
 #include "typ_types.h"
+#include "eth_ethernet.h"
 #include "lwip/err.h"
 #include "lwip/netif.h"
 
@@ -34,15 +35,18 @@
 
 /** The name of the board. This name is broadcasted to other network nodes with specific IP
     protocols (TBC). */
-#define NIF_ETHERNET_HOST_NAME      "DEVKIT-MPC5748G"
+#define NIF_ETHERNET_HOST_NAME              "DEVKIT-MPC5748G"
 
 /** The MAC address if Ethernet device ENET0 is in use. The value to define is the
-    initializer expression for an array of six integers. */
-#define NIF_MAC_ADDR_ENET0          {0x22,0x33,0x44,0x55,0x66,0x77}
+    initializer expression for an array of six integers.\n
+      Note, we refer to a macro publish by the underlaying Ethernet driver: The driver has
+    set the filter for the MAC address of frames to receive and lwIP needs to use the same
+    MAC address, e.g., for name or IP address resolution. */
+#define NIF_MAC_ADDR_ENET0                  ETH_ENET0_MAC_ADDR
 
 /** The MAC address if Ethernet device ENET1 is in use. The value to define is the
     initializer expression for an array of six integers. */
-#define NIF_MAC_ADDR_ENET1          {0x22,0x33,0x44,0x55,0x66,0x78}
+#define NIF_MAC_ADDR_ENET1                  {0x11,0x22,0x33,0x44,0x55,0x66}
 
 /* IP addresses, etc., for Ethernet interface ENET0. */
 #define NIF_NET_IF_HAS_DHCP_ENET0           false

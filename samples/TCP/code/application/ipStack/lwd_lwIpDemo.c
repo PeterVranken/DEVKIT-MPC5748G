@@ -1,16 +1,16 @@
 /**
  * @file lwd_lwIpDemo.c
  * This file contains some demo code for the use of lwIP. It initializes some of the lwIP
- * standard applications, so the evaluation board DEVKIT_MPC5748G will respond to some IP
+ * standard applications and the evaluation board DEVKIT_MPC5748G will respond to some IP
  * requests from the Windows machine, it is connected to via Ethernet:\n
- *   To run the application from a Windows machine, open a serial connection to the board, 115.2 kBd, 8 Bit, 1
- * stop bit, and connect the board via Ethernet.\n
+ * To run the application from a Windows machine, open a serial connection to the board,
+ * 115.2 kBd, 8 Bit, 1 * stop bit, and connect the board via Ethernet.\n
  *   Normally, the Windows applications can address to the board by name or by IP address.
- * This requires some IP servives like ARP or MDNS, which need to be enabled in the lwIP
+ * This requires some IP services like ARP or MDNS, which need to be enabled in the lwIP
  * demo. If this is not the case then an explicit binding of the board's IP address to its
  * MAC address at the Windows side can help. In a Windows shell window, to create this
  * binding, type the preparatory commands:\n
- *   netsh interface ipv4 add neighbors "Ethernet" 192.168.1.200 22-33-44-55-66-77\n
+ *   netsh interface ipv4 add neighbors "Ethernet" 192.168.1.200 12-34-56-78-9A-BC\n
  *   netsh interface ipv4 show neighbors interface="Ethernet"\n
  *   These commands bind the IP address of the evaluation board DEVKIT_MPC5748G to its MAC
  * address. From now on, IP connections opened from the Windows machine to node
@@ -40,7 +40,7 @@
  * to fetch the HTML code of the "web page". You can also use this address from an Internet
  * browser.
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -106,10 +106,6 @@
 /*
  * Data definitions
  */
-
-/** It is assumed that the board is known to the host at IP address 192.168.1.200. The
-    inbound ping request is answered using this address as source address. */
-static const uint8_t RODATA(_myIPAddr)[4] = {192u, 168u, 1u, 200u};
 
 
 /*

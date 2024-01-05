@@ -122,10 +122,6 @@ _Static_assert( GET_COUNT_OF_EV_RX_ETH_FRAME(EV_RX_ETH_FRAME) == 0xFFu
  * Data definitions
  */
 
-/** It is assumed that the board is known to the host at IP address 192.168.1.200. The
-    inbound ping request is answered using this address as source address. */
-static const uint8_t RODATA(_myIPAddr)[4] = {192u, 168u, 1u, 200u};
-
 /** A status counter. Just for progress feedback. Total number of Eth frame Rx IRSs so far. */
 volatile unsigned int SBSS_OS(bsw_noRxNotifications) = 0u;
 
@@ -292,7 +288,8 @@ int32_t bsw_taskEthernetInternal(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskPara
     static uint32_t SDATA_P1(totalNoNotificationsTx_) = 0u;
     totalNoNotificationsRx_ += noNotificationsRx;
     totalNoNotificationsTx_ += noNotificationsTx;
-    const uint32_t deltaNoEv = (bsw_noRxNotifications + bsw_noTxNotifications)
+    const uint32_t deltaNoEv ATTRIB_DBG_ONLY = 
+                               (bsw_noRxNotifications + bsw_noTxNotifications)
                                - (totalNoNotificationsRx_ + totalNoNotificationsTx_);
     assert(deltaNoEv < 10u);
 

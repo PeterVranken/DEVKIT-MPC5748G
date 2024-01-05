@@ -3,7 +3,7 @@
  * Interface between Ethernet driver and lwIP, according to the outline given at
  * https://www.nongnu.org/lwip/2_0_x/group__lwip__nosys.html (visited Sep 24, 2023).
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -295,11 +295,6 @@ static err_t sendPBufAsEthFrame(struct netif * const pNetIf, struct pbuf * const
         stsEthTx = sendUnchainedPBufAsEthFrame(pNetIf, pPBuf);
     else
     {
-        /* We place an assertion to identify the very rare situations, where we expect to
-           get a chained pbuf. Just meant for development. */
-        #warning Remove intendedly wrong assertion after use: To detect chained Tx pbufs
-        assert(false);
-
         /* Increment the reference count of the pbuf: If coalescing takes place and
            succeeds then that function would decrement the pbufs' ref counter, while this
            function must not change it. */
