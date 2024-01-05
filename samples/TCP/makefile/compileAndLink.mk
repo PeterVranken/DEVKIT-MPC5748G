@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -188,9 +188,9 @@ cFlags = $(targetFlags)                                                         
          -fno-common -fno-exceptions -ffunction-sections -fdata-sections                    \
          -fshort-enums -fdiagnostics-show-option -finline-functions -fmessage-length=0      \
          -fzero-initialized-in-bss -fno-tree-loop-optimize                                  \
-         -Wall -Wno-main -Wno-old-style-declaration -Wextra -Wstrict-overflow=4             \
+         -Wall -Wno-main -Wno-old-style-declaration -Wextra                                 \
          -Wmissing-declarations -Wno-parentheses -Wdiv-by-zero -Wcast-align -Wformat        \
-         -Wformat-security -Wignored-qualifiers -Wsign-conversion -Wsign-compare            \
+         -Wformat-security -Wignored-qualifiers -Wsign-compare                              \
          -Werror=missing-declarations -Werror=implicit-function-declaration                 \
          -Wno-nested-externs -Werror=int-to-pointer-cast -Werror=pointer-sign               \
          -Werror=pointer-to-int-cast -Werror=return-local-addr -Werror=missing-prototypes   \
@@ -198,6 +198,11 @@ cFlags = $(targetFlags)                                                         
          $(cClibSpec) -MMD -std=gnu11                                                       \
          $(foreach path,$(call noTrailingSlash,$(APP) $(incDirList) $(srcDirInUseList)),-I$(path))\
          $(cDefines) $(foreach def,$(defineList),-D$(def))
+
+# lwIP is inaccurate in using signed and unsigned integers. We need to enable the warning
+# on improper use only for file not belonging to the lwIP package.
+cFlags += $(if $(findstring lwip-STABLE-,$@),,-Wsign-conversion -Wstrict-overflow=4)
+
 ifeq ($(SAVE_TMP),1)
     # Debugging the build: Put preprocessed C file and assembler listing in the output
     # directory
