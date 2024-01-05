@@ -320,6 +320,8 @@ void siu_osConfigureOutput(unsigned int idxPort, const siu_portOutCfg_t *pPortCf
     assert(pPortCfg->enableOpenDrain_ODE ||  pPortCfg->pullUpDownCfg == siu_pullRes_none);
     
 #if defined(MCU_MPC5748G)
+    /* RM48 15.2.11, pp.390ff, Multiplexed Signal Configuration Register: Route output of
+       wanted device to MCU pin and set some properties. */
     SIUL2->MSCR[idxPort] =
         SIUL2_MSCR_SSS(pPortCfg->idxPortSource_SSS) /* Source signal of port for output */
         | SIUL2_MSCR_SRC(pPortCfg->maxSlewRate_SRC) /* 0..3: Slew rate */

@@ -247,7 +247,7 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
  */
 static void configSIULForUseWithDEVKIT_MPC5748G(void)
 {
-    /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 388ff: Route Tx output of
+    /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 390ff: Route Tx output of
        device CAN_0 to MCU pin PB0, which is connected to the Tx input of the external
        transceiver chip on the board DEVKIT-MPC5748G. */
 #if CDR_ENABLE_USE_OF_CAN_0 == 1

@@ -129,27 +129,8 @@ _Static_assert( sizeof(enet_buffer_descriptor_t) == 32u
  */
 static void configSIULForUseWithDEVKIT_MPC5748G(void)
 {
-    /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 388ff: Route Tx output of
-       device CAN_0 to MCU pin PB0, which is connected to the Tx input of the external
-       transceiver chip on the board DEVKIT-MPC5748G. */
-#if CDR_ENABLE_USE_OF_CAN_0 == 1
-    const unsigned int idxSIUL_PTx = 16u
-                     , idxSIUL_PTx_SSS = 1u
-                     , idxSIUL_PRx = 17u
-                     , idxIMCR_PRx = 188u
-                     , idxIMCR_selVal = 2u;
-#elif CDR_ENABLE_USE_OF_CAN_2 == 1
-    /* Logical CAN signals Tx and Rx are on PE8 and PE9, accessible at (J2,6) and (J2,8),
-       but no CAN transceiver is connected, no true communication with a bus is possible. */
-    const unsigned int idxSIUL_PTx = 72u
-                     , idxSIUL_PTx_SSS = 1u
-                     , idxSIUL_PRx = 73u
-                     , idxIMCR_PRx = 190u
-                     , idxIMCR_selVal = 1u;
-#endif
-
     /* The configuration of all outputs is identical. We just have to select the function
-       Individually. */
+       individually. */
     siu_portOutCfg_t outputCfg =
         {
           .idxPortSource_SSS = 0u, /* Driving signal is set below */
@@ -168,18 +149,12 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
         outputCfg.idxPortSource_SSS = (SSS);                            \
         siu_osConfigureOutput((idxSIUL), &outputCfg);                   \
     }
-    #warning Check pin configuration
-    /// @todo PG12 and PG13 are likely not used, not connected to the PHYS (adopted from NXP sample)
-    //CONFIG_PORT(/*idxSIUL*/ 108 /*PG12*/, /*SSS*/ 4u /*MII_0_TXD[2]*/)
-    //CONFIG_PORT(/*idxSIUL*/ 109 /*PG13*/, /*SSS*/ 4u /*MII_0_TXD[3]*/)
-
     CONFIG_PORT(/*idxSIUL*/ 112 /*PH0 */, /*SSS*/ 3u /*MII_RMII_0_TXD[1]*/)
     CONFIG_PORT(/*idxSIUL*/ 113 /*PH1 */, /*SSS*/ 4u /*MII_RMII_0_TXD[0]*/)
     CONFIG_PORT(/*idxSIUL*/ 114 /*PH2 */, /*SSS*/ 4u /*MII_RMII_0_TX_EN*/)
-    CONFIG_PORT(/*idxSIUL*/ 115 /*PH3 */, /*SSS*/ 3u /*MII_0_TX_ER*/)
     #undef CONFIG_PORT
 
-    /* The configuration of all outputs is identical. We just have to set the input
+    /* The configuration of all inputs is identical. We just have to set the input
        multiplexing individually. */
     siu_portInCfg_t inputCfg =
         { .enableHysteresis_HYS = false,
@@ -202,7 +177,7 @@ static void configSIULForUseWithDEVKIT_MPC5748G(void)
     CONFIG_PORT(/*idxSIUL*/ 8  /*PA8 */, /*idxMpx*/ 452u, /*sel*/ 1u /*MII_RMII_0_RXD[1]*/)
     CONFIG_PORT(/*idxSIUL*/ 11 /*PA11*/, /*idxMpx*/ 455u, /*sel*/ 1u /*MII_RMII_0_RX_ER*/)
     CONFIG_PORT(/*idxSIUL*/ 95 /*PF15*/, /*idxMpx*/ 457u, /*sel*/ 1u /*MII_RMII_0_RX_DV*/)
-    CONFIG_PORT(/*idxSIUL*/ 97 /*PG1 */, /*idxMpx*/ 449u, /*sel*/ 1u /*MII_RMII_0_TX_CLK*/)
+    CONFIG_PORT(/*idxSIUL*/ 97 /*PG1 */, /*idxMpx*/ 449u, /*sel*/ 1u /*MII_RMII_0_RX_CLK*/)
     #undef CONFIG_PORT
 
 } /* configSIULForUseWithDEVKIT_MPC5748G */

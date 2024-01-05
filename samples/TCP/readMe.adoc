@@ -16,7 +16,7 @@
 This DEVKIT-MPC5748G sample integrates the most popular Open Source
 Internet Protocol stack, which is
 https://savannah.nongnu.org/news/?group=lwip[lwIP^]. lwIP offers TCP and
-UDP and some sub-ordinated protocols, e.g., for name resolution. lwIP
+UDP and some sub-ordinated protocols, e.g., MDNS for node name resolution. lwIP
 itself doesn't contain the Ethernet device driver layer. This sample
 integrates an Ethernet driver from the
 https://www.nxp.com/design/design-center/software/development-software/s32-sdk/s32-software-development-kit-for-power-architecture:S32SDK-POWER-ARCHITECTURE[NXP Software Development Kit for Power Architecture^].
@@ -24,16 +24,17 @@ Here are some features of the sample:
 
 * Integration of lwIP release 2.2 (Sep 25, 2023).
 * Integration of Ethernet driver from NXP SDK 3.0.1.
-* The lwIP standard IP applications ping is enabled
+* The lwIP standard IP application ping is enabled.
 * IP protocol MDNS is enabled and allows addressing to the board by name
-  rather than be IP address only.
-* TFTP is enabled and allow data upload from the board. Only a minimal
+  as well as by IP address.
+* TFTP is enabled and allows data upload from the board. Only a minimal
   code extension would be required to demonstrate data download, too.
-* HTTP protocol is enabled. The board provides a minimalistic "Web-page".
+* HTTP protocol is enabled. The board provides a minimalistic Web-page.
 * An own, project specific IP application demonstrates how to use TCP for
   the proprietary communication needed by your own application.
 * The pin configuration has been made for board DEVKIT-MPC5748G; just
-  connect your PC and the board by LAN wire and try the software.
+  connect your PC and the evaluation board by LAN wire and try the
+  software.
 
 lwIP is distributed as source code and it was possible to use the original
 source code without any modification. This will make a later upgrade to a
@@ -48,7 +49,7 @@ of safe-RTOS. Moreover, a minor extension of its state
 model was required for safe buffer management. Please note, NXP software
 is freely available and may be used on NXP MCUs without restriction but
 it's not Open Source. The license terms are found as
-`code/system/drivers/ETH/RTM/license.txt`.
+https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/TCP/code/system/drivers/ETH/RTM/license.txt[`code/system/drivers/ETH/RTM/license.txt`^].
 
 == Behavior of the sample application
 
@@ -58,19 +59,20 @@ demonstrate the capabilities of TCP based communication the behavior of
 the elder SW has been adopted by the new one. The elder sample offered to
 add selected CAN signals to its listener and the values of these signals
 become reported when the containing message is received. Reporting had
-been done in the console window. Now, the same information is distributed
-by TCP. A Telnet client running on the PC can make a connection to the
-evaluation board and will receive all the information about received CAN
-signals. Several Telnet clients can try to connect simultaneously. (The
-maximum number allowed is a compile time constant.)
+been done in the serial terminal window. Now, the same information is
+distributed by TCP. A Telnet client running on the PC can make a
+connection to the evaluation board and will receive all the information
+about received CAN signals. Several Telnet clients can try to connect
+simultaneously. (The maximum number allowed is a compile time constant.)
 
 Besides this application specific demonstration of TCP/IP communication,
 there are some lwIP standard applications, which are enabled, too. Out of
-the box, the board will respond to ping requests, it can be addressed by
-name ("DEVKIT-MPC5748G") as well as by IP address (192.168.1.200) because
-of the MDNS service, data can be fetched using the Trivial FTP protocol
-and last but not least, the board can be addressed with an HTTP request
-from a normal browser window. Unfortunately, HTTPS is not supported.
+the box, the board will respond to ping requests (ICMP protocol is
+enabled), it can be addressed by name ("DEVKIT-MPC5748G") as well as by IP
+address (192.168.1.200) because of the MDNS service, data can be fetched
+using the Trivial FTP protocol and last but not least, the board can be
+addressed with an HTTP request from a normal browser window.
+Unfortunately, HTTPS is not supported.
 
 Control of the sample application and status feedback are both done via
 the serial interface, see below.
@@ -137,11 +139,11 @@ can be calculated.
 
 == Safety features
 
-The integration of lwIP demonstrates that it is possible to run nearly the
+The integration of lwIP demonstrates how it is possible to run nearly the
 entire IP stack inside the protected user context. Only the (quite lean)
 Ethernet driver is running in the kernel context and would need to
 undergo all safety validation. All of the lwIP implementation and the TCP
-and UDP application on top of lwIP are running in the QM process and can
+and UDP applications on top of lwIP are running in the QM process and can
 do no harm to the operating system or the safety process.
 
 == How to run the integrated IP application
