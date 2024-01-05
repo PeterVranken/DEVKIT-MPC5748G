@@ -166,6 +166,48 @@ application:
   application wants to setup a TCP connection for bi-directional data
   exchange with another node.
 
+== How to modify IP and MAC address
+
+IP and MAC address are both software defined at compile-time. The chosen
+values are:
+
+[[tabIPAndMACAddress]]
+.IP and MAC address of DEVKIT-MPC5748G
+[cols="30,40", width="50%"]
+|=======
+|IP address  |192.168.1.200
+|MAC address |12-34-56-78-9A-BC
+|=======
+
+The MAC address is set during the initialization of the Ethernet driver,
+see `eth_osInitEthernetDriver()`. The address is taken from preprocessor
+macro `ETH_ENET0_MAC_ADDR`, defined in file
+`code/system/drivers/ETH/eth_ethernet.h`, ll.29ff:
+
+[source,C++]
+---------------------------
+/** The driver enables only device ENET0, which is wired to the Ethernet plug on the
+    DEVKIT-MPC5748G. The MAC address of Ethernet device ENET0 is set during driver
+    initialization. The value to define is the initializer expression for an array of six
+    integers. */
+#define ETH_ENET0_MAC_ADDR          {0x12,0x34,0x56,0x78,0x9A,0xBC}
+---------------------------
+
+The IP address is defined as preprocessor macro `NIF_NET_IF_IP_ADDR_ENET0`
+in file
+`code/application/ipStack/integrationLwIP/netif/nif_interfaceEthToLwIP.h`,
+ll.51ff:
+
+[source,C++]
+---------------------------
+/* IP addresses, etc., for Ethernet interface ENET0. */
+#define NIF_NET_IF_HAS_DHCP_ENET0           false
+#define NIF_NET_IF_HAS_AUTO_IP_ENET0        false
+#define NIF_NET_IF_IP_ADDR_ENET0            {192,168,1,200}
+#define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,255,0}
+#define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {192,168,1,1}
+---------------------------
+
 == Tools
 
 === Environment

@@ -237,7 +237,7 @@ typedef struct eth_bufferDesc_t enet_buffer_t;
 
 #if (defined(CORE_BIG_ENDIAN))
 /*!
- * @brief Send/Receive internal buffer descriptor
+ * @brief Send/Receive internal ring buffer descriptor
  * Implements : enet_buffer_descriptor_t_Class
  *   @note The typedef is also required for renaming. The internal name of the class is
  * not compliant with our environment and must not be published.
