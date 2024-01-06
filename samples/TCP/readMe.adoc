@@ -1,5 +1,5 @@
 = TCP/IP and UDP/IP communication with DEVKIT-MPC5748G
-:Author:            Peter Vranken 
+:Author:            Peter Vranken
 :Email:             mailto:Peter_Vranken@Yahoo.de
 :toc:               left
 :xrefstyle:         short
@@ -131,11 +131,163 @@ The CAN message PWM_out has signals to set frequency and duty cycle of the
 connected PWM channels and there is a Boolean to switch between CAN
 control and control via command line otherwise.
 
-The effect is strongest if the PWM output PA1, on extension port J3, pin 1 is
-connected to both PWM inputs, PA2 on J3, pin 3 and PA6 on J2, pin1. At PA2
-the frequency of the PWM is measured and at PA6 its duty, i.e., high time.
-If both inputs are fed with the same input then the duty cycle in percent
-can be calculated.
+The effect is strongest if the PWM output PA1, on extension port J3, pin 1
+is connected to both PWM inputs, PA2 on J3, pin 3 and PA6 on J2, pin1. At
+PA2 the frequency of the PWM is measured and at PA6 its duty, i.e., high
+time. If both inputs are fed with the same input then the duty cycle in
+percent can be calculated.
+
+=== How to run the integrated IP applications
+
+This is the configuration to run the IP applications, which are already
+integrated into sample application `TCP`:
+
+. Connect the DEVKIT-MPC5748G via USB with your PC.
+. Connect the DEVKIT-MPC5748G via LAN wire with your PC. Using a switch
+  in between is possible.
+. Connect the DEVKIT-MPC5748G via a CAN adapter with your PC.
+. On the PC, open a serial terminal program and connect to the
+  DEVKIT-MPC5748G (see above for details).
+. On the PC, open a shell window, e.g., PowerShell.
+. On the PC, open a Web browser.
+. On the PC, open a CAN tool, which allows displaying received CAN
+  messages and sending messages.
+. Most useful but not required: On the PC, open Open Source program
+  Wireshark and let it log the traffic on the Ethernet plug you connected
+  the DEVKIT-MPC5748G to.
+
+==== Pinging or Internet protocols ICMP and ARB
+
+In the shell window, type:
+
+  ping 192.168.1.200
+
+or, using the ARB protocol for name resolution:
+
+  ping DEVKIT-MPC5748G
+
+The console output should resemble:
+
+  Pinging 192.168.1.200 with 32 bytes of data:
+  Reply from 192.168.1.200: bytes=32 time<1ms TTL=128
+  Reply from 192.168.1.200: bytes=32 time=1ms TTL=128
+  Reply from 192.168.1.200: bytes=32 time<1ms TTL=128
+  Reply from 192.168.1.200: bytes=32 time<1ms TTL=128
+
+==== Trivial File Transfer Protocol
+
+The sample application integrates a file transfer protocol, which allows
+to download bulky data from and upload to the running application. 
+
+The application doesn't have a file system in the meaning of FAT or NTFS,
+but to the applied protocol TFTP, it doesn't matter, what actually a
+"file" is. It just hands the file name or path designation over to the
+application and transmits the data set it gets in response. Only the
+length of the file designation is limited by a compile-time configuration
+item (20 characters by default). Within this limit there's virtually no
+limitation in how to interpret the received file designation and what data
+to return in response to it. Or, vice versa, how to make use of the
+uploaded "file" contents.
+
+In the shell window, type:
+
+  tftp 192.168.1.200 GET /path/to/some/data someData.txt
+  
+or, using the ARB protocol for name resolution:
+
+  tftp DEVKIT-MPC5748G GET /path/to/some/data someData.txt
+
+The application demonstrates the use of TFTP by returning a "file", which
+consists of a number of repetitions of the name (or path) of the requested
+file. If the command succeeds, then a file `someData.txt` will be found in
+the current working directory, which contains the character string
+"/path/to/some/data" a couple of times. Looking into the sample code,
+source code file `code/application/ipStack/apps/tftp_example.c`,
+it'll be straight forward to replace this behavior with returning some
+true data depending on the requested file name.
+
+The application doesn't have sample code for the TFTP command PUT yet, but
+the source code structures to use this command for uploading data to the
+application are fully in place and can be used.
+
+==== HTTP
+
+The application integrates a minimalistic HTTP server, providing a small
+Web-page. In the address field of the Web browser, type:
+
+  http://192.168.1.200/get
+
+or, using the ARB protocol for name resolution:
+
+  http://devkit-mpc5748g/get
+  
+The Web-page should be displayed. The contents are no more than a greeting
+plus a bit of dynamic content, but could be made more useful and realistic
+by elaboration of the source code in file
+`code/application/ipStack/apps/http_demoHttpServer.c`.
+
+Please note, as an alternative, and maybe more suitable for testing, you
+may type this in the shell window:
+
+  curl http://192.168.1.136/get -o -
+  
+or:
+
+  curl http://DEVKIT-MPC5748G/get -o -
+  
+Sadly, HTTPS is not supported and it won't be easy to add this protocol.
+
+==== TCP server application
+
+A typical TCP server application is integrated. A client can connect to
+the DEVKIT-MPC5748G and receive information (or send commands or data).
+Our sample application sends the information as a stream of printable,
+formatted output so that the standard program telnet can be used for
+demonstration. In the shell window, type:
+
+  telnet 192.168.1.200 1234
+
+or, using the ARB protocol for name resolution:
+
+  telnet DEVKIT-MPC5748G 1234
+
+The port number, 1234, is a compile-time configuration item and can be
+modified in source file
+`code/application/ipStack/apps/clg_canLoggerOnTCP.c`. The TCP server
+exploits the code from the elder sample application `CAN`: One or more CAN
+signals can be registered for "listening". When the CAN message is
+received that contains this signal then a message is written indicating
+the received signal value(s). In the elder sample, this message was
+written to the serial terminal, now it is sent to the connected telnet
+client(s), too.
+
+Note, the set of signals, which can be selected for listening depends on
+the DBC file(s), which are compiled into the application. (See other
+sample application
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN[`CAN`^]
+for details.) In the serial terminal program, you may type (and send),
+e.g.:
+
+  listen PA1_J3_pin1_frequency
+  
+Use your CAN tool to regularly -- not too frequently -- send message
+`PWM_out`, CAN ID 1001, and vary the value of signal
+`PA1_J3_pin1_frequency`. Telnet should report the received values.
+
+More than one telnet connection can be opened simultaneously. The
+maximum number is limited and the limit is a compile-time configuration
+item.
+
+The code skeleton found in source file
+`code/application/ipStack/apps/clg_canLoggerOnTCP.c` can be the starting
+point for the development of your TCP server(s).footnote:[Any number of
+such servers can co-exist if they only use different port numbers.] Just
+replace the data writing part; most of the connection management and error
+handling will be re-usable.
+
+Data input is only hinted at. Our TCP server just evaluates the input
+Ctrl-C or Ctrl-D to gracefully terminate the connection.
+
 
 == Safety features
 
@@ -146,11 +298,13 @@ undergo all safety validation. All of the lwIP implementation and the TCP
 and UDP applications on top of lwIP are running in the QM process and can
 do no harm to the operating system or the safety process.
 
-== How to run the integrated IP application
+The downside is that IP communication is not easily available to the
+safety software. It is of course possible to use it with some end-to-end
+protection on top, which guarantees a sufficiently high likelihood of
+detecting communication failures. Regardless, if a safety relevant failure
+is detected by the safety software then it must in now way try to use IP
+communication to bring the system into a safe state.
 
-TODOC Briefly describe the IP applications and how to use them from the
-host PC.
-  
 == How to use lwIP for your own application
 
 Look at the integrated and operational IP applications and use their
@@ -217,7 +371,7 @@ ll.51ff:
 The makefiles and related scripts require a few settings of the
 environment in the host machine. In particular, the location of the GNU
 compiler installation needs to be known and the PATH variable needs to
-contain the paths to the required tools. 
+contain the paths to the required tools.
 
 For Windows users there is a shortcut to PowerShell in the root of this
 GitHub project, which opens the shell with the prepared environment.
@@ -275,7 +429,7 @@ installation and can be used independently from the Studio. The makefile
 is made generic and can be reused for production projects that want to
 make use of safe-RTOS. It supports a number of options (targets); get an
 overview by typing:
- 
+
     cd <projectRoot>/samples/CAN
     mingw32-make help
 
@@ -368,8 +522,8 @@ debugger (GDB) and to let it "load" the *.elf file. If the code is linked
 in flash ROM address space then this loading means writing to the flash.
 Consequently, a flash configuration in the Eclipse IDE is nearly identical
 to any ordinary debug configuration, just the option "Load executable" to
-load a file is checked. Ordinary debug configurations, i.e. for debugging,
-don't have this check mark set:
+load a file is checked. Ordinary debug configurations, i.e., for
+debugging, don't have this check mark set:
 
 [[figDebugConfigFlash]]
 .Eclipse debug configuration, which is used for flashing

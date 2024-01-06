@@ -200,7 +200,7 @@ static void version()
 {
     static const char RODATA(version)[] =
     "DEVKIT-MPC5748G - Integration of LWIP\r\n"
-    "Copyright (C) 2017-2023  Peter Vranken\r\n"
+    "Copyright (C) 2017-2024  Peter Vranken\r\n"
     "Version " VERSION
     #ifdef DEBUG
     " (Configuration: DEBUG"
