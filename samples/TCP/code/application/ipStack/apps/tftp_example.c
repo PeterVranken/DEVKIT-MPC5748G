@@ -158,6 +158,9 @@ static int
 tftp_write(void* handle, struct pbuf* p)
 {
 #if 1
+    LWIP_UNUSED_ARG(handle);
+    LWIP_UNUSED_ARG(p);
+    
     /// @todo Parse data p->len (and chain) as input command, to demonstrate usage of the
     /// tftp service for controlling the application. We could, e.g., modify the number of
     /// repetitions, NO_REPETITIONS_PER_GET, which currently is a compile-time constant.

@@ -397,7 +397,7 @@ static err_t onLwIPSegmentReceived( void *arg
             #define MSG "Connection is closed\n\r"
             if(write(pConn, MSG, sizeof MSG - 1u, /* isMsgConst */ true, /* flush */ true))
             {
-                const err_t rc = tcp_close(pPcb);
+                const err_t rc ATTRIB_DBG_ONLY = tcp_close(pPcb);
                 assert(rc == ERR_OK);
                 
                 /* We don't call the close function of our own management yet; lwIP will

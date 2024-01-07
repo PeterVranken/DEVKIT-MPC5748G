@@ -134,11 +134,11 @@ static err_t http_recv( void *arg ATTRIB_UNUSED
             iprintf("http_recv: Max sendable characters: %u\r\n", (unsigned)tcp_sndbuf(pcb));
             uint16_t noChars = sizeof(htmlPage0);
             assert(tcp_sndbuf(pcb) >= noChars);
-            err_t rc = tcp_write( pcb
-                                , htmlPage0
-                                , noChars
-                                , /*apiFlags*/ 0
-                                );
+            err_t rc ATTRIB_DBG_ONLY = tcp_write( pcb
+                                                , htmlPage0
+                                                , noChars
+                                                , /*apiFlags*/ 0
+                                                );
             assert(rc == ERR_OK);
             unsigned int noTotalChars = noChars;
 
@@ -189,7 +189,7 @@ static err_t http_idle(void *arg ATTRIB_UNUSED, struct tcp_pcb *pcb)
            );
 
     /* Close the connection. */
-    const err_t rc = tcp_close(pcb);
+    const err_t rc ATTRIB_DBG_ONLY = tcp_close(pcb);
     assert(rc == ERR_OK);
 
     return ERR_OK;
@@ -209,7 +209,7 @@ static err_t http_sent(void *arg ATTRIB_UNUSED, struct tcp_pcb *pcb, u16_t len)
            );
 
     /* Close the connection. */
-    const err_t rc = tcp_close(pcb);
+    const err_t rc ATTRIB_DBG_ONLY = tcp_close(pcb);
     assert(rc == ERR_OK);
 
     return ERR_OK;

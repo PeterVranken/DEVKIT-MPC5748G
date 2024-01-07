@@ -6,7 +6,7 @@
 // contain the unpacked signals. The Embedded Coder generated code will access the CAN in-
 // and output in this data oriented API.
 //
-// Copyright (C) 2015-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+// Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published by the
@@ -44,19 +44,30 @@ typedef enum <file.mnmApi>_enumStsTransmission_t
 
     /** The frame could not be sent, send buffer full. Only for outbound frames. */
     <file.mnmApi>_stsTransm_errSendBufferFull = 1,
-    
+
     /** The frame has not been received timely. */
     <file.mnmApi>_stsTransm_errTimeout = 2,
 
     /** The received frame has a data error; the checksum doesn't match. No signals will be
-        extracted. */ 
+        extracted. */
     <file.mnmApi>_stsTransm_errChecksum = 4,
 
     /** The sequence counter of the received frame indicates a lost frame. */
     <file.mnmApi>_stsTransm_errSequence = 8,
 
     /** The received frame doesn't have the expected size. No signals can be extracted. */
-    <file.mnmApi>_stsTransm_errDLC = 16
+    <file.mnmApi>_stsTransm_errDLC = 16,
+
+    /** The message has been received in this tick, where a tick is meant one interval of
+        calling the dispatcher engine of the CAN interface. Normally, the dispatcher will
+        be invoked synchronously with the application code, which would then mean that the
+        application step function sees this bit in and only in the very tick of a message
+        reception.\n
+          Note, this does not imply that the number of ticks, at which this bit is seen to
+        be set, is identical to the number of received CAN messages; there might still be
+        several receptions within one tick interval and the number of receptions might be
+        higher than the count of set bits. */
+    cap_stTransm_newDataAvailable = 32,
 
 } <file.mnmApi>_enumStsTransmission_t;
 
@@ -245,7 +256,7 @@ structFrameInitializer(frame) ::= <<
     <iterateSignalsOfFrame(frame,"all","all","signalInitializer")><\\>
 }
 >>
-        
+
 
 // The declaration of a single signal.
 //   The conditional optimization not to handle signals, which are not related to the

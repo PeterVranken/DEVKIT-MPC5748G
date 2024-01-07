@@ -134,7 +134,10 @@ static inline void ENET_WakeIRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrWakeup != NULL);
         g_enetState[instance]->isrWakeup();
         
-        /* Clear the wakeup interrupt event. */
+        /* Clear the wakeup interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = (uint32_t)ENET_WAKEUP_INTERRUPT;
     }
 }
@@ -170,7 +173,10 @@ static inline void ENET_ErrorIRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrErr != NULL);
         g_enetState[instance]->isrErr(maskedEIR);
         
-        /* Clear the error interrupt event. */
+        /* Clear the error interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 } /* ENET_ErrorIRQHandler */
@@ -195,7 +201,10 @@ static inline void ENET_TimerIRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrTimer != NULL);
         g_enetState[instance]->isrTimer();
 
-        /* Clear the timer interrupt event. */
+        /* Clear the timer interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = (uint32_t)ENET_EIR_TS_TIMER_MASK;
     }
 }
@@ -224,7 +233,10 @@ static inline void ENET_ReceiveIRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrRx != NULL);
         g_enetState[instance]->isrRx(maskedEIR);
 
-        /* Clear the receive interrupt event. */
+        /* Clear the receive interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. For our particular system, it is alright. Find a discussion in
+           ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 } /* ENET_ReceiveIRQHandler */
@@ -248,12 +260,23 @@ static inline void ENET_TransmitIRQHandler(uint8_t instance)
                                & base->EIR;
     if(maskedEIR != 0U)
     {
-#warning Check code, for Rx and Tx: Reset of IRQ bit prior to callback may be wrong
         /* Callback function. */
         DEV_ASSERT(g_enetState[instance]->isrTx != NULL);
         g_enetState[instance]->isrTx(maskedEIR);
 
-        /* Clear the transmit interrupt event. */
+        /* Clear the transmit interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. We could reset an IRQ, which is raised after the callback and which
+           would then not cause another invocation of the callback. In our particular
+           system, this is alright: The callback just triggers the task to handle the Tx
+           frame acknowledge and does do this for all meanwhile acknowledged buffers -- it
+           doesn't rely on the number of notifications it got by callback. The triggered
+           task has a priority lower than this ISR and will surely not execute before
+           resetting the IRQ bit. There won't be an IRQ, which is not followed by an
+           execution of this task.
+             In our particular system, clearing the IRQ after callback is even a tiny bit
+           of advantageous; if two frames are acknowledged shortly after one another it may
+           mean that we save the ISR execution for the second one. */
         base->EIR = maskedEIR;
 
 #ifdef ERRATA_E6358
@@ -316,7 +339,10 @@ static inline void ENET_ParserIRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrParser != NULL);
         g_enetState[instance]->isrParser(maskedEIR);
         
-        /* Clear the parser interrupt event. */
+        /* Clear the parser interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 }
@@ -347,7 +373,10 @@ static inline void ENET_Receive1IRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrRxRing1 != NULL);
         g_enetState[instance]->isrRxRing1(maskedEIR);
 
-        /* Clear the receive interrupt event. */
+        /* Clear the receive interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 } /* ENET_Receive1IRQHandler */
@@ -376,7 +405,10 @@ static inline void ENET_Transmit1IRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrTxRing1 != NULL);
         g_enetState[instance]->isrTxRing1(maskedEIR);
         
-        /* Clear the transmit interrupt event. */
+        /* Clear the transmit interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 } /* ENET_Transmit1IRQHandler */
@@ -408,7 +440,10 @@ static inline void ENET_Receive2IRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrRxRing2 != NULL);
         g_enetState[instance]->isrRxRing2(maskedEIR);
 
-        /* Clear the receive interrupt event. */
+        /* Clear the receive interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 } /* ENET_Receive2IRQHandler */
@@ -437,7 +472,10 @@ static inline void ENET_Transmit2IRQHandler(uint8_t instance)
         DEV_ASSERT(g_enetState[instance]->isrTxRing2 != NULL);
         g_enetState[instance]->isrTxRing2(maskedEIR);
 
-        /* Clear the transmit interrupt event. */
+        /* Clear the transmit interrupt event.
+             Caution, in general it may be a hard to find bug to clear the flag after the
+           callback. It doesn't matter for Our particular system, which doesn't use this
+           IRQ. Find a discussion in ENET_TransmitIRQHandler(). */
         base->EIR = maskedEIR;
     }
 } /* ENET_Transmit2IRQHandler */

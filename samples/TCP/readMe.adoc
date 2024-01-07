@@ -254,11 +254,12 @@ or, using the ARB protocol for name resolution:
 The port number, 1234, is a compile-time configuration item and can be
 modified in source file
 `code/application/ipStack/apps/clg_canLoggerOnTCP.c`. The TCP server
-exploits the code from the elder sample application `CAN`: One or more CAN
-signals can be registered for "listening". When the CAN message is
-received that contains this signal then a message is written indicating
-the received signal value(s). In the elder sample, this message was
-written to the serial terminal, now it is sent to the connected telnet
+exploits the code from the elder sample application
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN[`CAN`^]:
+One or more CAN signals can be registered for "listening". When the CAN
+message is received, which contains this signal, then a message is written
+indicating the received signal value(s). In the elder sample, this message
+was written to the serial terminal, now it is sent to the connected telnet
 client(s), too.
 
 Note, the set of signals, which can be selected for listening depends on
@@ -274,9 +275,8 @@ Use your CAN tool to regularly -- not too frequently -- send message
 `PWM_out`, CAN ID 1001, and vary the value of signal
 `PA1_J3_pin1_frequency`. Telnet should report the received values.
 
-More than one telnet connection can be opened simultaneously. The
-maximum number is limited and the limit is a compile-time configuration
-item.
+More than one telnet connection can be opened at a time. The maximum
+number is limited and the limit is a compile-time configuration item.
 
 The code skeleton found in source file
 `code/application/ipStack/apps/clg_canLoggerOnTCP.c` can be the starting

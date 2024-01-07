@@ -119,12 +119,6 @@ struct queueTxPBuf_t
 /** The Tx pbuf queue. */
 struct queueTxPBuf_t BSS_P1(_q);
 
-#warning Remove test code after use: Cross ckeck balances of the pbuf Tx queue
-unsigned int SBSS_P1(noPBuf);
-unsigned int SBSS_P1(maxNoPBuf);
-unsigned int SBSS_P1(noPBufInPhase1);
-unsigned int SBSS_P1(noPBufInPhase2);
-
 /*
  * Function implementation
  */
@@ -204,8 +198,6 @@ void nif_queueTxPBuf_initModule(void)
     _q.maxNoElems         = 0u;
     _q.maxNoElemsPhaseOne = 0u;
 #endif
-
-noPBuf = noPBufInPhase1 = noPBufInPhase2 = 0u;
 } /* nif_queueTxPBuf_initModule */
 
 
@@ -250,10 +242,6 @@ err_t nif_queueTxPBuf_enqueue(unsigned int idxEthDev, struct pbuf * const pPBuf)
         if(noPBufsPhase1 > _q.maxNoElemsPhaseOne)
             _q.maxNoElemsPhaseOne = noPBufsPhase1;
 #endif
-
-++noPBuf; if(noPBuf>maxNoPBuf) maxNoPBuf=noPBuf;
-++noPBufInPhase1;
-assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPBuf);
         return ERR_OK;
     }
     else
@@ -280,7 +268,6 @@ assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPB
  */
 struct nif_queueElemTxPBuf_t * nif_queueTxPBuf_getPBufWaitingForSubmission(void)
 {
-assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPBuf);
     if(hasPhase1())
         return &_q.data[_q.idxHeadPhaseOne];
     else
@@ -302,7 +289,6 @@ assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPB
 const struct nif_queueElemTxPBuf_t *
                             nif_queueTxPBuf_getPBufWaitingForTransmissionComplete(void)
 {
-assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPBuf);
     if(hasPhase2())
         return &_q.data[_q.idxHead];
     else
@@ -319,14 +305,10 @@ assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPB
 void nif_queueTxPBuf_advancePBufWaitingForSubmission(void)
 {
     /* Only pbufs in phase one can be advanced (to phase two). */
-assert(noPBufInPhase1 > 0u);
     assert(hasPhase1());
     _q.idxHeadPhaseOne = inc(_q.idxHeadPhaseOne);
     assert(hasPhase2());
 
-++noPBufInPhase2;
---noPBufInPhase1;
-assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPBuf);
 } /* nif_queueTxPBuf_advancePBufWaitingForSubmission */
 
 
@@ -339,7 +321,6 @@ assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPB
 void nif_queueTxPBuf_dequeue(void)
 {
     /* Only pbufs in phase two can be dequeued. */
-assert(noPBufInPhase2 > 0u);
     assert(hasPhase2());
     struct nif_queueElemTxPBuf_t * const pElem = &_q.data[_q.idxHead];
     
@@ -349,7 +330,4 @@ assert(noPBufInPhase2 > 0u);
     
     _q.idxHead = inc(_q.idxHead);
 
---noPBufInPhase2; 
---noPBuf;
-assert(noPBuf <= CAPACITY_QUEUE_TX_PBUF && noPBufInPhase1+noPBufInPhase2 == noPBuf);
 } /* nif_queueTxPBuf_dequeue */

@@ -8,7 +8,7 @@
  * This file has been created with comFramework - codeGenerator version 1.11.3,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -1187,7 +1187,7 @@ typedef enum cap_enumStsTransmission_t
     cap_stsTransm_errTimeout = 2,
 
     /** The received frame has a data error; the checksum doesn't match. No signals will be
-        extracted. */ 
+        extracted. */
     cap_stsTransm_errChecksum = 4,
 
     /** The sequence counter of the received frame indicates a lost frame. */

@@ -132,12 +132,12 @@ volatile unsigned int SBSS_OS(bsw_noTxNotifications) = 0u;
 /** The RTOS doesn't queue task triggers. Such an event is lost if a task can't be
     triggered in the instance of trying to do so. However, this situation is clearly
     indicated and registered in this counter. Here for Rx events. */
-volatile static uint16_t SBSS_OS(_noLostTaskTriggersRx) = 0u;
+volatile unsigned int SBSS_OS(bsw_noLostTaskTriggersRx) = 0u;
 
 /** The RTOS doesn't queue task triggers. Such an event is lost if a task can't be
     triggered in the instance of trying to do so. However, this situation is clearly
     indicated and registered in this counter. Here for Tx events. */
-volatile static uint16_t SBSS_OS(_noLostTaskTriggersTx) = 0u;
+volatile unsigned int SBSS_OS(bsw_noLostTaskTriggersTx) = 0u;
 
 /*
  * Function implementation
@@ -165,7 +165,7 @@ void bsw_ethFrameRxCallback(uint32_t EIR ATTRIB_DBG_ONLY)
                                  )
       )
     {
-        ++ _noLostTaskTriggersRx;
+        ++ bsw_noLostTaskTriggersRx;
     }
 } /* bsw_ethFrameRxCallback */
 
@@ -194,7 +194,7 @@ void bsw_ethFrameTxCallback(uint32_t EIR ATTRIB_DBG_ONLY)
                                  )
       )
     {
-        ++ _noLostTaskTriggersTx;
+        ++ bsw_noLostTaskTriggersTx;
     }
 } /* bsw_ethFrameTxCallback */
 
@@ -233,7 +233,7 @@ int32_t bsw_taskEthernetInternal(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskPara
     /* We can send up to 255 without risking a task activation loss. Theoretically,
        this assertion is wrong but practically the condition almost is an invariant.
       (It's only meant a demonstrative software.) */
-    assert(_noLostTaskTriggersRx == 0u  &&  _noLostTaskTriggersTx == 0u);
+    assert(bsw_noLostTaskTriggersRx == 0u  &&  bsw_noLostTaskTriggersTx == 0u);
   
     const unsigned int noNotificationsRx = GET_COUNT_OF_EV_RX_ETH_FRAME(taskParam)
                      , noNotificationsTx = GET_COUNT_OF_EV_TX_ETH_BUFFER(taskParam)
@@ -290,6 +290,7 @@ int32_t bsw_taskEthernetInternal(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskPara
     totalNoNotificationsTx_ += noNotificationsTx;
     const uint32_t deltaNoEv ATTRIB_DBG_ONLY = 
                                (bsw_noRxNotifications + bsw_noTxNotifications)
+                               - (bsw_noLostTaskTriggersRx + bsw_noLostTaskTriggersTx)
                                - (totalNoNotificationsRx_ + totalNoNotificationsTx_);
     assert(deltaNoEv < 10u);
 
