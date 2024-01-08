@@ -461,6 +461,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
             initOk = false;                                                                 \
     } /* CREATE_TASK */
 
+    /* Caution: The timer events for the 10ms application task and for the Internet
+       Protocol task need to become due at the same point in time. Identical cycle times
+       and identical offsets needs to be configured. (This avoids preemption by timer
+       events and simplifies data exchange.) */
     CREATE_REGULAR_EVENT(/* tiInMs */ 1, /* tiFirstInMs */ 0)
     CREATE_REGULAR_EVENT(/* tiInMs */ 10, /* tiFirstInMs */ 1)
     CREATE_REGULAR_EVENT(/* tiInMs */ 100, /* tiFirstInMs */ 5)

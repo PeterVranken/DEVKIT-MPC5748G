@@ -37,6 +37,7 @@ srv_txt(struct mdns_service *service, void *txt_userdata)
   err_t res;
   LWIP_UNUSED_ARG(txt_userdata);
   
+  // See, e.g., https://en.wikipedia.org/wiki/TXT_record (visited Jan 8, 2024)
   res = mdns_resp_add_service_txtitem(service, "path=/", 6);
   LWIP_ERROR("mdns add service txt failed\n", (res == ERR_OK), return);
 }
@@ -62,8 +63,7 @@ mdns_example_init(void)
   mdns_resp_add_netif(netif_default, "lwip");
 # endif
   // See lwip-STABLE-2_2_0_RELEASE/doc/mdns.txt
-  #warning Configure MDNS according to lwip-STABLE-2_2_0_RELEASE/doc/mdns.txt
-  mdns_resp_add_service(netif_default, "myweb", "_http", DNSSD_PROTO_TCP, 80, srv_txt, NULL);
+  mdns_resp_add_service(netif_default, "DEVKIT-MPC5748G Home Page", "_http", DNSSD_PROTO_TCP, 80, srv_txt, NULL);
   mdns_resp_announce(netif_default);
 #endif
 }

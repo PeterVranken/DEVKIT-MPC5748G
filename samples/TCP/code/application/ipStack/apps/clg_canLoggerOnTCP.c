@@ -9,7 +9,7 @@
  *   You can try several shell windows all using the telnet command. Up to
  * #CLG_MAX_NO_TCP_CONNECTIONS clients can be served at a time.
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -183,7 +183,7 @@ static void closeConnection(struct tcpConn_t * const pConn)
 {
     /// @todo The problem sketched in the lwIP error callback could be tackled by
     // re-defining the "arg" of the lwIP callback to NULL for the connection about to
-    // close. Then all callback would know, whether or not they belong to a connection,
+    // close. Then all callbacks would know, whether or not they belong to a connection,
     // which is still open in our management. The error callback could close our connection
     // object afterwards in case it received a NULL. Rework is required, we should then
     // ensure that this function is always called prior to tcp_abort(); at the moment we do
@@ -707,6 +707,18 @@ static err_t onLwIPAcceptConnection( void *arg ATTRIB_DBG_ONLY
  */
 static void reportCANRxSignals(struct tcpConn_t * const pConn)
 {
+    /* This function, executed in the lwIP task, shares information with the 10 ms
+       application task. This is the synchronization concept:
+         The lwIP task has a higher priority than the application task and can preempt it.
+       However, this will normally not happen for timer events and this particular function
+       is run only when the lwIP task has been awoken by a timer event. The timer events of
+       both competing tasks always become due at the same point in time and, due to its
+       higher priority, the lwIP task will always execute before the application task.
+       Preemption by timer event can occur only if the application task would execute too
+       long, beyond the next due time. This function reads information, which is written
+       solely by the application task. So even in the exceptional case of a preemption, no
+       harm could arise. */
+
     unsigned int noSigsReported = 0u;
     unsigned int noListenSigs = 0u;
     for( unsigned int idxSigInList=0
@@ -727,7 +739,6 @@ static void reportCANRxSignals(struct tcpConn_t * const pConn)
             /* Access the transmission status of the message the signal belongs to. */
             const cap_stsTransmission_t stsRx = pMsg->pInfoTransmission->stsTransmission;
 
-#warning TODOC Concept of coherency of information although from other task
             /* Check if this signal belongs to a just received message. */
             if(pSig->isReceived &&  (stsRx & cap_stTransm_newDataAvailable) != 0u)
             {
@@ -863,7 +874,7 @@ bool clg_initCanLoggerTcp(void)
 
 /**
  * The step functions of the state machine handling all TCP connections. It'll be regularly
- * called from the lwIP task. It'll check the connections states and decide whether or
+ * called from the lwIP task. It'll check the connections states and decide whether and
  * which data to send.
  */
 void clg_mainFunction(void)
