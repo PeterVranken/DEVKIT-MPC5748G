@@ -125,7 +125,7 @@ typedef struct eventSrc_t
         of this reference, the callback code can still access methods or data specific to
         the given event source. The reference can be either an index or a pointer. */
     uintptr_t refEventSrcData;
-    
+
 } eventSrc_t;
 
 
@@ -175,7 +175,7 @@ typedef union ptrToEvtSrc_t
     /* This field is used if the common fields of the event source class are read or if the
        the reference to an internal event source is assigned to the reference object. */
     const eventSrc_t *base;
-    
+
 } ptrToEvtSrc_t;
 
 /* A compile-time assertion ensures that the class extension works well, i.e., that the
@@ -194,7 +194,7 @@ typedef struct ede_timer_t
         event source is the (grand) parent of the timer and this is the reference to
         that event source. */
     ptrToEvtSrc_t pRootEventSrc;
-    
+
     /** A timer can be periodic or a single shot type. For regular, periodic timers this
         value means the timer period in ms.\n
           For killed or single shot timers this value will be less or equal to 0:\n
@@ -253,7 +253,7 @@ typedef struct event_t
         via the dispatcher queue or directly by a timer, which has that source as (grand)
         parent. This is the reference to that event source. */
     ptrToEvtSrc_t pEventSrc;
-    
+
 
     /** An event is either received from some external code via a sender object and the
         interconnection object or raised by a timer object. In the latter case, we have
@@ -288,7 +288,7 @@ struct ede_eventDispatcher_t
 {
     /** The owning/containing dispatcher system by reference. */
     const ede_dispatcherSystem_t *pSystem;
-    
+
     /** Pointer to the list of timers or to the first timer object in the list. NULL if and
         only if the list is empty. */
     timer_t *listOfTimerObjects;
@@ -371,7 +371,7 @@ struct ede_dispatcherSystem_t
     /** The number of dispatcher objects owned by this system. At the same time the number
         of entries in \a pDispatcherAry. */
     unsigned int noDispatchers;
-    
+
     /* The set of dispatcher engines, which belong to the system. The array is implemented
        as flexible array member; therefore, it needs to be the very last field. */
     ede_eventDispatcher_t * pDispatcherAry[];
@@ -476,7 +476,7 @@ static ede_handleTimer_t createTimer( const ede_callbackContext_t * const pConte
            run in different task contexts. */
         const ede_memoryPool_t * const pMPool = &pDisp->pSystem->memPool;
         pTimer = pMPool->malloc(pMPool->hInstance, sizeof(timer_t));
-        
+
         if(pTimer == NULL)
             return EDE_INVALID_TIMER_HANDLE;
     }
@@ -507,7 +507,7 @@ static ede_handleTimer_t createTimer( const ede_callbackContext_t * const pConte
                              );
         pTimer->tiDue = pDisp->tiNow + ti;
     }
-    
+
     pTimer->callback = callback;
 #if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
     pTimer->refUserContextData = refUserContextData;
@@ -752,7 +752,7 @@ bool ede_createDispatcherSystem( ede_handleDispatcherSystem_t * const pHandleDis
     }
     else
         pSys->eventSrcIntAry = NULL;
-        
+
     pSys->noDispatchers = noEventDispatcherEngines;
     pSys->maxNoEventSrcsExt = maxNoEventSourcesExt;
     pSys->maxNoEventSrcsInt = maxNoEventSourcesInt;
@@ -872,7 +872,7 @@ bool ede_createDispatcher( ede_handleDispatcherSystem_t const hDispatcherSystem
         EDE_ASSERT(false);
         return false;
     }
-    
+
     /* Flexible array member: The size of the dispatcher object depends on the number of
        ports. */
     const unsigned int sizeOfDispObj = sizeof(ede_eventDispatcher_t)
@@ -1171,7 +1171,7 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
               );
     ede_eventDispatcher_t * const pDisp = pSystem->pDispatcherAry[idxDispatcher];
     EDE_ASSERT(pDisp != INVALID_DISPATCHER_HANDLE);
-    
+
     event_t event = {.pDispatcher = pDisp, .pTimer = NULL,};
 
     /* Process all meanwhile received external events. The ports are iterated in order of
@@ -1194,7 +1194,7 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
             event.kindOfEvent = pExternalEvent->kindOfEvent;
 
             if(portProvidesDataByRef)
-                event.pData = *(const void**)&pExternalEvent->dataAry[0];
+                memcpy(&event.pData, &pExternalEvent->dataAry[0], sizeof(const void*));
             else
                 event.pData = (const void*)&pExternalEvent->dataAry[0];
 
@@ -1211,7 +1211,7 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
             {
                 EDE_ASSERT(idxEvSrc < pSystem->noEventSrcsExt);
                 event.pEventSrc.ext = &pSystem->eventSrcExtAry[idxEvSrc];
-                
+
 #if EDE_CHECK_FOR_EVENT_DELIVERY_TO_ASSOCIATED_DISPATCHER == 1u
                 if(event.pEventSrc.ext->pDispatcher == pDisp)
 #endif
@@ -1239,10 +1239,10 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
                 /// @todo Should this be counted like a lost event due to queue full?
                 //EDE_ASSERT(false);
             }
-            
+
             /* All reading on port's data is done. Release it. */
             pPort->freeBuffer(pPort->hInstance);
-            
+
         } /* while(All meanwhile received events) */
     } /* for(All event input ports) */
 
@@ -1405,7 +1405,7 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
  * would occur if another task calls ede_dispatcherMain() for another dispatcher object and
  * that dispatcher coincidently creates a timer and both dispatchers use the same memory
  * pool. (Two dispatchers will always use the same memory pool if they belong to the same
- * system!)\n 
+ * system!)\n
  *   In such a scenario, you'd need to use an implementation of the memory pool interface
  * with appropriate mutual exclusion mechanism. The default implementation of the CAN
  * interface, mem_malloc.c, allows using a guard function provided by the
@@ -1488,7 +1488,7 @@ ede_handleTimer_t ede_createPeriodicTimer( const ede_callbackContext_t * const p
  * would occur if another task calls ede_dispatcherMain() for another dispatcher object and
  * that dispatcher coincidently creates a timer and both dispatchers use the same memory
  * pool. (Two dispatchers will always use the same memory pool if they belong to the same
- * system!)\n 
+ * system!)\n
  *   In such a scenario, you'd need to use an implementation of the memory pool interface
  * with appropriate mutual exclusion mechanism. The default implementation of the CAN
  * interface, mem_malloc.c, allows using a guard function provided by the
@@ -1503,9 +1503,9 @@ ede_handleTimer_t ede_createPeriodicTimerShifted( const ede_callbackContext_t * 
                                                 , signed int tiPeriod
                                                 , signed int tiPhase
                                                 , ede_callback_t callback
-#if EDE_ENABLE_TIMER_CONTEXT_DATA == 1          
+#if EDE_ENABLE_TIMER_CONTEXT_DATA == 1
                                                 , uintptr_t refUserContextData
-#endif                                          
+#endif
                                                 )
 {
     return createTimer( pContext
@@ -1811,7 +1811,7 @@ unsigned int ede_getIdxEventSource( const ede_callbackContext_t * const pContext
         idxEvSrc = (unsigned int)(pEventSrc.base - &pSystem->eventSrcIntAry[0]);
         EDE_ASSERT(idxEvSrc < pSystem->noEventSrcsInt);
     }
-    
+
     return idxEvSrc;
 
 } /* End of ede_getIdxEventSource */
@@ -1844,7 +1844,7 @@ unsigned int ede_getIdxExternalEventSource(const ede_callbackContext_t * const p
     const ptrToEvtSrc_t pEventSrc = pContext->pEventSrc;
 
     const unsigned int idxEvSrc = (unsigned int)(pEventSrc.ext - &pSystem->eventSrcExtAry[0]);
-    
+
     /* The in-bounds assertion also catches calling this method from the callback of an
        internal event source. */
     EDE_ASSERT(idxEvSrc < pSystem->noEventSrcsExt);
@@ -1881,7 +1881,7 @@ unsigned int ede_getIdxInternalEventSource(const ede_callbackContext_t * const p
     const ptrToEvtSrc_t pEventSrc = pContext->pEventSrc;
 
     const unsigned int idxEvSrc = (unsigned int)(pEventSrc.base - &pSystem->eventSrcIntAry[0]);
-    
+
     /* The in-bounds assertion also catches calling this method from the callback of an
        external event source. */
     EDE_ASSERT(idxEvSrc < pSystem->noEventSrcsInt);

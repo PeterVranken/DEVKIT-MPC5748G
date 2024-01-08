@@ -369,7 +369,7 @@ bool ede_postEventToPort( ede_eventSender_t * const hSender
         {
             /* The port tells us by a pointer returned in field dataAry in the event, where
                to put the payload data. */
-            pDest = *(void**)pDest;
+            memcpy(&pDest, pDest, sizeof(pDest));
         }
         memcpy(pDest, pData, sizeOfData);
 
