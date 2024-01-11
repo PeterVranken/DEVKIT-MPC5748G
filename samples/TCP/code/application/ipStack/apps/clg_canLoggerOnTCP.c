@@ -75,7 +75,7 @@
 /* Note, in this application, the lwIP callback tcp_sent is applied just to give some debug
    level feedback about transmitted data. Normally, we don't need it. It can be enabled by
    setting #DBG_FEEDBACK_ONSENT_DATA to 1. */
-#define DBG_FEEDBACK_ON_SENT_DATA   0
+#define DBG_FEEDBACK_ON_SENT_DATA   1
 
 /*
  * Local type definitions
@@ -85,24 +85,28 @@
     with the CAN logger service. */
 struct tcpConn_t
 {
-/// @todo Check: Pointer likely used as Boolean state only, isOpened. Change to state if
-// so. We need mote states to distinguish, e.g., the phase after tcp_close() and until
-// tcp_recved() acknowledges the actually connection close: All write operations need to be
-// suppressed during this phase.
-    /** The lwIP connection handle. */
-    struct tcp_pcb *pTcpPcb;
+    /** The lwIP connection state. */
+    enum stConn_t {stConn_closed, stConn_established, stConn_closing} stConn;
+
+    /** A copy of the pointer to the lwIP connection object. This field is actually
+        redundant but allows a nicer API of the main method write. */
+    struct tcp_pcb *pPcb;
+
+    /** The number of charavcters, which could not be transmitted. The principal reason is
+        the time triggered amount of data written by this application, which disregards the
+        TCP flow control. Output is lost if the breceiver is not currenntly capable to
+        consume it. The counter is saturated at its implementation maximum. */
+    unsigned int noCharsTxLost;
 
 #if DBG_FEEDBACK_ON_SENT_DATA == 1
     /** The total number of characters sent via this connection. The counter is not
-        saturated and wraps at its implmentation maximum. */
-    unsigned int noBytesSent;
+        saturated and wraps at its implementation maximum. */
+    unsigned int noCharsTx;
 #endif
 
     /** The total number of characters received via this connection. The counter is not
-        saturated and wraps at its implmentation maximum. */
-    unsigned int noBytesReceived;
-
-    unsigned int someLocalData;
+        saturated and wraps at its implementation maximum. */
+    unsigned int noCharsRx;
 };
 
 
@@ -127,7 +131,7 @@ static unsigned int SBSS_P1(_noTcpConn) = 0u;
 
 /**
  * Helper: Find a free connection slot in \a _tcpConnAry. Note, the function applies a
- * simple linear search, which is jeutified because the operation is required only once per
+ * simple linear search, which is justified because the operation is required only once per
  * connection and we anyway don't allow many of those in parallel (mainly due to memory
  * constraints).
  *   @return
@@ -139,14 +143,9 @@ static struct tcpConn_t *findUnusedConnection(void)
     struct tcpConn_t *pConn = &_tcpConnAry[0];
     for(unsigned int idxConn=0; idxConn<sizeOfAry(_tcpConnAry); ++idxConn)
     {
-        if(pConn->pTcpPcb == NULL)
+        if(pConn->stConn == stConn_closed)
         {
             assert(_noTcpConn < CLG_MAX_NO_TCP_CONNECTIONS);
-#if DBG_FEEDBACK_ON_SENT_DATA == 1
-            pConn->noBytesSent = 0u;
-#endif
-            pConn->noBytesReceived = 0u;
-            pConn->someLocalData = 0u;
             return pConn;
         }
 
@@ -181,15 +180,9 @@ static inline unsigned int getIdxOfConnection(const struct tcpConn_t * const pCo
  */
 static void closeConnection(struct tcpConn_t * const pConn)
 {
-    /// @todo The problem sketched in the lwIP error callback could be tackled by
-    // re-defining the "arg" of the lwIP callback to NULL for the connection about to
-    // close. Then all callbacks would know, whether or not they belong to a connection,
-    // which is still open in our management. The error callback could close our connection
-    // object afterwards in case it received a NULL. Rework is required, we should then
-    // ensure that this function is always called prior to tcp_abort(); at the moment we do
-    // it afterwards.
-    assert(pConn->pTcpPcb != NULL);
-    pConn->pTcpPcb = NULL;
+    assert(pConn->stConn != stConn_closed);
+    pConn->stConn = stConn_closed;
+    pConn->pPcb = NULL;
     -- _noTcpConn;
     assert(_noTcpConn < CLG_MAX_NO_TCP_CONNECTIONS);
 
@@ -201,6 +194,7 @@ static void closeConnection(struct tcpConn_t * const pConn)
  * tcp_write() and tcp_output(). It checks the return code of these functions and initiates a
  * connection abort in case of errors.
  *   @return
+#warning TBC Return value meaning has changed
  * The function normally returns \a true if the data can be written into the TCP stream. In
  * case of errors reported by the lwIP stack, the connection is aborted and the function
  * returns \a false to indicate this.\n
@@ -209,7 +203,13 @@ static void closeConnection(struct tcpConn_t * const pConn)
  * function!
  *   @param noChars
  * The number of characters to write. May be zero; in this case the operation reduces to a
- * flush operation, all characters written before are actully transmitted on the Ethernet.
+ * flush operation, all characters written before are actually transmitted on the Ethernet.
+ *   @remark
+ * The function should no longer be called for a given connection once it has returned \a
+ * false, i.e., after the connection has been aborted due to an error. However, this is
+ * tolerated; if it is called again after having got \a false then it has no effect and
+ * it'll return \a true in order to avoid that the caller assumes a connected reset
+ * repeatedly.
  */
 static bool write( struct tcpConn_t * const pConn
                  , const char * const msg
@@ -218,92 +218,94 @@ static bool write( struct tcpConn_t * const pConn
                  , bool flush
                  )
 {
-    assert(pConn->pTcpPcb != NULL);
-
-    err_t err = ERR_OK;
-    
-    if(noChars > 0u)
+    if(pConn->stConn == stConn_established)
     {
-        err = tcp_write( pConn->pTcpPcb
-                       , msg
-                       , noChars
-                       , /*apiFlags*/ isMsgConst? 0u: TCP_WRITE_FLAG_COPY
-                       );
-    }
+        /** This application pushes data at fixed, timer controlled rate. The receiver
+            won't be able to consume all data, which is indicated by the far end's receive
+            window size. This limitation is part of the lwIP telling the maximum currently
+            sendable characters. If this occurs, it is not a failure, we silently drop the
+            output from the stream.
+              Note, if the caller tries to permanently write chunks, which are generally
+            too large, then this will still end up with a failure and termination of the
+            connection -- the idle callback will eventually be invoked and close the
+            connection. */
+        if(noChars > tcp_sndbuf(pConn->pPcb))
+        {
+            const unsigned int noLostChars = pConn->noCharsTxLost + noChars;
+            if(noLostChars > pConn->noCharsTxLost)
+                pConn->noCharsTxLost = noLostChars;
+            return true;
+        }
 
-    if(err == ERR_OK)
+        err_t err = ERR_OK;
+
+        if(noChars > 0u)
+        {
+            uint8_t apiFlags = 0u;
+            if(!isMsgConst)
+                apiFlags |= TCP_WRITE_FLAG_COPY;
+            if(!flush)
+                apiFlags |= TCP_WRITE_FLAG_MORE;
+            err = tcp_write(pConn->pPcb, msg, noChars, apiFlags);
+        }
+
+        if(err == ERR_OK)
+        {
+            /* Data could be written. Shall we initiate a flush and send a TCP segment or
+               shall we wait for more output data in order to better utilize the TCP frame? */
+            if(flush)
+                err = tcp_output(pConn->pPcb);
+        }
+
+        if(err != ERR_OK)
+        {
+            iprintf( "Error %i when writing %u characters into TCP connection %i. Connection"
+                     " is aborted\r\n"
+                   , (int)err
+                   , noChars
+                   , (int)getIdxOfConnection(pConn)
+                   );
+            tcp_abort(pConn->pPcb);
+        }
+
+        return err == ERR_OK;
+    }
+    else
     {
-        /* Data could be written. Shall we initiate a flusha nd send a TCP segment or shall
-           we wait for more output data in order to better utilize the TCP frame? */
-        if(flush)
-            err = tcp_output(pConn->pTcpPcb);
+        assert(pConn->stConn == stConn_closing);
+
+        /* Even if we couldn't write: Do not return \a false. This indicates a connection
+           reset to the caller and would guide him to forward this inforation to lwIP by
+           sending error code ERR_ABRT. */
+        return true;
     }
-
-    if(err != ERR_OK)
-    {
-        iprintf( "Error %i when writing %u characters into TCP connection %i. Connection"
-                 " is aborted\r\n"
-               , (int)err
-               , noChars
-               , (int)getIdxOfConnection(pConn)
-               );
-        tcp_abort(pConn->pTcpPcb);
-        closeConnection(pConn);
-    }
-
-    return err == ERR_OK;
-
 } /* write */
 
 
 /**
- * lwIP error callback. Is called after a connection reset and likely in other errornous
- * situations. If it is called then the connection is broken.
+ * lwIP error callback. It is called after a received connection reset or connection close
+ * or after a connection abort from our side. If it is called then the connection is broken
+ * and lwIP has deleted the connection object PCB. We need to close the connection in our
+ * management, too.
  *   @param arg
  * The callback argument; for our particular application the connection object by reference.
  *   @param err
- * The error code, which made the connection fail.
+ * The error code, which made the connection end. ERR_RST or ERR_CLSD if the connection has
+ * been ended from the far end or ERR_ABRT if either we called tcp_abort() or tcp_abandon()
+ * has been called internally
  */
 static void onLwIPError(void *arg, err_t err)
 {
-    /* We don't get an lwIP connection pointer here, the connection is implicitely closed
+    /* We don't get an lwIP PCB here, the connection is implicitly closed
        when getting this notification. */
 
     struct tcpConn_t * const pConn = (struct tcpConn_t *)arg;
-
-    /* It is not transparent, when exactly the internal life cycle of the conncetion
-       information inside lwIP ends. Partly, it has already ended (this is why lwIP doesn't
-       provide the usual PCB to this callback any more) but evidently not completely,
-       otherwise we wouldn't get here. */
-    /// @todo A serious problem is that we can't safely relate the error to any connection,
-    // we know. Normally, it'll be the connection identified by pConn->pTcpPcb but the fact
-    // that lwIP reports the error without PCB makes clear that this can be a connection,
-    // which had already been closed or aborted before so that pConn->pTcpPcb may be either
-    // NULL or even another unrelated, newly established connection. If an error is
-    // spontaneously reported, i.e., not as a consequence of or in conjunction with a
-    // problem or state change before then we can't react on the error in terms of closing
-    // the connection in our managment. A forever blocked connection object could result
-    // or, with other words, a memory leak. If this could ever happen then it would be a
-    // design flaw of lwIP, which is unlikely. Therefore, we assume that it'll never happen
-    // and we put just an assertion to catch it in the unexpected case.
-    //   The only way out would be using a unambiguous value for the "arg" of every new
-    // connection, e.g., an incremented 32 Bit counter. This would however require an
-    // expensive mapping of this value to an existing connection object.
-    //   See closeConnection() for another, simpler idea.
-    iprintf( "onLwIPError: Connection %i, pConn->pTcpPcb %p: Error %i received\r\n"
+    iprintf( "onLwIPError: Connection %i: Error %i received. Connection is closed\r\n"
            , (int)getIdxOfConnection(pConn)
-           , pConn->pTcpPcb
            , (int)err
            );
-    if(pConn->pTcpPcb == NULL)
-    {
-        /* Block for some time to give the DMA the time to send the debug text to the
-           serial interface. */
-        del_delayMicroseconds(100000u);
+    closeConnection(pConn);
 
-        /* Only now halt in the debugger (which would halt the DMA also). */
-        assert(false);
-    }
 } /* onLwIPError */
 
 
@@ -313,14 +315,14 @@ static void onLwIPError(void *arg, err_t err)
  *   @param arg
  * The callback argument; for our particular application the connection object by reference.
  *   @param pPcb
- * The protocol control block by reference. Effecitively, lwIP's representation of the
+ * The protocol control block by reference. Effectively, lwIP's representation of the
  * TCP connection.
  *   @param pPBuf
  * The pbuf by reference, which contains the received data.
  *   @param err
  * An error code. It's not so clear, which errors can occur under which circumstances. We
- * reset to aknown, valid state by TCP reset if an error is reported. This will surely
- * termminate the connection inside lwIP and free the memories.
+ * reset to a known, valid state by TCP reset if an error is reported. This will surely
+ * terminate the connection inside lwIP and free the memories.
  */
 static err_t onLwIPSegmentReceived( void *arg
                                   , struct tcp_pcb *pPcb
@@ -346,9 +348,9 @@ static err_t onLwIPSegmentReceived( void *arg
 
     struct tcpConn_t * const pConn = (struct tcpConn_t *)arg;
     const unsigned int idxConn = getIdxOfConnection(pConn);
-    assert(idxConn < sizeOfAry(_tcpConnAry)  &&  pConn->pTcpPcb == pPcb  &&  pPcb != NULL);
+    assert(idxConn < sizeOfAry(_tcpConnAry)  &&  pPcb != NULL);
 
-    /* If we got a NULL pbuf in p, the remote end has closed the connection. */
+    /* If we got a NULL pbuf, the remote end has closed the connection. */
     if(err == ERR_OK  &&  pPBuf != NULL)
     {
         /* For acknowledge: Indicate to protocol stack that all received characters have
@@ -358,7 +360,7 @@ static err_t onLwIPSegmentReceived( void *arg
         /* The payload pointer in the pbuf contains the data in the TCP segment. */
         const char *payload = pPBuf->payload;
 
-        pConn->noBytesReceived += (unsigned)pPBuf->tot_len;
+        pConn->noCharsRx += (unsigned)pPBuf->tot_len;
         iprintf( "onLwIPSegmentReceived: Connection %u:%hu: %hu Byte have been received\r\n"
                , idxConn
                , pPcb->remote_port
@@ -397,13 +399,16 @@ static err_t onLwIPSegmentReceived( void *arg
             #define MSG "Connection is closed\n\r"
             if(write(pConn, MSG, sizeof MSG - 1u, /* isMsgConst */ true, /* flush */ true))
             {
+                /* What to do if tcp_close() fails? A short code analysis of the function
+                   revealed that it'll always return ERR_OK; we can ignore the return code. */
                 const err_t rc ATTRIB_DBG_ONLY = tcp_close(pPcb);
                 assert(rc == ERR_OK);
-                
+
                 /* We don't call the close function of our own management yet; lwIP will
                    come back with another invocation of the receive callback to indicate
                    the finally closed connection. */
-                //closeConnection(pConn);
+                assert(pConn->stConn == stConn_established);
+                pConn->stConn = stConn_closing;
             }
             else
             {
@@ -486,7 +491,6 @@ static err_t onLwIPSegmentReceived( void *arg
                , (int)err
                );
         tcp_abort(pPcb);
-        closeConnection(pConn);
 
         /* Free the pbuf. */
         pbuf_free(pPBuf);
@@ -515,15 +519,15 @@ static err_t onLwIPConnectionIdle(void *arg, struct tcp_pcb *pPcb)
     assert(idxConn < sizeOfAry(_tcpConnAry));
 
     /* Close the connection. */
-    if(pConn->pTcpPcb == pPcb)
+    if(pConn->stConn == stConn_established)
     {
         assert(pPcb != NULL);
         iprintf( "onLwIPConnectionIdle: Connection %u:%hu: Is idle and will be aborted now\r\n"
                , idxConn
                , pPcb->remote_port
                );
+#warning try tcp_close instead
         tcp_abort(pPcb);
-        closeConnection(pConn);
 
         /* The use of tcp_abort() requires return value ERR_ABRT. This ensures memory
            freeing of the PCB. Abort causes an error callback and this is where we will do
@@ -532,19 +536,9 @@ static err_t onLwIPConnectionIdle(void *arg, struct tcp_pcb *pPcb)
     }
     else
     {
-        iprintf( "Unexpected state: onIdle, idxConn=%u, pPcb=%p, pConn->pTcpPcb=%p,"
-                 " pConn->someLocalData: %u, _noTcpConn=%u\r\n"
-               , idxConn
-               , pPcb
-               , pConn->pTcpPcb
-               , pConn->someLocalData
-               , _noTcpConn
-               );
-        del_delayMicroseconds(100000u);
-        assert(false);
+        assert(pConn->stConn == stConn_closing);
         return ERR_OK;
     }
-
 } /* onLwIPConnectionIdle */
 
 
@@ -555,7 +549,7 @@ static err_t onLwIPConnectionIdle(void *arg, struct tcp_pcb *pPcb)
  *   @param arg
  * The callback argument; for our particular application the connection object by reference.
  *   @param pPcb
- * The protocol control block by reference. Effecitively, lwIP's representation of the
+ * The protocol control block by reference. Effectively, lwIP's representation of the
  * TCP connection.
  *   @param len
  * The number of bytes, which are acknowledged.
@@ -564,27 +558,21 @@ static err_t onLwIPSent(void *arg, struct tcp_pcb *pPcb, u16_t len)
 {
     struct tcpConn_t * const pConn = (struct tcpConn_t *)arg;
     const unsigned int idxConn = getIdxOfConnection(pConn);
-    assert(idxConn < sizeOfAry(_tcpConnAry)  &&  pConn->pTcpPcb == pPcb  &&  pPcb != NULL);
+    assert(idxConn < sizeOfAry(_tcpConnAry)  &&  pConn->stConn != stConn_closed
+           &&  pPcb != NULL
+          );
 
-    if(pConn->pTcpPcb == pPcb)
+    if(pConn->stConn != stConn_closed)
     {
-        pConn->noBytesSent += (unsigned)len;
-        iprintf( "onLwIPSent: Connection %u:%hu: %hu Byte of data have been sent\r\n"
-               , idxConn
-               , pPcb->remote_port
-               , len
-               );
+        pConn->noCharsTx += (unsigned)len;
+//        iprintf( "onLwIPSent: Connection %u:%hu: %hu Byte of data have been sent\r\n"
+//               , idxConn
+//               , pPcb->remote_port
+//               , len
+//               );
     }
     else
-    {
-        iprintf( "onLwIPSent: Connection %u: %hu Byte of sent data have notified after"
-                 " closure\r\n"
-               , idxConn
-               , len
-               );
-        del_delayMicroseconds(100000u);
         assert(false);
-    }
 
     return ERR_OK;
 
@@ -597,7 +585,7 @@ static err_t onLwIPSent(void *arg, struct tcp_pcb *pPcb, u16_t len)
  *   @param arg
  * The argument of the callbacks of the listen connection. Not used.
  *   @param pPcb
- * The protocol control block by reference. Effecitively, lwIP's representation of the
+ * The protocol control block by reference. Effectively, lwIP's representation of the
  * TCP connection.
  *   @param err
  * An error report. It is unclear, which errors are possible under which conditions and
@@ -618,18 +606,19 @@ static err_t onLwIPAcceptConnection( void *arg ATTRIB_DBG_ONLY
         if(pConn != NULL)
         {
             /* We accept the new connection. */
-            assert(pConn->pTcpPcb == NULL);
-            pConn->pTcpPcb = pPcb;
+            assert(pConn->stConn == stConn_closed  &&  pConn->pPcb == NULL);
+            pConn->stConn = stConn_established;
+            pConn->pPcb = pPcb;
+            pConn->noCharsTxLost = 0u;
+            pConn->noCharsRx = 0u;
 #if DBG_FEEDBACK_ON_SENT_DATA == 1
-            pConn->noBytesSent     = 0u;
+            pConn->noCharsTx = 0u;
 #endif
-            pConn->noBytesReceived = 0u;
-            pConn->someLocalData = 0u;
-
-            /* The new connection object will be the callback argument for this connection */
+            /* The new connection object will be the callback argument for this connection. */
             tcp_arg(pPcb, /*arg*/ pConn);
 
-            /* Set up the function onLwIPError() to be called upon a connection error. */
+            /* Set up the function onLwIPError() to be called upon an unexpected
+               termination of the connection. */
             tcp_err(pPcb, onLwIPError);
 
             /* Set up the function onLwIPSegmentReceived() to be called when data arrives. */
@@ -644,6 +633,11 @@ static err_t onLwIPAcceptConnection( void *arg ATTRIB_DBG_ONLY
             /* Set up the function onLwIPConnectionIdle() to be called while connection is
                idle. */
             tcp_poll(pPcb, onLwIPConnectionIdle, /*interval*/ 20u /*unit 500ms*/);
+
+            /* Nagle algorihm is unwanted for this application. We want to regularly push
+               data and don't want to get blocked if preceeding segments have not been
+               acknowledged yet. */
+            tcp_nagle_disable(pPcb);
 
             ++ _noTcpConn;
 
@@ -667,8 +661,8 @@ static err_t onLwIPAcceptConnection( void *arg ATTRIB_DBG_ONLY
         }
         else
         {
-            /* We set the callback argument such that it would indicate that this connection is
-               rejected. */
+            /* We set the callback argument such that it would indicate that this
+               connection is rejected. */
             tcp_arg(pPcb, /*arg*/ NULL);
 
             iprintf( "onLwIPAcceptConnection: Connection %p:%hu is rejected. No free"
@@ -711,7 +705,7 @@ static void reportCANRxSignals(struct tcpConn_t * const pConn)
        application task. This is the synchronization concept:
          The lwIP task has a higher priority than the application task and can preempt it.
        However, this will normally not happen for timer events and this particular function
-       is run only when the lwIP task has been awoken by a timer event. The timer events of
+       is run only when the lwIP task has been woken up by a timer event. The timer events of
        both competing tasks always become due at the same point in time and, due to its
        higher priority, the lwIP task will always execute before the application task.
        Preemption by timer event can occur only if the application task would execute too
@@ -763,19 +757,19 @@ static void reportCANRxSignals(struct tcpConn_t * const pConn)
 
                     /* Writing the information into the stream can have closing the
                        connection as side effect. This is not reported here but inside the
-                       wrapper functon write. */
+                       wrapper function write. */
                     write(pConn, msg_, noChars, /* isMsgConst */ false, /* flush */ false);
                 }
                 else
                     assert(false);
-                
+
                 ++ noSigsReported;
             }
 
             ++ noListenSigs;
-            
+
         } /* if(List entry contains a signal?) */
-        
+
     } /* for(Check all entries in listener's internal list) */
 
     static uint16_t SBSS_P1(tiHint_) = 0;
@@ -790,8 +784,8 @@ static void reportCANRxSignals(struct tcpConn_t * const pConn)
             #define MSG "\r\n"
             write(pConn, MSG, sizeof MSG - 1u, /* isMsgConst */ true, /* flush */ false);
             #undef MSG
-        }        
-        
+        }
+
         /* Flush buffers. */
         /// @todo TBC: lwIP's tcp_write() doesn't seem to send a frame even if it has got more characters as fit into a frame. We need an explicit tcp_output()
         write(pConn, "", 0u, /* isMsgConst */ true, /* flush */ true);
@@ -834,12 +828,26 @@ static void reportCANRxSignals(struct tcpConn_t * const pConn)
 /**
  * The initialization function of the CAN logger service.
  *   @return
- * Get \a true if the service could be started. \a false will mostly be returned becasue of
+ * Get \a true if the service could be started. \a false will mostly be returned because of
  * a lack of memory in the lwIP heap.
  */
 bool clg_initCanLoggerTcp(void)
 {
     _noTcpConn = 0u;
+
+    struct tcpConn_t *pConn = &_tcpConnAry[0];
+    for(unsigned int idxConn=0; idxConn<sizeOfAry(_tcpConnAry); ++idxConn)
+    {
+        pConn->stConn = stConn_closed;
+        pConn->pPcb = NULL;
+        pConn->noCharsTxLost = 0u;
+#if DBG_FEEDBACK_ON_SENT_DATA == 1
+        pConn->noCharsTx = 0u;
+#endif
+        pConn->noCharsRx = 0u;
+
+        ++ pConn;
+    }
 
     /* Create a new TCP PCB. The listen object lives forever in the heap. */
     struct tcp_pcb *pPcb = tcp_new();
@@ -883,7 +891,7 @@ void clg_mainFunction(void)
     const struct tcpConn_t * const pEnd = &_tcpConnAry[CLG_MAX_NO_TCP_CONNECTIONS];
     while(pConn != pEnd)
     {
-        if(pConn->pTcpPcb != NULL)
+        if(pConn->stConn == stConn_established)
         {
             /* Inspect, which signals of interest have been received in the meantime and
                write new signal values into the TCP stream. */

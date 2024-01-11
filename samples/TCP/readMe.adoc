@@ -177,7 +177,7 @@ The console output should resemble:
 ==== Trivial File Transfer Protocol
 
 The sample application integrates a file transfer protocol, which allows
-to download bulky data from and upload to the running application. 
+to download bulky data from and upload to the running application.
 
 The application doesn't have a file system in the meaning of FAT or NTFS,
 but to the applied protocol TFTP, it doesn't matter, what actually a
@@ -192,7 +192,7 @@ uploaded "file" contents.
 In the shell window, type:
 
   tftp 192.168.1.200 GET /path/to/some/data someData.txt
-  
+
 or, using the ARB protocol for name resolution:
 
   tftp DEVKIT-MPC5748G GET /path/to/some/data someData.txt
@@ -220,7 +220,7 @@ Web-page. In the address field of the Web browser, type:
 or, using the ARB protocol for name resolution:
 
   http://devkit-mpc5748g/get
-  
+
 The Web-page should be displayed. The contents are no more than a greeting
 plus a bit of dynamic content, but could be made more useful and realistic
 by elaboration of the source code in file
@@ -230,11 +230,11 @@ Please note, as an alternative, and maybe more suitable for testing, you
 may type this in the shell window:
 
   curl http://192.168.1.136/get -o -
-  
+
 or:
 
   curl http://DEVKIT-MPC5748G/get -o -
-  
+
 Sadly, HTTPS is not supported and it won't be easy to add this protocol.
 
 ==== TCP server application
@@ -270,7 +270,7 @@ for details.) In the serial terminal program, you may type (and send),
 e.g.:
 
   listen PA1_J3_pin1_frequency
-  
+
 Use your CAN tool to regularly -- not too frequently -- send message
 `PWM_out`, CAN ID 1001, and vary the value of signal
 `PA1_J3_pin1_frequency`. Telnet should report the received values.
@@ -584,6 +584,11 @@ and start the debugger with a last click on button "Debug".
 Only VLE code is supported.
 
 == Known issues
+
+. The default settings have been used for the lwIP memory management
+settings. No effort has been invested in optimizing the heap and/or
+pools. This will likely limit the stability of IP connections transmitting
+large amounts of data.
 
 . Debugger: If the view shows the INTC0 register set then the debugger
 harmfully affects program execution and the RTOS fails: The write to

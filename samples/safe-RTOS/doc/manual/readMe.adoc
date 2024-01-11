@@ -351,9 +351,74 @@ former can be used to implement deferred interrupt handling.
 Software as well as the timers inside the event processors can decide,
 whether to notify an ordinary event or a countable event.
 
+The ordinary event has a 32 Bit argument. This argument can be set
+arbitrarily by the event sender and it is delivered to the notified task.
+When the task is activated then the task function receives the argument as
+normal function argument. Ordinary events are not queued and can be lost.
+If the notified task is already in state "ready" then another notification
+has no impact and the argument of the new event will never be delivered.
+Instead, an "activation loss" failure is counted for the event processor.
+
+Countable events don't have an argument. They just occur. The 32 Bit
+value, which is still delivered to the activated task function, is now
+used to express the multiplicity of event occurrences. It is guaranteed up
+to the implementation limit of the event occurrence counter that no
+occurrence will ever be lost. The triggered task will surely see all
+events. In this sense, using countable events is comparable to event
+queuing.
+
+Similarly to ordinary events, undeliverable event occurrences are reported
+as failures. Any multiplicity of an event, which can not be notified to
+the triggered task, is counted as an "activation loss" failure in the
+event processor.
+
+If a countable event is notified (with multiplicity >= 1) while the
+notified task is in state "idle" then the task is made "ready" and the
+argument for the task function holds the notified event multiplicity. This
+is the same behavior as for ordinary events.
+
+If a countable event is notified while the notified task is in state
+"ready" then the notified multiplicity of the event is accumulated in a
+counter for the event. When the task has completed and would normally
+return to state "idle", it remains "ready" and the meanwhile accumulated
+event multiplicities are delivered in the argument of the new
+task activation. Synchronously, the event counter resets to zero so that
+it can receive new notifications.
+
+The 32 bits of the delivered task function argument can be shared between
+several countable events. Bit masks are used to define a countable event.
+Therefore, a task can be triggered by up to 32 different countable events.
+(Each event would have only 1 Bit per notification to deliver the event
+multiplicity.) The task could also be configured to receive 8 different
+events with 4 Bit per notification but this is just another example --
+countable events don't necessarily share the available bits uniformly. Any
+distribution of the available 32 bits onto the events is allowed.
+
+The typical use case of an ordinary event is a task, which is triggered by
+a single kind of event. The task is expected to be alert enough to handle
+all event occurrences. (And if not it is considered a significant failure.)
+Most typical example is an interrupt handler, which fetches some data from
+the hardware and triggers a task to further process that data. The
+arbitrary event argument can be used as handle for accessing the fetched
+data.
+
+The typical use case of countable events is a task, which is triggered by
+different, independent kinds of events. Basically, this is allowed by
+ordinary events, too, but because of the assumed independence of the
+events there will always be a non-negligible likelihood of (nearly)
+co-incidental occurrence of events of different kind. Only one of the
+simultaneous events could be delivered. The others would be rejected and
+counted as failures because of the task being already triggered. Using
+countable events of sufficient bit sizes, all event occurrences would be
+notified to the task.
+
+Note, using the 32 Bit argument for notifying the event counts implies
+that the number of task activations is normally lower than the number of
+event occurrences. Several event occurrences can be notified in a single
+task activation.
+
 TODOC:
 
-- How countable works
 - Countable till one is nearly the same as ordinary but not exactly
 - Ordinary mainly for cyclic tasks with task overrun detection
 - Mixing for one and same event processor possible but to handle with
@@ -365,6 +430,8 @@ TODOC:
   thread-safe queuing with awake
 - Flooding with events: Round robin on their priority level, preemption by
   higher levels, starvation of lower levels
+- Timers: Ordinary events don't have a big advantage as there is no
+  reasonable use of the argument. However, sharper task overflow decision
 
 === The operating system clock
 

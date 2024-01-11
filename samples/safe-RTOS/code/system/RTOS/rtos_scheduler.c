@@ -708,7 +708,7 @@ static ALWAYS_INLINE bool osSendEvent( rtos_eventProcDesc_t * const pEvProc
     {
         /* Counting events above must never fail entirely if the task is idle; all elder
            events should have been delivered and the accumulator should be zero, i.e., able
-           to accept a single multiplicity of the new event. */
+           to accept at least a single multiplicity of the new event. */
         assert(success);
 
         /* Operation successful. Event can be triggered. */

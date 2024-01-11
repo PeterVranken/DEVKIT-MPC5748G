@@ -351,7 +351,7 @@ static err_t initNetIf( unsigned int idxNetIf
     }
 #endif /* LWIP_DHCP */
 #if LWIP_AUTOIP
-    else if(hasIfAutoIP)
+    if(hasIfAutoIP)
     {
         const err_t stsAutoIP = autoip_start(&_netIfAry[idxNetIf]);
         if(stsAutoIP != ERR_OK)
