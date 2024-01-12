@@ -631,8 +631,11 @@ static err_t onLwIPAcceptConnection( void *arg ATTRIB_DBG_ONLY
             #endif
 
             /* Set up the function onLwIPConnectionIdle() to be called while connection is
-               idle. */
-            tcp_poll(pPcb, onLwIPConnectionIdle, /*interval*/ 20u /*unit 500ms*/);
+               idle.
+                 Note, on idle, we cut the connection and telnet tends to have quite long
+               phases of blocking (i.e., receive window zero) when fully loaded, so we need
+               a pretty long idle time. */
+            tcp_poll(pPcb, onLwIPConnectionIdle, /*interval*/ 60u /*unit 500ms*/);
 
             /* Nagle algorihm is unwanted for this application. We want to regularly push
                data and don't want to get blocked if preceeding segments have not been

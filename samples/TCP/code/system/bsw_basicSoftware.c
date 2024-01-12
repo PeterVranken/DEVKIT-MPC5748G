@@ -7,7 +7,7 @@
  * supervisor mode and has the highest quality assurance level defined for the parts of the
  * aimed software.
  *
- * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -421,9 +421,9 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        a double-check by assertion - later maintenance errors are unavoidable otherwise. */
     unsigned int idEventProc;
     #define CREATE_REGULAR_EVENT(tiInMs, ti1stInMs) \
-                CREATE_EVENT(tiInMs##ms, tiInMs, ti1stInMs, /*timerUsesCountableEvents*/ false)
+                CREATE_EVENT(tiInMs##ms, tiInMs, ti1stInMs, /*timerTaskTriggerParam*/ 0x0u)
 
-    #define CREATE_EVENT(name, tiInMs, tiFirstInMs, timerUsesCountableEvents)               \
+    #define CREATE_EVENT(name, tiInMs, tiFirstInMs, timerTaskTriggerParam)                  \
     {                                                                                       \
         if(initOk                                                                           \
            && rtos_osCreateEventProcessor                                                   \
@@ -432,8 +432,8 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
                     , /* tiFirstActivationInMs */    (tiFirstInMs)                          \
                     , /* priority */                 prioEv##name                           \
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE  \
-                    ,                                (timerUsesCountableEvents)             \
-                    , /* timerTaskTriggerParam */    (timerUsesCountableEvents)? 0x1u: 0u   \
+                    , /* timerUsesCountableEvents */ (timerTaskTriggerParam) > 0u           \
+                    , (timerTaskTriggerParam)                                               \
                     )                                                                       \
            != rtos_err_noError                                                              \
           )                                                                                 \
@@ -464,15 +464,21 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     /* Caution: The timer events for the 10ms application task and for the Internet
        Protocol task need to become due at the same point in time. Identical cycle times
        and identical offsets needs to be configured. (This avoids preemption by timer
-       events and simplifies data exchange.) */
-    CREATE_REGULAR_EVENT(/* tiInMs */ 1, /* tiFirstInMs */ 0)
+       events and simplifies data exchange.)
+         Note, we gave the IP task the highest priority. In this particular application,
+       the execution time of this task can exceed 1ms (due to massive use of printf) and
+       some activations of the 1ms application task can be lost. To compensate a bit for
+       this, we activate the 1ms task with a countable event such that the task function at
+       least knowns, how many ticks were lost. One could consider to let the 1ms task have
+       the higher priority - if it executes fast then it won't do much harm to the IP task. */
+    CREATE_EVENT(1ms, /* tiInMs */ 1, /* tiFirstInMs */ 0, /* countableEvMask */ 0x3u)
     CREATE_REGULAR_EVENT(/* tiInMs */ 10, /* tiFirstInMs */ 1)
     CREATE_REGULAR_EVENT(/* tiInMs */ 100, /* tiFirstInMs */ 5)
     CREATE_REGULAR_EVENT(/* tiInMs */ 1000, /* tiFirstInMs */ 55)
     CREATE_EVENT( TriggerIPProtocolTask
                 , /* tiInMs */ 10u
                 , /* ti1stInMs */ 1u
-                , /* useCountableEvents */ true
+                , /* countableEvMask */ 0x1u
                 )
 
     /* OS task are created first. This ensures that they will get the CPU first if the

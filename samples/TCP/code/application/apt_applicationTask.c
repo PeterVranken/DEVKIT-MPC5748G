@@ -374,13 +374,21 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
  *   @param PID
  * The process ID of the process, the task belongs to; always bsw_pidUser in our case.
  *   @param taskParam
- * A task receives an argument. It is always zero in our case.
+ * A task receives an argument. This task is configured to use countable events as trigger.
+ * The event mask is #EV_MASK_TIMER_1MS.
  */
-int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam)
 {
-    assert(PID == bsw_pidUser);
+    /// @todo The event mask should be shared with the code location, where the 1ms timer event is defined
+    #define EV_MASK_TIMER_1MS   0x3u
 
-    ++ _cntTask1ms;
+    assert(PID == bsw_pidUser  &&  (taskParam & EV_MASK_TIMER_1MS) != 0u
+           &&  (taskParam & ~EV_MASK_TIMER_1MS) == 0u
+          );
+
+    /* If we lost a task activation then we can still restore the correct time. */
+    _cntTask1ms += taskParam & EV_MASK_TIMER_1MS;
+    #undef EV_MASK_TIMER_1MS
     
     /* Call the 1ms step function of the APSW. */
     //asw_taskApsw_1ms();
