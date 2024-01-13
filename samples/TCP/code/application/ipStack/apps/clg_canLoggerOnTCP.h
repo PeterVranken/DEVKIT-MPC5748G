@@ -30,6 +30,14 @@
  * Defines
  */
 
+/** The CAN logger service is listening on this TCP port for a connection request from
+    telnet. */
+#define CLG_TCP_PORT_CAN_LOGGER     1234u
+
+/** The maximum number of TCP/IP connections, which can be established with this service in
+    parallel. */
+#define CLG_MAX_NO_TCP_CONNECTIONS  3u
+
 
 /*
  * Global type definitions
@@ -45,10 +53,13 @@
  * Global prototypes
  */
 
-/* The initialization function of the CAN logger application. */
+/** The initialization function of the CAN logger application. */
 bool clg_initCanLoggerTcp(void);
 
-/* The step function of the CAN logger application. */
+/** Get the number of currently established connections with the TCP CAN logger. */
+unsigned int clg_getNoConnections(void);
+
+/** The step function of the CAN logger application. */
 void clg_mainFunction(void);
 
 

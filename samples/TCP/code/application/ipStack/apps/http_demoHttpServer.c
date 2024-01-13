@@ -9,7 +9,7 @@
  * the error handling has not been elaborated; assertions have been used for unlikely yet
  * possible errors, where runtime error handling would be required. See comments below.
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -41,6 +41,7 @@
 #include "typ_types.h"
 #include "lwip/tcp.h"
 #include "stm_systemTimer.h"
+#include "apt_applicationTask.h"
 
 /*
  * Defines
@@ -74,9 +75,9 @@ static const char RODATA(htmlPage0)[] =
     "<html>"
       "<head><title>Hello from DEVKIT-MPC5748G</title></head>"
       "<body>"
-        "This is a small test page brought to you by DEVKIT-MPC5748G. ";
+        "This is a small test page brought to you by DEVKIT-MPC5748G";
 static const char RODATA(htmlPage1)[] =
-        "%u";
+        " at %s (%u)";
 static const char RODATA(htmlPage2)[] =
       "</body>"
     "</html>";
@@ -142,9 +143,11 @@ static err_t http_recv( void *arg ATTRIB_UNUSED
             assert(rc == ERR_OK);
             unsigned int noTotalChars = noChars;
 
-            char response[20];
+            char msgTime[9];
+            apt_printCurrTime(msgTime, sizeof(msgTime));
+            char response[30];
             static unsigned int SBSS_P1(cnt_) = 0u;
-            snprintf(response, sizeof(response), htmlPage1, ++cnt_);
+            snprintf(response, sizeof(response), htmlPage1, msgTime, ++cnt_);
             noChars = strlen(response);
             assert(tcp_sndbuf(pcb) >= noChars);
             rc = tcp_write( pcb

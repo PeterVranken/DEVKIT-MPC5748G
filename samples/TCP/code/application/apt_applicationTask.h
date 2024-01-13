@@ -49,5 +49,7 @@
  * Global prototypes
  */
 
+/** Format the current time in printable format. */
+void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime);
 
 #endif  /* APT_APPLICATIONTASK_INCLUDED */

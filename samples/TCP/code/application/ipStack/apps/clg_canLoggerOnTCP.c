@@ -26,6 +26,7 @@
  */
 /* Module interface
  *   clg_initCanLoggerTcp
+ *   clg_getNoConnections
  *   clg_mainFunction
  * Local functions
  *   findUnusedConnection
@@ -63,14 +64,6 @@
 /*
  * Defines
  */
-
-/** The CAN logger service is listening on this TCP port for a connection request from
-    telnet. */
-#define CLG_TCP_PORT_CAN_LOGGER     1234u
-
-/** The maximum number of TCP/IP connections, which can be established with this service in
-    parallel. */
-#define CLG_MAX_NO_TCP_CONNECTIONS  3u
 
 /* Note, in this application, the lwIP callback tcp_sent is applied just to give some debug
    level feedback about transmitted data. Normally, we don't need it. It can be enabled by
@@ -272,10 +265,8 @@ static bool write( struct tcpConn_t * const pConn
     }
     else
     {
-        assert(pConn->stConn == stConn_closing);
-
         /* Even if we couldn't write: Do not return \a false. This indicates a connection
-           reset to the caller and would guide him to forward this inforation to lwIP by
+           reset to the caller and would guide him to forward this information to lwIP by
            sending error code ERR_ABRT. */
         return true;
     }
@@ -511,6 +502,9 @@ static err_t onLwIPSegmentReceived( void *arg
  *   @param pPcb
  * The protocol control block by reference. Effectively, lwIP's representation of the
  * TCP connection.
+ *   @remark
+ * For this particular application, idle is normalle never entered. We continuously write
+ * data into the stream, which avoids to ever become idle.
  */
 static err_t onLwIPConnectionIdle(void *arg, struct tcp_pcb *pPcb)
 {
@@ -522,23 +516,27 @@ static err_t onLwIPConnectionIdle(void *arg, struct tcp_pcb *pPcb)
     if(pConn->stConn == stConn_established)
     {
         assert(pPcb != NULL);
-        iprintf( "onLwIPConnectionIdle: Connection %u:%hu: Is idle and will be aborted now\r\n"
+        iprintf( "onLwIPConnectionIdle: Connection %u:%hu: Is idle and will be closed now\r\n"
                , idxConn
                , pPcb->remote_port
                );
-#warning try tcp_close instead
-        tcp_abort(pPcb);
-
-        /* The use of tcp_abort() requires return value ERR_ABRT. This ensures memory
-           freeing of the PCB. Abort causes an error callback and this is where we will do
-           our own cleanup. */
-        return ERR_ABRT;
+        tcp_close(pPcb);
+        pConn->stConn = stConn_closing;
+        
+        return ERR_OK;
     }
     else
     {
         assert(pConn->stConn == stConn_closing);
-        return ERR_OK;
-    }
+        iprintf( "onLwIPConnectionIdle: Connection %u:%hu: Is idle and has been closed."
+                 " Waiting for peer's acknowledge took too long, connection is aborted now\r\n"
+               , idxConn
+               , pPcb->remote_port
+               );
+        tcp_abort(pPcb);
+    
+        return ERR_ABRT;
+    }    
 } /* onLwIPConnectionIdle */
 
 
@@ -790,7 +788,6 @@ static void reportCANRxSignals(struct tcpConn_t * const pConn)
         }
 
         /* Flush buffers. */
-        /// @todo TBC: lwIP's tcp_write() doesn't seem to send a frame even if it has got more characters as fit into a frame. We need an explicit tcp_output()
         write(pConn, "", 0u, /* isMsgConst */ true, /* flush */ true);
     }
     else if(++tiHint_ >= 500u)
@@ -881,6 +878,17 @@ bool clg_initCanLoggerTcp(void)
         return false;
 
 } /* clg_initCanLoggerTcp */
+
+
+/** 
+ * Query the number of currently established connections with the TCP CAN logger.
+ *   @return
+ * Get the number in the range 0..#CLG_MAX_NO_TCP_CONNECTIONS.
+ */
+unsigned int clg_getNoConnections(void)
+{
+    return _noTcpConn;
+}
 
 
 /**

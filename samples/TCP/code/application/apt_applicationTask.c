@@ -27,6 +27,7 @@
  */
 /* Module interface
  *   bsw_taskUserInit
+ *   apt_printCurrTime
  *   bsw_taskUser1ms
  *   bsw_taskUser10ms
  *   bsw_taskUser100ms
@@ -38,6 +39,7 @@
  *   showC
  *   greeting
  *   help
+ *   printCurrTime
  */
 
 
@@ -118,6 +120,9 @@ volatile static unsigned int DATA_P1(_cntTask10ms) = 0;
 
 /** Switch to enable/disable the continuous display of PWM measurement results. */
 volatile static bool SBSS_P1(_enableDisplayPWM) = false;
+
+/** Difference between task counter and real-world time of the day. */
+static unsigned int DATA_P1(_offsetInS) = 0;
 
 /*
  * Function implementation
@@ -308,6 +313,7 @@ static void help()
     "help: Get this help text\r\n"
     "show c, show w: Show details of software license\r\n"
     "show PWM [on|off]: Enable/disable display of PWM input measurement on PA2 and PA6\r\n"
+    "show time [tiCycleInS]: Enable/disable regular display of current time\r\n"
     "version: Print software version designation\r\n"
     "CPU: Print current CPU load\r\n"
     "listen [ID] signal: Report changes of Rx signal. ID is a decimal CAN ID, for"
@@ -319,12 +325,24 @@ static void help()
     " sending\r\n"
     "PWM n f [dc]: PWM output. n: 1 means PA1 at J3, pin 1; 2/4/5 means USR_LED2/4/5 at"
     " PA0/4/7\r\n"
-    "time: Print current time\r\n"
+    "time: Print current time once\r\n"
     "time hour min [sec]: Set current time\r\n";
 
     fputs(help, stdout);
 
 } /* End of help */
+
+
+/**
+ * Print the current time.
+ */
+static void printCurrTime(void)
+{
+    char msgTime[9];
+    apt_printCurrTime(msgTime, sizeof(msgTime));
+    iprintf("Current time is %s\r\n", msgTime);
+
+} /* printCurrTime */
 
 
 
@@ -362,6 +380,41 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
 
 } /* End of bsw_taskUserInit */
 
+
+
+
+/**
+ * Format the current time in printable format.
+ *   @param msgTime
+ * The time is written into this character string. It has room for \a sizeOfMsgTime
+ * characters, which includes the terminating zero byte.
+ *   @param sizeOfMsgTime
+ * A value of 9 is suffcient to hold any possible time designation.
+ */
+void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime)
+{
+    /* Current time in seconds since beginning of day. */
+    const unsigned int noMillis = _cntTask1ms;
+    unsigned int noSec = noMillis / 1000u + _offsetInS;
+
+    /* Avoid expensive modulo. */
+    if(noSec >= 86400u)
+    {
+        noSec -= 86400u;
+        _offsetInS -= 86400u;
+    }
+    assert(noSec < 86400u);
+
+    /* Split current time in hour, minute and second of day. */
+    unsigned int h, m, s;
+    h = noSec / 3600u;
+    m = s = noSec - h*3600u;
+    m /= 60u;
+    s -= m*60u;
+    
+    snprintf(msgTime, sizeOfMsgTime, "%02u:%02u:%02u", h, m, s);
+
+} /* apt_printCurrTime */
 
 
 
@@ -424,6 +477,17 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
     /* Call the step function of the CAN interface engine for this task. */
     can_mainFunction_10ms();
 
+    static uint16_t SBSS_P1(cntPrintTime_) = 0u;
+    static uint16_t SBSS_P1(tiCycleTimeInS_) = 0u;
+    if(cntPrintTime_ > 0u)
+    {
+        if(--cntPrintTime_ == 0u)
+        {
+            printCurrTime();
+            cntPrintTime_ = tiCycleTimeInS_;
+        }
+    }
+        
     /* Look for possible user input through serial interface. */
     static unsigned int DATA_P1(cntIdleLoops_) = 2800;
     char inputMsg[80+1];
@@ -448,6 +512,20 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
                     showW();
                 else if(strcmp(argV[1], "PWM") == 0)
                     _enableDisplayPWM = argC == 2u  || strcmp(argV[2], "off") != 0u;
+                else if(strcmp(argV[1], "time") == 0)
+                {
+                    /* Regular output of the current time: Omitted argument means "on",
+                       value 0 (including non-nmbers) means "off". */
+                    const signed int tiCycleInS = argC == 2u? 1: atoi(argV[2]);
+                    if(tiCycleInS < 0)
+                        tiCycleTimeInS_ = 0u;
+                    else if(100*tiCycleInS <= UINT16_MAX)
+                        tiCycleTimeInS_ = (uint16_t)(100*tiCycleInS);
+                    else
+                        tiCycleTimeInS_ = 65500u;
+
+                    cntPrintTime_ = tiCycleTimeInS_ > 0u? 1u: 0u;
+                }                
             }
             else if(strcmp(argV[0], "help") == 0)
                 help();
@@ -462,7 +540,6 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
             }
             else if(strcmp(argV[0], "time") == 0)
             {
-                static unsigned int DATA_P1(_offsetInS) = 0;
                 if(argC >= 3)
                 {
                     signed int i = atoi(argV[1]);
@@ -495,27 +572,8 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
                     _offsetInS -= _cntTask1ms / 1000;
                 }
                 
-                /* Print current time. */
-                const unsigned int noMillis = _cntTask1ms;
-                unsigned int noSec = noMillis / 1000 + _offsetInS;
-
-                /* Avoid expensive modulo. */
-                if(noSec >= 86400)
-                {
-                    noSec -= 86400;
-                    _offsetInS -= 86400;
-                }
-                assert(noSec < 86400);
-
-                unsigned int h, m, s;
-                h = noSec / 3600;
-                m = s = noSec - h*3600;
-                m /= 60;
-                s -= m*60;
-
-                iprintf( "Current time is %02u:%02u:%02u\r\n"
-                       , h, m, s
-                       );
+                printCurrTime();
+                cntPrintTime_ = tiCycleTimeInS_;
             }
             else if(strcmp(argV[0], "PWM") == 0)
             {

@@ -49,6 +49,7 @@
 #include "cdt_canDataTables.h"
 #include "cmd_canCommand.h"
 #include "cdr_canDriverAPI.h"
+#include "clg_canLoggerOnTCP.h"
 
 /*
  * Defines
@@ -99,6 +100,35 @@ static unsigned int DATA_P1(_tiListenerAdd) = 0;
  */
 void cmd_onReceiveMessage(unsigned int idxRxFr)
 {
+    /* The console has a rather limited use for CAN logging. If enabled, the console is
+       flooded with information. Other information is obscured and the bandwidth is soon
+       exceeded, leading to truncated output. As a kind of work around, we say to suppress
+       this output if there's anyway another open dedicated TCP channel for the same
+       information. */
+    const bool tcpInUse = clg_getNoConnections() > 0u;
+    static bool SBSS_P1(tcpInUse_last_) = false;
+    if(tcpInUse)
+    {
+        if(!tcpInUse_last_)
+        {
+            tcpInUse_last_ = true;
+            fputs( "A TCP connection with the CAN logger has been established. CAN"
+                   " logging via serial terminal is stopped as long as TCP is in use\r\n"
+                 , stdout
+                 );
+        }
+        return;        
+    }
+    else if(tcpInUse_last_)
+    {
+        tcpInUse_last_ = false;
+        fputs( "All TCP connections with the CAN logger have been closed. CAN logging via"
+               " serial terminal is enabled again\r\n"
+             , stdout
+             );
+    }
+    
+    
     unsigned int idxSigInList;
     for(idxSigInList=0; idxSigInList<sizeOfAry(cmd_listenerSignalAry); ++idxSigInList)
     {
