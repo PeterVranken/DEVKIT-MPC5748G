@@ -311,7 +311,7 @@ footer:
       content: |
         {document-title} +
         Revision {revision}, {docdate} +
-        https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE
+        https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/manual/manual.pdf
     center:
       content: ''
     right:

@@ -456,7 +456,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_overview_functionality">5.1. Overview Functionality</a></li>
 <li><a href="#_scheduler_and_preemption">5.2. Scheduler and preemption</a></li>
-<li><a href="#_events">5.3. Events</a></li>
+<li><a href="#_events">5.3. Events</a>
+<ul class="sectlevel3">
+<li><a href="#_countable_versus_ordinary_events">5.3.1. Countable versus ordinary events</a></li>
+<li><a href="#secDefCountableEv">5.3.2. Defining a countable event by bit mask</a></li>
+<li><a href="#_some_more_remarks_on_events">5.3.3. Some more remarks on events</a></li>
+</ul>
+</li>
 <li><a href="#_the_operating_system_clock">5.4. The operating system clock</a></li>
 <li><a href="#secPrioTaskAndISR">5.5. Priority of tasks and interrupts</a></li>
 <li><a href="#_exception_handling">5.6. Exception handling</a></li>
@@ -506,7 +512,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel3">
 <li><a href="#_allocated_mcu_resources">8.3.1. Allocated MCU resources</a></li>
 <li><a href="#_error_codes">8.3.2. Error codes</a></li>
-<li><a href="#secApiCreateEvent">8.3.3. Create an event</a></li>
+<li><a href="#secApiCreateEvProc">8.3.3. Create an event processor</a></li>
 <li><a href="#secApiRegisterTask">8.3.4. Registering a task</a></li>
 <li><a href="#secApiInitINTC">8.3.5. Initialize the interrupt hardware</a></li>
 <li><a href="#secApiRegisterIsr">8.3.6. Registering an ISR</a></li>
@@ -517,7 +523,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_control_tasks_and_processes">8.4. Control tasks and processes</a>
 <ul class="sectlevel3">
-<li><a href="#secApiTriggerEvent">8.4.1. Trigger an event</a></li>
+<li><a href="#secApiSendEvent">8.4.1. Notify an event</a></li>
 <li><a href="#secApiRunTask">8.4.2. Inter-process function call</a></li>
 <li><a href="#secApiTermTask">8.4.3. Task abortion or termination</a></li>
 <li><a href="#secApiSuspProc">8.4.4. Suspend a process</a></li>
@@ -743,7 +749,7 @@ simplicity&#8201;&#8212;&#8201;suffices to drive the majority of industrial appl
 <p>By means of compile-time configuration, the kernel can be instantiated on
 any set of cores. Nonetheless, safe-RTOS is still not a multi-core RTOS.
 The different kernel instantiations don&#8217;t have any awareness of one
-another and there are no core-spawning scheduling strategies. However, a
+another and there are no core-spanning scheduling strategies. However, a
 number of core-to-core comunication basics is offered; we have a shared
 memory concept, which considers the complexity introduced by the cache,
 mutex objects, spin locks and an interrupt based core-to-core notification
@@ -765,7 +771,7 @@ channels or I/O data become protected resources, too.</p>
 <p>Memory protection is implemented with the memory protection unit (MPU) of
 the microcontroller. The MPU contains a number of memory area descriptors,
 which associate a range of memory addresses (defined by start and end
-address) with access rights. Mre precise, it are addresses, regardless
+address) with access rights. More precise, it are addresses, regardless
 whether memory, I/O registers or nothing is found at these addresses. Any
 load and store of the CPU is either permitted by at least one of the
 descriptors and then executed or it is suppressed and leads to an
@@ -827,10 +833,10 @@ system design fails to meet the timing requirements for the punished task.</p>
 <div class="paragraph">
 <p>A second, simpler yet often advantageous mechanism is offered for time
 protection. The situation is recorded and reported as an "activation loss"
-error when an event is triggered but not all tasks associated with the
-event have terminated yet after the preceding trigger of the event. For
-the most typical use case of timer events and regular tasks this would
-have the meaning of a task overrun.</p>
+error when an event aims to trigger one or more tasks but not all tasks
+associated with the event have terminated yet after the preceding trigger
+by the same event. For the most typical use case of timer events and
+regular tasks this would have the meaning of a task overrun.</p>
 </div>
 <div class="paragraph">
 <p>The kernel offers the priority ceiling protocol (PCP) to the tasks for
@@ -931,15 +937,15 @@ possibility to halt critical processes</p>
 <div class="paragraph">
 <p>The proposed RTOS is little exciting with respect to its functionality.
 The scheduler implements the functionality of what is called the "Basic
-Conformance Class 1" (BCC1) of the OSEK/VDX-OS standard and of its BCC2 with
-the exception of activation queuing.</p>
+Conformance Class 1" (BCC1) of the OSEK/VDX-OS standard and of its BCC2
+with the exception of activation queuing.</p>
 </div>
 <div class="paragraph">
-<p>The scheduler offers an API to create events that can activate tasks. An
+<p>The scheduler offers an API to notify events that can activate tasks. An
 event is either a regular timer event, triggered by the RTOS system clock,
-or a software triggered event. The latter can be triggered either from
-user code (if it has sufficient privileges) or from ISRs belonging to the
-operating system.</p>
+or an event notified by software. Event notification by software is
+possible either from user code (if it has sufficient privileges) or from
+ISRs belonging to the operating system.</p>
 </div>
 <div class="paragraph">
 <p>The RTOS offers a pre-configured set of four user processes. The
@@ -947,14 +953,16 @@ limitation to four is a hardware constraint and for sake of simplicity no
 virtualizing by software has been shaped. The operating system forms a
 fifth process. The operating system startup code will register the needed
 tasks. The registration assigns them to one of the processes and
-associates them with one of the created events.</p>
+associates them with one of the created event objects. (Where "event"
+actually is an event processor containing the logic to receive events and
+to activate associated tasks).</p>
 </div>
 <div class="paragraph">
-<p>All scheduling is strictly priority controlled. The triggering of an event
-makes all associated tasks ready to run. This is called task activation.
-At any time, the scheduler decides by priority, which of the <em>ready</em> tasks
-becomes the one and only <em>running</em> task. This may involve preemption of
-tasks.</p>
+<p>All scheduling is strictly priority controlled. The notification of an
+event makes all associated tasks ready to run. This is called task
+activation. An activated task is <em>ready</em> to run. At any time, the
+scheduler decides by priority, which of the <em>ready</em> tasks becomes the one
+and only <em>running</em> task. This may involve preemption of tasks.</p>
 </div>
 <div class="paragraph">
 <p>The operating system startup code can install needed interrupt service
@@ -1010,11 +1018,11 @@ n1, n2 and n3 then we would have a total of 3+n1+n2+n3 stacks.</p>
 <p>Although BCC means a significant reduction of complexity and functionality
 in comparison to a full featured real time kernel, the embedded practice
 mostly doesn&#8217;t require more than this. The typical data flow paradigm of
-an industrial embbeded application is to have event triggered tasks, which
+an industrial embedded application is to have event triggered tasks, which
 serve the asynchronous I/O channels and strictly cyclic application tasks,
 which process the data and implement the control strategies. The
 communication between ISRs and tasks is done either by queues or by
-overwriting (last recent value supersedes earlier ones), that depents.
+overwriting (last recent value supersedes earlier ones), that depends.
 It&#8217;s a simple model, which has the advantage of being well understood,
 transparent and by nature free of dead locks. The latency times are higher
 than for consequently designed event controlled systems but they are
@@ -1026,32 +1034,232 @@ cycle times.</p>
 <div class="sect2">
 <h3 id="_events">5.3. Events</h3>
 <div class="paragraph">
-<p>A task activation always happens by means of an event. The event is an
-RTOS object, which is created in the initialization code sequence. A set
-of tasks can be associated with an event. We have the relation 1:n for
-events to tasks. Any task is associated with exactly one event. An event
-has a method to trigger it. When the event is triggered then all
-associated tasks are triggered (and the scheduler will execute them in the
-order of priority).</p>
+<p>A task activation always happens via an event processing object. The event
+processor is an RTOS object, which is created in the initialization code
+sequence. It handles timer or software notified events. A set of tasks can
+be associated with such an object. We have the relation 1:n for event
+processors to tasks. Any task is associated with exactly one event
+processor. An event processor has methods to receive events that trigger
+all associated tasks. Once triggered, the scheduler will execute the tasks
+in the order of priority.</p>
 </div>
 <div class="paragraph">
-<p>An event can be configured such that it is implicitly triggered by the
-RTOS clock. This functionality is limited to an arbitrary time for the
-first trigger and an infinite, regular sequence of further triggers.
-Evidently, this aims at "normal", regular tasks. However, even these
-events still have the method for explicit trigger by software so that more
-complex activation patterns could be implemented.</p>
+<p>An event processor can be configured such that it is implicitly triggered
+by the RTOS clock. This functionality is limited to an arbitrary time for
+the first trigger and an infinite, regular sequence of further triggers.
+Evidently, this aims at "normal", regular tasks. However, even these event
+processors still have the methods for explicit trigger by software so that
+more complex activation patterns can be implemented.</p>
 </div>
 <div class="paragraph">
-<p>Triggering an event is a privileged operation. By configuration it is
-decided, which process may use the method for which event. For the
-majority of events, this will only be the kernel process but there are
-reasonable use cases for user tasks triggering specific events, too, and&#8201;&#8212;&#8201;as long as privileges are granted with care&#8201;&#8212;&#8201;without breaking the
-safety concept.</p>
+<p>Notifying an event is a privileged operation. By configuration it is
+decided, which process may use the event notification methods for which
+event processor. For the majority of event processors, this will only be
+the kernel process but there are reasonable use cases for user tasks
+triggering specific event processors, too, and&#8201;&#8212;&#8201;as long as privileges
+are granted with care&#8201;&#8212;&#8201;without breaking the safety concept.</p>
 </div>
 <div class="paragraph">
-<p>The method to trigger an event can be used from ISRs and from tasks. The
+<p>The methods to notify an event can be used from ISRs and from tasks. The
 former can be used to implement deferred interrupt handling.</p>
+</div>
+<div class="sect3">
+<h4 id="_countable_versus_ordinary_events">5.3.1. Countable versus ordinary events</h4>
+<div class="paragraph">
+<p>Software as well as the timers inside the event processors can decide,
+whether to notify an ordinary event or a countable event.</p>
+</div>
+<div class="paragraph">
+<p>The ordinary event has a 32 Bit argument. This argument can be set
+arbitrarily by the event sender and it is delivered to the notified task.
+When the task is activated then the task function receives the argument as
+normal function argument. Ordinary events are not queued and can be lost.
+If the notified task is already in state "ready" then another notification
+has no impact and the argument of the new event will never be delivered.
+Instead, an "activation loss" failure is counted for the event processor.</p>
+</div>
+<div class="paragraph">
+<p>Countable events don&#8217;t have an argument. They just occur. The 32 Bit
+value, which is still delivered to the activated task function, is now
+used to express the multiplicity of event occurrences. It is guaranteed up
+to the implementation limit of the event occurrence counter that no
+occurrence will ever be lost. The triggered task will surely see all
+events. In this sense, using countable events is comparable to event
+queuing and it has some characteristics of a semaphore.</p>
+</div>
+<div class="paragraph">
+<p>Similarly to ordinary events, undeliverable event occurrences are reported
+as failures. Any multiplicity of an event, which can not be notified to
+the triggered task, is counted as an "activation loss" failure in the
+event processor.</p>
+</div>
+<div class="paragraph">
+<p>If a countable event is notified (with multiplicity &gt;= 1) while the
+notified task is in state "idle" then the task is made "ready" and the
+argument for the task function holds the notified event multiplicity. This
+is the same behavior as for ordinary events.</p>
+</div>
+<div class="paragraph">
+<p>If a countable event is notified while the notified task is in state
+"ready" then the notified multiplicity of the event is accumulated in a
+counter for the event. When the task has completed and would normally
+return to state "idle", it remains "ready" and the meanwhile accumulated
+event multiplicities are delivered in the argument of the new
+task activation. Synchronously, the event counter resets to zero so that
+it can receive new notifications.</p>
+</div>
+<div class="paragraph">
+<p>The 32 bits of the delivered task function argument can be shared between
+several countable events. Bit masks are used to define a countable event.
+Therefore, a task can be triggered by up to 32 different countable events.
+(Each event would have only 1 Bit per task activation to deliver the event
+multiplicity.) The task could also be configured to receive 8 different
+events with 4 Bit, but this is just another example&#8201;&#8212;&#8201;countable events
+don&#8217;t necessarily share the available bits uniformly. Any distribution of
+the available 32 bits onto events is allowed.</p>
+</div>
+<div class="paragraph">
+<p>The typical use case of an ordinary event is a task, which is triggered by
+a single kind of event. The task is expected to be alert enough to handle
+all event occurrences. (And if it is occasionally not then this is
+considered a significant failure.) Most typical example is an interrupt
+handler, which fetches some data from the hardware and triggers a task to
+further process that data. The arbitrary event argument can be used as
+handle for accessing the fetched data.</p>
+</div>
+<div class="paragraph">
+<p>The typical use case of countable events is a task, which is triggered by
+different, independent kinds of events. Basically, this is allowed by
+ordinary events, too, but because of the assumed independence of the
+events there will always be a non-negligible likelihood of (nearly)
+co-incidental occurrence of events of different kind. Only one of the
+simultaneous events could be delivered. The others would be rejected and
+counted as failures because of the task being already triggered. Using
+countable events of sufficient bit sizes, all event occurrences would be
+notified to the task.</p>
+</div>
+<div class="paragraph">
+<p>Note, using the 32 Bit argument for notifying the event counts implies
+that the number of task activations is normally lower than the number of
+event occurrences. Several event occurrences can be notified in a single
+task activation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="secDefCountableEv">5.3.2. Defining a countable event by bit mask</h4>
+<div class="paragraph">
+<p>It is permitted to notify both, ordinary and countable events, to one and
+the same event processor&#8201;&#8212;&#8201;even if there won&#8217;t barely be use cases for
+doing so. The kind of event is decided by choosing the appropriate API,
+e.g., <a href="#secApiSendEvent">rtos_sendEvent()</a> vs.
+<a href="#secApiSendEvent">rtos_sendEventCountable()</a>.</p>
+</div>
+<div class="paragraph">
+<p>Countable events are user-defined by bit mask. The definition is made on
+the fly when notifying the event occurrence
+(<a href="#secApiSendEvent">rtos_sendEventCountable()</a> vs.
+<a href="#secApiSendEvent">rtos_sendEventMultiple()</a>). The bit masks of different
+countable events notified to one and the same event processor must never
+share set bits. The RTOS doesn&#8217;t check consistent use of bit masks. If
+different events are notified by overlapping bit masks then the result is
+undefined and the activated tasks won&#8217;t be able to retrieve the notified
+event multiplicities.</p>
+</div>
+<div class="paragraph">
+<p>The receiving task extracts the multiplicity of a notified event by
+masking the task parameter with the same bit mask as used when notifying
+the given event. If all bit masks in use have a single solid block of set
+bits (this is strongly recommended) then the extraction of the numeric
+value of the event multiplicity is most easy&#8201;&#8212;&#8201;a binary AND and a logical
+right shift. Please see the example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-C++" data-lang="C++">#define EV_A_CALLS_C  0x00000F00u
+#define EV_B_CALLS_C  0x00FE0000u
+
+extern unsigned int idEvProc;
+
+void someFctInTaskA(void)
+{
+    static unsigned int i = 0;
+    ++i;
+    rtos_sendEventCountable(idEvProc, EV_A_CALLS_C);
+}
+
+void someFctInTaskB(void)
+{
+    static unsigned int j = 0;
+    ++j;
+    rtos_sendEventCountable(idEvProc, EV_B_CALLS_C);
+}
+
+int32_t taskC(uint32_t PID, uint32_t taskParam)
+{
+    static unsigned int i = 0u, j = 0u;
+    i += (taskParam &amp; EV_A_CALLS_C) &gt;&gt; 8;
+    j += (taskParam &amp; EV_B_CALLS_C) &gt;&gt; 17;
+    printf("Event A occurred %u times and event B occurred %u times\r\n", i, j);
+    return 0;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, in this example the <em>i</em> and <em>j</em> in task <em>C</em> will strictly follow the
+<em>i</em> in task <em>A</em> and the <em>j</em> in task <em>B</em>&#8201;&#8212;&#8201;with a task scheduling
+depending delay and only as long as the event counters don&#8217;t overflow. To
+avoid overflows, <em>someFctInTaskA</em>() must be called in task <em>A</em> no more
+than 15 times before the scheduler can activate task <em>C</em> and, accordingly,
+<em>someFctInTaskB</em>() must be called no more than 127 times. Whether this can
+be guaranteed or not is a matter of the task priorities and the meaning of
+the events.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_some_more_remarks_on_events">5.3.3. Some more remarks on events</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>A countable event with 1 Bit is nearly the same as an ordinary event. but
+not exactly. The event processor can be re-triggered once, while the
+associated tasks are still ready.</p>
+<div class="paragraph">
+<p>If a timer is used with an ordinary event then a task overflow is
+immediately reported. If at due time <em>n</em>, at least one associated task has
+not terminated its activation <em>n</em>-1 then activation <em>n</em> is omitted (for
+all associated tasks) and an event loss is reported for the event
+processor.</p>
+</div>
+<div class="paragraph">
+<p>Using a one bit countable event would tolerate this situation. Activation
+<em>n</em> would be done a bit too late, after termination of the last task from
+activation <em>n</em>-1 and no failure would be reported.</p>
+</div>
+<div class="paragraph">
+<p>Therefore, an ordinary event is a good choice for regular, time triggered
+tasks.</p>
+</div>
+</li>
+<li>
+<p>API <a href="#secApiSendEvent">rtos_sendEventMultiple(n)</a> is implemented as
+O(n) and must not be used with large multiplicities. To avoid accidental
+misuse, the data type for the multiplicity has been chosen as <code>uint8_t</code>,
+so <em>n</em> can generally not exceed 255.</p>
+</li>
+<li>
+<p>A typical use case of countable events is queued processing. A shared
+queue is fed by the producer task, which will then notify the number of
+fed elements as countable event to the consumer task, which is woken up
+and which can be sure to find at least this number of elements in the
+queue.</p>
+</li>
+<li>
+<p>A round robin strategy is applied if several tasks of same priority are
+flooded with countable events so that they stay continuously ready. In
+this situation, all of these tasks are cyclically activated.</p>
+</li>
+</ol>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1093,22 +1301,23 @@ executed sequentially, i.e., one after another. This introduces a kind of
 sub-ordinated priority, which determines the order of execution in this
 situation. This sub-ordinated priority is defined at RTOS configuration
 time; in the given situation, the tasks would be executed primarily in
-order of creation of the events, they are associated with, and secondarily
-in order of registration, if they are associated with one and the same
-event; see <em>rtos_osCreateEvent</em>(), <em>rtos_osRegisterOSTask</em>() and
-<em>rtos_osRegisterUserTask</em>() for details.</p>
+order of creation of the event processors, they are associated with, and
+secondarily in order of registration, if several of them are associated
+with one and the same event processor; see <em>rtos_osCreateEventProcessor</em>(),
+<em>rtos_osRegisterOSTask</em>() and <em>rtos_osRegisterUserTask</em>() for details.</p>
 </div>
 <div class="paragraph">
 <p>What does "become ready at the same time" mean? This can be as easy as two
 cyclic tasks that become due at the same nominal operating system clock
 tick. For event tasks, which are triggered from one or more ISRs it&#8217;s less
-evident. One ISR can trigger several events or several nesting, preempting
-ISRs can each trigger one or more events. Due to the generally higher
-priority of interrupts in comparison to tasks, all of the tasks, which are
-associated with any of the triggered events, become effectively due at the
-(logically) same time and compete for the CPU immediately after return
-from the last of the nested interrupts. In this situation, the
-sub-ordinated priority counts for those of same priority.</p>
+evident. One ISR can trigger several event processors or several nesting,
+preempting ISRs can each trigger one or more event processors. Due to the
+generally higher priority of interrupts in comparison to tasks, all of the
+tasks, which are associated with any of the triggered event processors,
+become effectively due at the (logically) same time and compete for the
+CPU immediately after return from the last of the nested interrupts. In
+this situation, the sub-ordinated priority counts for those of same
+priority.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -1117,12 +1326,12 @@ sub-ordinated priority counts for those of same priority.</p>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-A most important aspect of tasks of same priority&#8201;&#8212;&#8201;it doesn&#8217;t
-matter whether they are associated with the same event or with different
-events of same priority&#8201;&#8212;&#8201;is that there are by principle no race
-condition between them. They can easily share data objects without any
-concern about using keyword <em>volatile</em> or the need to implement critical
-section code.
+A most important aspect of tasks of same priority executing on the
+same core&#8201;&#8212;&#8201;it doesn&#8217;t matter whether they are associated with the same
+event processor or with different event processors of same priority&#8201;&#8212;&#8201;is
+that there are by principle no race condition between them. They can
+easily share data objects without any concern about using keyword
+<em>volatile</em> or the need to implement critical section code.
 </td>
 </tr>
 </table>
@@ -1292,8 +1501,8 @@ supervised processes.</p>
 <p>The design of an operating system building on safe-RTOS can make the
 consideration, whether or not deadline monitoring needs to be applied at
 all. If some design rules are obyed then the observation of the event
-activation loss counters from the safety supervisory task will be
-sufficient in most cases (see service <em>rtos_getNoActivationLoss</em>()).</p>
+processors' activation loss counters from the safety supervisory task will
+be sufficient in most cases (see service <em>rtos_getNoActivationLoss</em>()).</p>
 </div>
 <div class="paragraph">
 <p>Using deadline monitoring is absolutely unavoidable if ISRs make use of
@@ -1303,7 +1512,7 @@ handling, i.e., by triggering an OS task that takes over the work from the
 ISR. The triggered task would have a priority below the safety task and if
 it is blocked by a non-returning, bad callback into the user process then
 the safety task would immediately see the activation losses for the event
-triggered by the ISR and likely some other (timer) events.</p>
+notified by the ISR and likely some other (timer) events.</p>
 </div>
 <div class="paragraph">
 <p>Typically, the latency times resulting from observation of activation
@@ -1537,11 +1746,11 @@ of samples is inconsistent; the age of the samples differs by one cycle.</p>
 </div>
 <div class="paragraph">
 <p>If consistency of a data set matters for an interrupt driven I/O driver
-then it can either apply a double-buffering strategy or it delegate the
+then it can either apply a double-buffering strategy or it delegates the
 API update to an OS task of sufficiently high priority. Delegation means
-the ISR just triggers the event the task is associated with. The task
-reads the I/O registers and writes the results into the API buffers. This
-design is often referred to as "deferred interrupt handling". The
+the ISR just triggers the event processor the task is associated with. The
+task reads the I/O registers and writes the results into the API buffers.
+This design is often referred to as "deferred interrupt handling". The
 difference is that the API now can implement critical section code&#8201;&#8212;&#8201;this
 is possible between different tasks, between OS tasks and ISRs but not
 between application tasks and ISRs.</p>
@@ -1626,12 +1835,12 @@ supervisory task from executing.
   <sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup></p>
 </div>
 <div class="paragraph">
-<p>The second way to implement a callback is using a dedicated event. The
-callback is implemented as a task, which is associated with the event. By
-triggering the event, the ISR activates the task. Independently, the
-scheduler of the RTOS decides when to make the task running. The task is
-user code owned, belongs to the same, supervised process and can implement
-the notification as suitable in this context.</p>
+<p>The second way to implement a callback is using a dedicated event
+processor. The callback is implemented as a task, which is associated with
+the event processor. By triggering the processor, the ISR activates the
+task. Independently, the scheduler of the RTOS decides when to make the
+task running. The task is user code owned, belongs to the same, supervised
+process and can implement the notification as suitable in this context.</p>
 </div>
 <div class="paragraph">
 <p>There are significant differences between both solutions:</p>
@@ -1640,9 +1849,9 @@ the notification as suitable in this context.</p>
 <ul>
 <li>
 <p>Using an event means less time uncertainty for the ISR implementation.
-The event has a lower priority than the ISR, so the ISR is surely not
-preempted and triggering the event will be done in no time. The ISR can
-return soon</p>
+The task activated by the event has a lower priority than the ISR, so
+the ISR is surely not preempted and triggering the event will be done in
+no time. The ISR can return soon</p>
 </li>
 <li>
 <p>Using the event means to have better control on priorities. The callback
@@ -1818,7 +2027,7 @@ processing. This includes but is not limited to:</p>
 <p><em>rtos_osRunTask</em>()</p>
 </li>
 <li>
-<p><em>rtos_osTriggerEvent</em>()</p>
+<p><em>rtos_osSendEvent</em>()</p>
 </li>
 </ul>
 </div>
@@ -1856,7 +2065,7 @@ processing enabled and race conditions appear with other contexts</p>
 </li>
 <li>
 <p>All OS services may be used in the implementation, including critical
-section operations and running a user task or triggering an event to
+section operations and running a user task or notifying an event to
 activate the associated tasks</p>
 </li>
 </ul>
@@ -2091,7 +2300,7 @@ resource or leave critical section</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">3</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">rtos_scFlHdlr_triggerEvent</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Full</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Event trigger by software</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Event notification by software</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">4</p></td>
@@ -2294,7 +2503,7 @@ user and OS tasks, interrupt service routines and bare-metal applications:</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCreateEvent">rtos_osCreateEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCreateEvProc">rtos_osCreateEventProcessor()</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -2339,12 +2548,12 @@ user and OS tasks, interrupt service routines and bare-metal applications:</p>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTriggerEvent">rtos_osTriggerEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_osSendEvent()</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiTriggerEvent">rtos_triggerEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_sendEvent()</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
 </tr>
@@ -2539,13 +2748,13 @@ return an enumeration value, <code>rtos_errorCode_t</code>, indicating, whether 
 which problem appeared.</p>
 </div>
 <div class="paragraph">
-<p>The configuration of the RTOS is generally static, i.e., the sets of events
-and tasks and the granted privileges will not depend on variable input
-data and so the success of the RTOS initialization neither won&#8217;t.
-Consequently, there&#8217;s no need for a dynamic, intelligent error handling
-strategy. The implemented strategy will simply be to start the application
-software if and only if all RTOS configuration and initialization calls
-return "no error".</p>
+<p>The configuration of the RTOS is generally static, i.e., the sets of event
+processors and tasks and the granted privileges will not depend on
+variable input data and so the success of the RTOS initialization neither
+won&#8217;t. Consequently, there&#8217;s no need for a dynamic, intelligent error
+handling strategy. The implemented strategy will simply be to start the
+application software if and only if all RTOS configuration and
+initialization calls return "no error".</p>
 </div>
 <div class="paragraph">
 <p>The added value of the enumeration only is development support. Having the
@@ -2567,46 +2776,65 @@ typedef enum rtos_errorCode_t;</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="secApiCreateEvent">8.3.3. Create an event</h4>
+<h4 id="secApiCreateEvProc">8.3.3. Create an event processor</h4>
 <div class="paragraph">
-<p>Tasks are activated by events. At OS initialization time, at first events are
-created to specify conditions under which the aimed tasks shall be
-activated. These are mostly (regular) time triggers but software trigger
-(e.g., from within an ISR) is supported, too.</p>
+<p>Tasks are activated by events. At OS initialization time, at first event
+processors are created. Most often, they are configured to produce regular
+timer events in order to implement cyclic tasks, but notification of
+events by software (e.g., from within an ISR) is supported, too.</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>#include "rtos.h"
-rtos_errorCode_t rtos_osCreateEvent( unsigned int *pEventId
-                                   , unsigned int tiCycleInMs
-                                   , unsigned int tiFirstActivationInMs
-                                   , unsigned int priority
-                                   , unsigned int minPIDToTriggerThisEvent
-                                   , uintptr_t taskParam
-                                   );</pre>
+rtos_errorCode_t rtos_osCreateEventProcessor
+                                  ( unsigned int *pEvProcId
+                                  , unsigned int tiCycleInMs
+                                  , unsigned int tiFirstActivationInMs
+                                  , unsigned int priority
+                                  , unsigned int minPIDToTriggerThisEvProc
+                                  , bool timerUsesCountableEvents
+                                  , uint32_t timerTaskTriggerParam
+                                  );
+rtos_osCreateSwTriggeredEventProcessor
+                                  ( unsigned int *pEvProcId
+                                  , unsigned int priority
+                                  , unsigned int minPIDToTriggerThisEvProc
+                                  )</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The returned event IDs form a sequence of numbers 0, 1, 2, &#8230;&#8203; in the
-order of creation calls. The ID is required as input to some other API
-functions that relate to an event,
-<a href="#secApiTriggerEvent"><code>rtos_triggerEvent</code></a> in the first place.</p>
+<p>The returned event processor IDs form a sequence of numbers 0, 1, 2, &#8230;&#8203;
+in the order of creation calls. The ID is required as input to some other
+API functions that relate to a events,
+<a href="#secApiSendEvent"><code>rtos_sendEvent</code></a> in the first place.</p>
 </div>
 <div class="paragraph">
 <p>The priority is a non zero integer number. Regardless of the number, any
-event (and thus all of the associated tasks) will have a priority below any
-interrupt. See <a href="#secPrioTaskAndISR">Section 5.5</a> and <a href="#secApiRegisterIsr">Section 8.3.6</a> also.</p>
+event (and thus all of the associated tasks) will have a priority below
+any interrupt. See <a href="#secPrioTaskAndISR">Section 5.5</a> and <a href="#secApiRegisterIsr">Section 8.3.6</a> also.</p>
 </div>
 <div class="paragraph">
-<p>Parameter <code>minPIDToTriggerThisEvent</code> restricts the use of the API
-<code>rtos_triggerEvent</code> for the given event to processes of sufficient
-privileges.</p>
+<p>Parameter <code>minPIDToTriggerThisEvProc</code> restricts the use of the user
+process APIs to send an event to its tasks for the given event processor
+to processes of sufficient privileges
+(<a href="#secApiSendEvent"><code>rtos_sendEvent</code></a>,
+<a href="#secApiSendEvent"><code>rtos_sendEventCountable</code></a> and
+<a href="#secApiSendEvent"><code>rtos_sendEventMultiple</code></a>).</p>
 </div>
 <div class="paragraph">
-<p>Parameter <code>taskParam</code> is provided to the task function as argument. It can
-be used as context information, e.g., if the same task function should be
-associated with different events. (Which makes them different tasks
-executing the same shared code.)</p>
+<p>On due times, the event processor will call the API to send an event to
+its tasks (see secApiSendEvent). Parameter <code>timerTaskTriggerParam</code> is
+then used as function argument to the API call. Consequently, it&#8217;ll be
+provided to the associated task functions as argument if
+<code>timerUsesCountableEvents</code> is false and it&#8217;ll serve as event mask if
+<code>timerUsesCountableEvents</code> is true.</p>
+</div>
+<div class="paragraph">
+<p><em>rtos_osCreateSwTriggeredEventProcessor</em>() is just an "abbreviated" call
+of <em>rtos_osCreateEventProcessor</em>(): Most of the arguments of the latter
+don&#8217;t care if the event processor is not going to be used for time
+triggered task activation. The former variant just sets the unused
+arguments to default values.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2614,14 +2842,14 @@ executing the same shared code.)</p>
 <div class="paragraph">
 <p>Tasks are not created dynamically, on demand, but they are registered at
 the RTOS before the scheduler is started. The registration of a task
-specifies the task function and the event, which will activate the task.
-The task function is associated with the event.</p>
+specifies the task function and the event processor, which will activate
+the task. The task function is associated with the event processor.</p>
 </div>
 <div class="paragraph">
 <p>Any number of tasks (up to a configurable compile time constant) can be
-associated with an event. Later, when the event is triggered, they will
-all be executed, in the order of registration, each in its process and
-without mutual race conditions.</p>
+associated with an event processor. Later, when an event is notified to
+the processor, they will all be executed, in the order of registration,
+each in its process and without mutual race conditions.</p>
 </div>
 <div class="paragraph">
 <p>The RTOS differentiates between three kinds of tasks:</p>
@@ -2684,18 +2912,23 @@ rtos_errorCode_t rtos_osRegisterInitTask
 <div class="paragraph">
 <p>Note the return value of the registered user and initialization task
 functions. These tasks are run under protection and an error is reported
-in their process if they fail. The return value permits to let the task
-voluntarily report a failure in their process the same way a kernel caught
+in their process if they fail. The return value permits a task to
+voluntarily report a failure in its process, the same way a kernel caught
 failure would. Use case is hindering the system from startup if something
 goes wrong during initialization.</p>
 </div>
 <div class="paragraph">
 <p>The task functions receive the 32 Bit argument <code>taskParam</code>. For regular
-timer tasks its widely irrelevant; they receive the constant value, which
-is specified at event creation time (see <a href="#secApiCreateEvent">Section 8.3.3</a>). Event
-triggered tasks receive the value, which is sent with
-<a href="#secApiTriggerEvent"><em>rtos_osTriggerEvent</em>()</a> or
-<a href="#secApiTriggerEvent"><em>rtos_triggerEvent</em>()</a>.</p>
+timer tasks woken by ordinary events its widely irrelevant; they receive
+the constant value, which is specified at event processor creation time
+(see <a href="#secApiCreateEvProc">Section 8.3.3</a>). Event triggered tasks receive the value,
+which is sent with <a href="#secApiSendEvent"><em>rtos_osSendEvent</em>()</a> or
+<a href="#secApiSendEvent"><em>rtos_sendEvent</em>()</a> or the event multiplicities, if
+they are triggered by countable events using
+<a href="#secApiSendEvent"><em>rtos_osSendEventCountable</em>()</a>,
+<a href="#secApiSendEvent"><em>rtos_sendEventCountable</em>()</a>,
+<a href="#secApiSendEvent"><em>rtos_osSendEventMultiple</em>()</a> or
+<a href="#secApiSendEvent"><em>rtos_sendEventMultiple</em>()</a>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2762,7 +2995,7 @@ timers must thus never be used anywhere else.</p>
 </div>
 <div class="paragraph">
 <p>The priority is an integer number in the range 1..15. See
-<a href="#secPrioTaskAndISR">Section 5.5</a> and <a href="#secApiCreateEvent">Section 8.3.3</a> also.</p>
+<a href="#secPrioTaskAndISR">Section 5.5</a> and <a href="#secApiCreateEvProc">Section 8.3.3</a> also.</p>
 </div>
 <div class="paragraph">
 <p>The use case for this function is the initialization code of I/O drivers.
@@ -2837,45 +3070,67 @@ task. The idle task is executed in supervisor mode and belongs to the OS.</p>
 <div class="sect2">
 <h3 id="_control_tasks_and_processes">8.4. Control tasks and processes</h3>
 <div class="sect3">
-<h4 id="secApiTriggerEvent">8.4.1. Trigger an event</h4>
+<h4 id="secApiSendEvent">8.4.1. Notify an event</h4>
 <div class="paragraph">
-<p>Most events are typically time triggered. The rest is triggered on demand.
-Here&#8217;s the API to trigger such an event. Use cases are inter-process
+<p>Most events are typically timer based. The rest is notified on demand.
+Here&#8217;s the API to notify such an event. Use cases are inter-process
 communication and deferred interrupt handling. This service is available
 to ISRs, OS and user tasks and system call handlers of full
 conformance class. System call handlers of lower conformance class must
-not use it.</p>
+not use it. To notify an odinary event, use:</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>#include "rtos.h"
-bool rtos_osTriggerEvent(unsigned int idEvent, uintptr_t taskParam);
-bool rtos_triggerEvent(unsigned int idEvent, uintptr_t taskParam);</pre>
+bool rtos_osSendEvent(unsigned int idEvent, uintptr_t taskParam);
+bool rtos_sendEvent(unsigned int idEvent, uintptr_t taskParam);</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Triggering the event can fail if at least one of the associated tasks has
+<p>Notifying the event can fail if at least one of the associated tasks has
 not yet completed the previous activation. This is counted as an
-activation loss error for the event. In this situation, the new trigger is
-entirely lost, i.e., none of the associated tasks will be activated by the
-new trigger.</p>
+activation loss error in the event processor. In this situation, the new
+trigger is entirely lost, i.e., none of the associated tasks will be
+activated by the new trigger.</p>
 </div>
 <div class="paragraph">
-<p>The trigger of an event can be used to specify the value <code>taskParam</code>,
-which is delivered to the associated tasks as function argument, when they
-are activated. Main use case is deferred interrupt handling; an ISR
-can send some context information about what to do to the task. This is
-likely the most simple available coherent, process boundary crossing
-communication channel.
+<p>To notify a countable event, use:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include "rtos.h"
+bool rtos_osSendEventCountable(unsigned int idEventProc, uint32_t evMask);
+bool rtos_sendEventCountable(unsigned int idEventProc, uint32_t evMask);
+bool rtos_osSendEventMultiple(unsigned int idEventProc, uint32_t evMask, uint8_t count);
+bool rtos_sendEventMultiple(unsigned int idEventProc, uint32_t evMask, uint8_t count);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If a multiplicity of a counted event can&#8217;t be delivered to the associated
+tasks then it is counted as activation loss in the event processor. A call
+of <a href="#secApiSendEvent">rtos_sendEventMultiple()</a> can contribute to the
+failure counter with a value of up to <code>count</code>.</p>
+</div>
+<div class="paragraph">
+<p>The notification of an ordinary event can be used to specify the value
+<code>taskParam</code>, which is delivered to the associated tasks as function
+argument when they are activated. Main use case is deferred interrupt
+handling; an ISR can send some context information to the task about what
+to do. This is likely the most simple available coherent, process boundary
+crossing communication channel.
   <sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnotedef_3" title="View footnote.">3</a>]</sup></p>
 </div>
 <div class="paragraph">
-<p>Unrestricted use of event triggers would easily break the safety concept
-of the aimed software. Therefore, the use of this kernel service is
-subject to privilege configuration: See function
-<a href="#secApiCreateEvent">rtos_osCreateEvent</a>, argument
-<em>minPIDToTriggerThisEvent</em>; it&#8217;s a matter of explicit configuration to
-permit certain processes to trigger a particular event.</p>
+<p>Countable events are specified with parameter <code>evMask</code>. See
+<a href="#secDefCountableEv">Section 5.3.2</a> for details.</p>
+</div>
+<div class="paragraph">
+<p>Unrestricted use of event notification would easily break the safety
+concept of the aimed software. Therefore, the use of this kernel service
+is subject to privilege configuration: See function
+<a href="#secApiCreateEvProc">rtos_osCreateEventProcessor()</a>, argument
+<em>minPIDToTriggerThisEvProc</em>; it&#8217;s a matter of explicit configuration to
+permit certain processes to trigger a particular event processor.</p>
 </div>
 </div>
 <div class="sect3">
@@ -3249,13 +3504,22 @@ decisions.</p>
 <div class="sect3">
 <h4 id="secApiActivationLoss">8.8.1. Task overrun</h4>
 <div class="paragraph">
-<p>Tasks are activated by triggering an event. Triggering an event may fail
-if any of its associated tasks have not yet completed after their
-preceding activation. This leads to a loss of the event trigger and to not
-activating its associated tasks&#8201;&#8212;&#8201;effectively a task overrun.</p>
+<p>Tasks are activated by notifying an event at the event processor the tasks
+are associated with. Triggering an event processor may fail if any of its
+associated tasks have not yet completed after their preceding activation
+or if the counter of a countable event overflows.</p>
 </div>
 <div class="paragraph">
-<p>This failure is counted for each distinct event.</p>
+<p>For ordinary events, this leads to a loss of the event and to not
+activating the tasks&#8201;&#8212;&#8201;effectively a task overrun.</p>
+</div>
+<div class="paragraph">
+<p>For countable events, the number of counted and reported activation losses
+is the number of event occurences the overflowing counter can not capture.</p>
+</div>
+<div class="paragraph">
+<p>This failure is counted for each distinct event processor but not for
+distinct events in case a processor receives different countable events.</p>
 </div>
 <div class="literalblock">
 <div class="content">
@@ -4001,8 +4265,8 @@ runnable binary.</p>
 </div>
 <div class="paragraph">
 <p>The concept is to specify an additional source code folder on the command
-line of the make processor. All source code, which is found in the folder or
-one of its sub-folders, is considered the sample application.</p>
+line of the make processor. All source code, which is found in the folder
+or one of its sub-folders, is considered the sample application.</p>
 </div>
 <div class="paragraph">
 <p>The safe-RTOS repository contains a few such sample applications.</p>
@@ -4011,8 +4275,9 @@ one of its sub-folders, is considered the sample application.</p>
 <h3 id="secAppInitial">10.1. Sample application "initial"</h3>
 <div class="paragraph">
 <p>Sample application "initial" is a minimal configuration of the RTOS, meant
-to demonstrate the use of the APIs to configure and run the RTOS: Create an
-event, associate a task with the event and start the kernel.</p>
+to demonstrate the use of the APIs to configure and run the RTOS: Create
+an event processor, associate a task with the processor and start the
+kernel.</p>
 </div>
 <div class="paragraph">
 <p>To see how the RTOS sample application works you need to open a terminal
@@ -4224,7 +4489,7 @@ a terminal program on the development computer is identical to
 <a href="#_footnoteref_2">2</a>. It would be a considerable design decision to implement the safety task in turn as a callback from a (regular timer) ISR of even higher priority to overcome this problem.
 </div>
 <div class="footnote" id="_footnotedef_3">
-<a href="#_footnoteref_3">3</a>. It may look like an inconsistent API design if all associated tasks receive the same value <code>taskParam</code> from the triggering event. The service <em>rtos_triggerEvent</em>() could easily offer an API, which provides an individual value to each associated task. The only reason not to do so is the additional overhead in combination with the very few imaginable use cases. In most cases an explicitly triggered event will have just one associated task; events with more than one task will mostly be regular timer tasks, which make rarely use of the task parameter.
+<a href="#_footnoteref_3">3</a>. It may look like an inconsistent API design if all associated tasks receive the same value <code>taskParam</code> from the triggering ISR or task. The service <em>rtos_sendEvent</em>() could easily offer an API, which provides an individual value to each associated task. The only reason not to do so is the additional overhead in combination with the very few imaginable use cases. In most cases an explicitly triggered event processor will have just one associated task; event processors with more than one task will mostly be regular timer tasks, which make rarely use of the task parameter.
 </div>
 <div class="footnote" id="_footnotedef_4">
 <a href="#_footnoteref_4">4</a>. Tasks belonging to the given process but running on another core are not included. Core-to-core communication can be applied to collect all of this information.
@@ -4238,7 +4503,7 @@ a terminal program on the development computer is identical to
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-02-15 19:54:36 +0100
+Last updated 2024-01-15 21:18:46 +0100
 </div>
 </div>
 </body>
