@@ -104,7 +104,7 @@
  *   More details can be found at
  * https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE#3-the-safety-concept.
  *
- * Copyright (C) 2017-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -167,6 +167,7 @@
 #include "MPC5748G.h"
 #include "typ_types.h"
 #include "ccl_configureClocks.h"
+#include "stm_systemTimer.h"
 #include "rtos_process.h"
 #include "rtos_externalInterrupt.h"
 #include "rtos_priorityCeilingProtocol.h"
@@ -973,6 +974,15 @@ static void initRTOSClockTick(void)
                         != GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
                   , "If safe-RTOS runs on different cores then they need to have different"
                     " clock sources"
+                  );
+                  
+    /* On the MPC5748G, which doesn't have a free running counter itself, we use device
+       STM0 for measuring time spans (e.g., deadline monitoring. Public convenience macros
+       for scaling Milliseconds to ticks of this counter need to be double-checked for
+       consistency with the configuration of the STM. */
+    _Static_assert( RTOS_TI_MS2TICKS(1000u) == STM_TIMER_0_CLK
+                    &&  RTOS_TI_US2TICKS(1000u) == RTOS_TI_MS2TICKS(1u)
+                  , "Inconsistency between public API and configuration of STM found"
                   );
 
     /* Note, time PIT0 must not be used. It is occupied by the DMA channel as trigger for
