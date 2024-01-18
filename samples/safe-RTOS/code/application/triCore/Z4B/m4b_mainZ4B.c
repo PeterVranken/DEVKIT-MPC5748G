@@ -9,7 +9,7 @@
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
  * parity, 1 stop bit.
  *
- * Copyright (C) 2018-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -31,6 +31,7 @@
  * Local functions
  *   taskInitProcess
  *   taskNotificationFromZ2
+ *   taskNotificationFromZ4A
  *   task1ms
  *   taskOs1ms
  */
@@ -74,39 +75,49 @@
  * Local type definitions
  */
 
-/** The enumeration of all events, tasks and priorities, to have them as symbols in the
-    source code. Most relevant are the event IDs. Actually, these IDs are provided by the
-    RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
-    are dealt out by rtos_osCreateEventProcessor() form the series 0, 1, 2, .... So we don't need
-    to have a dynamic storage of the IDs; we define them as constants and double-check by
-    assertion that we got the correct, expected IDs from rtos_osCreateEventProcessor(). Note, this
-    requires that the order of creating the events follows the order here in the
-    enumeration.\n
-      Here, we have the IDs of the created events. They occupy the index range starting
-    from zero. */
+/** The enumeration of all event processors, tasks and priorities, to have them as symbols
+    in the source code. Most relevant are the event IDs. Actually, these IDs are provided
+    by the RTOS at runtime, when creating the event. However, it is guaranteed that the
+    IDs, which are dealt out by rtos_osCreateEventProcessor() form the series 0, 1, 2, ....
+    So we don't need to have a dynamic storage of the IDs; we define them as constants and
+    double-check by assertion that we got the correct, expected IDs from
+    rtos_osCreateEventProcessor(). Note, this requires that the order of creating the event
+    processors follows the order here in the enumeration.\n
+      Here, we have the IDs of the created event processors. They occupy the index range
+    starting from zero. */
 enum
 {
     /** Regular timer event. */
-    idEv1ms = 0,
+    idEvProc1ms = 0,
 
-    /** This event is used for a notification from Z2: The other will use the inter-core
-        notification driver to trigger this event and thus to activate a task on this core
-        Z4B. */
-    idEvNotificationFromZ2,
+    /** This event processor is used for a notification from Z2: Core Z2 will use the
+        inter-core notification driver to trigger this event processor and thus to activate
+        a task on this core Z4B. */
+    idEvProcNotificationFromZ2,
+    
+    /** This event processor is used for a notification from Z4A: Core Z4A will use the
+        inter-core notification driver to trigger this event processor and thus to activate
+        a task on this core Z4B. */
+    idEvProcNotificationFromZ4A,
     
     /** The number of tasks to register. */
-    noRegisteredEvents
+    noRegisteredEvProcs
 };
 
+_Static_assert( M4B_ID_EV_PROC_NOTIFICATION_FROM_Z2 == idEvProcNotificationFromZ2
+                &&  M4B_ID_EV_PROC_NOTIFICATION_FROM_Z4A == idEvProcNotificationFromZ4A
+              , "Inconsistency between public API and internal implementation"
+              );
 
 /** The RTOS uses constant priorities for its events, which are defined here.\n
-      Note, the priority is a property of an event rather than of a task. A task implicitly
-    inherits the priority of the event it is associated with. */
+    Note, the priority is a property of an event (processor) rather than of a task. A task
+    implicitly inherits the priority of the event processor it is associated with. */
 enum
 {
     prioTaskIdle = 0,            /* Prio 0 is implicit, cannot be chosen explicitly */
     prioEv1ms,
     prioEvNotificationFromZ2,
+    prioEvNotificationFromZ4A = prioEvNotificationFromZ2,
 };
 
 
@@ -118,8 +129,9 @@ enum
 {
     pidOs = 0,              /* kernel always and implicitly has PID 0 */
     pidTaskNotificationFromZ2 = 1, /// @todo Shall we use P3? Just for testing?
+    pidTaskNotificationFromZ4A = 1,
     pidTask1ms = 1,         /* Don't use P2, there are failures injected in core 0 */
-    pidTaskOs1ms = pidOs,   /* A kernel or operating system task, e.g. to implement a
+    pidTaskOs1ms = pidOs,   /* A kernel or operating system task, e.g., to implement a
                                polling I/O driver. */
     pidTaskIdle = pidOs     /* PID 0 is implicit, idle belongs to the kernel */
 };
@@ -134,9 +146,17 @@ enum
  * Data definitions
  */
 
-/** Counter of notificastion task, activated by other core Z2 using the inter-core
-    notification driver. */
+/** Counter of notification task activations, triggered by other core Z2 using the
+    inter-core notification driver. */
 volatile unsigned long UNCACHED_P1(m4b_cntTaskNotificationFromZ2) = 0;
+
+/** Counter of notification task activations, triggered by other core Z4A using the
+    inter-core notification driver. */
+volatile unsigned long UNCACHED_P1(m4b_cntTaskNotificationFromZ4A) = 0;
+
+/** Counter of notifications received from other core Z4A using the inter-core notification
+    driver. Note that this is not necessarily identical to the number of task activations. */
+volatile unsigned long UNCACHED_P1(m4b_cntNotificationsFromZ4A) = 0;
 
 /** Counter of cyclic 1ms user task. */
 volatile unsigned long SECTION(.uncached.P1.m4b_cntTask1ms) m4b_cntTask1ms = 0;  
@@ -210,6 +230,8 @@ static int32_t taskNotificationFromZ2( uint32_t PID ATTRIB_UNUSED
                                      , uint32_t notificationParam
                                      )
 {
+    /* Note, the while construct ensures that the assertion is working even in PRODUCTION
+       build. */
     while(notificationParam != m4b_cntTaskNotificationFromZ2)
         assert(false);
 
@@ -219,6 +241,48 @@ static int32_t taskNotificationFromZ2( uint32_t PID ATTRIB_UNUSED
     return 0;
 
 } /* End of taskNotificationFromZ2 */
+
+
+
+/**
+ * Task function, activated by notification 1, sent from core Z4A. The notification
+ * announces the transfer of some (test) data from the other core.
+ *   @return
+ * If the task function returns a negative value then the task execution is counted as
+ * error in the process.
+ *   @param PID
+ * A user task function gets the process ID as first argument.
+ *   @param taskParam
+ * Notification 1 uses countable events. The task parameter is sent to the bit mask holding
+ * the multiplicities of all events, which are potentially sent to this task.
+ */
+static int32_t taskNotificationFromZ4A( uint32_t PID ATTRIB_UNUSED
+                                      , uint32_t taskParam
+                                      )
+{
+    /* Make activations of the task observable in the debugger. */
+    ++ m4b_cntTaskNotificationFromZ4A;
+
+    const uint32_t noEvents = (taskParam & M2B_EV_MASK_NOTIFICATION_FROM_Z4A)
+                              >> M2B_EV_SHFT_NOTIFICATION_FROM_Z4A;
+    m4b_cntNotificationsFromZ4A += noEvents;
+
+    /* Due to asynchronous execution of cores and their tasks, the number of received
+       events will always stay behind the number of sent ones. However, there must be no
+       drift. We check for a constant yet arbitrarily chosen upper bounds of the
+       difference.
+         diff == ULONG_MAX: The event sender can't notify the event and increment its
+       counter in an operation, which would be atomic from the perspective of the other
+       core. Occasionally, it may check the counter before it could be incremented.
+         Note, the while construct ensures that the assertion is working even in PRODUCTION
+       build. */
+    const unsigned long diffCnt = syc_cntNotificationsToZ4B - m4b_cntNotificationsFromZ4A;
+    while(diffCnt > 10u  &&  diffCnt != ULONG_MAX)
+        assert(false);
+
+    return 0;
+
+} /* End of taskNotificationFromZ4A */
 
 
 
@@ -252,7 +316,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG
     /* Inject an error from time to time. */
     static unsigned int SDATA_P1(idxErr_) = 0;
     if((m4b_cntTask1ms & 0x3) == 0)
-        mb4_injectError(&idxErr_);
+        m4b_injectError(&idxErr_);
 
     return 0;
 
@@ -289,7 +353,7 @@ static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
     /* Communicate the current number of recognized failures to the reporting task running
        on the boot core. */
     m4b_cntTaskFailuresP1 = rtos_getNoTotalTaskFailure(pidTask1ms);
-    m4b_cntActivationLossFailures = rtos_getNoActivationLoss(idEv1ms);
+    m4b_cntActivationLossFailures = rtos_getNoActivationLoss(idEvProc1ms);
 
     static int SBSS_P1(cntIsOn_) = 0;
     if(++cntIsOn_ >= 500)
@@ -306,25 +370,24 @@ static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
  * core to still run stable.\n
  *   Each invokation of this function injects an error and the calling user task will be
  * aborted. The function doesn't normally return but sometimes it may.
- *   @param pIdxErr
- * The state of the functionby reference. Actually a counter, which is incremented
+ *   @param[in,out] pIdxErr
+ * The state of the function by reference. Actually a counter, which is incremented
  * (cyclically) at every function invocation and which has the meaning of the kind of
  * error, which is injected. Prior to the very first call of the function the counter * \a
  * pIdxErr should be set to zero.
  *   @remark
  * Despite of error catching, we need to take care, what we do. On the boot core, the
- * sample application "basicTest" is running. It injects errors, too and looks at the
- * system reaction. A supervior task halts excution if somethin unexpected happens. An
+ * sample application "basicTest" is running. It injects errors, too, and looks at the
+ * system reaction. A supervior task halts excution if something unexpected happens. An
  * unexpected thing can easily be a failure additional to those expected. If several cores
  * run safe-RTOS then they share the processes. Our failure injecting task belongs to
  * process 1 and on the boot core this process must not report any failures. Therefore we
  * can only inject errors, which are known to not harm any task on the boot core and
  * belonging to the same process. This means in particular that we must not do anything
  * which corrupts the memories of the process, which includes provoking straying tasks,
- * e.g. by corrupted stack memories or altered user accessible CPU registers.
- *   @see boolean otherFunction(int)
+ * e.g., by corrupted stack memories or altered user accessible CPU registers.
  */
-void mb4_injectError(unsigned int * const pIdxErr)
+void m4b_injectError(unsigned int * const pIdxErr)
 {
     /* Evaluation and increment of counter need to be done prior to the switch case: We
        will not reach the end of the switch statement any more. */
@@ -379,8 +442,7 @@ void mb4_injectError(unsigned int * const pIdxErr)
     default:
         assert(false);
     }
-    
-} /* End of mb4_injectError */
+} /* End of m4b_injectError */
 
 
 
@@ -466,9 +528,9 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
        The returned value is redundant. This technique requires that we create the events
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
-    unsigned int idEvent;
+    unsigned int idEvProc;
     if(rtos_osCreateEventProcessor
-                        ( &idEvent
+                        ( &idEvProc
                         , /* tiCycleInMs */               1
                         , /* tiFirstActivationInMs */     10
                         , /* priority */                  prioEv1ms
@@ -479,12 +541,12 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
        == rtos_err_noError
       )
     {
-        assert(idEvent == idEv1ms);
+        assert(idEvProc == idEvProc1ms);
 
-        if(rtos_osRegisterOSTask(idEv1ms, taskOs1ms) != rtos_err_noError)
+        if(rtos_osRegisterOSTask(idEvProc1ms, taskOs1ms) != rtos_err_noError)
             initOk = false;
 
-        if(rtos_osRegisterUserTask( idEv1ms
+        if(rtos_osRegisterUserTask( idEvProc1ms
                                   , task1ms
                                   , pidTask1ms
                                   , /* tiTaskMaxInUs */ 0
@@ -498,21 +560,17 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
     else
         initOk = false;
 
-    if(rtos_osCreateEventProcessor
-                        ( &idEvent
-                        , /* tiCycleInMs */               0
-                        , /* tiFirstActivationInMs */     0
+    if(rtos_osCreateSwTriggeredEventProcessor
+                        ( &idEvProc
                         , /* priority */                  prioEvNotificationFromZ2
                         , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                        , /* timerUsesCountableEvents */  false
-                        , /* taskParam */                 0
                         )
        == rtos_err_noError
       )
     {
-        assert(idEvent == idEvNotificationFromZ2);
+        assert(idEvProc == idEvProcNotificationFromZ2);
 
-        if(rtos_osRegisterUserTask( idEvNotificationFromZ2
+        if(rtos_osRegisterUserTask( idEvProcNotificationFromZ2
                                   , taskNotificationFromZ2
                                   , pidTaskNotificationFromZ2
                                   , /* tiTaskMaxInUs */ 0
@@ -526,8 +584,33 @@ void /* _Noreturn */ m4b_mainZ4B( int noArgs ATTRIB_DBG_ONLY
     else
         initOk = false;
 
+    if(rtos_osCreateSwTriggeredEventProcessor
+                        ( &idEvProc
+                        , /* priority */                  prioEvNotificationFromZ4A
+                        , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
+                        )
+
+       == rtos_err_noError
+      )
+    {
+        assert(idEvProc == idEvProcNotificationFromZ4A);
+
+        if(rtos_osRegisterUserTask( idEvProcNotificationFromZ4A
+                                  , taskNotificationFromZ4A
+                                  , pidTaskNotificationFromZ4A
+                                  , /* tiTaskMaxInUs */ 0
+                                  )
+           != rtos_err_noError
+          )
+        {
+            initOk = false;
+        }
+    }
+    else
+        initOk = false;
+
     /* The last check ensures that we didn't forget to register a task. */
-    assert(idEvent == noRegisteredEvents-1);
+    assert(idEvProc == noRegisteredEvProcs-1);
 
     /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
        succeeds. The step involves a configuration check. We must not startup the SW if the

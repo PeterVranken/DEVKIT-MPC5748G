@@ -4,7 +4,7 @@
  * @file m4b_mainZ4B.h
  * Definition of global interface of module m4b_mainZ4B.c
  *
- * Copyright (C) 2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -32,11 +32,25 @@
  * Defines
  */
 
+/** This is the RTOS event processor on core Z4B that is triggered from the other core Z2
+    using the inter-core notification driver. The notification task on the Z4B, which is
+    associated with this event processor is activated by the Z2 core. */
+#define M4B_ID_EV_PROC_NOTIFICATION_FROM_Z2     1u
+
 /** This is the RTOS event on core Z4B that is triggered from the other core Z2 using the
     inter-core notification driver. The notification task on the Z4B, which is associated
-    with the event is activated by the Z2 core. */
-#define M4B_ID_EVENT_NOTIFICATION_FROM_Z2   1
+    with this event processor is activated by the Z2A core. */
+#define M4B_ID_EV_PROC_NOTIFICATION_FROM_Z4A    2u
 
+/** This is the bit mask for the occurrence counter of the countable event, which is sent
+    from core Z4A to core Z4B. We can afford to use all bits, as we have only a single
+    countable event going this path. It is for sure that we will never ever see a counter
+    overflow and thus an activation loss. */
+#define M2B_EV_MASK_NOTIFICATION_FROM_Z4A       0xFFFFFFFFu
+
+/** This is the position of the bits of the occurrence counter of the countable event in bit
+    mask #M2B_EV_MASK_NOTIFICATION_FROM_Z4A. */
+#define M2B_EV_SHFT_NOTIFICATION_FROM_Z4A       0u
 
 /*
  * Global type definitions
@@ -51,6 +65,14 @@
     notification driver. */
 extern volatile unsigned long m4b_cntTaskNotificationFromZ2;
    
+/** Counter of notification task activations, triggered by other core Z4A using the
+    inter-core notification driver. */
+extern volatile unsigned long m4b_cntTaskNotificationFromZ4A;
+
+/** Counter of notifications received from other core Z4A using the inter-core notification
+    driver. Note that this is not necessarily identical to the number of task activations. */
+extern volatile unsigned long m4b_cntNotificationsFromZ4A;
+
 /** Counter of cyclic 1ms user task. */
 extern volatile unsigned long m4b_cntTask1ms;  
 
@@ -82,7 +104,7 @@ extern volatile unsigned int m4b_cpuLoadZ4B;
  */
 
 /** Test function: error injection. */
-void mb4_injectError(unsigned int * const pIdxErr);
+void m4b_injectError(unsigned int * const pIdxErr);
 
 /** Callback for LED and button I/O driver. */
 int32_t m4b_onButtonChangeCallback(uint32_t PID ATTRIB_UNUSED, uint8_t buttonState);

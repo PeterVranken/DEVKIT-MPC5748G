@@ -85,7 +85,6 @@ enum
     , syc_pidSupervisor = 3     /// Control and evaluation tasks, watchdog
 
     , tmpNoPrc
-    , syc_noProcessesInUse = tmpNoPrc-1
 };
 
 

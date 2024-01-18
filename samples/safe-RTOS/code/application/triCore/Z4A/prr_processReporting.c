@@ -56,22 +56,22 @@
 /*
  * Defines
  */
- 
+
 
 /*
  * Local type definitions
  */
- 
- 
+
+
 /*
  * Local prototypes
  */
- 
- 
+
+
 /*
  * Data definitions
  */
- 
+
 /** For debugging only: Exceution time of untrusted C lib function iprintf. Unit is
     #STM_TIMER_1_PERIOD_IN_NS. */
 uint32_t SDATA_PRC_REPORT(prr_tiMaxDurationPrintf) = 0;
@@ -102,7 +102,7 @@ int32_t prr_taskReportWatchdogStatus( uint32_t PID ATTRIB_UNUSED
           , pStatusInfo->noTestCycles
           );
     return 0;
-    
+
 } /* End of prr_taskReportWatchdogStatus */
 
 
@@ -147,7 +147,7 @@ int32_t prr_taskReportFailure( uint32_t PID ATTRIB_UNUSED
           );
 
     return 0;
-    
+
 } /* End of prr_taskReportFailure */
 
 
@@ -168,7 +168,7 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_
     const unsigned int cpuLoadZ4A = syc_cpuLoadZ4A
                      , cpuLoadZ4B = m4b_cpuLoadZ4B
                      , cpuLoadZ2 = mz2_cpuLoadZ2;
-    
+
     const uint32_t tiStart = stm_getSystemTime(1);
     iprintf( "CPU Z4A:\r\n"
              "  CPU load: %u.%u%%\r\n"
@@ -210,22 +210,24 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_
              "    OS: %u Byte\r\n"
              "    PID 1: %u Byte\r\n"
              "  Task counts (lost triggers):\r\n"
-             "    Notification from Z2: %lu\r\n"
+             "    Notification from Z2/Z4A: %lu/%lu\r\n"
              "    OS, 1ms: %lu (%u)\r\n"
              "    user, 1ms: %lu\r\n"
              "    idle: %lu\r\n"
+             "  Notifications from Z4A: %lu\r\n"
              "  Process errors:\r\n"
              "    Total PID 1: %u\r\n"
            , cpuLoadZ4B/10, cpuLoadZ4B%10
            , m4b_stackReserveOS
            , m4b_stackReserveP1
-           , m4b_cntTaskNotificationFromZ2
+           , m4b_cntTaskNotificationFromZ2, m4b_cntTaskNotificationFromZ4A
            , m4b_cntTaskOs1ms
            , m4b_cntActivationLossFailures
            , m4b_cntTask1ms
            , m4b_cntTaskIdle
+           , m4b_cntNotificationsFromZ4A
            , m4b_cntTaskFailuresP1
-           );             
+           );
 
     iprintf( "CPU Z2:\r\n"
              "  CPU load: %u.%u%%\r\n"
@@ -255,12 +257,12 @@ int32_t prr_taskReporting(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_
            );
 
     const uint64_t tiDuration = stm_getSystemTime(1) - tiStart;
-    
+
     if(tiDuration > prr_tiMaxDurationPrintf)
         prr_tiMaxDurationPrintf = tiDuration;
-        
+
     return 0;
-    
+
 } /* End of prr_taskReporting */
 
 
@@ -291,7 +293,7 @@ int32_t prr_taskTestContextSwitches( uint32_t PID ATTRIB_UNUSED
     tcx_testContext(/* noCycles */ 2, /* waitTimePerCycleInUS */ 2000);
 
     return 0;
-    
+
 } /* End of prr_taskTestContextSwitches */
 
 

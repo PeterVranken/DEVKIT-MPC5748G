@@ -11,7 +11,7 @@
  * Either remove the file here or ensure by include path settings of your compiler that
  * your modified version of the file is used for compilation.
  *
- * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -34,8 +34,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//#include "icn_interCoreNotification.h"
-
 
 /*
  * Defines
@@ -47,7 +45,7 @@
     and hence the range depends on the MCU derivative.\n
       Moreover, this driver is not aware of possible other use of SW settable interrupts
     by other driver code. */
-#define ICN_NO_NOTIFICATIONS        0
+#define ICN_NO_NOTIFICATIONS        0u
 
 /** The #ICN_NO_NOTIFICATIONS notifications are implemented by the INTC's SW settable
     interrupts #ICN_FIRST_SW_IRQ_TO_APPLY ..
@@ -56,17 +54,30 @@
     making use of the SW settable interrupts but can be used to select interrupts of
     suitable priority, too. The higher the index of the SW settable interrupt the lower
     its priority. */
-#define ICN_FIRST_SW_IRQ_TO_APPLY   0
+#define ICN_FIRST_SW_IRQ_TO_APPLY   0u
 
 /** A notification can mean to trigger a number of RTOS events on the notified core. The
     maximum number of triggered events per notification is specified here. The range is 0
     .. #RTOS_MAX_NO_EVENT_PROCESSORS. */
-#define ICN_MAX_NO_TRIGGERED_EVENTS 1
+#define ICN_MAX_NO_SENT_EVENTS      2u
 
 
 /*
  * Local type definitions
  */
+
+/** The configuration of an event to be notified on the destination core. It is a
+    combination of the addressed event processor and the characteristics of the event
+    (ordinary vs. countable). */
+struct icn_configurationEvent_t
+{
+    /** The addressed event processor by zero based index. This ID is also returned by the
+        constructor of the event processor, see rtos_osCreateEventProcessor(). */
+    unsigned int eventProcessorId;
+
+    /** The distinction between sending an ordinary or a countable event. */
+    bool isCountableEvent;
+};
 
 
 /*
@@ -114,29 +125,35 @@ static const icn_configuration_t icn_configuration =
                However, its implementation can safely call untrusted code by applying the
                according services of safe-RTOS. */
             .osNotificationHandler = NULL,
-            
+
 
             /* The notification can be the triggering of one or more safe-RTOS events in
                order to activate associated tasks. Here, we have the number of events to
-               trigger. The range is 0 .. #ICN_MAX_NO_TRIGGERED_EVENTS. */
-            .noTriggeredEvents = 0,
+               trigger. The range is 0 .. #ICN_MAX_NO_SENT_EVENTS. */
+            .noSentEvents = 0u,
 
-            /* Here, we have an array of #ICN_MAX_NO_TRIGGERED_EVENTS possibly triggered
-               events. The first #ICN_MAX_NO_TRIGGERED_EVENTS elements of the array refer
-               to actually triggered events and they hold an event ID each (see
-               rtos_osCreateEventProcessor()). The other elements of the array don't care.
+            /* Here, we have an array of #ICN_MAX_NO_SENT_EVENTS possibly sent events. The
+               first .noSentEvents elements of the array refer to actually sent events and
+               they hold an event processor ID each (see rtos_osCreateEventProcessor()).
+               The other elements of the array don't care.
                  All tasks, which are activated because of one of the triggered events,
                will receive the notification parameter (see icn_osSendNotification()) as task
                parameter. */
-            .eventIdAry = 
+            .evNotificationAry =
             {
-                [/* Event */ 0] = 0,
-                [/* Event */ 1] = 2,
-
+                [/* Event */ 0] = {
+                                      .eventProcessorId = 0u,
+                                      .isCountableEvent = false,
+                                  },
+                                  
+                [/* Event */ 1] = {
+                                      .eventProcessorId = 2u,
+                                      .isCountableEvent = false,
+                                  },
             }, /* End of list of triggered events. */
 
         }, /* End of notification with index 0. */
-        
+
 #endif /* End of sample configuration code. */
 
     }, /* End of .notificationAry */

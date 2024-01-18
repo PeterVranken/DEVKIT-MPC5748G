@@ -547,7 +547,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#secApiGetIdxCore">8.7.1. Get index of executing core</a></li>
 <li><a href="#secApiGetMSR">8.7.2. Get core status register</a></li>
 <li><a href="#secApiGetIrqSusp">8.7.3. Get interrupt suspension status</a></li>
-<li><a href="#secApiGetProcSusp">8.7.4. Process state</a></li>
+<li><a href="#secApiGetProcSusp">8.7.4. Get process state</a></li>
 </ul>
 </li>
 <li><a href="#_diagnostic_interface">8.8. Diagnostic interface</a>
@@ -1220,9 +1220,9 @@ the events.</p>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>A countable event with 1 Bit is nearly the same as an ordinary event. but
-not exactly. The event processor can be re-triggered once, while the
-associated tasks are still ready.</p>
+<p>A countable event with 1 Bit is nearly the same as an ordinary event.
+but not exactly. The event processor can be re-triggered once, while the
+associated tasks are still ready or active.</p>
 <div class="paragraph">
 <p>If a timer is used with an ordinary event then a task overflow is
 immediately reported. If at due time <em>n</em>, at least one associated task has
@@ -1953,7 +1953,7 @@ have to validate or repair the SDA pointers first.</p>
 </div>
 <div class="paragraph">
 <p>However, as a rule of thumb: If your handler really intends to do these
-kind of things then you are likely using the wrong handler conformance
+kinds of things then you are likely using the wrong handler conformance
 class. Have a look at the others, which provide such kind of services to
 you.</p>
 </div>
@@ -2028,6 +2028,12 @@ processing. This includes but is not limited to:</p>
 </li>
 <li>
 <p><em>rtos_osSendEvent</em>()</p>
+</li>
+<li>
+<p><em>rtos_osSendEventCountable</em>()</p>
+</li>
+<li>
+<p><em>rtos_osSendEventMultiple</em>()</p>
 </li>
 </ul>
 </div>
@@ -2298,7 +2304,7 @@ resource or leave critical section</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">rtos_scFlHdlr_triggerEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rtos_scFlHdlr_sendEvent</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Full</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Event notification by software</p></td>
 </tr>
@@ -2394,6 +2400,36 @@ into serial port</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pwm_scSmplHdlr_getPwmInT</p></td>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PWM driver: Get input period time</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">45</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eth_scSmplHdlr_setMulticastForward</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ethernet driver: Multicast address handling</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">46</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eth_scSmplHdlr_releaseRxFramePayloadBuffer</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ethernet driver: Rx frame buffer management</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">47</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eth_scSmplHdlr_readFrame</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ethernet driver: Get Rx frame</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">48</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eth_scSmplHdlr_sendFrame</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ethernet driver: Send Tx frame</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">49</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eth_scSmplHdlr_isTransmissionCompleted</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">Simple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ethernet driver: Tx frame buffer management</p></td>
 </tr>
 </tbody>
 </table>
@@ -3050,8 +3086,8 @@ static void rtos_osGrantPermissionSuspendProcess
 <div class="sect3">
 <h4 id="secApiInitKernel">8.3.9. Start of kernel</h4>
 <div class="paragraph">
-<p>After completing the configuration of events, tasks and privileges, the
-scheduler of the RTOS is started with a simple API call:</p>
+<p>After completing the configuration of event processors, tasks and
+privileges, the scheduler of the RTOS is started with a simple API call:</p>
 </div>
 <div class="literalblock">
 <div class="content">
@@ -3477,7 +3513,7 @@ doesn&#8217;t start the safe-RTOS kernel.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="secApiGetProcSusp">8.7.4. Process state</h4>
+<h4 id="secApiGetProcSusp">8.7.4. Get process state</h4>
 <div class="paragraph">
 <p>This API is the counterpart of <a href="#secApiSuspProc">rtos_suspendProcess()</a>.
 Any OS or user task can query if a particular process has been suspended on
@@ -4503,7 +4539,7 @@ a terminal program on the development computer is identical to
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-01-15 21:18:46 +0100
+Last updated 2024-01-15 22:23:17 +0100
 </div>
 </div>
 </body>

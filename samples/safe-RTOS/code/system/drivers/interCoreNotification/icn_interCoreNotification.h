@@ -4,7 +4,7 @@
  * @file icn_interCoreNotification.h
  * Definition of global interface of module icn_interCoreNotification.c
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -43,7 +43,7 @@ typedef enum icn_errorCode_t
 {
     icn_err_noError = 0,        /** Success, no error. */
     icn_err_noActionSpecified,  /** No action to be taken when notified. */
-    icn_err_badActionSpecified, /** RTOS event specified for non RTOS core. */
+    icn_err_actionRequiresRTOS, /** RTOS event specified for non RTOS core. */
     icn_err_badIdxCore,         /** Notification of non existing core.*/
     icn_err_badPrioIrq,         /** Priority of IRQ out of range of INTC. */
     
@@ -63,7 +63,7 @@ typedef enum icn_errorCode_t
 icn_errorCode_t icn_osInitInterCoreNotificationDriver(void);
 
 /** Send a notification to (another) core. */
-bool icn_osSendNotification(unsigned int idxNotification, uintptr_t notificationParam);
+bool icn_osSendNotification(unsigned int idxNotification, uint32_t notificationParam);
 
 /** Poll, whether the notified core has already consumed the notification. */
 bool icn_osIsNotificationPending(unsigned int idxNotification);

@@ -11,7 +11,7 @@
  * Either remove the file here or ensure by include path settings of your compiler that
  * your modified version of the file is used for compilation.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -48,7 +48,7 @@
     and hence the range depends on the MCU derivative.\n
       Moreover, this driver is not aware of possible other use of SW settable interrupts
     by other driver code. */
-#define ICN_NO_NOTIFICATIONS        1
+#define ICN_NO_NOTIFICATIONS        2u
 
 /** The #ICN_NO_NOTIFICATIONS notifications are implemented by the INTC's SW settable
     interrupts #ICN_FIRST_SW_IRQ_TO_APPLY ..
@@ -62,8 +62,8 @@
 
 /** A notification can mean to trigger a number of RTOS events on the notified core. The
     maximum number of triggered events per notification is specified here. The range is 0
-    .. #RTOS_MAX_NO_EVENTS. */
-#define ICN_MAX_NO_TRIGGERED_EVENTS 1
+    .. #RTOS_MAX_NO_EVENT_PROCESSORS. */
+#define ICN_MAX_NO_SENT_EVENTS      1u
 
 
 /*
@@ -115,27 +115,80 @@ static const icn_configuration_t icn_configuration =
                However, its implementation can safely call untrusted code by applying the
                according services of safe-RTOS. */
             .osNotificationHandler = NULL,
-            
 
             /* The notification can be the triggering of one or more safe-RTOS events in
                order to activate associated tasks. Here, we have the number of events to
-               trigger. The range is 0 .. #ICN_MAX_NO_TRIGGERED_EVENTS. */
-            .noTriggeredEvents = 1,
+               trigger. The range is 0 .. #ICN_MAX_NO_SENT_EVENTS. */
+            .noSentEvents = 1u,
 
-            /* Here, we have an array of #ICN_MAX_NO_TRIGGERED_EVENTS possibly triggered
-               events. The first .noTriggeredEvents elements of the array refer
-               to actually triggered events and they hold an event ID each (see
-               rtos_osCreateEvent()). The other elements of the array don't care.
+            /* Here, we have an array of #ICN_MAX_NO_SENT_EVENTS possibly sent events. The
+               first .noSentEvents elements of the array refer to actually sent events and
+               they hold an event processor ID each (see rtos_osCreateEventProcessor()).
+               The other elements of the array don't care.
                  All tasks, which are activated because of one of the triggered events,
                will receive the notification parameter (see icn_osSendNotification()) as task
                parameter. */
-            .eventIdAry = 
+            .evNotificationAry = 
             {
-                [/* Event */ 0] = M4B_ID_EVENT_NOTIFICATION_FROM_Z2,
-
+                [/* Event */ 0] = {
+                                      .eventProcessorId = M4B_ID_EV_PROC_NOTIFICATION_FROM_Z2,
+                                      .isCountableEvent = false,
+                                  },
             }, /* End of list of triggered events. */
 
         }, /* End of notification with index 0. */
+        
+        /* Notification with index 1. This notification is used by core Z2 to pass some
+           data to core Z4B. */
+        [ICN_ID_NOTIFICATION_Z4A_TO_Z4B] =
+        {
+            /* The notification addresses a particular core. The intention is to address to
+               another core but the driver works still fine if the addressed core is the
+               notifying core at the same time.
+                 The range is 0..2 for the MPC5748G. The upper bounds is the number of
+               cores in the MCU. It is dependent on the derivative. */
+            .idxNotifiedCore = 1 /* Z4B */,
+
+            /* The notification happens by interrupt on the notified core. The INTC
+               interrupt priority can be chosen individually for each notification. The
+               range is 1..15.
+                 Note, the safety concept can be broken if the chosen priority is greater
+               or equal to the kernel priority, #RTOS_KERNEL_IRQ_PRIORITY_CORE_0 (_1,
+               _2).*/
+            .priorityNotificationIrq = 2,
+
+            /* The notification can be the invocation of a callback on the notified core.
+               If desired, put the pointer to a function void (*)(uintptr_t) and otherwise
+               NULL.
+                 The passed function argument is the notification parameter, see
+               icn_osSendNotification().
+                 Note, the execution of a callback on the other core can easily break the
+               safety concept. The callback fully belongs into the sphere of trusted code.
+               However, its implementation can safely call untrusted code by applying the
+               according services of safe-RTOS. */
+            .osNotificationHandler = NULL,
+
+            /* The notification can be the triggering of one or more safe-RTOS events in
+               order to activate associated tasks. Here, we have the number of events to
+               trigger. The range is 0 .. #ICN_MAX_NO_SENT_EVENTS. */
+            .noSentEvents = 1u,
+
+            /* Here, we have an array of #ICN_MAX_NO_SENT_EVENTS possibly sent events. The
+               first .noSentEvents elements of the array refer to actually sent events and
+               they hold an event processor ID each (see rtos_osCreateEventProcessor()).
+               The other elements of the array don't care.
+                 All tasks, which are activated because of one of the triggered events,
+               will receive the notification parameter (see icn_osSendNotification()) as task
+               parameter. */
+            .evNotificationAry = 
+            {
+                [/* Event */ 0] = {
+                                      .eventProcessorId = M4B_ID_EV_PROC_NOTIFICATION_FROM_Z4A,
+                                      .isCountableEvent = true,
+                                  },
+            }, /* End of list of triggered events. */
+
+        }, /* End of notification with index 1. */
         
     }, /* End of .notificationAry */
 };

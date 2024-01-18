@@ -34,7 +34,11 @@
 
 /** ID of notification from Z2 to Z4B. The ID is used in the API of the inter-core
     notification driver to select the notification to send. */
-#define ICN_ID_NOTIFICATION_Z2_TO_Z4B   0
+#define ICN_ID_NOTIFICATION_Z2_TO_Z4B   0u
+
+/** ID of notification from Z4A to Z4B. The ID is used in the API of the inter-core
+    notification driver to select the notification to send. */
+#define ICN_ID_NOTIFICATION_Z4A_TO_Z4B  1u
 
 
 /*

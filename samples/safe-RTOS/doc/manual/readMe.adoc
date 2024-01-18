@@ -485,9 +485,9 @@ the events.
 
 ==== Some more remarks on events
 
-. A countable event with 1 Bit is nearly the same as an ordinary event. but
-not exactly. The event processor can be re-triggered once, while the
-associated tasks are still ready.
+. A countable event with 1 Bit is nearly the same as an ordinary event.
+but not exactly. The event processor can be re-triggered once, while the
+associated tasks are still ready or active.
 +
 If a timer is used with an ordinary event then a task overflow is
 immediately reported. If at due time _n_, at least one associated task has
@@ -1118,7 +1118,7 @@ safe. If it wants to make use of the short addressing modes then it would
 have to validate or repair the SDA pointers first.
 
 However, as a rule of thumb: If your handler really intends to do these
-kind of things then you are likely using the wrong handler conformance
+kinds of things then you are likely using the wrong handler conformance
 class. Have a look at the others, which provide such kind of services to
 you.
 
@@ -1161,6 +1161,8 @@ function:
 ** _rtos_osResumeAllTasksByPriority_()
 ** _rtos_osRunTask_()
 ** _rtos_osSendEvent_()
+** _rtos_osSendEventCountable_()
+** _rtos_osSendEventMultiple_()
 
 The simple handler should be chosen for quickly executing services,
 because it implicitly forms a critical section. Note, this is not a
@@ -1323,7 +1325,7 @@ by user code
 resource or enter critical section
 |2  |rtos_scBscHdlr_{zwsp}resumeAllTasksByPriority |Basic |PCP: Release
 resource or leave critical section
-|3  |rtos_scFlHdlr_triggerEvent |Full |Event notification by software
+|3  |rtos_scFlHdlr_sendEvent |Full |Event notification by software
 |4  |rtos_scFlHdlr_runTask |Full |Run a user task or inter-process
 function call
 |5  |rtos_scSmplHdlr_suspendProcess |Simple |Suspend a process forever
@@ -1352,6 +1354,11 @@ into serial port
 |30 |stm_scBscHdlr_getSystemTime |Basic |System timers: Get current time
 |35 |pwm_scSmplHdlr_setPwmOutFAndDc |Simple |PWM driver: Set frequency and duty cycle
 |36 |pwm_scSmplHdlr_getPwmInT |Simple |PWM driver: Get input period time
+|45 |eth_scSmplHdlr_setMulticastForward |Simple |Ethernet driver: Multicast address handling
+|46 |eth_scSmplHdlr_releaseRxFramePayloadBuffer |Simple |Ethernet driver: Rx frame buffer management
+|47 |eth_scSmplHdlr_readFrame |Simple |Ethernet driver: Get Rx frame
+|48 |eth_scSmplHdlr_sendFrame |Simple |Ethernet driver: Send Tx frame
+|49 |eth_scSmplHdlr_isTransmissionCompleted |Simple |Ethernet driver: Tx frame buffer management
 |=======
 
 ==== Sample code

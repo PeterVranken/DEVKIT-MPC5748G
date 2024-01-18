@@ -4,7 +4,7 @@
  * @file syc_systemConfiguration.h
  * Definition of global interface of module syc_systemConfiguration.c
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -134,6 +134,14 @@ extern volatile unsigned int syc_cpuLoadZ4A;
 
 /** A counter of the invocations of the otherwise useless PIT3 ISR. */
 extern volatile unsigned long long syc_cntISRPit3;
+
+/** Counter of notifications sent to other core Z4B using the inter-core notification
+    driver. */
+extern volatile unsigned long syc_cntNotificationsToZ4B;
+
+/** Counter of notifications , which could not be delivered from Z4A to Z4B because the
+    preceding notification had not been fully processed yet. */
+extern volatile unsigned int syc_noNotificationsLoss;
 
 
 /*

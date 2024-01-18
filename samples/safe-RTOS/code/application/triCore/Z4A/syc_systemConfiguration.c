@@ -8,7 +8,7 @@
  *   Most of the code in this file is executed in supervisor mode and belongs to the sphere
  * of trusted code.
  *
- * Copyright (C) 2019-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -83,10 +83,18 @@
  */
 
 /** The current, averaged CPU load in tens of percent. */
-volatile unsigned int SDATA_OS(syc_cpuLoadZ4A) = 1000;
+volatile unsigned int SDATA_OS(syc_cpuLoadZ4A) = 1000u;
 
 /** A counter of the invocations of the otherwise useless PIT3 ISR. */
-volatile unsigned long long SBSS_OS(syc_cntISRPit3) = 0;
+volatile unsigned long long SBSS_OS(syc_cntISRPit3) = 0u;
+
+/** Counter of notifications sent to other core Z4B using the inter-core notification
+    driver. */
+volatile unsigned long UNCACHED_OS(syc_cntNotificationsToZ4B) = 0u;
+
+/** Counter of notifications, which could not be delivered from Z4A to Z4B because the
+    preceding notification had not been fully processed yet. */
+volatile unsigned int UNCACHED_OS(syc_noNotificationsLoss) = 0u;
 
 /** Interface with assembly code: Here's a variable in the assembly startup code, which
     takes the addresses of the C main function to be invoked on core Z4B. It needs to be
@@ -152,10 +160,26 @@ static void isrPit1(void)
        same priority level. */
     static const rtos_taskDesc_t taskConfig = { .addrTaskFct = (uintptr_t)prf_task1ms
                                               , .PID = syc_pidFailingTasks
-                                              , .tiTaskMax = 0 //RTOS_TI_MS2TICKS(5)
+                                              , .tiTaskMax = RTOS_TI_MS2TICKS(1)
                                               };
     rtos_osRunTask(&taskConfig, /* taskParam */ cnt_);
     ++ cnt_;
+
+    /* Try the inter-core notification driver: We send a countable event to activate a task
+       on core Z4B. The number of successful notifications is stored in a global variable
+       and double-checked at the receiver side for validation that all notifications were
+       delivered. */
+    if(icn_osSendNotification( ICN_ID_NOTIFICATION_Z4A_TO_Z4B
+                             , /* notificationParam */ M2B_EV_MASK_NOTIFICATION_FROM_Z4A
+                             )
+      )
+    {
+        ++ syc_cntNotificationsToZ4B;
+    }
+    else
+        ++ syc_noNotificationsLoss;
+
+   
 
     /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
        be done as this is "trusted code" that is running in supervisor mode. */
@@ -429,7 +453,6 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* Initialize the serial output channel as prerequisite of using printf. */
     sio_osInitSerialInterface(/* baudRate */ 115200);
-
 
     /* Initialize the inter-core notification service. */
     bool initOk = icn_osInitInterCoreNotificationDriver() == icn_err_noError;

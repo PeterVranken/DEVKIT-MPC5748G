@@ -4,7 +4,7 @@
  * application as core Z4B, "initial". It drives the last available user LED on the
  * evaluation board.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -288,10 +288,13 @@ static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
        delivered. */
     if(icn_osIsNotificationPending(ICN_ID_NOTIFICATION_Z2_TO_Z4B))
         ++ mz2_noNotificationsLoss;
-    icn_osSendNotification( ICN_ID_NOTIFICATION_Z2_TO_Z4B
-                          , /* notificationParam */ mz2_cntTaskOs1ms-1
-                          );
-
+    else
+    {
+        icn_osSendNotification( ICN_ID_NOTIFICATION_Z2_TO_Z4B
+                              , /* notificationParam */ 
+                                mz2_cntTaskOs1ms-1-mz2_noNotificationsLoss
+                              );
+    }
 } /* End of taskOs1ms */
 
 
