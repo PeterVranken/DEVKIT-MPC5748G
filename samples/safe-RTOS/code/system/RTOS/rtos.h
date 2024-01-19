@@ -466,7 +466,7 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  * mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks,
  * which should be locked, i.e., which compete for the resource or critical section to
  * protect. This may still lock other, not competing tasks, but at least all non competing
- * tasks of higher priority and the interrupt handlers will still be served.\n
+ * tasks of higher priority and the interrupt handlers will be served.\n
  *   To release the protected resource or to leave the critical section, call the
  * counterpart function rtos_resumeAllTasksByPriority(), which restores the original
  * task priority level.\n

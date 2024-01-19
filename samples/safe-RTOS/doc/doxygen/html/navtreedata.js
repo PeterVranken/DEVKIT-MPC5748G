@@ -56,7 +56,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"rtos__system_call_8h.html#ad71ba99d7500f0d82ab40b64d3d1a7ab"
+"rtos__scheduler_8h.html#af0330dcbcc59b2eecf68580d503a170a"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

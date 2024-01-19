@@ -110,7 +110,7 @@ $(document).ready(function(){initNavTree('rtos__priority_ceiling_protocol_8h_sou
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="comment">/* Define the field offsets and enumeration values in struct eventDesc_t. */</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#define PCP_SIZE_OF_EV_DESC         32</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#define PCP_SIZE_OF_EV_DESC         44</span></div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">#define PCP_O_EVDESC_state          0</span></div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#define PCP_O_EVDESC_prio           16</span></div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="preprocessor">#define PCP_E_EVST_idle             0</span></div>
@@ -119,13 +119,13 @@ $(document).ready(function(){initNavTree('rtos__priority_ceiling_protocol_8h_sou
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">#ifdef __STDC_VERSION__</span></div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#define RTOS_STATIC_CONSTRAINTS_INTERFACE_C_AS_PCP (                                    \</span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">            sizeof(((const rtos_kernelInstanceData_t*)NULL)-&gt;mapPrioToEvent[0]) == 4    \</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">            sizeof(((const rtos_kernelInstanceData_t*)NULL)-&gt;mapPrioToEvProc[0]) == 4   \</span></div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">            &amp;&amp; sizeoffield(rtos_kernelInstanceData_t, currentPrio) == 4                 \</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">            &amp;&amp; PCP_SIZE_OF_EV_DESC == sizeof(rtos_eventDesc_t)                          \</span></div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">            &amp;&amp; PCP_O_EVDESC_state == offsetof(rtos_eventDesc_t, state)                  \</span></div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">            &amp;&amp; PCP_O_EVDESC_prio == offsetof(rtos_eventDesc_t, priority)                \</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">            &amp;&amp; sizeoffield(rtos_eventDesc_t, state) == 1                                \</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">            &amp;&amp; sizeoffield(rtos_eventDesc_t, priority) == 4                             \</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">            &amp;&amp; PCP_SIZE_OF_EV_DESC == sizeof(rtos_eventProcDesc_t)                      \</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">            &amp;&amp; PCP_O_EVDESC_state == offsetof(rtos_eventProcDesc_t, state)              \</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">            &amp;&amp; PCP_O_EVDESC_prio == offsetof(rtos_eventProcDesc_t, priority)            \</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">            &amp;&amp; sizeoffield(rtos_eventProcDesc_t, state) == 1                            \</span></div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">            &amp;&amp; sizeoffield(rtos_eventProcDesc_t, priority) == 4                         \</span></div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">            &amp;&amp; PCP_E_EVST_idle == evState_idle                                          \</span></div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">            &amp;&amp; PCP_E_EVST_triggered == evState_triggered                                \</span></div>
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">        )</span></div>
@@ -139,7 +139,7 @@ $(document).ready(function(){initNavTree('rtos__priority_ceiling_protocol_8h_sou
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="comment"> * Global type definitions</span></div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="comment"> */</span></div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keyword">struct </span><a class="code hl_struct" href="structrtos__event_desc__t.html">rtos_eventDesc_t</a>;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keyword">struct </span><a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a>;</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="comment">/*</span></div>
@@ -155,14 +155,14 @@ $(document).ready(function(){initNavTree('rtos__priority_ceiling_protocol_8h_sou
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="keywordtype">void</span> <a class="code hl_function" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority</a>(uint32_t resumeDownToThisPriority);</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="keyword">struct </span><a class="code hl_struct" href="structrtos__event_desc__t.html">rtos_eventDesc_t</a> *rtos_osGetEventByPriority(uint32_t <a class="code hl_variable" href="structrtos__event_desc__t.html#a31e44484f6f622efc8f9b87ab537800e">priority</a>);</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="keyword">struct </span><a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> *rtos_osGetEvProcByPriority(uint32_t <a class="code hl_variable" href="structrtos__event_proc_desc__t.html#a573656f82ee87141da96616f00dc6e0d">priority</a>);</div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">#endif  </span><span class="comment">/* For C code compilation only */</span><span class="preprocessor"></span></div>
 <div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">#endif  </span><span class="comment">/* RTOS_PRIORITY_CEILING_PROTOCOL_INCLUDED */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="artos_8h_html_aa4e09fafaef05f7c20adb63eaefe0b29"><div class="ttname"><a href="rtos_8h.html#aa4e09fafaef05f7c20adb63eaefe0b29">rtos_suspendAllTasksByPriority</a></div><div class="ttdeci">uint32_t rtos_suspendAllTasksByPriority(uint32_t suspendUpToThisPriority)</div></div>
 <div class="ttc" id="artos_8h_html_ab749e1296f04521109c29ce521ea770e"><div class="ttname"><a href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority</a></div><div class="ttdeci">void rtos_resumeAllTasksByPriority(uint32_t resumeDownToThisPriority)</div></div>
-<div class="ttc" id="astructrtos__event_desc__t_html"><div class="ttname"><a href="structrtos__event_desc__t.html">rtos_eventDesc_t</a></div><div class="ttdef"><b>Definition:</b> rtos_scheduler.h:57</div></div>
-<div class="ttc" id="astructrtos__event_desc__t_html_a31e44484f6f622efc8f9b87ab537800e"><div class="ttname"><a href="structrtos__event_desc__t.html#a31e44484f6f622efc8f9b87ab537800e">rtos_eventDesc_t::priority</a></div><div class="ttdeci">unsigned int priority</div><div class="ttdef"><b>Definition:</b> rtos_scheduler.h:97</div></div>
+<div class="ttc" id="astructrtos__event_proc_desc__t_html"><div class="ttname"><a href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a></div><div class="ttdef"><b>Definition:</b> rtos_scheduler.h:58</div></div>
+<div class="ttc" id="astructrtos__event_proc_desc__t_html_a573656f82ee87141da96616f00dc6e0d"><div class="ttname"><a href="structrtos__event_proc_desc__t.html#a573656f82ee87141da96616f00dc6e0d">rtos_eventProcDesc_t::priority</a></div><div class="ttdeci">unsigned int priority</div><div class="ttdef"><b>Definition:</b> rtos_scheduler.h:98</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -118,15 +118,15 @@ Macros</h2></td></tr>
 <tr class="memitem:a65b9398e80ebb29dc941a13e403c8cf1"><td class="memItemLeft" align="right" valign="top"><a id="a65b9398e80ebb29dc941a13e403c8cf1" name="a65b9398e80ebb29dc941a13e403c8cf1"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD2_SHARED_RAM</b>&#160;&#160;&#160;RGD_WRD2(/* idxPattern */ 3u)</td></tr>
 <tr class="separator:a65b9398e80ebb29dc941a13e403c8cf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac944b9cf29aec7a17c04d3ef38808c3f"><td class="memItemLeft" align="right" valign="top"><a id="ac944b9cf29aec7a17c04d3ef38808c3f" name="ac944b9cf29aec7a17c04d3ef38808c3f"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD3_ACCESS_SET_ROM_PERIPHRALS</b>&#160;&#160;&#160;RGD_WRD3(055u, 060u, 050u, /* CI */ 0u)</td></tr>
-<tr class="separator:ac944b9cf29aec7a17c04d3ef38808c3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad698b8265548e164d3935ea9b2690202"><td class="memItemLeft" align="right" valign="top"><a id="ad698b8265548e164d3935ea9b2690202" name="ad698b8265548e164d3935ea9b2690202"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD3_ACCESS_SET_ROM_PERIPHERALS</b>&#160;&#160;&#160;RGD_WRD3(055u, 060u, 050u, /* CI */ 0u)</td></tr>
+<tr class="separator:ad698b8265548e164d3935ea9b2690202"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bd7599fec2cce6482f4ed5627d2e50d"><td class="memItemLeft" align="right" valign="top"><a id="a5bd7599fec2cce6482f4ed5627d2e50d" name="a5bd7599fec2cce6482f4ed5627d2e50d"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD2_ALL_ROM</b>&#160;&#160;&#160;RGD_WRD2(/* idxPattern */ 1u)</td></tr>
 <tr class="separator:a5bd7599fec2cce6482f4ed5627d2e50d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5af2f25c3468060b79a40301abce7ce8"><td class="memItemLeft" align="right" valign="top"><a id="a5af2f25c3468060b79a40301abce7ce8" name="a5af2f25c3468060b79a40301abce7ce8"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD2_PERIPHRALS</b>&#160;&#160;&#160;RGD_WRD2(/* idxPattern */ 2u)</td></tr>
-<tr class="separator:a5af2f25c3468060b79a40301abce7ce8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a593e6cb7f0abd7c588ad2a15b4fa6f9d"><td class="memItemLeft" align="right" valign="top"><a id="a593e6cb7f0abd7c588ad2a15b4fa6f9d" name="a593e6cb7f0abd7c588ad2a15b4fa6f9d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD2_PERIPHERALS</b>&#160;&#160;&#160;RGD_WRD2(/* idxPattern */ 2u)</td></tr>
+<tr class="separator:a593e6cb7f0abd7c588ad2a15b4fa6f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2cefe315e9770d6a1d68e4ba15dc070"><td class="memItemLeft" align="right" valign="top"><a id="ac2cefe315e9770d6a1d68e4ba15dc070" name="ac2cefe315e9770d6a1d68e4ba15dc070"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>WORD2_RESERVED_BLOCK</b>&#160;&#160;&#160;RGD_WRD2(/* idxPattern */ 3u) /* See below */</td></tr>
 <tr class="separator:ac2cefe315e9770d6a1d68e4ba15dc070"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,7 +197,7 @@ Functions</h2></td></tr>
 </li>
 <li>A difficult topic is the placing of the small data 2 and bss 2 sections. It is possible to locate them into the ROM. This is likely not fully compliant with the EABI but for all normal embedded applications alright. In which case we had four free descriptors and could implement two more processes. A similar concept for increasing the number of processes would be entirely switching off the short addressing modes. This is a matter of the compiler command line</li>
 </ul>
-<p >Copyright (C) 2018-2020 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
+<p >Copyright (C) 2018-2023 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
 <p >You should have received a copy of the GNU General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>
@@ -232,13 +232,14 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">                                  ((((idxPattern)&amp;0x3u)&lt;&lt;(15*2))     \</div>
-<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(14*2))   \</div>
-<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(13*2))   \</div>
-<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(11*2))   \</div>
-<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(7*2))    \</div>
-<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(6*2))    \</div>
-<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(5*2))    \</div>
+<b>Value:</b><div class="fragment"><div class="line">                                  ((((idxPattern)&amp;0x3u)&lt;&lt;(15*2))   <span class="comment">/* M0 */</span>  \</div>
+<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(14*2)) <span class="comment">/* M1 */</span>  \</div>
+<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(13*2)) <span class="comment">/* M2 */</span>  \</div>
+<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(11*2)) <span class="comment">/* M4 */</span>  \</div>
+<div class="line">                                  | (((    3u    )&amp;0x3u)&lt;&lt;(10*2)) <span class="comment">/* M5 */</span>  \</div>
+<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(7*2))  <span class="comment">/* M8 */</span>  \</div>
+<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(6*2))  <span class="comment">/* M9 */</span>  \</div>
+<div class="line">                                  | (((idxPattern)&amp;0x3u)&lt;&lt;(5*2))  <span class="comment">/* M10 */</span> \</div>
 <div class="line">                                 )</div>
 </div><!-- fragment -->
 </div>
@@ -345,12 +346,12 @@ Functions</h2></td></tr>
 <div class="line">            assert(((uintptr_t)ld_##section##P##pid##Start &amp; 0xf) == 0                      \</div>
 <div class="line">                   &amp;&amp;  ((uintptr_t)ld_##section##P##pid##End &amp; 0xf) == 0                    \</div>
 <div class="line">                  );                                                                        \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD0 = (uintptr_t)ld_##section##P##pid##Start;<span class="comment">/* from */</span>        \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD1 = (uintptr_t)ld_##section##P##pid##End-1;<span class="comment">/* to, incl. */</span>   \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD2 = WORD2_PROCESS_RAM;                                       \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD3 = WORD3_ACCESS_SET_RAM##CI;                                \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD4 = WORD4_PIT_AWARE(pid);                                    \</div>
-<div class="line">            SMPU_1-&gt;RGD[r].WORD5 = WORD5_LOCK_AND_ENABLE;   <span class="comment">/* Enable region descriptor. */</span> \</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD0    = (uintptr_t)ld_##section##P##pid##Start;<span class="comment">/* from */</span>     \</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD1    = (uintptr_t)ld_##section##P##pid##End-1;<span class="comment">/* to, incl. */</span>\</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD2.F1 = WORD2_PROCESS_RAM;                                    \</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD3    = WORD3_ACCESS_SET_RAM##CI;                             \</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD4    = WORD4_PIT_AWARE(pid);                                 \</div>
+<div class="line">            SMPU_1-&gt;RGD[r].WORD5    = WORD5_LOCK_AND_ENABLE;<span class="comment">/* Enable region descriptor. */</span> \</div>
 <div class="line">            ++ r;                                                                           \</div>
 <div class="line">        }</div>
 </div><!-- fragment -->
@@ -374,8 +375,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >Configure and initialize the memory protection units SMPU_0 and SMPU_1. The configuration is static; a set of regions suitable for the RTOS (and its project dependent configuration) is defined and then the unit is enabled.<br  />
  See module description for more details. </p><dl class="section remark"><dt>Remarks</dt><dd>The processes are shared between the cores and, as a consequence, one static MPU configuration is used to control the behavior of all three cores. Regardless, how many cores are run, this function must be called only once and it must be called when the first of the three cores starts up. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000017">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000018">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000015">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000016">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
 
 </div>
 </div>

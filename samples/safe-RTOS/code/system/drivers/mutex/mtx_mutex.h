@@ -92,7 +92,7 @@
 typedef uint8_t mtx_mutex_t;
 
 /** The type of a single, Boolean mutex, which can be acquired by one core at a time. The
-    mutex has an incocation counter so that several contexts on the same core can compete
+    mutex has an invocation counter so that several contexts on the same core can compete
     for the mutex without risking a dead lock. */
 typedef struct mtx_nestedMutex_t
 {
@@ -312,8 +312,8 @@ static inline void mtx_osLeaveIntercoreCriticalSection
     }
     else
     {
-        /* There at least one remaining nesting level. The critical section is not yet
-           left, we still require the mutex. A DEBUG test aims at finding unproperly
+        /* There is at least one remaining nesting level. The critical section is not yet
+           left, we still require the mutex. A DEBUG test aims to find unproperly
            paired/placed calls of enter and leave. */
         assert((int16_t)pCritSec->cntInvocationAry[idxCore] >= 0);
     }

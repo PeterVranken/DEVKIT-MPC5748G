@@ -110,7 +110,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Definition of global data of one instance of the RTOS on a multi-core MCU.</p>
-<p >Copyright (C) 2020 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
+<p >Copyright (C) 2019-2023 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
 <p >You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>
@@ -147,7 +147,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >The C code has an interface with the assembler code. It is used to exchange process and task related information. The interface is modeled twice, once as structs for C code and once as set of preprocessor macros, which hold size of data structures and offsets of fields. Here, we have macros, which support double-checking the equivalence of both definitions. The compiler will abort the compilation if there is a static inconsistency. </p><dl class="section remark"><dt>Remarks</dt><dd>This function neds to be compiled but doesn't need to be called. Nonelthelees, to avoid a compiler warning like "static but never used" we define it public. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000012">Todo:</a></b></dt><dd>As soon as runtime checks are defined (see #RTOS_CONSTRAINTS_INTERFACE_C_AS_INSTANCE_DATA) we need to call this function. This requires a documentation change of the function, too. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000011">Todo:</a></b></dt><dd>As soon as runtime checks are defined (see #RTOS_CONSTRAINTS_INTERFACE_C_AS_INSTANCE_DATA) we need to call this function. This requires a documentation change of the function, too. </dd></dl>
 <ul>
 <li>A few more conditions even require run-time checking. *&zwj;/</li>
 </ul>

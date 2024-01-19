@@ -20,9 +20,7 @@ endif::[]
 
 // @todo Maybe we need a section explaining the multi-core concept and why the promised core-to-core communication mechanisms barely show up in the manual
 // @todo Halting a process relates to the calling core only. Not a bug but maybe counter-intuitive
-// @todo Configuration with rtos.config.h and its template
-// @todo Configuration of processes and their stack size in the linker file
-// @todo align use of `xxx`, _xxx_ and <<secXxx,xxx>> and of _xxx_() vs. _xxx()_. First decision: <<secApiRunTask,rtos_runTask()>> is best
+// @todo Section 11: Configuration of processes and their stack size in the linker file
 
 == Scope
 
@@ -533,7 +531,7 @@ application requires to use the other PID timers then the initialization
 needs to be done with care: For the PIT devices, there are common
 settings, which affect all PID timers. You need to align your
 initialization code with the RTOS kernel initialization, see
-_rtos_osInitKernel_().
+<<secApiInitKernel,rtos_osInitKernel()>>.
 
 [[secPrioTaskAndISR]]
 === Priority of tasks and interrupts
@@ -555,8 +553,10 @@ situation. This sub-ordinated priority is defined at RTOS configuration
 time; in the given situation, the tasks would be executed primarily in
 order of creation of the event processors, they are associated with, and
 secondarily in order of registration, if several of them are associated
-with one and the same event processor; see _rtos_osCreateEventProcessor_(),
-_rtos_osRegisterOSTask_() and _rtos_osRegisterUserTask_() for details.
+with one and the same event processor; see
+<<secApiCreateEvProc,rtos_osCreateEventProcessor()>>,
+<<secApiRegisterTask,rtos_osRegisterOSTask()>> and
+<<secApiRegisterTask,rtos_osRegisterUserTask()>> for details.
 
 What does "become ready at the same time" mean? This can be as easy as two
 cyclic tasks that become due at the same nominal operating system clock
@@ -588,11 +588,11 @@ descriptors. Therefore, an exception always means reporting an error.
 Any exception handler will first check, which process the exception
 causing task belongs to. The RTOS maintains process related error counters
 and the according counter is incremented. The exception handler will then
-abort the failing task, i.e., it does do basically the same as the RTOS API
-_rtos_terminateTask_() does, which voluntarily ends a task. Code execution
-does not return to the failing code location. If a regular, time triggered
-task fails, then it'll be triggered again at next due time, regardless of
-the number of counted failures.
+abort the failing task, i.e., it does do basically the same as the RTOS
+API <<secApiTermTask,rtos_terminateTask()>> does, which voluntarily ends a
+task. Code execution does not return to the failing code location. If a
+regular, time triggered task fails, then it'll be triggered again at next
+due time, regardless of the number of counted failures.
 
 This is virtually all, the RTOS does. In particular, there's no error
 callback or code to investigate the cause of the problem and to maybe
@@ -619,9 +619,10 @@ state.
 === Deadline monitoring
 
 User tasks, regardless if triggered by events or run by services
-_rtos_osRunTask_() or _rtos_runTask_(), can have a bounded timespan for
-completion. The ultimate end time is called the deadline of the task and
-the supervision is called deadline monitoring.
+<<secApiRunTask,rtos_osRunTask()>> or <<secApiRunTask,rtos_runTask()>>,
+can have a bounded timespan for completion. The ultimate end time is
+called the deadline of the task and the supervision is called deadline
+monitoring.
 
 The timespan is the world time, not an execution time budget. At the
 instance of starting the task its end time is defined. To the supervision,
@@ -703,11 +704,11 @@ Less obvious is a priority issue. An ISR, which runs a potentially failing
 callback, can have an interrupt priority higher than the RTOS timer and
 any other regular interrupt. So that there's no upper boundary for the
 maximum execution time of the callback. This consideration leads to the
-safety requirement for the aimed operating system that any ISRs, which
-run at a priority higher than the RTOS timer interrupt must not make use
-of the service _rtos_osRunTask_(). The requirement is easy to fulfill as
-all affected code is in the trusted sphere and most of it are static
-configuration decisions.
+safety requirement for the aimed operating system that any ISRs, which run
+at a priority higher than the RTOS timer interrupt must not make use of
+the service <<secApiRunTask,rtos_osRunTask()>>. The requirement is easy to
+fulfill as all affected code is in the trusted sphere and most of it are
+static configuration decisions.
 
 By principle, a deadline exception (as any other, too) can leave the
 system in an inconsistent (yet not instable) state. The task may have been
@@ -725,16 +726,18 @@ The design of an operating system building on safe-RTOS can make the
 consideration, whether or not deadline monitoring needs to be applied at
 all. If some design rules are obyed then the observation of the event
 processors' activation loss counters from the safety supervisory task will
-be sufficient in most cases (see service _rtos_getNoActivationLoss_()).
+be sufficient in most cases (see service
+<<secApiActivationLoss,rtos_getNoActivationLoss()>>.
 
 Using deadline monitoring is absolutely unavoidable if ISRs make use of
-callbacks into user processes (using service _rtos_osRunTask_()). However,
-in many situations this construct can be replaced by deferred interrupt
-handling, i.e., by triggering an OS task that takes over the work from the
-ISR. The triggered task would have a priority below the safety task and if
-it is blocked by a non-returning, bad callback into the user process then
-the safety task would immediately see the activation losses for the event
-notified by the ISR and likely some other (timer) events.
+callbacks into user processes (using service
+<<secApiRunTask,rtos_osRunTask()>>). However, in many situations this
+construct can be replaced by deferred interrupt handling, i.e., by
+triggering an OS task that takes over the work from the ISR. The triggered
+task would have a priority below the safety task and if it is blocked by a
+non-returning, bad callback into the user process then the safety task
+would immediately see the activation losses for the event notified by the
+ISR and likely some other (timer) events.
 
 Typically, the latency times resulting from observation of activation
 losses will be a bit higher than when applying deadline monitoring. This
@@ -1012,8 +1015,9 @@ defined callback. The application task would specify a function to be
 called from the I/O driver if some data becomes available. The I/O driver
 will likely be implemented as an ISR, which is invoked by hardware, when
 the I/O device acquired the data. Inside the ISR, the implementation will
-make use of the RTOS API to run a user task, namely _rtos_osRunTask_(). The
-task function is of course the agreed callback.
+make use of the RTOS API to run a user task, namely
+<<secApiRunTask,rtos_osRunTask()>>. The task function is of course the
+agreed callback.
 
 The callback is executed in the context of the aimed application process.
 If it would fail (e.g., forbidden memory access causes an MPU exception)
@@ -1105,8 +1109,8 @@ The leanest and fastest system call is the basic handler:
 * The basic system call offers a maximum of flexibility and control; the
   handler is not restricted to be just an ordinary synchronous function
   call with return. For example, the "throw exception" system call, i.e.,
-  _rtos_terminateTask_(), is implemented this way, it returns to the
-  operating system but not from the system call
+  <<secApiTermTask,rtos_terminateTask()>>, is implemented this way, it
+  returns to the operating system but not from the system call
 
 The programmer of a basic system call has the full responsibility for
 every detail. The only things the RTOS code does are the switch to
@@ -1156,13 +1160,13 @@ function:
   must be called, neither in the handler function itself and nor in any of
   its sub-functions, which can potentially enable the External Interrupt
   processing. This includes but is not limited to:
-** _rtos_osResumeAllInterrupts_()
-** _rtos_osLeaveCriticalSection_()
-** _rtos_osResumeAllTasksByPriority_()
-** _rtos_osRunTask_()
-** _rtos_osSendEvent_()
-** _rtos_osSendEventCountable_()
-** _rtos_osSendEventMultiple_()
+** <<secApiSuspIrq,rtos_osResumeAllInterrupts()>>
+** <<secApiSuspIrq,rtos_osLeaveCriticalSection()>>
+** <<secApiPCP,rtos_osResumeAllTasksByPriority()>>
+** <<secApiRunTask,rtos_osRunTask()>>
+** <<secApiSendEvent,rtos_osSendEvent()>>
+** <<secApiSendEvent,rtos_osSendEventCountable()>>
+** <<secApiSendEvent,rtos_osSendEventMultiple()>>
 
 The simple handler should be chosen for quickly executing services,
 because it implicitly forms a critical section. Note, this is not a
@@ -1235,8 +1239,9 @@ available. This has several implications:
 
 The RTOS offers convenience functions to validate user provided pointers.
 Although using pointers as arguments of system calls is not recommended at
-all, it can be safely done. Please, see _rtos_checkUserCodeReadPtr_() and
-_rtos_checkUserCodeWritePtr_().
+all, it can be safely done. Please, see
+<<secApiCheckPtr,rtos_checkUserCodeReadPtr()>> and
+<<secApiCheckPtr,rtos_checkUserCodeWritePtr()>>.
 
 [CAUTION]
 =========
@@ -1420,6 +1425,7 @@ software execution being halted in the kernel.
 // System configuration and initialization:
 //
 //   rtos_osCreateEventProcessor                <<secApiCreateEvProc>>
+//   rtos_osCreateSwTriggeredEventProcessor     <<secApiCreateEvProc>>
 //   rtos_osRegisterInitTask                    <<secApiRegisterTask>>
 //   rtos_osRegisterUserTask                    <<secApiRegisterTask>>
 //   rtos_osRegisterOSTask                      <<secApiRegisterTask>>
@@ -1431,8 +1437,12 @@ software execution being halted in the kernel.
 //
 // Control tasks and processes:
 //
-//   rtos_osSendEvent                        <<secApiSendEvent>>
-//   rtos_sendEvent (inline)                 <<secApiSendEvent>>
+//   rtos_osSendEvent                           <<secApiSendEvent>>
+//   rtos_sendEvent (inline)                    <<secApiSendEvent>>
+//   rtos_osSendEventCountable                  <<secApiSendEvent>>
+//   rtos_sendEventCountable (inline)           <<secApiSendEvent>>
+//   rtos_osSendEventMultiple                   <<secApiSendEvent>>
+//   rtos_sendEventMultiple (inline)            <<secApiSendEvent>>
 //   rtos_osRunTask (inline)                    <<secApiRunTask>>
 //   rtos_runTask (inline)                      <<secApiRunTask>>
 //   rtos_terminateTask (inline)                <<secApiTermTask>>
@@ -1495,6 +1505,7 @@ user and OS tasks, interrupt service routines and bare-metal applications:
 |Service |Callable from|Remarks
 // System configuration and initialization:
 | <<secApiCreateEvProc,rtos_osCreateEventProcessor()>> | OS |
+| <<secApiCreateEvProc,rtos_osCreateSwTriggeredEventProcessor()>> | OS |
 | <<secApiRegisterTask,rtos_osRegisterInitTask()>> | OS |
 | <<secApiRegisterTask,rtos_osRegisterUserTask()>> | OS |
 | <<secApiRegisterTask,rtos_osRegisterOSTask()>> | OS |
@@ -1506,6 +1517,10 @@ user and OS tasks, interrupt service routines and bare-metal applications:
 // Control tasks and processes:
 | <<secApiSendEvent,rtos_osSendEvent()>> | OS, ISR |
 | <<secApiSendEvent,rtos_sendEvent()>> | user | inline
+| <<secApiSendEvent,rtos_osSendEventCountable()>> | OS, ISR |
+| <<secApiSendEvent,rtos_sendEventCountable()>> | user | inline
+| <<secApiSendEvent,rtos_osSendEventMultiple()>> | OS, ISR |
+| <<secApiSendEvent,rtos_sendEventMultiple()>> | user | inline
 | <<secApiRunTask,rtos_osRunTask()>> | OS, ISR | inline
 | <<secApiRunTask,rtos_runTask()>> | user | inline
 | <<secApiTermTask,rtos_terminateTask()>> | OS | inline
@@ -1635,11 +1650,12 @@ provided to the associated task functions as argument if
 `timerUsesCountableEvents` is false and it'll serve as event mask if
 `timerUsesCountableEvents` is true.
 
-_rtos_osCreateSwTriggeredEventProcessor_() is just an "abbreviated" call
-of _rtos_osCreateEventProcessor_(): Most of the arguments of the latter
-don't care if the event processor is not going to be used for time
-triggered task activation. The former variant just sets the unused
-arguments to default values.
+<<secApiCreateEvProc,rtos_osCreateSwTriggeredEventProcessor()>> is just an
+"abbreviated" call of
+<<secApiCreateEvProc,rtos_osCreateEventProcessor()>>: Most of the
+arguments of the latter don't care if the event processor is not going to
+be used for time triggered task activation. The former variant just sets
+the unused arguments to default values.
 
 [[secApiRegisterTask]]
 ==== Registering a task
@@ -1709,13 +1725,13 @@ The task functions receive the 32 Bit argument `taskParam`. For regular
 timer tasks woken by ordinary events its widely irrelevant; they receive
 the constant value, which is specified at event processor creation time
 (see <<secApiCreateEvProc>>). Event triggered tasks receive the value,
-which is sent with <<secApiSendEvent,_rtos_osSendEvent_()>> or
-<<secApiSendEvent,_rtos_sendEvent_()>> or the event multiplicities, if
+which is sent with <<secApiSendEvent,rtos_osSendEvent()>> or
+<<secApiSendEvent,rtos_sendEvent()>> or the event multiplicities, if
 they are triggered by countable events using
-<<secApiSendEvent,_rtos_osSendEventCountable_()>>,
-<<secApiSendEvent,_rtos_sendEventCountable_()>>,
-<<secApiSendEvent,_rtos_osSendEventMultiple_()>> or
-<<secApiSendEvent,_rtos_sendEventMultiple_()>>.
+<<secApiSendEvent,rtos_osSendEventCountable()>>,
+<<secApiSendEvent,rtos_sendEventCountable()>>,
+<<secApiSendEvent,rtos_osSendEventMultiple()>> or
+<<secApiSendEvent,rtos_sendEventMultiple()>>.
 
 [[secApiInitINTC]]
 ==== Initialize the interrupt hardware
@@ -1867,10 +1883,10 @@ to do. This is likely the most simple available coherent, process boundary
 crossing communication channel.
   footnote:[It may look like an inconsistent API design if all associated
 tasks receive the same value `taskParam` from the triggering ISR or task.
-The service _rtos_sendEvent_() could easily offer an API, which
-provides an individual value to each associated task. The only reason not
-to do so is the additional overhead in combination with the very few
-imaginable use cases. In most cases an explicitly triggered event
+The service <<secApiSendEvent,rtos_sendEvent()>> could easily offer an
+API, which provides an individual value to each associated task. The only
+reason not to do so is the additional overhead in combination with the
+very few imaginable use cases. In most cases an explicitly triggered event
 processor will have just one associated task; event processors with more
 than one task will mostly be regular timer tasks, which make rarely use of
 the task parameter.]
@@ -2899,6 +2915,53 @@ To compile the RTOS with this sample application, have
 
 in the command line of the make process.
 
+== Your own safe-RTOS application
+
+safe-RTOS is part of a project at
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples[GitHub^],
+please go there to find more information and sample code.
+
+To benefit most from the existing code, you should take the best fitting
+sample as starting point. Copy the folder, which is the one containing the
+Eclipse files `.project` and `.cproject`. "Best-fitting" should be decided
+by functionality and core configuration. The DEVKIT-MPC5748G samples
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN["CAN"^]
+and
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/TCP["TCP"^]
+offer additional functionality for communication. If you need CAN and/or
+IP communication then take one of these samples. It's likely more complex
+to merge functionality as to extend the RTOS configuration. If you don't
+need the additional functionality then you should take the safe-RTOS
+sample application, which matches your aimed core configuration. Copy
+DEVKIT-MPC5748G sample
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS["safe-RTOS"^].
+If, e.g., you want to run the RTOS on all three cores, then take the
+application code from folder
+https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/code/application/triCore["triCore"^]
+as blueprint for your own application.
+
+After copying the DEVKIT-MPC5748G sample, you can modify the files
+`GNUmakefile`, `.project`, `.cproject` and all `*.launch` to match your
+application name. See
+https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/How-to-clone-a-Sample
+for details.
+
+TIP: After copy and rename but before you modify the code you better prove
+the build and operability of the chosen starting-point code.
+
+Look for file `rtos.config.h`. The implementation folder of safe-RTOS
+contains the template `rtos.config.h.template` for this application
+specific file and all samples have their individual instance. Open the
+file in the text editor and follow the given documentation. It's mostly
+about maximum numbers of tasks and event processors, so that the static
+memory allocation can be safely made.
+
+TODOC: Linker script to configure the processes in use by setting their
+stack sizes to a value other than zero.
+
+The configuration of actual tasks and events is usually made in the main
+functions of the cores, after initialization of the I/O drivers. This is
+were you're code modification will likely continue.
 
 :Local Variables:
 :coding:    utf-8

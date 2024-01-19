@@ -24,7 +24,7 @@
  * three descriptors per user process and one for the OS and we have 16 descriptors
  * available. From the remaining three, we have spend one for shared data. Two descriptors
  * are still available.\n
- *   CAUTION: The mentioned memory chunks or areas are puzzled by the linker. The MPU
+ *   CAUTION: The mentioned memory chunks or areas are created by the linker. The MPU
  * configuration makes no hard coded assumptions about memory arrangement and distribution
  * or addresses and sizes of the chunks. It reads address and length of the memory chunks
  * from linker provided symbols. Insofar do we have a very tight relationship between the
@@ -34,7 +34,7 @@
  * Alternative configurations, which may find their use case and do not break the safety
  * concept:
  *   - The OS process doesn't necessarily need execution access for RAM. There
- * are typically driver implementation patterns, which require RAM execution rights, but it
+ * are typical driver implementation patterns, which require RAM execution rights, but it
  * is mostly about initialization and could be done prior to calling the MPU configuration.\n
  *   - The user processes won't normally need execution rights for their RAM\n
  *   - It is possible to let a process with higher privileges have access to the memories
@@ -56,7 +56,7 @@
  * number of processes would be entirely switching off the short addressing modes. This is a
  * matter of the compiler command line
  *
- * Copyright (C) 2018-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2018-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

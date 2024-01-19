@@ -10,7 +10,7 @@
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
  * parity, 1 stop bit.
  *
- * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -49,6 +49,8 @@
  * Include files
  */
 
+//#include "mai_main.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -66,7 +68,6 @@
 #include "rtos.h"
 #include "del_delay.h"
 #include "gsl_systemLoad.h"
-//#include "mai_main.h"
 
 
 /*
@@ -145,8 +146,8 @@
     assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
     requires that the order of creating the events follows the order here in the
     enumeration.\n
-      Here we have the IDs of the created events. They occupy the index range starting from
-    zero. */
+      Here, we have the IDs of the created events. They occupy the index range starting
+    from zero. */
 enum idEvent_t
 {
     idEv1msSafety = 0,  /// Event for safety task
@@ -208,8 +209,6 @@ enum pidOfTask_t
 };
 
 
-
-
 /*
  * Local prototypes
  */
@@ -244,6 +243,7 @@ unsigned int SDATA_OS(mai_cpuLoad) = 1000;
 /*
  * Function implementation
  */
+
 
 /**
  * Initialization task of process \a PID.
@@ -750,6 +750,9 @@ static void osInstallInterruptServiceRoutines(void)
 
 /**
  * C entry function main. Is used for and only for the Z7_0 core.
+ *   @return
+ * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
+ * compiler warning. 
  *   @param noArgs
  * Number of arguments in \a argAry. Is actually always equal to one.
  *   @param argAry
@@ -758,6 +761,7 @@ static void osInstallInterruptServiceRoutines(void)
  */
 int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB_DBG_ONLY)
 {
+    /* The arguments of the main function are quite useless. Just check correctness. */
     assert(noArgs == 1  && strcmp(argAry[0], "Z4A") == 0);
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup

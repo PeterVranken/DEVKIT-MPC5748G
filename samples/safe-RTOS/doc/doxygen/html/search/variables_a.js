@@ -1,11 +1,6 @@
 var searchData=
 [
-  ['taskary_0',['taskAry',['../structrtos__event_desc__t.html#af54f2583ff5ce13a9503e9df25474cd1',1,'rtos_eventDesc_t']]],
-  ['taskcfgary_1',['taskCfgAry',['../structrtos__kernel_instance_data__t.html#a2861e3ba7d91cbeb9157f71c8b68f526',1,'rtos_kernelInstanceData_t']]],
-  ['taskparam_2',['taskParam',['../structrtos__event_desc__t.html#afcdca7078c25d5506932c8b3477d2953',1,'rtos_eventDesc_t']]],
-  ['ticycleinms_3',['tiCycleInMs',['../structrtos__event_desc__t.html#a41426090da76ff7a8f7a357267dfc08e',1,'rtos_eventDesc_t']]],
-  ['tidue_4',['tiDue',['../structrtos__event_desc__t.html#a58e5b16d8677540845f7631e12a796f6',1,'rtos_eventDesc_t']]],
-  ['tios_5',['tiOs',['../structrtos__kernel_instance_data__t.html#a97ac8f63fc0c4d9587111a20836e25b5',1,'rtos_kernelInstanceData_t']]],
-  ['tiosstep_6',['tiOsStep',['../structrtos__kernel_instance_data__t.html#ae62e9402e8e6ba973df113efb4bd008e',1,'rtos_kernelInstanceData_t']]],
-  ['titaskmax_7',['tiTaskMax',['../structrtos__task_desc__t.html#a11f1b1e21a5277a406f92cff7525a982',1,'rtos_taskDesc_t']]]
+  ['state_0',['state',['../structrtos__process_desc__t.html#a96885bb2718324875cbcaadefde19143',1,'rtos_processDesc_t']]],
+  ['suspendprocess_5fpermissions_1',['suspendProcess_permissions',['../structrtos__kernel_instance_data__t.html#afd984fd5cde6767b7833501df3afb598',1,'rtos_kernelInstanceData_t']]],
+  ['systemcalldescary_2',['systemCallDescAry',['../structrtos__kernel_instance_data__t.html#aa5d9100f139b426b9540a107b489a1e0',1,'rtos_kernelInstanceData_t']]]
 ];

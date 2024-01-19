@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['rtos_5fendofintcinterrupthandlerary_0',['rtos_endOfINTCInterruptHandlerAry',['../rtos__external_interrupt_8c.html#af34c0be87ce8f08cd2ae73d5469ac308',1,'rtos_externalInterrupt.c']]],
-  ['rtos_5fidxrtostimerary_1',['rtos_idxRtosTimerAry',['../rtos__scheduler_8c.html#ac65d5369b0c6512dc46693ed73edad4d',1,'rtos_scheduler.c']]],
-  ['runtask_5fminprioritylevel_2',['runTask_minPriorityLevel',['../structrtos__kernel_instance_data__t.html#a3e1d9beabc85fdc11b35f654bb91592c',1,'rtos_kernelInstanceData_t']]],
-  ['runtask_5fpermissions_3',['runTask_permissions',['../structrtos__kernel_instance_data__t.html#a457b8170308c633e137d57a49f9bfce0',1,'rtos_kernelInstanceData_t']]]
+  ['pcurrentevproc_0',['pCurrentEvProc',['../structrtos__kernel_instance_data__t.html#adfa7c9a2be8e2c3d46808dae57bfdab2',1,'rtos_kernelInstanceData_t']]],
+  ['pendevproc_1',['pEndEvProc',['../structrtos__kernel_instance_data__t.html#af73d4ac0364aefb667a111cc6dd76658',1,'rtos_kernelInstanceData_t']]],
+  ['pid_2',['PID',['../structrtos__task_desc__t.html#ab9a01a36bbb823cf2c2fbad709a7c0e3',1,'rtos_taskDesc_t']]],
+  ['pnextevproctoschedule_3',['pNextEvProcToSchedule',['../structrtos__kernel_instance_data__t.html#a99becd603ca647581d51e1b7941c7228',1,'rtos_kernelInstanceData_t']]],
+  ['priority_4',['priority',['../structrtos__event_proc_desc__t.html#a573656f82ee87141da96616f00dc6e0d',1,'rtos_eventProcDesc_t']]],
+  ['processary_5',['processAry',['../structrtos__kernel_instance_data__t.html#a836e833dc035cf1fbe966fc5fbf26c09',1,'rtos_kernelInstanceData_t']]]
 ];

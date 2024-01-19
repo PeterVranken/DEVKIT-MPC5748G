@@ -131,7 +131,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Definition of global interface of module <a class="el" href="rtos__process_8c.html">rtos_process.c</a></p>
-<p >Copyright (C) 2019 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
+<p >Copyright (C) 2019-2023 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
 <p >You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>
@@ -308,7 +308,7 @@ This function must be called from the OS context only. Any attempt to use it in 
       </table>
 </div><div class="memdoc">
 <p >Get the number of task failures counted for the given process since start of the kernel.</p>
-<p >Get the number of task failures (and task abortions at the same time) counted for the given process since start of the kernel on the calling core. </p><dl class="section return"><dt>Returns</dt><dd>Get total number of errors counted for process <em>PID</em>.<br  />
+<p >Get the number of task failures (and voluntary task abortions at the same time) counted for the given process since start of the kernel on the calling core. </p><dl class="section return"><dt>Returns</dt><dd>Get total number of errors counted for process <em>PID</em>.<br  />
  If the kernel is started on more than one core and if several cores share the same process then the function still returns only those process errors, which had been caught on the calling core. Explicit cross-core communication will be required to query the failures counted for the same process on another core, too. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -375,7 +375,7 @@ This function must be called from the OS context only. Any attempt to use it in 
       </table>
 </div><div class="memdoc">
 <p >Compute how many bytes of the stack area are still unused.</p>
-<p >Compute how many bytes of the stack area of a process are still unused on the calling core. If the value is requested after an application has been run a long while and has been forced to run through all its conditional code paths, it may be used to optimize the static stack allocation. The function is useful only for diagnosis purpose as there's no chance to dynamically increase or decrease the stack area at runtime.<br  />
+<p >Compute how many bytes of the stack area of a process are still unused on the calling core. If the value is requested after an application has been run a long while and has been forced to run through all its conditional code paths, it may be used to optimize the static stack allocation. The function is useful only for diagnostic purpose as there's no chance to dynamically increase or decrease the stack area at runtime.<br  />
  The function may be called from a task, ISR and from the idle task.<br  />
  The algorithm is as follows: The unused part of the stack is initialized with a specific pattern word. This routine counts the number of subsequent pattern words down from the (logical) top of the stack area. The result is returned as number of bytes.<br  />
  The returned result must not be trusted too much: It could of course be that a pattern word is found not because of the initialization but because it has been pushed onto the stack - in which case the return value is too great (too optimistic). The probability that this happens is significantly greater than zero. The chance that two pattern words had been pushed is however much less and the probability of three, four, five such words in sequence is negligible. Any stack size optimization based on this routine should therefore subtract e.g. eight bytes from the returned reserve and diminish the stack outermost by this modified value.<br  />
@@ -392,7 +392,7 @@ This function must be called from the OS context only. Any attempt to use it in 
 <dd>
 This function can be called from both, the OS context and a user task. </dd>
 <dd>
-This function my be called even from a core, which is not running safe-RTOS. Hoever, the use is restricted to PID 0, the OS stack, which is the only one is use on such a core. </dd></dl>
+This function may be called even from a core, which is not running safe-RTOS. However, then, the use is restricted to PID 0, the OS stack, which is the only one in use on such a core. </dd></dl>
 
 </div>
 </div>

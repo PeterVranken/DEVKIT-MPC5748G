@@ -6,7 +6,7 @@
  *   This file contains all global difinitions, which are used by the assembler
  * implementation. The file is shared between C and assembler code.
  *
- * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -329,7 +329,7 @@ const rtos_kernelInstanceData_t *rtos_getInstancePtr(void);
 
 
 /**
- *   @rtos_getIdxCore
+ *   @func rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning

@@ -4,11 +4,11 @@ var indexSectionsWithContent =
   1: "r",
   2: "adgrt",
   3: "acdgilor",
-  4: "_aceimnprstu",
+  4: "_aceimnoprstu",
   5: "fr",
   6: "er",
   7: "r",
-  8: "abdgiknrstu",
+  8: "abdegiknrstu",
   9: "st"
 };
 

@@ -136,7 +136,7 @@ Variables</h2></td></tr>
 <p >Initialize the interrupt controller INTC. The interrupt table with all interrupt service descriptors is initialized to contain a dummy ISR for all interrupts and it is then registered at the hardware device INTC for use.<br  />
  The interrupt default handler is rtos_dummyINTCInterruptHandler(). It does nothing in PRODUCTION compilation but an assertion will fire in DEBUG compilation in order to indicate the missing true handler for an enabled interrupt. The dummy interrupt handlers are registered for handling by core 0.<br  />
  Note, this function temporarily clears the enable External Interrupts bit in the machine status register but won't have changed it on return. Usually, you will call it at system startup time, when all interrupts are still disabled, then call <a class="el" href="rtos__external_interrupt_8c.html#a10a6460ff9e902f2d0ac42394e0e4fea">rtos_osRegisterInterruptHandler()</a> repeatedly for all interrupts your code is interested in, then start the other cores and eventually enable the interrupt processing at the CPUs. </p><dl class="section remark"><dt>Remarks</dt><dd>This function must be called from supervisor mode only. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000009">Todo:</a></b></dt><dd>This can become a sub-routine, which can then be applied in registerService to check user input </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000008">Todo:</a></b></dt><dd>This can become a sub-routine, which can then be applied in registerService to check user input </dd></dl>
 
 </div>
 </div>
@@ -202,7 +202,7 @@ Variables</h2></td></tr>
 On an MPC5748G, all cores share the function code. A core should use this function to install its ISRs, regardless whether or not it runs the RTOS. A typical scenario would be running the RTOS only on one core, but the others should still use this function to install their ISRs. </dd>
 <dd>
 This function must be called from supervisor mode only. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000010">Todo:</a></b></dt><dd>Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if? <br  />
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000009">Todo:</a></b></dt><dd>Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if? <br  />
  </dd></dl>
 
 </div>
@@ -242,8 +242,8 @@ This function must be called from supervisor mode only. </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >If a an unregistered interrupt service has been reported by <em>inc_idxUnregisteredInterrupt</em> then this variable holds the ID of the processor core, which had taken the interrupt. </p><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>This variable should reside in shared, uncached memory. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd><p class="startdd">Looks like a bug not to put this in OS memory? </p>
+<p >If a an unregistered interrupt service has been reported by <em>inc_idxUnregisteredInterrupt</em> then this variable holds the ID of the processor core, which had taken the interrupt. </p><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>This variable should reside in shared, uncached memory. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd><p class="startdd">Looks like a bug not to put this in OS memory? </p>
 <p class="enddd">Bad naming: inc_ vs. rtos_ <br  />
  </p>
 </dd></dl>

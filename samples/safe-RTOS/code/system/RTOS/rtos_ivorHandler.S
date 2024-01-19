@@ -1362,6 +1362,7 @@ iv6_isTrueIvor6Exception:
     mfspr       r0, SPR_ESR
     se_and      r0, r3
     mtspr       SPR_ESR, r0 /* SPR 62 = ESR, exception syndrome register. Acknowledge excep. */
+
     /* MSR is in desired state: EE=PR=0, CE and ME not affected by exception */
 
     se_li       r3, RTOS_CAUSE_TASK_ABBORTION_PROGRAM_INTERRUPT

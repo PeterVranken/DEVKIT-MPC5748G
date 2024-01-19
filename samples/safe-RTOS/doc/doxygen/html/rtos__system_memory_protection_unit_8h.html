@@ -123,8 +123,8 @@ Functions</h2></td></tr>
 <p >Configure and initialize the memory protection unit, MPU.</p>
 <p >Configure and initialize the memory protection units SMPU_0 and SMPU_1. The configuration is static; a set of regions suitable for the RTOS (and its project dependent configuration) is defined and then the unit is enabled.<br  />
  See module description for more details. </p><dl class="section remark"><dt>Remarks</dt><dd>The processes are shared between the cores and, as a consequence, one static MPU configuration is used to control the behavior of all three cores. Regardless, how many cores are run, this function must be called only once and it must be called when the first of the three cores starts up. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000017">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000018">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000015">Todo:</a></b></dt><dd>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000016">Todo:</a></b></dt><dd>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2 </dd></dl>
 
 </div>
 </div>

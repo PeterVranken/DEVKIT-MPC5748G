@@ -102,7 +102,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Definition of global interface of module <a class="el" href="rtos__external_interrupt_8c.html">rtos_externalInterrupt.c</a></p>
-<p >Copyright (C) 2018-2020 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
+<p >Copyright (C) 2018-2023 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
 <p >You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>
@@ -126,7 +126,7 @@ Functions</h2></td></tr>
 <p >Initialize the interrupt controller INTC. The interrupt table with all interrupt service descriptors is initialized to contain a dummy ISR for all interrupts and it is then registered at the hardware device INTC for use.<br  />
  The interrupt default handler is rtos_dummyINTCInterruptHandler(). It does nothing in PRODUCTION compilation but an assertion will fire in DEBUG compilation in order to indicate the missing true handler for an enabled interrupt. The dummy interrupt handlers are registered for handling by core 0.<br  />
  Note, this function temporarily clears the enable External Interrupts bit in the machine status register but won't have changed it on return. Usually, you will call it at system startup time, when all interrupts are still disabled, then call <a class="el" href="rtos__external_interrupt_8c.html#a10a6460ff9e902f2d0ac42394e0e4fea">rtos_osRegisterInterruptHandler()</a> repeatedly for all interrupts your code is interested in, then start the other cores and eventually enable the interrupt processing at the CPUs. </p><dl class="section remark"><dt>Remarks</dt><dd>This function must be called from supervisor mode only. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000009">Todo:</a></b></dt><dd>This can become a sub-routine, which can then be applied in registerService to check user input </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000008">Todo:</a></b></dt><dd>This can become a sub-routine, which can then be applied in registerService to check user input </dd></dl>
 
 </div>
 </div>
@@ -173,7 +173,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Install an interrupt service for a given I/O device. </p><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000011">Todo:</a></b></dt><dd>Make function disappear and have a ROM table as for system calls </dd></dl>
+<p >Install an interrupt service for a given I/O device. </p><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000010">Todo:</a></b></dt><dd>Make function disappear and have a ROM table as for system calls </dd></dl>
 <p >This function can be used to install an interrupt service for a given I/O device and a given core. It will also set the Priority Select Register for the I/O device's IRQ to the desired value. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pInterruptHandler</td><td>The interrupt service routine by reference. An ordinary C function in the user code area, which is called when the according interrupt is served. </td></tr>
@@ -193,7 +193,7 @@ Functions</h2></td></tr>
 On an MPC5748G, all cores share the function code. A core should use this function to install its ISRs, regardless whether or not it runs the RTOS. A typical scenario would be running the RTOS only on one core, but the others should still use this function to install their ISRs. </dd>
 <dd>
 This function must be called from supervisor mode only. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000010">Todo:</a></b></dt><dd>Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if? <br  />
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000009">Todo:</a></b></dt><dd>Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if? <br  />
  </dd></dl>
 
 </div>

@@ -124,7 +124,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >System call index of function <a class="el" href="rtos_8h.html#ae1f6778a3742632e1d754dc916a1aeff">rtos_runTask()</a>, offered by this module. </p>
+<p >System call index of function <a class="el" href="rtos_8h.html#a2c1c26ac4a21ca0ce27df5484d87cdc2">rtos_runTask()</a>, offered by this module. </p>
 
 </div>
 </div>
@@ -154,13 +154,13 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Grant permission to particular processes for using the service <a class="el" href="rtos_8h.html#ae1f6778a3742632e1d754dc916a1aeff">rtos_runTask()</a>.</p>
+<p >Grant permission to particular processes for using the service <a class="el" href="rtos_8h.html#a2c1c26ac4a21ca0ce27df5484d87cdc2">rtos_runTask()</a>.</p>
 <p >Operating system initialization function: Grant permissions for using the service rtos_runTask to particular processes. By default, the use of that service is not allowed.<br  />
  By principle, offering service rtos_runTask makes all processes vulnerable, which are allowed as target for the service. A failing, straying process can always hit some ROM code executing the system call with arbitrary register contents, which can then lead to errors in an otherwise correct process.<br  />
  This does not generally break the safety concept, the potentially harmed process can for example be anyway supervised by another, unaccessible supervisory process. Consequently, we can offer the service at least on demand. A call of this function enables the service for a particular pair of calling process and targeted process. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pidOfCallingTask</td><td>The tasks belonging to process with PID <em>pidOfCallingTask</em> are granted permission to run a task in another process. The range is 1 .. <a class="el" href="rtos_8h.html#a18500a557ecd5ebbcefbacba22b58d7e">RTOS_NO_PROCESSES</a>, which is double-checked by assertion. </td></tr>
-    <tr><td class="paramname">targetPID</td><td>The tasks started with service <a class="el" href="rtos_8h.html#ae1f6778a3742632e1d754dc916a1aeff">rtos_runTask()</a> may be run in process with PID <em>targetPID</em>. The range is 1 .. maxPIDInUse-1, which is double-checked later at kernel initialization time.<br  />
+    <tr><td class="paramname">targetPID</td><td>The tasks started with service <a class="el" href="rtos_8h.html#a2c1c26ac4a21ca0ce27df5484d87cdc2">rtos_runTask()</a> may be run in process with PID <em>targetPID</em>. The range is 1 .. maxPIDInUse-1, which is double-checked later at kernel initialization time.<br  />
  <em>pidOfCallingTask</em> and <em>targetPID</em> must not be identical, which is double-checked by assertion. </td></tr>
   </table>
   </dd>
@@ -203,7 +203,7 @@ This function must be called from the OS context only. It is intended for use in
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pidOfCallingTask</td><td>The tasks belonging to process with PID <em>pidOfCallingTask</em> are granted permission to run a task in another process. The range is 1 .. <a class="el" href="rtos_8h.html#a18500a557ecd5ebbcefbacba22b58d7e">RTOS_NO_PROCESSES</a>, which is double-checked by assertion. </td></tr>
-    <tr><td class="paramname">targetPID</td><td>The tasks started with service <a class="el" href="rtos_8h.html#ae1f6778a3742632e1d754dc916a1aeff">rtos_runTask()</a> may be run in process with PID <em>targetPID</em>. The range is 1 .. maxPIDInUse-1, which is double-checked later at kernel initialization time.<br  />
+    <tr><td class="paramname">targetPID</td><td>The tasks started with service <a class="el" href="rtos_8h.html#a2c1c26ac4a21ca0ce27df5484d87cdc2">rtos_runTask()</a> may be run in process with PID <em>targetPID</em>. The range is 1 .. maxPIDInUse-1, which is double-checked later at kernel initialization time.<br  />
  <em>pidOfCallingTask</em> and <em>targetPID</em> must not be identical, which is double-checked by assertion. </td></tr>
   </table>
   </dd>

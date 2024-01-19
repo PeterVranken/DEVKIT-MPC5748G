@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['no_5finline_0',['NO_INLINE',['../typ__types_8h.html#ab5ce7bd7fe4169a9f709815f03f9870b',1,'typ_types.h']]]
+  ['kernel_5finstance_5fdata_5finitial_5fdata_0',['KERNEL_INSTANCE_DATA_INITIAL_DATA',['../rtos__kernel_instance_data_8c.html#a47298ccf651f1838fa2d1f408af2ad11',1,'rtos_kernelInstanceData.c']]]
 ];

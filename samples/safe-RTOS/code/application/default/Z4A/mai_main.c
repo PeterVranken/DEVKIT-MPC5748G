@@ -36,6 +36,10 @@
  *   Occasional activation losses can be reported for task taskNonCyclic. It can be
  * preempted by task task17ms and this task activates task taskNonCyclic. If it tries to
  * do, while it has preempted task taskNonCyclic, the activation is not possible.\n
+ *   Permanent activation losses are reported for task task17ms. It is regularly activated
+ * by a kernel timer event and from inside the task function it tries to activate itself
+ * again. Which causes an activation loss. The number of reported losses should be
+ * identical to the number of successful activations.\n
  *   The code runs a permanent test of the offered mechanism for mutual exclusion of tasks
  * that access some shared data objects. A recognized failure is reported by assertion,
  * which will halt the code execution (in DEBUG compilation only). Everything is fine as
@@ -48,7 +52,7 @@
  * spheres of a) an operating system, b) the functional application code and c) some
  * supervisory safety code.
  *
- * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -90,6 +94,8 @@
  * Include files
  */
 
+#include "mai_main.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -114,7 +120,6 @@
 #include "gsl_systemLoad.h"
 #include "stm_systemTimer.h"
 #include "tcx_testContext.h"
-#include "mai_main.h"
 
 
 /*
@@ -545,7 +550,8 @@ static void isrPit1(void)
 
     ++ mai_cntISRPit1;
 
-    /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. */
+    /* RM 51.4.11, p. 2738f: Acknowledge the timer interrupt in the causing HW device. Can
+       be done as this is "trusted code" that is running in supervisor mode.*/
     PIT->TIMER[1].TFLG = PIT_TFLG_TIF(1);
 
 } /* End of isrPit1 */
@@ -1086,6 +1092,9 @@ static int32_t taskIdlePID2(uint32_t PID, uint32_t taskParam)
  * Entry point into C code. The C main function is entered without arguments and despite of
  * its return code definition it must never be left. (Returning from main would enter an
  * infinite loop in the calling assembler startup code.)
+ *   @return
+ * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
+ * compiler warning. 
  *   @param noArgs
  * Number of arguments in \a argAry. Is actually always equal to one.
  *   @param argAry
@@ -1094,6 +1103,7 @@ static int32_t taskIdlePID2(uint32_t PID, uint32_t taskParam)
  */
 int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB_DBG_ONLY)
 {
+    /* The arguments of the main function are quite useless. Just check correctness. */
     assert(noArgs == 1  && strcmp(argAry[0], "Z4A") == 0);
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup

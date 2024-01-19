@@ -88,33 +88,29 @@ $(document).ready(function(){initNavTree('todo.html',''); initResizable(); });
 <div class="contents">
 <div class="textblock"><dl class="reflist">
 <dt>Global <a class="el" href="rtos__kernel_instance_data_8c.html#a9f1a3a25e2a206453d88bba53d438bb7">dummyFctToCheckStaticAssertions</a>  (void)</dt>
-<dd><a class="anchor" id="_todo000012"></a> As soon as runtime checks are defined (see #RTOS_CONSTRAINTS_INTERFACE_C_AS_INSTANCE_DATA) we need to call this function. This requires a documentation change of the function, too.  </dd>
+<dd><a class="anchor" id="_todo000011"></a> As soon as runtime checks are defined (see #RTOS_CONSTRAINTS_INTERFACE_C_AS_INSTANCE_DATA) we need to call this function. This requires a documentation change of the function, too.  </dd>
 <dt>Global <a class="el" href="rtos__external_interrupt_8c.html#aca10086c1117b052b672a8ff90147edc">inc_pirUnregisteredInterrupt</a>  </dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000004"></a>This variable should reside in shared, uncached memory. </p>
-<p class="interdd"><a class="anchor" id="_todo000005"></a>Looks like a bug not to put this in OS memory? </p>
+<dd><p class="startdd"><a class="anchor" id="_todo000003"></a>This variable should reside in shared, uncached memory. </p>
+<p class="interdd"><a class="anchor" id="_todo000004"></a>Looks like a bug not to put this in OS memory? </p>
 <p class="interdd"></p>
 <p class="enddd">Bad naming: inc_ vs. rtos_ <br  />
   </p>
 </dd>
-<dt>Global <a class="el" href="rtos__scheduler_8c.html#aa619cb414884cbb1f9811966a9151cf8">initRTOSClockTick</a>  (void)</dt>
-<dd><a class="anchor" id="_todo000015"></a>Here, we need to have a double-check with CCL  </dd>
-<dt>Global <a class="el" href="rtos__scheduler_8h.html#a3b8a72b75ad042fe88206066a4c05869">rtos_osCreateEvent</a>  (unsigned int *pEventId, unsigned int tiCycleInMs, unsigned int tiFirstActivationInMs, unsigned int priority, unsigned int minPIDToTriggerThisEvent, uintptr_t taskParam)</dt>
-<dd><a class="anchor" id="_todo000016"></a>Effectively, this object can be considered the descriptor of the idle task.  </dd>
+<dt>Global <a class="el" href="rtos_8h.html#aa9ea5e791ee7404aad7ae37ef35cde7d">rtos_interruptServiceRoutine_t</a>  )(void)</dt>
+<dd><a class="anchor" id="_todo000001"></a>Consider switching the next code block off to find deprecated code locations, which require migration.  </dd>
+<dt>Global <a class="el" href="rtos__scheduler_8h.html#ab4b1e3ab8979d773d9901b00516ba6f4">rtos_osCreateEventProcessor</a>  (unsigned int *pEventId, unsigned int tiCycleInMs, unsigned int tiFirstActivationInMs, unsigned int priority, unsigned int minPIDToTriggerThisEvProc, bool useCountableEvents, uint32_t taskParam)</dt>
+<dd><a class="anchor" id="_todo000014"></a>Effectively, this object can be considered the descriptor of the idle task.  </dd>
 <dt>Global <a class="el" href="rtos__external_interrupt_8h.html#a88a271864adecb3d629668674fa0815a">rtos_osInitINTCInterruptController</a>  (void)</dt>
-<dd><a class="anchor" id="_todo000009"></a>This can become a sub-routine, which can then be applied in registerService to check user input  </dd>
+<dd><a class="anchor" id="_todo000008"></a>This can become a sub-routine, which can then be applied in registerService to check user input  </dd>
 <dt>Global <a class="el" href="rtos__system_memory_protection_unit_8h.html#a237ec8ef4e592440f07488b7a97f27a1">rtos_osInitMPU</a>  (void)</dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000017"></a>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </p>
-<p class="enddd"><a class="anchor" id="_todo000018"></a>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2  </p>
+<dd><p class="startdd"><a class="anchor" id="_todo000015"></a>TBC: Does DMA use SV rights? Otherwise don't handle all masters same </p>
+<p class="enddd"><a class="anchor" id="_todo000016"></a>Many (sda) regions are empty. Use an if to avoid spending a descriptor: This makes it particularly easy to have more than 4 processes by intentionally not using sda2  </p>
 </dd>
 <dt>Global <a class="el" href="rtos__external_interrupt_8h.html#accff5b6fe96e98a366aeab1442a3efe9">rtos_osRegisterInterruptHandler</a>  (rtos_interruptServiceRoutine_t interruptServiceRoutine, unsigned int processorID, unsigned int vectorNum, unsigned int psrPriority, bool isPreemptable)</dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000010"></a>Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if? <br  />
+<dd><p class="startdd"><a class="anchor" id="_todo000009"></a>Check: Why do we have a macro IRQ_Handler with argument isPreemtable but we still need an if? <br  />
  </p>
-<p class="enddd"><a class="anchor" id="_todo000011"></a>Make function disappear and have a ROM table as for system calls  </p>
+<p class="enddd"><a class="anchor" id="_todo000010"></a>Make function disappear and have a ROM table as for system calls </p>
 </dd>
-<dt>Global <a class="el" href="rtos_8h.html#af6f4937c654a76ca43d70366f0f461cd">RTOS_TI_MS2TICKS</a>  (tiInMs)</dt>
-<dd><a class="anchor" id="_todo000001"></a>We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks  </dd>
-<dt>Global <a class="el" href="rtos_8h.html#a50879c034063dd071531d12bc8c3f6d6">RTOS_TI_US2TICKS</a>  (tiInUs)</dt>
-<dd><a class="anchor" id="_todo000002"></a>We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks </dd>
 </dl>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

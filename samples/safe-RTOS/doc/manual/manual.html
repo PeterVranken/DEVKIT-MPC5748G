@@ -580,6 +580,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_sample_application_benchmark">10.5. Sample application "benchmark"</a></li>
 </ul>
 </li>
+<li><a href="#_your_own_safe_rtos_application">11. Your own safe-RTOS application</a></li>
 </ul>
 </div>
 </div>
@@ -1279,7 +1280,7 @@ application requires to use the other PID timers then the initialization
 needs to be done with care: For the PIT devices, there are common
 settings, which affect all PID timers. You need to align your
 initialization code with the RTOS kernel initialization, see
-<em>rtos_osInitKernel</em>().</p>
+<a href="#secApiInitKernel">rtos_osInitKernel()</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1303,8 +1304,10 @@ situation. This sub-ordinated priority is defined at RTOS configuration
 time; in the given situation, the tasks would be executed primarily in
 order of creation of the event processors, they are associated with, and
 secondarily in order of registration, if several of them are associated
-with one and the same event processor; see <em>rtos_osCreateEventProcessor</em>(),
-<em>rtos_osRegisterOSTask</em>() and <em>rtos_osRegisterUserTask</em>() for details.</p>
+with one and the same event processor; see
+<a href="#secApiCreateEvProc">rtos_osCreateEventProcessor()</a>,
+<a href="#secApiRegisterTask">rtos_osRegisterOSTask()</a> and
+<a href="#secApiRegisterTask">rtos_osRegisterUserTask()</a> for details.</p>
 </div>
 <div class="paragraph">
 <p>What does "become ready at the same time" mean? This can be as easy as two
@@ -1350,11 +1353,11 @@ descriptors. Therefore, an exception always means reporting an error.</p>
 <p>Any exception handler will first check, which process the exception
 causing task belongs to. The RTOS maintains process related error counters
 and the according counter is incremented. The exception handler will then
-abort the failing task, i.e., it does do basically the same as the RTOS API
-<em>rtos_terminateTask</em>() does, which voluntarily ends a task. Code execution
-does not return to the failing code location. If a regular, time triggered
-task fails, then it&#8217;ll be triggered again at next due time, regardless of
-the number of counted failures.</p>
+abort the failing task, i.e., it does do basically the same as the RTOS
+API <a href="#secApiTermTask">rtos_terminateTask()</a> does, which voluntarily ends a
+task. Code execution does not return to the failing code location. If a
+regular, time triggered task fails, then it&#8217;ll be triggered again at next
+due time, regardless of the number of counted failures.</p>
 </div>
 <div class="paragraph">
 <p>This is virtually all, the RTOS does. In particular, there&#8217;s no error
@@ -1386,9 +1389,10 @@ state.</p>
 <h3 id="_deadline_monitoring">5.7. Deadline monitoring</h3>
 <div class="paragraph">
 <p>User tasks, regardless if triggered by events or run by services
-<em>rtos_osRunTask</em>() or <em>rtos_runTask</em>(), can have a bounded timespan for
-completion. The ultimate end time is called the deadline of the task and
-the supervision is called deadline monitoring.</p>
+<a href="#secApiRunTask">rtos_osRunTask()</a> or <a href="#secApiRunTask">rtos_runTask()</a>,
+can have a bounded timespan for completion. The ultimate end time is
+called the deadline of the task and the supervision is called deadline
+monitoring.</p>
 </div>
 <div class="paragraph">
 <p>The timespan is the world time, not an execution time budget. At the
@@ -1479,11 +1483,11 @@ for the safety supervisory task.</p>
 callback, can have an interrupt priority higher than the RTOS timer and
 any other regular interrupt. So that there&#8217;s no upper boundary for the
 maximum execution time of the callback. This consideration leads to the
-safety requirement for the aimed operating system that any ISRs, which
-run at a priority higher than the RTOS timer interrupt must not make use
-of the service <em>rtos_osRunTask</em>(). The requirement is easy to fulfill as
-all affected code is in the trusted sphere and most of it are static
-configuration decisions.</p>
+safety requirement for the aimed operating system that any ISRs, which run
+at a priority higher than the RTOS timer interrupt must not make use of
+the service <a href="#secApiRunTask">rtos_osRunTask()</a>. The requirement is easy to
+fulfill as all affected code is in the trusted sphere and most of it are
+static configuration decisions.</p>
 </div>
 <div class="paragraph">
 <p>By principle, a deadline exception (as any other, too) can leave the
@@ -1502,17 +1506,19 @@ supervised processes.</p>
 consideration, whether or not deadline monitoring needs to be applied at
 all. If some design rules are obyed then the observation of the event
 processors' activation loss counters from the safety supervisory task will
-be sufficient in most cases (see service <em>rtos_getNoActivationLoss</em>()).</p>
+be sufficient in most cases (see service
+<a href="#secApiActivationLoss">rtos_getNoActivationLoss()</a>.</p>
 </div>
 <div class="paragraph">
 <p>Using deadline monitoring is absolutely unavoidable if ISRs make use of
-callbacks into user processes (using service <em>rtos_osRunTask</em>()). However,
-in many situations this construct can be replaced by deferred interrupt
-handling, i.e., by triggering an OS task that takes over the work from the
-ISR. The triggered task would have a priority below the safety task and if
-it is blocked by a non-returning, bad callback into the user process then
-the safety task would immediately see the activation losses for the event
-notified by the ISR and likely some other (timer) events.</p>
+callbacks into user processes (using service
+<a href="#secApiRunTask">rtos_osRunTask()</a>). However, in many situations this
+construct can be replaced by deferred interrupt handling, i.e., by
+triggering an OS task that takes over the work from the ISR. The triggered
+task would have a priority below the safety task and if it is blocked by a
+non-returning, bad callback into the user process then the safety task
+would immediately see the activation losses for the event notified by the
+ISR and likely some other (timer) events.</p>
 </div>
 <div class="paragraph">
 <p>Typically, the latency times resulting from observation of activation
@@ -1807,8 +1813,9 @@ defined callback. The application task would specify a function to be
 called from the I/O driver if some data becomes available. The I/O driver
 will likely be implemented as an ISR, which is invoked by hardware, when
 the I/O device acquired the data. Inside the ISR, the implementation will
-make use of the RTOS API to run a user task, namely <em>rtos_osRunTask</em>(). The
-task function is of course the agreed callback.</p>
+make use of the RTOS API to run a user task, namely
+<a href="#secApiRunTask">rtos_osRunTask()</a>. The task function is of course the
+agreed callback.</p>
 </div>
 <div class="paragraph">
 <p>The callback is executed in the context of the aimed application process.
@@ -1937,8 +1944,8 @@ volatile and non-volatile registers</p>
 <p>The basic system call offers a maximum of flexibility and control; the
 handler is not restricted to be just an ordinary synchronous function
 call with return. For example, the "throw exception" system call, i.e.,
-<em>rtos_terminateTask</em>(), is implemented this way, it returns to the
-operating system but not from the system call</p>
+<a href="#secApiTermTask">rtos_terminateTask()</a>, is implemented this way, it
+returns to the operating system but not from the system call</p>
 </li>
 </ul>
 </div>
@@ -2015,25 +2022,25 @@ processing. This includes but is not limited to:</p>
 <div class="ulist">
 <ul>
 <li>
-<p><em>rtos_osResumeAllInterrupts</em>()</p>
+<p><a href="#secApiSuspIrq">rtos_osResumeAllInterrupts()</a></p>
 </li>
 <li>
-<p><em>rtos_osLeaveCriticalSection</em>()</p>
+<p><a href="#secApiSuspIrq">rtos_osLeaveCriticalSection()</a></p>
 </li>
 <li>
-<p><em>rtos_osResumeAllTasksByPriority</em>()</p>
+<p><a href="#secApiPCP">rtos_osResumeAllTasksByPriority()</a></p>
 </li>
 <li>
-<p><em>rtos_osRunTask</em>()</p>
+<p><a href="#secApiRunTask">rtos_osRunTask()</a></p>
 </li>
 <li>
-<p><em>rtos_osSendEvent</em>()</p>
+<p><a href="#secApiSendEvent">rtos_osSendEvent()</a></p>
 </li>
 <li>
-<p><em>rtos_osSendEventCountable</em>()</p>
+<p><a href="#secApiSendEvent">rtos_osSendEventCountable()</a></p>
 </li>
 <li>
-<p><em>rtos_osSendEventMultiple</em>()</p>
+<p><a href="#secApiSendEvent">rtos_osSendEventMultiple()</a></p>
 </li>
 </ul>
 </div>
@@ -2157,8 +2164,9 @@ consumption computed for the system call</p>
 <div class="paragraph">
 <p>The RTOS offers convenience functions to validate user provided pointers.
 Although using pointers as arguments of system calls is not recommended at
-all, it can be safely done. Please, see <em>rtos_checkUserCodeReadPtr</em>() and
-<em>rtos_checkUserCodeWritePtr</em>().</p>
+all, it can be safely done. Please, see
+<a href="#secApiCheckPtr">rtos_checkUserCodeReadPtr()</a> and
+<a href="#secApiCheckPtr">rtos_checkUserCodeWritePtr()</a>.</p>
 </div>
 <div class="admonitionblock caution">
 <table>
@@ -2544,6 +2552,11 @@ user and OS tasks, interrupt service routines and bare-metal applications:</p>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiCreateEvProc">rtos_osCreateSwTriggeredEventProcessor()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiRegisterTask">rtos_osRegisterInitTask()</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">OS</p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -2590,6 +2603,26 @@ user and OS tasks, interrupt service routines and bare-metal applications:</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_sendEvent()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_osSendEventCountable()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_sendEventCountable()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_osSendEventMultiple()</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OS, ISR</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#secApiSendEvent">rtos_sendEventMultiple()</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">inline</p></td>
 </tr>
@@ -2866,11 +2899,12 @@ provided to the associated task functions as argument if
 <code>timerUsesCountableEvents</code> is true.</p>
 </div>
 <div class="paragraph">
-<p><em>rtos_osCreateSwTriggeredEventProcessor</em>() is just an "abbreviated" call
-of <em>rtos_osCreateEventProcessor</em>(): Most of the arguments of the latter
-don&#8217;t care if the event processor is not going to be used for time
-triggered task activation. The former variant just sets the unused
-arguments to default values.</p>
+<p><a href="#secApiCreateEvProc">rtos_osCreateSwTriggeredEventProcessor()</a> is just an
+"abbreviated" call of
+<a href="#secApiCreateEvProc">rtos_osCreateEventProcessor()</a>: Most of the
+arguments of the latter don&#8217;t care if the event processor is not going to
+be used for time triggered task activation. The former variant just sets
+the unused arguments to default values.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2958,13 +2992,13 @@ goes wrong during initialization.</p>
 timer tasks woken by ordinary events its widely irrelevant; they receive
 the constant value, which is specified at event processor creation time
 (see <a href="#secApiCreateEvProc">Section 8.3.3</a>). Event triggered tasks receive the value,
-which is sent with <a href="#secApiSendEvent"><em>rtos_osSendEvent</em>()</a> or
-<a href="#secApiSendEvent"><em>rtos_sendEvent</em>()</a> or the event multiplicities, if
+which is sent with <a href="#secApiSendEvent">rtos_osSendEvent()</a> or
+<a href="#secApiSendEvent">rtos_sendEvent()</a> or the event multiplicities, if
 they are triggered by countable events using
-<a href="#secApiSendEvent"><em>rtos_osSendEventCountable</em>()</a>,
-<a href="#secApiSendEvent"><em>rtos_sendEventCountable</em>()</a>,
-<a href="#secApiSendEvent"><em>rtos_osSendEventMultiple</em>()</a> or
-<a href="#secApiSendEvent"><em>rtos_sendEventMultiple</em>()</a>.</p>
+<a href="#secApiSendEvent">rtos_osSendEventCountable()</a>,
+<a href="#secApiSendEvent">rtos_sendEventCountable()</a>,
+<a href="#secApiSendEvent">rtos_osSendEventMultiple()</a> or
+<a href="#secApiSendEvent">rtos_sendEventMultiple()</a>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -4515,6 +4549,69 @@ a terminal program on the development computer is identical to
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_your_own_safe_rtos_application">11. Your own safe-RTOS application</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>safe-RTOS is part of a project at
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples" target="_blank" rel="noopener">GitHub</a>,
+please go there to find more information and sample code.</p>
+</div>
+<div class="paragraph">
+<p>To benefit most from the existing code, you should take the best fitting
+sample as starting point. Copy the folder, which is the one containing the
+Eclipse files <code>.project</code> and <code>.cproject</code>. "Best-fitting" should be decided
+by functionality and core configuration. The DEVKIT-MPC5748G samples
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/CAN" target="_blank" rel="noopener">"CAN"</a>
+and
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/TCP" target="_blank" rel="noopener">"TCP"</a>
+offer additional functionality for communication. If you need CAN and/or
+IP communication then take one of these samples. It&#8217;s likely more complex
+to merge functionality as to extend the RTOS configuration. If you don&#8217;t
+need the additional functionality then you should take the safe-RTOS
+sample application, which matches your aimed core configuration. Copy
+DEVKIT-MPC5748G sample
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS" target="_blank" rel="noopener">"safe-RTOS"</a>.
+If, e.g., you want to run the RTOS on all three cores, then take the
+application code from folder
+<a href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/code/application/triCore" target="_blank" rel="noopener">"triCore"</a>
+as blueprint for your own application.</p>
+</div>
+<div class="paragraph">
+<p>After copying the DEVKIT-MPC5748G sample, you can modify the files
+<code>GNUmakefile</code>, <code>.project</code>, <code>.cproject</code> and all <code>*.launch</code> to match your
+application name. See
+<a href="https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/How-to-clone-a-Sample" class="bare">https://github.com/PeterVranken/TRK-USB-MPC5643L/wiki/How-to-clone-a-Sample</a>
+for details.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Before you modify the code you better prove the build and
+operability of the chosen starting-point code.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Look for file <code>rtos.config.h</code>. The implementation folder of safe-RTOS
+contains the template <code>rtos.config.h.template</code> for this application
+specific file and all samples have their individual instance. Open the
+file in the text editor and follow the given documentation. It&#8217;s mostly
+about maximum numbers of tasks and event processors, so that the static
+memory allocation can be safely made.</p>
+</div>
+<div class="paragraph">
+<p>The configuration of actual tasks and events is usually made in the main
+functions of the cores, after initialization of the I/O drivers. This is
+were you&#8217;re code modification will likely continue.</p>
+</div>
+</div>
+</div>
 </div>
 <div id="footnotes">
 <hr>
@@ -4525,7 +4622,7 @@ a terminal program on the development computer is identical to
 <a href="#_footnoteref_2">2</a>. It would be a considerable design decision to implement the safety task in turn as a callback from a (regular timer) ISR of even higher priority to overcome this problem.
 </div>
 <div class="footnote" id="_footnotedef_3">
-<a href="#_footnoteref_3">3</a>. It may look like an inconsistent API design if all associated tasks receive the same value <code>taskParam</code> from the triggering ISR or task. The service <em>rtos_sendEvent</em>() could easily offer an API, which provides an individual value to each associated task. The only reason not to do so is the additional overhead in combination with the very few imaginable use cases. In most cases an explicitly triggered event processor will have just one associated task; event processors with more than one task will mostly be regular timer tasks, which make rarely use of the task parameter.
+<a href="#_footnoteref_3">3</a>. It may look like an inconsistent API design if all associated tasks receive the same value <code>taskParam</code> from the triggering ISR or task. The service <a href="#secApiSendEvent">rtos_sendEvent()</a> could easily offer an API, which provides an individual value to each associated task. The only reason not to do so is the additional overhead in combination with the very few imaginable use cases. In most cases an explicitly triggered event processor will have just one associated task; event processors with more than one task will mostly be regular timer tasks, which make rarely use of the task parameter.
 </div>
 <div class="footnote" id="_footnotedef_4">
 <a href="#_footnoteref_4">4</a>. Tasks belonging to the given process but running on another core are not included. Core-to-core communication can be applied to collect all of this information.
@@ -4539,7 +4636,7 @@ a terminal program on the development computer is identical to
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-01-15 22:23:17 +0100
+Last updated 2024-01-19 17:52:03 +0100
 </div>
 </div>
 </body>
