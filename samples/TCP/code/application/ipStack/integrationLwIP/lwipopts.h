@@ -407,7 +407,7 @@
 /**
  * LWIP_DHCP==1: Enable DHCP module.
  */
-#define LWIP_DHCP                       1
+#define LWIP_DHCP                       0
 
 /*
    ------------------------------------
@@ -417,7 +417,7 @@
 /**
  * LWIP_AUTOIP==1: Enable AUTOIP module.
  */
-#define LWIP_AUTOIP                     1
+#define LWIP_AUTOIP                     0
 
 /**
  * LWIP_DHCP_AUTOIP_COOP==1: Allow DHCP and AUTOIP to be both enabled on

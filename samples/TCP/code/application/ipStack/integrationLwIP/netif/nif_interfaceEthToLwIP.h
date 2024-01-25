@@ -58,10 +58,10 @@
    by checking radio button "Obtain an IP address automatically" in the property dialog of
    the IP4 protocol settings for the given Ethernet adapter.
      DHCP: Requires NIF_NET_IF_HAS_DHCP_ENET0=true (below) and LWIP_DHCP=1 (lwipopts.h). */
-#define NIF_NET_IF_HAS_DHCP_ENET0           true
-#define NIF_NET_IF_HAS_AUTO_IP_ENET0        true
-#define NIF_NET_IF_IP_ADDR_ENET0            {169,254,1,200}
-#define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,0,0}
+#define NIF_NET_IF_HAS_DHCP_ENET0           false
+#define NIF_NET_IF_HAS_AUTO_IP_ENET0        false
+#define NIF_NET_IF_IP_ADDR_ENET0            {192,168,1,200}
+#define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,255,0}
 #define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {192,168,1,1}
 
 /* IP addresses, etc., for Ethernet interface ENET1. */
