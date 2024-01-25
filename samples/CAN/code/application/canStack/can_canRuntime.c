@@ -662,7 +662,7 @@ bool can_initCanStack(void)
     static char DATA_P1(heapMemoryForCanInterface)[CAN_SIZE_OF_HEAP_FOR_CAN_INTERFACE];
     ede_memoryPool_t memoryPool = EDE_INVALID_MEMORY_POOL;
     const mem_criticalSection_t mutualExclusionGuard = MEM_VOID_CRITICAL_SECTION_OBJECT;
-    boolean_t success = mem_createMemoryPool
+    bool success = mem_createMemoryPool
                                     ( &memoryPool
                                     , /* pPoolMemory */ heapMemoryForCanInterface
                                     , /* sizeOfPoolMemory */ sizeof(heapMemoryForCanInterface)

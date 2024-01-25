@@ -4,7 +4,7 @@
  * @file rtos.config.h
  * This file contains the application depended compile-time configuration of the RTOS.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -37,17 +37,10 @@
 /** Specify whether core 0, Z4A, should run safe-RTOS. Permitted values are 1 or 0. */
 #define RTOS_RUN_SAFE_RTOS_ON_CORE_0        1
 
-/** Specify whether core 1, Z4B, should run safe-RTOS. Permitted values are 1 or 0.\n
-      This particular sample application of safe-RTOS offers to chose, which secondary core
-    should run safe-RTOS, too. (Primary core Z4A always runs safe-RTOS in this sample.) You
-    may set either this macro or #RTOS_RUN_SAFE_RTOS_ON_CORE_2 to one. The other one needs
-    to be set to zero. */
+/** Specify whether core 1, Z4B, should run safe-RTOS. Permitted values are 1 or 0. */
 #define RTOS_RUN_SAFE_RTOS_ON_CORE_1        0
 
-/** Specify whether core 2, Z2, should run safe-RTOS. Permitted values are 1 or 0.\n
-      The Z4 and Z2 core are not fully compatible. To prove that the kernel runs on the Z2,
-    too, you may configure this macro to one - however, then the other macro
-    #RTOS_RUN_SAFE_RTOS_ON_CORE_1 needs to be set to zero. */
+/** Specify whether core 2, Z2, should run safe-RTOS. Permitted values are 1 or 0. */
 #define RTOS_RUN_SAFE_RTOS_ON_CORE_2        0
 
 /** The period time of the RTOS system timer. Unit is 1ms. Configurable range is 1..35791.
@@ -76,7 +69,7 @@
       @remark The maximum task priority is not core specific. It impacts the build-up of
     the kernel instance data set, which needs to be identical on all cores. You will need
     to specify the maximum of what is required on all cores. */
-#define RTOS_MAX_TASK_PRIORITY                  (RTOS_MAX_NO_EVENTS)
+#define RTOS_MAX_TASK_PRIORITY                  (RTOS_MAX_NO_EVENT_PROCESSORS)
 
 /** This the highest priority that user tasks can have, which user code can shape a
     critical section with. If a task has a higher priority then user code can't hinder it
@@ -89,20 +82,22 @@
     one less than #RTOS_MAX_TASK_PRIORITY. */
 #define RTOS_MAX_LOCKABLE_TASK_PRIORITY         ((RTOS_MAX_TASK_PRIORITY)-1)
 
-/** Any user task is activated by an event. Several tasks can be associated with one and
-    the same event but each event needs to have at least one associated task. Therefore, it
-    is useless to configure this macro less than #RTOS_MAX_NO_TASKS.\n
+/** Any user task is activated by an event, which is notified to an event processor.
+    Several tasks can be associated with one and the same event processor but each event
+    processor needs to have at least one associated task. Therefore, it is useless to
+    configure this macro less than #RTOS_MAX_NO_TASKS.\n
       The chosen number is a compile time configuration setting and there are no
     constraints in changing it besides the amount of reserved RAM space for the resulting
     table size.\n
-      @remark The maximum number of events is not core specific. It impacts the build-up of
-    the kernel instance data set, which needs to be identical on all cores. You will need
-    to specify the maximum of what is required on all cores. */
-#define RTOS_MAX_NO_EVENTS                      8
+      @remark The specification of the maximum number of event processors is not core
+    specific. It impacts the build-up of the kernel instance data set, which needs to be
+    identical on all cores. You will need to specify the maximum of what is required on all
+    cores. */
+#define RTOS_MAX_NO_EVENT_PROCESSORS            8
 
-/** The maximum, total number of user tasks, which can be activated by the events. The
-    chosen number is a compile time configuration setting and there are no constraints in
-    changing it besides the amount of reserved RAM space for the resulting table size.\n
+/** The maximum, total number of user tasks, which can be activated by an event processor.
+    The chosen number is a compile time configuration setting and there are no constraints
+    in changing it besides the amount of reserved RAM space for the resulting table size.\n
       The configured limit applies to the tasks registered with rtos_osRegisterUserTask()
     and rtos_osRegisterOSTask() only; process initialization tasks and callbacks from I/O
     drivers, which are much of a user task, too, are not counted here.\n

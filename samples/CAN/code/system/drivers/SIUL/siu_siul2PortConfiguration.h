@@ -45,7 +45,7 @@
  * "IO_Signal_Description_and_Input_Multiplexing_Tables.xlsx", which is an attachment of
  * RM48.
  *
- * Copyright (C) 2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

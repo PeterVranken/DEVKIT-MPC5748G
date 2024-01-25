@@ -21,7 +21,7 @@
  * "MPC5775B_E-ReferenceManual.System_IO_Definition.xlsx", V1.14, which is an attachment of
  * RM75.
  *
- * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -247,7 +247,7 @@ static inline uint32_t *getFIFOFilterEntry( const CAN_Type * const pCanDevice
  */
 static void configSIULForUseWithDEVKIT_MPC5748G(void)
 {
-    /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 388ff: Route Tx output of
+    /* RM48 15.2.11, Multiplexed Signal Configuration Register, p. 390ff: Route Tx output of
        device CAN_0 to MCU pin PB0, which is connected to the Tx input of the external
        transceiver chip on the board DEVKIT-MPC5748G. */
 #if CDR_ENABLE_USE_OF_CAN_0 == 1
@@ -571,43 +571,33 @@ static void initCanDevice(unsigned int idxCanDevice)
        and shaping an all supporting, generic API is difficult and would likely suffer from
        reduced usability. Moreover, CAN FD would not allow using the Rx queue, which is
        most suitable for our CAN stack. */
-    pCanDevice->MCR = CAN_MCR_MDIS(0)       /* For now keep device disabled. */
-                      | CAN_MCR_FRZ(1)      /* During configuration, we need to stay frozen */
+    pCanDevice->MCR = CAN_MCR_MDIS(0u)      /* For now keep device disabled. */
+                      | CAN_MCR_FRZ(1u)     /* During configuration, we need to stay frozen */
                       | CAN_MCR_RFEN(pCanDevConfig->isFIFOEnabled)/* Enable FIFO? Note, FIFO
                                                                      not compatible with FD */
-                      | CAN_MCR_HALT(1)     /* 1: Stay in halted mode for now */
-#if defined(MCU_MPC5748G)
-                      | CAN_MCR_WAKMSK(0)   /* No wakeup IRQ needed */
+                      | CAN_MCR_HALT(1u)    /* 1: Stay in halted mode for now */
+                      | CAN_MCR_SOFTRST(0u) /* No reset needed */
+                      | CAN_MCR_SUPV(1u)    /* No access by user mode code permitted */
+                      | CAN_MCR_WRNEN(0u)   /// @todo TBC: Do we need a warn IRQ?
+#if !defined(MCU_MPC5748G)
+                      | CAN_MCR_DOZE(0u)    /* Doze mode enable: We use reset value 0, no. */
 #endif
-                      | CAN_MCR_SOFTRST(0)  /* No reset needed */
-                      | CAN_MCR_SUPV(1)     /* No access by user mode code permitted */
-#if defined(MCU_MPC5748G)
-                      | CAN_MCR_SLFWAK(0)   /* Self wake up: We have no implementation of low
-                                               power/active mode switches */
-#endif
-                      | CAN_MCR_WRNEN(0)    /// @todo TBC: Do we need a warn IRQ?
-#if defined(MCU_MPC5748G)
-                      | CAN_MCR_WAKSRC(0)   /* Wake-up source doesn't matter; we don't use
-                                               wake-up for now. */
-#else
-                      | CAN_MCR_DOZE(0)     /* Doze mode enable: We use reset value 0, no. */
-#endif
-                      | CAN_MCR_SRXDIS(0)   /* Disable reception of Tx messages in other Rx
+                      | CAN_MCR_SRXDIS(0u)  /* Disable reception of Tx messages in other Rx
                                                mailbox? 0: No, Rx of own Tx is allowed */
-                      | CAN_MCR_IRMQ(1)     /* Matching MB vs. FIFO: 1: Most natural
+                      | CAN_MCR_IRMQ(1u)    /* Matching MB vs. FIFO: 1: Most natural
                                                descisions. See RM48, Table 43-22, p. 1798. */
 #if defined(MCU_MPC5748G)
-                      | CAN_MCR_DMA(0)      /* DMA not compatible with FD */
-                      | CAN_MCR_PNET_EN(0)  /* Pretended network functionality doesn't
+                      | CAN_MCR_DMA(0u)     /* DMA not compatible with FD */
+                      | CAN_MCR_PNET_EN(0u) /* Pretended network functionality doesn't
                                                matter, we don't implement a halt state. */
 #endif
-                      | CAN_MCR_LPRIOEN(0)  /* 0: We use priority handling by CAN ID only */
-                      | CAN_MCR_AEN(1)      /* 1: Overwriting a Tx MB is possible as long as
+                      | CAN_MCR_LPRIOEN(0u) /* 0: We use priority handling by CAN ID only */
+                      | CAN_MCR_AEN(1u)     /* 1: Overwriting a Tx MB is possible as long as
                                                serialization has not yet started. (43.5.7.1) */
 #if defined(MCU_MPC5748G)
-                      | CAN_MCR_FDEN(0)     /* 0: Standard CAN Protocol, 1: CAN FD */
+                      | CAN_MCR_FDEN(0u)    /* 0: Standard CAN Protocol, 1: CAN FD */
 #endif
-                      | CAN_MCR_IDAM(0)     /* ID acceptance mode: 0: Mask of full length */
+                      | CAN_MCR_IDAM(0u)    /* ID acceptance mode: 0: Mask of full length */
                       | CAN_MCR_MAXMB(pCanDevConfig->noMailboxes) /* MBs in use including
                                                                      those, whose space is
                                                                      occupied by FIFO and its
@@ -637,7 +627,7 @@ static void initCanDevice(unsigned int idxCanDevice)
 #endif
                       ;
     /* The error/status word CAN_ESR1 contains some interrupt flag bits, which we reset by
-       w1c. We do this, before we enable the interrupts by setting CTRL1/2.*/
+       w1c. We do this before we enable the interrupts by setting CTRL1/2.*/
     pCanDevice->ESR1 = 0
 #if defined(MCU_MPC5748G)
                        | CAN_ESR1_ERROVR_MASK
@@ -648,9 +638,6 @@ static void initCanDevice(unsigned int idxCanDevice)
                        | CAN_ESR1_RWRNINT_MASK
                        | CAN_ESR1_BOFFINT_MASK
                        | CAN_ESR1_ERRINT_MASK
-#if defined(MCU_MPC5748G)
-                       | CAN_ESR1_WAKINT_MASK
-#endif
                        ;
     //pCanDevice->ESR2 is a read-only status register. (RM48 43.4.15, p. 1742f.)
 
@@ -1461,6 +1448,8 @@ cdr_errorAPI_t cdr_osSendMessageEx_idMB( const cdr_idMailbox_t * const pIdMB
                                        , const uint8_t payload[]
                                        )
 {
+    /// @todo Double-check appropriateness of data type cdr_idMailbox_t: Field pDeviceConfig is not used for cdr_osSendMessageEx_idMB and likely not for the other *_idMB. First check: uint32_t cdr_scSmplHdlr_readMessage() sems to be the only location of using the field
+
     /* Check and prepare the mailbox to be used and get the pointer to it. */
     volatile cdr_mailbox_t * const pTxMB = osPrepareSendMessage(pIdMB);
 

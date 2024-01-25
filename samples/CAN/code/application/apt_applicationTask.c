@@ -10,7 +10,7 @@
  * The CAN interface engine updates all signal values and status in the global CAN API and
  * sends due messages, filled with information read from this API.
  *
- * Copyright (C) 2015-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -72,7 +72,7 @@
  */
 
 /** Software version */
-#define VERSION "0.6.0"
+#define VERSION "0.7.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -371,7 +371,7 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
  *   @param taskParam
  * A task receives an argument. It is always zero in our case.
  */
-int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     assert(PID == bsw_pidUser);
 
@@ -402,7 +402,7 @@ int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB
  *   @param taskParam
  * A task receives an argument. It is always zero in our case.
  */
-int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     assert(PID == bsw_pidUser);
 
@@ -585,7 +585,7 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRI
  *   @param taskParam
  * A task receives an argument. It is always zero in our case.
  */
-int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     assert(PID == bsw_pidUser);
 
@@ -655,7 +655,7 @@ int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTR
  *   @param taskParam
  * A task receives an argument. It is always zero in our case.
  */
-int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     assert(PID == bsw_pidUser);
 

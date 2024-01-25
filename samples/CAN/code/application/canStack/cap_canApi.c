@@ -21,7 +21,7 @@
  * This file has been created with comFramework - codeGenerator version 1.11.3,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -424,9 +424,9 @@ void cap_unpack_PWM_PWM_in
     pMsgStruct->PA2_J3_pin3_periodTime =
         (uint16_t)((((uint16_t)(m[0] & 0x7f)) << 8) | m[1]);
     pMsgStruct->PA2_J3_pin3_isNew =
-        (boolean_t)(((uint8_t)(m[0] & 0x80)) >> 7);
+        (bool)(((uint8_t)(m[0] & 0x80)) >> 7);
     pMsgStruct->PA6_J2_pin1_isNew =
-        (boolean_t)((uint8_t)(m[2] & 0x01));
+        (bool)((uint8_t)(m[2] & 0x01));
     pMsgStruct->PA6_J2_pin1_dutyTime =
         (uint16_t)(((((uint16_t)m[3]) << 8) | m[2]) >> 1);
     pMsgStruct->PA2_PA6_dutyCycle =
@@ -668,13 +668,13 @@ void cap_unpack_PWM_PWM_out
 {
     /* Decode all normal, not multiplexed signals. */
     pMsgStruct->LED_2_DS10_inhibit =
-        (boolean_t)((uint8_t)(m[0] & 0x01));
+        (bool)((uint8_t)(m[0] & 0x01));
     pMsgStruct->LED_4_DS11_inhibit =
-        (boolean_t)(((uint8_t)(m[0] & 0x02)) >> 1);
+        (bool)(((uint8_t)(m[0] & 0x02)) >> 1);
     pMsgStruct->LED_5_DS5_inhibit =
-        (boolean_t)(((uint8_t)(m[0] & 0x04)) >> 2);
+        (bool)(((uint8_t)(m[0] & 0x04)) >> 2);
     pMsgStruct->PA1_J3_pin1_inhibit =
-        (boolean_t)(((uint8_t)(m[0] & 0x08)) >> 3);
+        (bool)(((uint8_t)(m[0] & 0x08)) >> 3);
     pMsgStruct->LED_2_DS10_frequency =
         (uint16_t)(((((uint16_t)(m[1] & 0x3f)) << 8) | m[0]) >> 4);
     pMsgStruct->LED_4_DS11_frequency =
@@ -1558,13 +1558,13 @@ void cap_unpack_PT_LimitsPowerDisplay
     pMsgStruct->sequenceCounter =
         (uint8_t)((uint8_t)(m[0] & 0x07));
     pMsgStruct->belowMinSpeedOfRotation =
-        (boolean_t)(((uint8_t)(m[0] & 0x08)) >> 3);
+        (bool)(((uint8_t)(m[0] & 0x08)) >> 3);
     pMsgStruct->aboveMaxSpeedOfRotation =
-        (boolean_t)(((uint8_t)(m[0] & 0x10)) >> 4);
+        (bool)(((uint8_t)(m[0] & 0x10)) >> 4);
     pMsgStruct->belowMinPower =
-        (boolean_t)(((uint8_t)(m[0] & 0x20)) >> 5);
+        (bool)(((uint8_t)(m[0] & 0x20)) >> 5);
     pMsgStruct->aboveMaxPower =
-        (boolean_t)(((uint8_t)(m[0] & 0x40)) >> 6);
+        (bool)(((uint8_t)(m[0] & 0x40)) >> 6);
 
 } /* End of cap_unpack_PT_LimitsPowerDisplay */
 #endif
@@ -1606,7 +1606,7 @@ float get_PWM_1000_PA2_J3_pin3_isNew(void)
  * This value is written into the global API.
  */
 void set_PWM_1000_PA2_J3_pin3_isNew(float newValue)
-    { cap_getSignal_PWM_PWM_in_1000(PA2_J3_pin3_isNew) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PWM_PWM_in_1000(PA2_J3_pin3_isNew) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal PA6_J2_pin1_isNew of outbound PDU PWM_in
@@ -1624,7 +1624,7 @@ float get_PWM_1000_PA6_J2_pin1_isNew(void)
  * This value is written into the global API.
  */
 void set_PWM_1000_PA6_J2_pin1_isNew(float newValue)
-    { cap_getSignal_PWM_PWM_in_1000(PA6_J2_pin1_isNew) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PWM_PWM_in_1000(PA6_J2_pin1_isNew) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal PA6_J2_pin1_dutyTime of outbound PDU PWM_in
@@ -1696,7 +1696,7 @@ float get_PWM_1001_LED_2_DS10_inhibit(void)
  * This value is written into the global API.
  */
 void set_PWM_1001_LED_2_DS10_inhibit(float newValue)
-    { cap_getSignal_PWM_PWM_out_1001(LED_2_DS10_inhibit) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PWM_PWM_out_1001(LED_2_DS10_inhibit) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal LED_4_DS11_inhibit of inbound PDU PWM_out
@@ -1714,7 +1714,7 @@ float get_PWM_1001_LED_4_DS11_inhibit(void)
  * This value is written into the global API.
  */
 void set_PWM_1001_LED_4_DS11_inhibit(float newValue)
-    { cap_getSignal_PWM_PWM_out_1001(LED_4_DS11_inhibit) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PWM_PWM_out_1001(LED_4_DS11_inhibit) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal LED_5_DS5_inhibit of inbound PDU PWM_out
@@ -1732,7 +1732,7 @@ float get_PWM_1001_LED_5_DS5_inhibit(void)
  * This value is written into the global API.
  */
 void set_PWM_1001_LED_5_DS5_inhibit(float newValue)
-    { cap_getSignal_PWM_PWM_out_1001(LED_5_DS5_inhibit) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PWM_PWM_out_1001(LED_5_DS5_inhibit) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal PA1_J3_pin1_inhibit of inbound PDU PWM_out
@@ -1750,7 +1750,7 @@ float get_PWM_1001_PA1_J3_pin1_inhibit(void)
  * This value is written into the global API.
  */
 void set_PWM_1001_PA1_J3_pin1_inhibit(float newValue)
-    { cap_getSignal_PWM_PWM_out_1001(PA1_J3_pin1_inhibit) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PWM_PWM_out_1001(PA1_J3_pin1_inhibit) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal LED_2_DS10_frequency of inbound PDU PWM_out
@@ -2290,7 +2290,7 @@ float get_PT_1538_belowMinSpeedOfRotation(void)
  * This value is written into the global API.
  */
 void set_PT_1538_belowMinSpeedOfRotation(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinSpeedOfRotation) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinSpeedOfRotation) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal aboveMaxSpeedOfRotation of outbound PDU LimitsPowerDisplay
@@ -2308,7 +2308,7 @@ float get_PT_1538_aboveMaxSpeedOfRotation(void)
  * This value is written into the global API.
  */
 void set_PT_1538_aboveMaxSpeedOfRotation(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxSpeedOfRotation) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxSpeedOfRotation) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal belowMinPower of outbound PDU LimitsPowerDisplay
@@ -2326,7 +2326,7 @@ float get_PT_1538_belowMinPower(void)
  * This value is written into the global API.
  */
 void set_PT_1538_belowMinPower(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinPower) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(belowMinPower) = (bool)(int)(newValue + 0.5f); }
 
 /**
  * Get the value of signal aboveMaxPower of outbound PDU LimitsPowerDisplay
@@ -2344,5 +2344,5 @@ float get_PT_1538_aboveMaxPower(void)
  * This value is written into the global API.
  */
 void set_PT_1538_aboveMaxPower(float newValue)
-    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxPower) = (boolean_t)(int)(newValue + 0.5f); }
+    { cap_getSignal_PT_LimitsPowerDisplay_1538(aboveMaxPower) = (bool)(int)(newValue + 0.5f); }
 

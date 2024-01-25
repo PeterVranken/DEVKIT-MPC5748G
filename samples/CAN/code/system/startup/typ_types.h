@@ -4,7 +4,7 @@
  * @file typ_types.h
  * Definition of global, basic types and convenience macros.
  *
- * Copyright (C) 2013-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2013-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -222,9 +222,6 @@
  */
 
 /* Some more basic types are defined using the naming scheme of stdint.h. */
-
-/** Boolean for canInterface. */
-typedef bool boolean_t;
 
 /** 4 Byte, single precision floating point number type. */
 typedef float float32_t;

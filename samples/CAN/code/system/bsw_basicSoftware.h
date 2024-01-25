@@ -139,27 +139,27 @@ bsw_osCbOnCANRxCanN(CAN_3)
 extern int32_t bsw_taskUserInit(uint32_t PID);
 
 /** Application provided regular 1ms task function, running in user process bsw_pidUser. */
-extern int32_t bsw_taskUser1ms(uint32_t PID, uintptr_t taskParam);
+extern int32_t bsw_taskUser1ms(uint32_t PID, uint32_t taskParam);
 
 /** Application provided regular 10ms task function, running in user process bsw_pidUser. */
-extern int32_t bsw_taskUser10ms(uint32_t PID, uintptr_t taskParam);
+extern int32_t bsw_taskUser10ms(uint32_t PID, uint32_t taskParam);
 
 /** Application provided regular 100ms task function, running in user process bsw_pidUser. */
-extern int32_t bsw_taskUser100ms(uint32_t PID, uintptr_t taskParam);
+extern int32_t bsw_taskUser100ms(uint32_t PID, uint32_t taskParam);
 
 /** Application provided regular 1s task function, running in user process bsw_pidUser. */
-extern int32_t bsw_taskUser1000ms(uint32_t PID, uintptr_t taskParam);
+extern int32_t bsw_taskUser1000ms(uint32_t PID, uint32_t taskParam);
 
 
 /** Application provided initialization function for safety process bsw_pidSafety. */
 extern int32_t bsw_taskSafetyInit(uint32_t PID);
 
 /** Application provided regular 1ms task function, running in safety process bsw_pidSafety. */
-extern int32_t bsw_taskSafety1ms(uint32_t PID, uintptr_t taskParam);
+extern int32_t bsw_taskSafety1ms(uint32_t PID, uint32_t taskParam);
 
 /** Application provided regular 10ms task function, running in safety process
     bsw_pidSafety. */
-extern int32_t bsw_taskSafety10ms(uint32_t PID, uintptr_t taskParam);
+extern int32_t bsw_taskSafety10ms(uint32_t PID, uint32_t taskParam);
 
 /*
  * Global inline functions

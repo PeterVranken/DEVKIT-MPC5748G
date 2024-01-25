@@ -2,7 +2,7 @@
  * @file ssv_safetySupervisor.c
  * Implementation of the safety supervisor task.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -78,7 +78,7 @@ int32_t bsw_taskSafetyInit(uint32_t PID ATTRIB_DBG_ONLY)
 {
     assert(PID == bsw_pidSafety);
 
-    boolean_t success = true;
+    bool success = true;
 
     return success? 0: -1;
 
@@ -98,7 +98,7 @@ int32_t bsw_taskSafetyInit(uint32_t PID ATTRIB_DBG_ONLY)
  *   @param taskParam
  * A task receives an argument. It is always zero in our case.
  */
-int32_t bsw_taskSafety1ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskSafety1ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     assert(PID == bsw_pidSafety);
 
@@ -123,7 +123,7 @@ int32_t bsw_taskSafety1ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTR
  *   @param taskParam
  * A task receives an argument. It is always zero in our case.
  */
-int32_t bsw_taskSafety10ms(uint32_t PID ATTRIB_DBG_ONLY, uintptr_t taskParam ATTRIB_UNUSED)
+int32_t bsw_taskSafety10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB_UNUSED)
 {
     assert(PID == bsw_pidSafety);
 

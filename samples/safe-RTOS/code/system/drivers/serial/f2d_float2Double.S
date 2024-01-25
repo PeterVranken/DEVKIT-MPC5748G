@@ -21,7 +21,7 @@
  * has not been compiled with setting -fshort-double -- this is the case in our environment
  * and wherever it wouldn't were this function obsolete anyway.
  *
- * Copyright (C) 2017 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

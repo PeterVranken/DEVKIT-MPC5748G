@@ -2,7 +2,7 @@
  * @file stm_systemTimer_sysCall.c
  * System call to access the current system time from user mode code.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -64,7 +64,7 @@
  */
 
 /**
- *   @func stm_getSystemTime
+ *   @fn stm_getSystemTime
  * Get the counter value from one of the three free running system timers.
  *   @return
  * On return, r3 contains the current counter value, which represents the system time. See

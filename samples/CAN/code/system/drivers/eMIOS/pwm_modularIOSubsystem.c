@@ -483,7 +483,7 @@ static void initChannelAsPWMInput( pwm_hEMIOSChannel_t * const pHChannel
            &&  glitchFilterStrength <= 4u
            &&  isPossibleInputChn(pHDevice->pEMIOS, idxChn)
           );
-    const eMIOS_Type * const pEMIOS = pHDevice->pEMIOS;
+    eMIOS_Type * const pEMIOS = pHDevice->pEMIOS;
     eMIOS_UC_Type * const pUC = &pEMIOS->UC[idxChn];
     
     const unsigned int devicePrescale = ((pEMIOS->MCR & eMIOS_MCR_GPRE_MASK)
@@ -827,7 +827,7 @@ void pwm_osInitEMIOSChannelForPWMGeneration( pwm_hEMIOSChannel_t * const pHChann
             &&  isPossibleOutputChn(pHDevice->pEMIOS, idxChn)
           );
 
-    const eMIOS_Type * const pEMIOS = pHDevice->pEMIOS;
+    eMIOS_Type * const pEMIOS = pHDevice->pEMIOS;
     eMIOS_UC_Type * const pUC = &pEMIOS->UC[idxChn];
     const unsigned int devicePrescale = ((pEMIOS->MCR & eMIOS_MCR_GPRE_MASK)
                                          >> eMIOS_MCR_GPRE_SHIFT

@@ -20,11 +20,11 @@
  * The service is not considered an element of the kernel itself. safe-RTOS implements a
  * simple BCC scheduling, which doesn't support voluntary suspension of threads. An
  * beneficial integration of the service with the kernel is therefore not possible. It
- * would e.g. be possible to let the notifier wait until the notified acknowledges -- but
+ * would, e.g., be possible to let the notifier wait until the notified acknowledges -- but
  * not without busy wait and the busy wait -- if considered appropriate -- can be
  * implemented as easy in the application code using the API of this driver.\n
  *   Consequently, the implementation of this driver could be used even without the RTOS,
- * e.g. on a core with bare-metal application code. Only the notification by triggering an
+ * e.g., on a core with bare-metal application code. Only the notification by triggering an
  * RTOS event must of course not be configured in that case.
  *   @remark
  * This driver uses a different configuration concept than the others. The RTOS itself and
@@ -33,7 +33,7 @@
  * expensive RAM. In this driver, we use a C implementation file for configuration. Each
  * application needs to have its individual implementation file.
  *
- * Copyright (C) 2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -72,7 +72,7 @@
 #include "std_decoratedStorage.h"
 #include "icn_interCoreNotification.h"
 
-/* To inlude the configuration file, we must not use the quotes. This would make the
+/* To include the configuration file, we must not use the quotes. This would make the
    compiler load the template file (located in the same directory as this source file)
    rather than the (optional) true file, located somewhere in a folder of the driver's
    client code. */
@@ -94,6 +94,19 @@
 /*
  * Local prototypes
  */
+
+/** The configuration of an event to be notified on the destination core. It is a
+    combination of the addressed event processor and the characteristics of the event
+    (ordinary vs. countable). */
+struct icn_configurationEvent_t
+{
+    /** The addressed event processor by zero based index. This ID is also returned by the
+        constructor of the event processor, see rtos_osCreateEventProcessor(). */
+    unsigned int eventProcessorId;
+
+    /** The distinction between sending an ordinary or a countable event. */
+    bool isCountableEvent;
+};
 
 /** The configuration of a single notification. */
 typedef struct icn_notification_t
@@ -123,16 +136,13 @@ typedef struct icn_notification_t
 
     /** The notification can be the triggering of one or more safe-RTOS events in order to
         activate associated tasks. Here, we have the number of events to trigger. The range
-        is 0 .. #ICN_MAX_NO_TRIGGERED_EVENTS. */
-    unsigned int noTriggeredEvents;
+        is 0 .. #ICN_MAX_NO_SENT_EVENTS. */
+    unsigned int noSentEvents;
 
-    /** Here, we have an array of possibly triggered events. The first
-        #ICN_MAX_NO_TRIGGERED_EVENTS elements of the array refer to actually triggered
-        events and they hold an event ID each (see rtos_osCreateEvent()). The other
-        elements of the array don't care.\n
-          All tasks, which are activated because of one of the triggered events, will
-        receive the notification parameter (see icn_osSendNotification()) as task parameter. */
-    unsigned int eventIdAry[ICN_MAX_NO_TRIGGERED_EVENTS];
+    /** Here, we have an array of configuration items for sent events. The first
+        \a noSentEvents elements of the array refer to actually sent events. The other
+        elements of the array don't care. */
+    struct icn_configurationEvent_t evNotificationAry[ICN_MAX_NO_SENT_EVENTS];
 
 } icn_notification_t;
 
@@ -159,7 +169,7 @@ typedef struct icn_configuration_t
 /** This is the temporary storage of notification parameter values. The storage is used
     from sending the notification on one core (icn_osSendNotification()) till acknowledge of
     the notification in the ISR for the related SW settable interrupt on the other core. */
-static uintptr_t UNCACHED_OS(_notificationParamAry)[ICN_NO_NOTIFICATIONS];
+static volatile uint32_t UNCACHED_OS(_notificationParamAry)[ICN_NO_NOTIFICATIONS];
 
 /*
  * Function implementation
@@ -177,26 +187,33 @@ static void swIrqAction(unsigned int idxNotification)
 {
     const icn_notification_t * const pN = &icn_configuration.notificationAry[idxNotification];
 
-    /* The optional callback is handled first. Here, and in contrast to triggering an RTOS
-       event, the latency time may matter. (The consequences of a trigered RTOS event will
-       happen anyway at earliest after ending the ISR.) */
-
-    const uintptr_t notificationParam = _notificationParamAry[idxNotification];
+    const uint32_t notificationParam = _notificationParamAry[idxNotification];
         
     /* Before we actually notify anyone we need to ensure that the store of the parameter
        has reached the shared RAM. */
     std_fullMemoryBarrier();
     
-    /* Invoke the optional callback. */
+    /* Invoke the optional callback. This option is handled first. Here, and in contrast to
+       sending an RTOS event, the latency time may matter. (The consequences of a sent RTOS
+       event will happen anyway at earliest after ending the ISR.) */
     if(pN->osNotificationHandler != NULL)
         pN->osNotificationHandler(notificationParam);
 
-    /* Trigger all events. */
-    unsigned int u = pN->noTriggeredEvents;
-    const unsigned int *pIdxEv = &pN->eventIdAry[0];
+    /* Send all configured events. */
+    unsigned int u = pN->noSentEvents;
+    const struct icn_configurationEvent_t *pEvCfg = &pN->evNotificationAry[0];
     while(u-- > 0)
-        rtos_osTriggerEvent(* pIdxEv++, /* taskParam */ notificationParam);
+    {
+        if(pEvCfg->isCountableEvent)
+        {
+            assert(notificationParam > 0u);
+            rtos_osSendEventCountable(pEvCfg->eventProcessorId, /*evMask*/ notificationParam);
+        }
+        else
+            rtos_osSendEvent(pEvCfg->eventProcessorId, /* taskParam */ notificationParam);
 
+        ++ pEvCfg;
+    }
 } /* End of swIrqAction */
 
 
@@ -414,7 +431,8 @@ icn_errorCode_t icn_osInitInterCoreNotificationDriver(void)
 
     /* An array of function pointers to all SW settable interrupt handlers, which we
        require to implement the notifications. Note, the elements of the initializer
-       expression are conditionally defined. Many of them will expand to nothing. */
+       expression are conditionally defined. Many of them will expand to nothing, resulting
+       in a NULL element. */
     void (* const pIsrAry[ICN_NO_NOTIFICATIONS])(void) =
     {
         FCT_PTR_SW_INT_0  FCT_PTR_SW_INT_1  FCT_PTR_SW_INT_2  FCT_PTR_SW_INT_3
@@ -433,7 +451,7 @@ icn_errorCode_t icn_osInitInterCoreNotificationDriver(void)
         const icn_notification_t * const pN = &icn_configuration.notificationAry[idxN];
 
         /* Check the configuration of the notification. */
-        if(pN->osNotificationHandler == NULL  &&  pN->noTriggeredEvents == 0)
+        if(pN->osNotificationHandler == NULL  &&  pN->noSentEvents == 0)
         {
             result = icn_err_noActionSpecified;
             continue;
@@ -449,17 +467,19 @@ icn_errorCode_t icn_osInitInterCoreNotificationDriver(void)
             continue;
         }
         if(RTOS_RUN_SAFE_RTOS_ON_CORE_0 != 1  &&  pN->idxNotifiedCore == 0
-           &&  pN->noTriggeredEvents != 0
+           &&  pN->noSentEvents != 0
            ||  RTOS_RUN_SAFE_RTOS_ON_CORE_1 != 1  &&  pN->idxNotifiedCore == 1
-               &&  pN->noTriggeredEvents != 0
+               &&  pN->noSentEvents != 0
            ||  RTOS_RUN_SAFE_RTOS_ON_CORE_2 != 1  &&  pN->idxNotifiedCore == 2
-               &&  pN->noTriggeredEvents != 0
+               &&  pN->noSentEvents != 0
           )
         {  
-            result = icn_err_badActionSpecified;
+            result = icn_err_actionRequiresRTOS;
             continue;
         }
             
+        _notificationParamAry[idxN] = 0u;
+
         /* The vector number is validated by compile-time expressions, see above. */
         const unsigned int vectorNum = SS0_IRQn + ICN_FIRST_SW_IRQ_TO_APPLY + idxN;
         rtos_osRegisterInterruptHandler( pIsrAry[idxN]
@@ -478,29 +498,40 @@ icn_errorCode_t icn_osInitInterCoreNotificationDriver(void)
 
 /**
  * Send a notification to (another) core. The notification is a callback execution on that
- * other core or a triggered RTOS event. Moreover, a single 32 Bit value may be passed to
+ * other core or a sent RTOS event. Moreover, a single 32 Bit value may be passed to
  * the other core without coherency issues.
  *   @return
  * \a true, if function succeeded, else \a false. The operation can fail if the same
  * notification had been sent before and if it had not been received yet by the addressed
  * core (i.e. the notified core has not processed the related SW settable interrupt yet).\n
  *   The acknowledge of a former notification can be polled using
- * rtos_isNotificationPending(). If that function returns \a false (and if there are no
+ * icn_osIsNotificationPending(). If that function returns \a false (and if there are no
  * concurrent contexts which make use of this function) then this function will succeed.\n
  *   Caution, the feedback provided by the function relates to the acknowledge of the
- * interrupt on the notified core. However, even if the interrupt could be processed on the
- * notified core then it is still not guaranteed that the configured action was fully
- * successful: If the action is triggering one or more RTOS events then we don't receive any
- * feedback about. Triggering an event can fail on the notified core if one of the tasks
- * associated with the event should not have completed yet. This failure is reported on the
- * notified core but not seen here on the notifying core. See rtos_osTriggerEvent() for
- * details.
+ * interrupt on the notified core. \a true means that any earlier asserted interrupt has
+ * been serviced on entry into this function so that it can be asserted again. \a false
+ * means that an earlier asserted interrupt is still pending. However, even if the
+ * interrupt could be processed on the notified core then it is still not guaranteed that
+ * the configured action was fully successful: If the action is sending one or more RTOS
+ * events then we don't receive any feedback about. Sending an ordinary event can fail on
+ * the notified core if one of the tasks associated with the event should not have
+ * completed yet (see rtos_osSendEvent()). Sending a countable event can fail on the
+ * notified core if the counter variable for the event multiplicity overflows (see
+ * rtos_osSendEventCountable()). This failure is reported on the notified core but not seen
+ * here on the notifying core.
  *   @param idxNotification
  * The notification to send is chosen by index. It is the same index as used in the
  * configuration of the driver. The permitted range is 0 .. (ICN_NO_NOTIFICATIONS-1).
  *   @param notificationParam
- * The notified core will receive this value. It'll get it as function argument of the
- * callback or as task parameter if an event is applied to activate a (or several) tasks.
+ * Parameter of the notifications:
+ * - The notified core will receive this value as function argument of the
+ *   callback if a callback is configured.
+ * - The notified core will receive this value as parameter of the task function(s) if an
+ *   ordinary event is applied to activate one or more tasks.
+ * - The event mask if a countable event is applied to activate one or more tasks. (The
+ *   notified multiplicity is one per (successful) call of this funtion.) Note, \a
+ *   notificationParam must not be zero if this option is configured for the given
+ *   notification.
  *   @remark
  * The function barely has parameters. Most of the needed information, like which core to
  * notify or which action to take on the notified core, is static configuration and
@@ -513,19 +544,14 @@ icn_errorCode_t icn_osInitInterCoreNotificationDriver(void)
  * coincidentally. Neither the function result is reliable in this case nor the propagation
  * of the parameter \a notificationParam.\n
  *   If sending one and the same notification from different cores is a requirement then
- * the caller is in charge to implement the required serialization.\n
- *   Race condition free implementation would be possible with respect to different context
- * on one core (by global interrupt suspension) but we decided not to do this, for sake of 
- * consistency, to not have a half way race condition freedom. Again, wherever needed, the
- * caller can embed the invokation of this function in a pair of critical section
- * functions.
+ * the caller is in charge to implement the required serialization.
  *   @remark
  * This function can be safely called from all OS contexts. Any attempt to call it from a
  * user task will lead to a privileged exception in the task's process.
  *   @remark
  * If a core doesn't run safe-RTOS it may still make use of this function.
  */
-bool icn_osSendNotification(unsigned int idxNotification, uintptr_t notificationParam)
+bool icn_osSendNotification(unsigned int idxNotification, uint32_t notificationParam)
 {
     assert(idxNotification < ICN_NO_NOTIFICATIONS);
     
@@ -545,6 +571,10 @@ bool icn_osSendNotification(unsigned int idxNotification, uintptr_t notification
            parameter value is consistent as long as the documented race conditions
            don't take effect. */
         _notificationParamAry[idxNotification] = notificationParam;
+
+        /* Before we actually notify anyone we need to ensure that the store of the
+           parameter has reached the shared RAM. */
+        std_fullMemoryBarrier();
 
         /* Assert the SW settable interrupt, which implements the notification. */ 
         *pINTC_SSCIR = 2;
@@ -595,6 +625,5 @@ bool icn_osIsNotificationPending(unsigned int idxNotification)
     return INTC->SSCIR[ICN_FIRST_SW_IRQ_TO_APPLY+idxNotification] != 0;
     
 } /* End of icn_osIsNotificationPending */
-
 
 #endif /* ICN_NO_NOTIFICATIONS > 0 */

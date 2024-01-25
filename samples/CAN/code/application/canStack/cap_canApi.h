@@ -8,7 +8,7 @@
  * This file has been created with comFramework - codeGenerator version 1.11.3,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -1235,7 +1235,7 @@ typedef struct cap_infoTransmission_t
         noTransmittedMsgs; it is set on reception by the interface engine but not
         reset. If the APSW resets it after check it behaves like a Boolean statement
         whether new information arrived. */
-    boolean_t isEvent;
+    bool isEvent;
 
 } cap_infoTransmission_t;
 
@@ -1249,10 +1249,10 @@ typedef struct cap_PWM_PWM_in_1000_t
     uint16_t PA2_J3_pin3_periodTime;
 
     /** Signal PA2_J3_pin3_isNew. */
-    boolean_t PA2_J3_pin3_isNew;
+    bool PA2_J3_pin3_isNew;
 
     /** Signal PA6_J2_pin1_isNew. */
-    boolean_t PA6_J2_pin1_isNew;
+    bool PA6_J2_pin1_isNew;
 
     /** Signal PA6_J2_pin1_dutyTime. */
     uint16_t PA6_J2_pin1_dutyTime;
@@ -1271,16 +1271,16 @@ typedef struct cap_PWM_PWM_in_1000_t
 typedef struct cap_PWM_PWM_out_1001_t
 {
     /** Signal LED_2_DS10_inhibit. */
-    boolean_t LED_2_DS10_inhibit;
+    bool LED_2_DS10_inhibit;
 
     /** Signal LED_4_DS11_inhibit. */
-    boolean_t LED_4_DS11_inhibit;
+    bool LED_4_DS11_inhibit;
 
     /** Signal LED_5_DS5_inhibit. */
-    boolean_t LED_5_DS5_inhibit;
+    bool LED_5_DS5_inhibit;
 
     /** Signal PA1_J3_pin1_inhibit. */
-    boolean_t PA1_J3_pin1_inhibit;
+    bool PA1_J3_pin1_inhibit;
 
     /** Signal LED_2_DS10_frequency. */
     uint16_t LED_2_DS10_frequency;
@@ -1415,16 +1415,16 @@ typedef struct cap_PT_LimitsPowerDisplay_1538_t
     uint8_t sequenceCounter;
 
     /** Signal belowMinSpeedOfRotation. */
-    boolean_t belowMinSpeedOfRotation;
+    bool belowMinSpeedOfRotation;
 
     /** Signal aboveMaxSpeedOfRotation. */
-    boolean_t aboveMaxSpeedOfRotation;
+    bool aboveMaxSpeedOfRotation;
 
     /** Signal belowMinPower. */
-    boolean_t belowMinPower;
+    bool belowMinPower;
 
     /** Signal aboveMaxPower. */
-    boolean_t aboveMaxPower;
+    bool aboveMaxPower;
 
 } cap_PT_LimitsPowerDisplay_1538_t;
 

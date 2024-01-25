@@ -4,7 +4,7 @@
  * @file rtos_priorityCeilingProtocol.h
  * Definition of global interface of module rtos_priorityCeilingProtocol.S
  *
- * Copyright (C) 2019 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -48,7 +48,7 @@
 
 
 /* Define the field offsets and enumeration values in struct eventDesc_t. */
-#define PCP_SIZE_OF_EV_DESC         32
+#define PCP_SIZE_OF_EV_DESC         44
 #define PCP_O_EVDESC_state          0
 #define PCP_O_EVDESC_prio           16
 #define PCP_E_EVST_idle             0
@@ -62,13 +62,13 @@
     #RTOS_STATIC_CONSTRAINTS_INTERFACE_C_AS_SYS_CALL  and
     #RTOS_STATIC_CONSTRAINTS_INTERFACE_C_AS_PROCESS, too. */
 #define RTOS_STATIC_CONSTRAINTS_INTERFACE_C_AS_PCP (                                    \
-            sizeof(((const rtos_kernelInstanceData_t*)NULL)->mapPrioToEvent[0]) == 4    \
+            sizeof(((const rtos_kernelInstanceData_t*)NULL)->mapPrioToEvProc[0]) == 4   \
             && sizeoffield(rtos_kernelInstanceData_t, currentPrio) == 4                 \
-            && PCP_SIZE_OF_EV_DESC == sizeof(rtos_eventDesc_t)                          \
-            && PCP_O_EVDESC_state == offsetof(rtos_eventDesc_t, state)                  \
-            && PCP_O_EVDESC_prio == offsetof(rtos_eventDesc_t, priority)                \
-            && sizeoffield(rtos_eventDesc_t, state) == 1                                \
-            && sizeoffield(rtos_eventDesc_t, priority) == 4                             \
+            && PCP_SIZE_OF_EV_DESC == sizeof(rtos_eventProcDesc_t)                      \
+            && PCP_O_EVDESC_state == offsetof(rtos_eventProcDesc_t, state)              \
+            && PCP_O_EVDESC_prio == offsetof(rtos_eventProcDesc_t, priority)            \
+            && sizeoffield(rtos_eventProcDesc_t, state) == 1                            \
+            && sizeoffield(rtos_eventProcDesc_t, priority) == 4                         \
             && PCP_E_EVST_idle == evState_idle                                          \
             && PCP_E_EVST_triggered == evState_triggered                                \
         )
@@ -87,7 +87,7 @@
 
 /** Hidden type, owned by and local to rtos_scheduler.c, but needed here as opaque pointer
     type. */
-struct rtos_eventDesc_t;
+struct rtos_eventProcDesc_t;
 
 
 /*
@@ -127,7 +127,7 @@ void rtos_resumeAllTasksByPriority(uint32_t resumeDownToThisPriority);
  * The function can be called from assembly and C code but only from supervisor contexts,
  * ISRs and OS tasks.
  */
-struct rtos_eventDesc_t *rtos_osGetEventByPriority(uint32_t priority);
+struct rtos_eventProcDesc_t *rtos_osGetEvProcByPriority(uint32_t priority);
 
 #endif  /* For C code compilation only */
 #endif  /* RTOS_PRIORITY_CEILING_PROTOCOL_INCLUDED */

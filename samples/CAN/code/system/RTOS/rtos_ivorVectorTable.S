@@ -65,7 +65,7 @@ rtos_ivorVectorTableRTOS:
 
 
 /**
- *   @func rtos_ivor0Handler
+ *   @fn rtos_ivor0Handler
  * IVOR table entry and exception handler IVOR #0 for the Critical Input interrupt.\n
  *   An IVOR #0 handler is not required. This exception cannot be caused by user mode code;
  * it's a hardware asserted interrupt or may be used by the debug engine, which is not
@@ -84,7 +84,7 @@ rtos_ivorVectorTableEntry0:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry1
+ *   @fn rtos_ivorVectorTableEntry1
  * Exception handler IVOR1 for the Machine check / (NMI) interrupt.
  */
     .global     rtos_ivorVectorTableEntry1
@@ -104,7 +104,7 @@ rtos_illegalInstruction:
     se_blr
 
 /**
- *   @func rtos_ivorVectorTableEntry2
+ *   @fn rtos_ivorVectorTableEntry2
  * Exception handler IVOR2 for the Data Storage interrupt. This trap is taken if the MMU
  * signals an unpermitted data access.
  */
@@ -124,7 +124,7 @@ rtos_ivorVectorTableEntry2:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry3
+ *   @fn rtos_ivorVectorTableEntry3
  * Exception handler IVOR3 for the Instruction Storage interrupt. This trap is taken if
  * the MMU signals an unpermitted instruction fetch.
  */
@@ -144,7 +144,7 @@ rtos_ivorVectorTableEntry3:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry4
+ *   @fn rtos_ivorVectorTableEntry4
  * Exception handler IVOR4 for the External Input interrupt. See RM, section
  * 62.8.5.5 on page 3133.
  */
@@ -174,7 +174,7 @@ rtos_ivorVectorTableEntry4:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry5
+ *   @fn rtos_ivorVectorTableEntry5
  * Exception handler IVOR5 for the Alignment interrupt.
  */
     .global     rtos_ivorVectorTableEntry5
@@ -193,7 +193,7 @@ rtos_ivorVectorTableEntry5:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry6
+ *   @fn rtos_ivorVectorTableEntry6
  * Exception handler IVOR6 for the Program interrupt.
  */
     .global     rtos_ivorVectorTableEntry6
@@ -212,7 +212,7 @@ rtos_ivorVectorTableEntry6:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry7
+ *   @fn rtos_ivorVectorTableEntry7
  * Exception handler IVOR7 for the Performance Monitor interrupt. See RM, section
  * 62.8.5.8.
  */
@@ -231,7 +231,7 @@ rtos_ivorVectorTableEntry7:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry8
+ *   @fn rtos_ivorVectorTableEntry8
  * Exception handler IVOR8 for the System Call interrupt.
  */
     .global     rtos_ivorVectorTableEntry8
@@ -260,7 +260,7 @@ rtos_ivorVectorTableEntry8:
 
 /// @todo Consider making this implementation dependent on HID0 settings as done for MPC5775
 /**
- *   @func rtos_ivorVectorTableEntry9
+ *   @fn rtos_ivorVectorTableEntry9
  * Exception handler IVOR9 for the Debug interrupt.
  */
     .global     rtos_ivorVectorTableEntry9
@@ -279,7 +279,7 @@ rtos_ivorVectorTableEntry9:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry10
+ *   @fn rtos_ivorVectorTableEntry10
  * Exception handler IVOR10 for the Embedded Floating-point Data interrupt. See RM
  * section 62.8.5.11.
  */
@@ -299,7 +299,7 @@ rtos_ivorVectorTableEntry10:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry11
+ *   @fn rtos_ivorVectorTableEntry11
  * Exception handler IVOR11 for the Embedded Floating-point Round interrupt. See RM
  * section 62.8.5.12.
  */
@@ -318,7 +318,7 @@ rtos_ivorVectorTableEntry11:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry12
+ *   @fn rtos_ivorVectorTableEntry12
  * Unused exception handler IVOR12.
  */
     .global     rtos_ivorVectorTableEntry12
@@ -329,7 +329,7 @@ rtos_ivorVectorTableEntry12:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry13
+ *   @fn rtos_ivorVectorTableEntry13
  * Unused exception handler IVOR13.
  */
     .global     rtos_ivorVectorTableEntry13
@@ -340,7 +340,7 @@ rtos_ivorVectorTableEntry13:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry14
+ *   @fn rtos_ivorVectorTableEntry14
  * Unused exception handler IVOR14.
  */
     .global     rtos_ivorVectorTableEntry14
@@ -351,7 +351,7 @@ rtos_ivorVectorTableEntry14:
 
 
 /**
- *   @func rtos_ivorVectorTableEntry15
+ *   @fn rtos_ivorVectorTableEntry15
  * Unused exception handler IVOR15.
  */
     .global     rtos_ivorVectorTableEntry15

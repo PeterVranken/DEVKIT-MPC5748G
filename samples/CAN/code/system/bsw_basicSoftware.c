@@ -7,7 +7,7 @@
  * supervisor mode and has the highest quality assurance level defined for the parts of the
  * aimed software.
  *
- * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -92,38 +92,38 @@ _Static_assert( true
  * Local type definitions
  */
 
-/** The enumeration of all events, tasks and priorities, to have them as symbols in the
-    source code. Most relevant are the event IDs. Actually, these IDs are provided by the
-    RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
-    are dealt out by rtos_osCreateEvent() form the series 0, 1, 2, .... So we don't need
+/** The enumeration of all event processors, tasks and priorities, to have them as symbols in the
+    source code. Most relevant are the event processor IDs. Actually, these IDs are provided by the
+    RTOS at runtime, when creating the event processor. However, it is guaranteed that the IDs, which
+    are dealt out by rtos_osCreateEvent Processor() form the series 0, 1, 2, .... So we don't need
     to have a dynamic storage of the IDs; we define them as constants and double-check by
-    assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
-    requires that the order of creating the events follows the order here in the
+    assertion that we got the correct, expected IDs from rtos_osCreateEvent Processor(). Note, this
+    requires that the order of creating the event processors follows the order here in the
     enumeration.\n
-      Here, we have the IDs of the created events. They occupy the index range starting
+      Here, we have the IDs of the created event processors. They occupy the index range starting
     from zero. */
 enum
 {
-    /** Timer event to clock regular 1ms tasks. */
-    idEv1ms = 0,
+    /** Event processor raising regular timer event to clock regular 1ms tasks. */
+    idEvProc1ms = 0,
 
-    /** Timer event to clock regular 10ms tasks. */
-    idEv10ms,
+    /** Event processor raising regular timer event to clock regular 10ms tasks. */
+    idEvProc10ms,
 
-    /** Timer event to clock regular 100ms tasks. */
-    idEv100ms,
+    /** Event processor raising regular timer event to clock regular 100ms tasks. */
+    idEvProc100ms,
 
-    /** Timer event to clock regular 1s tasks. */
-    idEv1000ms,
+    /** Event processor raising regular timer event to clock regular 1s tasks. */
+    idEvProc1000ms,
 
-    /** The number of tasks to register. */
-    noRegisteredEvents
+    /** The number of event processors to register. */
+    noRegisteredEvProcs
 };
 
 
-/** The RTOS uses constant priorities for its events, which are defined here.\n
-      Note, the priority is a property of an event rather than of a task. A task implicitly
-    inherits the priority of the event it is associated with. */
+/** The RTOS uses constant priorities for its event processors, which are defined here.\n
+      Note, the priority is a property of an event processor rather than of a task. A task implicitly
+    inherits the priority of the event processor it is associated with. */
 enum
 {
     prioEv1000ms = 1,
@@ -333,7 +333,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         initOk = false;
         assert(false);
     }
-    
+
     /** Initialize the extended CAN driver service "queued sending". */
     if(!cdr_osInitQueuedSending())
     {
@@ -392,22 +392,23 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         initOk = false;
     }
 
-    /* Create the events that trigger application tasks at the RTOS. Note, we do not really
-       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
-       The returned value is redundant. This technique requires that we create the events
+    /* Create the event processors that trigger application tasks at the RTOS. Note, we do not really
+       respect the ID, which is assigned to the event processor by the RTOS API rtos_osCreateEvent Processor().
+       The returned value is redundant. This technique requires that we create the event processors
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
-    unsigned int idEvent;
+    unsigned int idEvProc;
     #define CREATE_REGULAR_EVENT(tiInMs, tiFirstInMs)                                       \
     {                                                                                       \
         if(initOk                                                                           \
-           && rtos_osCreateEvent                                                            \
-                    ( &idEvent                                                              \
-                    , /* tiCycleInMs */              (tiInMs)                               \
-                    , /* tiFirstActivationInMs */    (tiFirstInMs)                          \
-                    , /* priority */                 prioEv##tiInMs##ms                     \
-                    , /* minPIDToTriggerThisEvent */ RTOS_EVENT_NOT_USER_TRIGGERABLE        \
-                    , /* taskParam */                0                                      \
+           && rtos_osCreateEventProcessor                                                   \
+                    ( &idEvProc                                                             \
+                    , /* tiCycleInMs */               (tiInMs)                              \
+                    , /* tiFirstActivationInMs */     (tiFirstInMs)                         \
+                    , /* priority */                  prioEv##tiInMs##ms                    \
+                    , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE  \
+                    , /* timerUsesCountableEvents */  false                                 \
+                    , /* timerTaskTriggerParam */     0u                                    \
                     )                                                                       \
            != rtos_err_noError                                                              \
           )                                                                                 \
@@ -415,19 +416,19 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
             initOk = false;                                                                 \
         }                                                                                   \
         else                                                                                \
-            assert(idEvent == idEv##tiInMs##ms);                                            \
+            assert(idEvProc == idEvProc##tiInMs##ms);                                       \
                                                                                             \
     } /* CREATE_REGULAR_EVENT */
 
-    #define CREATE_USER_TASK(idEv, pid, taskFct)                                            \
-        CREATE_TASK(rtos_osRegisterUserTask( (idEv)                                         \
+    #define CREATE_USER_TASK(idEvProc, pid, taskFct)                                        \
+        CREATE_TASK(rtos_osRegisterUserTask( (idEvProc)                                     \
                                            , (taskFct)                                      \
                                            , (pid)                                          \
-                                           , /* tiTaskMaxInUs */ 0                          \
+                                           , /* tiTaskMaxInUs */ 0u                         \
                                            )                                                \
                    )
 
-    #define CREATE_OS_TASK(idEv, taskFct) CREATE_TASK(rtos_osRegisterOSTask((idEv), (taskFct)))
+    #define CREATE_OS_TASK(idEvProc, taskFct) CREATE_TASK(rtos_osRegisterOSTask((idEvProc), (taskFct)))
 
     #define CREATE_TASK(rtosApiCall)                                                        \
     {                                                                                       \
@@ -441,26 +442,26 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     CREATE_REGULAR_EVENT(/* tiInMs */ 1000, /* tiFirstInMs */ 55)
 
     /* OS task are created first. This ensures that they will get the CPU first if the
-       triggering event is shared with user tasks. */
-    //CREATE_OS_TASK(idEv1ms, bsw_taskOs1ms)
-    //CREATE_OS_TASK(idEv10ms, bsw_taskOs10ms)
-    //CREATE_OS_TASK(idEv100ms, bsw_taskOs100ms)
-    //CREATE_OS_TASK(idEv1000ms, bsw_taskOs1000ms)
+       event processor is shared with user tasks. */
+    //CREATE_OS_TASK(idEvProc1ms, bsw_taskOs1ms)
+    //CREATE_OS_TASK(idEvProc10ms, bsw_taskOs10ms)
+    //CREATE_OS_TASK(idEvProc100ms, bsw_taskOs100ms)
+    //CREATE_OS_TASK(idEvProc1000ms, bsw_taskOs1000ms)
 
     /* User tasks in the safety process are created next. This ensures that they will get
        the CPU prior to the QM tasks in user process bsw_pidUser. */
-    CREATE_USER_TASK(idEv1ms, bsw_pidSafety, bsw_taskSafety1ms)
-    CREATE_USER_TASK(idEv10ms, bsw_pidSafety, bsw_taskSafety10ms)
+    CREATE_USER_TASK(idEvProc1ms, bsw_pidSafety, bsw_taskSafety1ms)
+    CREATE_USER_TASK(idEvProc10ms, bsw_pidSafety, bsw_taskSafety10ms)
 
     /* User tasks in the QM process are created last. They will be served latest if the
-       triggering event is shared with OS or safety tasks. */
-    CREATE_USER_TASK(idEv1ms, bsw_pidUser, bsw_taskUser1ms)
-    CREATE_USER_TASK(idEv10ms, bsw_pidUser, bsw_taskUser10ms)
-    CREATE_USER_TASK(idEv100ms, bsw_pidUser, bsw_taskUser100ms)
-    CREATE_USER_TASK(idEv1000ms, bsw_pidUser, bsw_taskUser1000ms)
+       event processor is shared with OS or safety tasks. */
+    CREATE_USER_TASK(idEvProc1ms, bsw_pidUser, bsw_taskUser1ms)
+    CREATE_USER_TASK(idEvProc10ms, bsw_pidUser, bsw_taskUser10ms)
+    CREATE_USER_TASK(idEvProc100ms, bsw_pidUser, bsw_taskUser100ms)
+    CREATE_USER_TASK(idEvProc1000ms, bsw_pidUser, bsw_taskUser1000ms)
 
-    /* The last check ensures that we didn't forget to register an event. */
-    assert(idEvent == noRegisteredEvents-1);
+    /* The last check ensures that we didn't forget to register an event processor. */
+    assert(idEvProc == noRegisteredEvProcs-1);
 
     /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
        succeeds. The step involves a configuration check. We must not startup the SW if the

@@ -4,7 +4,7 @@
  * @file stm_systemTimer.h
  * Definition of global interface of module stm_systemTimer.c
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -76,7 +76,8 @@
 
 /**
  * Read one of the three system timers. The function can be called at any time from any
- * context on any core. It must not be called before stm_initSystemTimers() has completed.
+ * supervisor context on any core. It must not be called before stm_initSystemTimers() has
+ * completed.
  *   @return
  * The timers are running at #STM_TIMER_0_CLK, #STM_TIMER_1_CLK and #STM_TIMER_2_CLK Hz The
  * unit of one step of the counter value is the reciprocal, i.e. 12.5 ns for timer 0. The
@@ -97,8 +98,8 @@
  * This function is available solely to OS tasks and ISRs. User code would cause a memory
  * protection exception. User mode code uses stm_getSytemTime() instead.
  *   @remark
- * This function is available to code running on any core, regardless whether safe-RTOS is
- * configured and running on that core or not.
+ * This function is available to supervisor code running on any core, regardless whether
+ * safe-RTOS is configured and running on that core or not.
  */
 static inline uint32_t stm_osGetSystemTime(unsigned int idxTimer)
 {
@@ -122,7 +123,7 @@ static inline uint32_t stm_osGetSystemTime(unsigned int idxTimer)
 void stm_osInitSystemTimers(void);
 
 /**
- *   @func stm_getSystemTime
+ *   @fn stm_getSystemTime
  * Get the counter value from one of the three free running, cyclically counting system
  * timers.
  *   @return

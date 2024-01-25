@@ -127,12 +127,12 @@ void bsw_osOnRxCan(const bsw_rxCanMessage_t *pRxCanMsg)
        event to the interfacing event queue. */
     const ede_kindOfEvent_t kindOfEvent = pRxCanMsg->idxCanBus;
     assert(kindOfEvent <= BSW_CAN_BUS_0);
-    const boolean_t success = ede_postEvent( _hEventSender
-                                           , kindOfEvent
-                                           , /* senderHandleEvent */ pRxCanMsg->idxMailbox
-                                           , /* pData */ pRxCanMsg->payload
-                                           , /* sizeOfData */ pRxCanMsg->sizeOfPayload
-                                           );
+    const bool success = ede_postEvent( _hEventSender
+                                      , kindOfEvent
+                                      , /* senderHandleEvent */ pRxCanMsg->idxMailbox
+                                      , /* pData */ pRxCanMsg->payload
+                                      , /* sizeOfData */ pRxCanMsg->sizeOfPayload
+                                      );
     if(!success)
     {
         /* Count all received messages, which are lost because of queue full. */
@@ -166,7 +166,7 @@ bool bsw_osInitCanInterface(void)
     static char DATA_OS(heapMemoryOSForCanInterface)[SIZE_OF_HEAP_OS_FOR_CAN_INTERFACE];
     ede_memoryPool_t memoryPoolOS = EDE_INVALID_MEMORY_POOL;
     const mem_criticalSection_t mutualExclusionGuard = MEM_VOID_CRITICAL_SECTION_OBJECT;
-    boolean_t success = mem_createMemoryPool
+    bool success = mem_createMemoryPool
                                     ( &memoryPoolOS
                                     , /* pPoolMemory */ heapMemoryOSForCanInterface
                                     , /* sizeOfPoolMemory */ sizeof(heapMemoryOSForCanInterface)

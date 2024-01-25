@@ -87,8 +87,8 @@
 |=======
 |ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
 |1|PA2_J3_pin3_periodTime|uint16_t|15|6|true|0.0|511.98437551|0.015625|0.0|ms|0|false||0
-|2|PA2_J3_pin3_isNew|boolean_t|1|7|false|0.0|0.0|1.0|0.0||0|false||0
-|3|PA6_J2_pin1_isNew|boolean_t|1|16|true|0.0|0.0|1.0|0.0||0|false||0
+|2|PA2_J3_pin3_isNew|bool|1|7|false|0.0|0.0|1.0|0.0||0|false||0
+|3|PA6_J2_pin1_isNew|bool|1|16|true|0.0|0.0|1.0|0.0||0|false||0
 |4|PA6_J2_pin1_dutyTime|uint16_t|15|17|false|0.0|511.984375|0.015625|0.0|ms|0|false||0
 |5|PA2_PA6_dutyCycle|uint16_t|15|39|true|0.0|100.0|0.00390625|0.0|%|0|false||0
 |6|PA2_J3_pin3_frequency|uint16_t|15|40|true|0.0|8191.75|0.25|0.0|Hz|0|false||0
@@ -110,10 +110,10 @@
 [frame="none",width="90%",options="header"]
 |=======
 |ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
-|1|LED_2_DS10_inhibit|boolean_t|1|0|false|0.0|1.0|1.0|0.0||1|true||0
-|2|LED_4_DS11_inhibit|boolean_t|1|1|false|0.0|1.0|1.0|0.0||1|true||0
-|3|LED_5_DS5_inhibit|boolean_t|1|2|false|0.0|1.0|1.0|0.0||1|true||0
-|4|PA1_J3_pin1_inhibit|boolean_t|1|3|false|0.0|1.0|1.0|0.0||1|true||0
+|1|LED_2_DS10_inhibit|bool|1|0|false|0.0|1.0|1.0|0.0||1|true||0
+|2|LED_4_DS11_inhibit|bool|1|1|false|0.0|1.0|1.0|0.0||1|true||0
+|3|LED_5_DS5_inhibit|bool|1|2|false|0.0|1.0|1.0|0.0||1|true||0
+|4|PA1_J3_pin1_inhibit|bool|1|3|false|0.0|1.0|1.0|0.0||1|true||0
 |5|LED_2_DS10_frequency|uint16_t|10|4|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
 |6|LED_4_DS11_frequency|uint16_t|10|14|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
 |7|LED_5_DS5_frequency|uint16_t|10|24|false|2.0|1000.0|0.97752|0.0|Hz|1|true||0
@@ -321,8 +321,8 @@
 |=======
 |ID|Name|Type|No Bits|Start Bit|Motorola|Min|Max|Factor|Offset|Unit|No receivers|Received|Mux|No named values
 |1|sequenceCounter|uint8_t|3|0|false|1.0|6.0|1.0|0.0||0|false||0
-|2|belowMinSpeedOfRotation|boolean_t|1|3|false|0.0|1.0|1.0|0.0||0|false||0
-|3|aboveMaxSpeedOfRotation|boolean_t|1|4|false|0.0|1.0|1.0|0.0||0|false||0
-|4|belowMinPower|boolean_t|1|5|false|0.0|1.0|1.0|0.0||0|false||0
-|5|aboveMaxPower|boolean_t|1|6|false|0.0|1.0|1.0|0.0||0|false||0
+|2|belowMinSpeedOfRotation|bool|1|3|false|0.0|1.0|1.0|0.0||0|false||0
+|3|aboveMaxSpeedOfRotation|bool|1|4|false|0.0|1.0|1.0|0.0||0|false||0
+|4|belowMinPower|bool|1|5|false|0.0|1.0|1.0|0.0||0|false||0
+|5|aboveMaxPower|bool|1|6|false|0.0|1.0|1.0|0.0||0|false||0
 |=======

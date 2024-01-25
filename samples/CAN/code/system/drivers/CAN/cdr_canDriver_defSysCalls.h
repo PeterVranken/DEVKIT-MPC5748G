@@ -5,7 +5,7 @@
  * Definition of system call interface of CAN I/O driver. Mostly, the implementation of the
  * system calls is found in file cdr_canDriverAPI.c.
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

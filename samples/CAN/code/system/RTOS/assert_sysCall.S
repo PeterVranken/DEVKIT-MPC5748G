@@ -74,7 +74,7 @@
 
     .macro      macroAssert_scBscHdlr_assert_func core
 /**
- *   @func assert_scBscHdlr_assert_func_core0/_core1/_core2
+ *   @fn assert_scBscHdlr_assert_func_core0/_core1/_core2
  * Implementation of the assert function, which is called by the C assert macro if the
  * condition fails. The implementation here is made as basic system call handler. This
  * permits offering the service to user and operating system code.\n

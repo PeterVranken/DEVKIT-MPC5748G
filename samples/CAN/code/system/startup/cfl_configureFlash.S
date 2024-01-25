@@ -2,7 +2,7 @@
  * @file cfl_configureFlash.S
  * VLE assembler implementation of flash controller initialization.
  *
- * Copyright (C) 2017-2018 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -37,7 +37,7 @@
 
 
 /**
- *   @func cfl_configureFlash
+ *   @fn cfl_configureFlash
  * Access the flash memory controller and select the optimal strategy. This affects the
  * number of wait states, port usage (data versus instruction fetches) and pre-fetch
  * strategies.\n

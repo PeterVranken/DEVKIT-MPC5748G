@@ -11,7 +11,9 @@
  *
  *   System configuration and initialization:
  *
- *     rtos_osCreateEvent
+ *     rtos_osCreateEventProcessor
+ *     rtos_osCreateEvent (deprecated alias of rtos_osCreateEventProcessor)
+ *     rtos_osCreateSwTriggeredEventProcessor
  *     rtos_osRegisterInitTask
  *     rtos_osRegisterUserTask
  *     rtos_osRegisterOSTask
@@ -20,17 +22,23 @@
  *     rtos_osGrantPermissionRunTask
  *     rtos_osGrantPermissionSuspendProcess
  *     rtos_osInitKernel
- *   
+ *
  *   Control tasks and processes:
  *
- *     rtos_osTriggerEvent
- *     rtos_triggerEvent (inline)
+ *     rtos_osSendEvent
+ *     rtos_osTriggerEvent (deprecated alias of rtos_osSendEvent)
+ *     rtos_sendEvent (inline)
+ *     rtos_triggerEvent (deprecated alias of rtos_sendEvent)
+ *     rtos_osSendEventCountable
+ *     rtos_sendEventCountable (inline)
+ *     rtos_osSendEventMultiple
+ *     rtos_sendEventMultiple (inline)
  *     rtos_osRunTask (inline)
  *     rtos_runTask (inline)
  *     rtos_terminateTask (inline)
  *     rtos_osSuspendProcess
  *     rtos_suspendProcess (inline)
- * 
+ *
  *   Critical sections:
  *
  *     rtos_osSuspendAllInterrupts (inline)
@@ -41,8 +49,8 @@
  *     rtos_osResumeAllTasksByPriority
  *     rtos_suspendAllTasksByPriority
  *     rtos_resumeAllTasksByPriority
- * 
- *   System call interface: 
+ *
+ *   System call interface:
  *
  *     rtos_systemCall
  *     rtos_osSystemCallBadArgument
@@ -56,7 +64,7 @@
  *     rtos_getCoreStatusRegister
  *     rtos_osGetAllInterruptsSuspended (inline)
  *     rtos_isProcessSuspended
- * 
+ *
  *   Diagnostic interface:
  *
  *     rtos_getNoActivationLoss
@@ -64,7 +72,7 @@
  *     rtos_getNoTaskFailure
  *     rtos_getStackReserve
  *
- * Copyright (C) 2017-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -88,6 +96,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <assert.h>
 
 #include "MPC5748G.h"
 #include "typ_types.h"
@@ -105,7 +114,7 @@
     region descriptors in MMU and MPU. Four processes can be comfortably supported with
     enough descriptors each. Having less regions per process is possible with reduced
     programming comfort and so we could have more processes even without changing the
-    run-time code (i.e. implementation of dynamic change of regions). However, the aimed
+    run-time code (i.e., implementation of dynamic change of regions). However, the aimed
     use cases of this RTOS, applications with higher safety integrity level, can be handled
     with two or three processes so that pre-configured four should always be fine.\n
       The big advantage of having a fixed number of processes is the avoidance of
@@ -118,11 +127,11 @@
 /** The number of cores in the MCU and the maximum number of cores that can run the RTOS.
     If an MCU derivative should have a deviating number of cores then a source code
     migration is required. This is not a variable configuration setting. */
-#define RTOS_NO_CORES           3
+#define RTOS_NO_CORES               3
 
 /** This event ID is returned if creation of a new event is impossible. The ID is unusable,
     no task can be created specifying this event ID. */
-#define RTOS_INVALID_EVENT_ID       (RTOS_MAX_NO_EVENTS)
+#define RTOS_INVALID_EVENT_PROC_ID  (RTOS_MAX_NO_EVENT_PROCESSORS)
 
 /** Deadline monitoring for tasks is supported up to a task maximum execution time of this
     number of Microseconds: (2^31-1)*1e6/f_c, f_c is 80e6 (clock rate of STM timers).\n
@@ -131,11 +140,11 @@
 #define RTOS_TI_DEADLINE_MAX_IN_US  26843545
 
 /** An RTOS event can normally be triggered by user tasks belonging to a process of
-    sufficient privileges. See field \a minPIDToTriggerThisEvent of struct \a
-    rtos_eventDesc_t. If it should not be accessible even by the process of highest
-    privileges than #RTOS_EVENT_NOT_USER_TRIGGERABLE can be specified for \a
-    minPIDToTriggerThisEvent. */
-#define RTOS_EVENT_NOT_USER_TRIGGERABLE ((RTOS_NO_PROCESSES)+1u)
+    sufficient privileges. See argument \a minPIDToTriggerThisEvProc of
+    rtos_osCreateEventProcessor(). If it should not be accessible even by the process of
+    highest privileges than #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE can be specified for \a
+    minPIDToTriggerThisEvProc. */
+#define RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE    ((RTOS_NO_PROCESSES)+1u)
 
 /** The number of different kinds of process errors, which let to task abortion. */
 #define RTOS_NO_ERR_PRC                 13
@@ -198,13 +207,11 @@
 /** Helper for data initialization: Task time budgets are internally represented in STM
     counter ticks. Using this macro one can specify it more conveniently in Milliseconds.
     The macro just converts its argument from Milliseconds to clock ticks. */
-/// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
 #define RTOS_TI_MS2TICKS(tiInMs) ((tiInMs)*80000u)
 
 /** Helper for data initialization: Task time budgets are internally represented in STM(0)
     counter ticks. Using this macro one can specify it more conveniently in Microseconds. The
     macro just converts its argument from Microseconds to clock ticks. */
-/// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
 #define RTOS_TI_US2TICKS(tiInUs) ((tiInUs)*80u)
 
 /** Index of core Z4 A or value of read-only register PIR on this core and return value of
@@ -219,15 +226,53 @@
     function rtos_osGetIdxCore() if called from this core. */
 #define RTOS_CORE_Z2    2u
 
-/** \cond Two nested macros are used to convert a constant expression to a string which can be
-    used e.g. as part of some inline assembler code.\n
+/** \cond Two nested macros are used to convert a constant expression to a string which can
+    be used, e.g., as part of some inline assembler code.\n
       If for example PI is defined to be (355/113) you could use STR(PI) instead of
     "(355/113)" in the source code. ARG2STR is not called directly. */
 #define ARG2STR(x) #x
 #define STR(x) ARG2STR(x)
 /** \endcond */
 
+/** @todo Consider switching the next code block off to find deprecated code locations,
+    which require migration. */
+#if 1
+/** Backward compatibility: An alias of rtos_osCreateEventProcessor() allows using the
+    formerly used name rtos_osCreateEvent() of this API.
+      @note The use of this alias name is deprecated. Use rtos_osCreateEventProcessor()
+    instead! */
+#define rtos_osCreateEvent( pEventId                                                        \
+                          , tiCycleInMs                                                     \
+                          , tiFirstActivationInMs                                           \
+                          , priority                                                        \
+                          , minPIDToTriggerThisEvent                                        \
+                          , taskParam                                                       \
+                          )                                                                 \
+    rtos_osCreateEventProcessor( /*pEvProcId*/ (pEventId)                                   \
+                               , (tiCycleInMs)                                              \
+                               , (tiFirstActivationInMs)                                    \
+                               , (priority)                                                 \
+                               , /*minPIDToTriggerThisEvProc*/ (minPIDToTriggerThisEvent)   \
+                               , /*useCountableEvents*/ false                               \
+                               , (taskParam)                                                \
+                               )
 
+/** Backward compatibility: An alias of rtos_osSendEvent() allows using the formerly used
+    name rtos_osTriggerEvent() of this API.
+      @note The use of this alias name is deprecated. Use rtos_osSendEvent() instead! */
+# define rtos_osTriggerEvent(idEvent, taskParam)    rtos_osSendEvent(idEvent, taskParam)
+
+/** Backward compatibility: An alias of rtos_sendEvent() allows using the formerly used
+    name rtos_triggerEvent() of this API.
+      @note The use of this alias name is deprecated. Use rtos_sendEvent() instead! */
+# define rtos_triggerEvent(idEvent, taskParam)      rtos_sendEvent(idEvent, taskParam)
+
+/** Backward compatibility: An alias of #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE allows using
+    the formerly used name RTOS_EVENT_NOT_USER_TRIGGERABLE of this macro.
+      @note The use of this alias name is deprecated. Use
+    #RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE instead! */
+# define RTOS_EVENT_NOT_USER_TRIGGERABLE            (RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE)
+#endif
 /*
  * Global type definitions
  */
@@ -242,16 +287,17 @@ typedef void (*rtos_interruptServiceRoutine_t)(void);
 typedef enum rtos_errorCode_t
 {
     rtos_err_noError = 0        /// Not an error, function cuceeded
-    , rtos_err_tooManyEventsCreated /// Can't create no more than #RTOS_MAX_NO_EVENTS events
+    , rtos_err_tooManyEventsCreated /// Can't create no more than #RTOS_MAX_NO_EVENT_PROCESSORS events
     , rtos_err_invalidEventPrio /// Priority needs to be in range [1; #RTOS_MAX_LOCKABLE_TASK_PRIORITY)
     , rtos_err_badEventTiming   /// Inconsistent or bad timing configuration stated for event
     , rtos_err_eventNotTriggerable  /// Bad configuration makes event unusable
     , rtos_err_configurationOfRunningKernel /// Attempt to (re-)configure a running kernel
-    , rtos_err_badEventId       /// The ID of the event is invalid. No such event exists
+    , rtos_err_badEventProcId   /// The ID of the event is invalid. No such event exists
+    , rtos_err_badCountableTimerEventMask   /// Invalid mask specified for a countable timer event
     , rtos_err_badProcessId     /// The ID of the process is invalid. No such process exists
     , rtos_err_tooManyTasksRegistered   /// More than #RTOS_MAX_NO_TASKS registered
     , rtos_err_noEvOrTaskRegistered /// No event and/or no task defined at start of system
-    , rtos_err_eventWithoutTask /// A useless event exists, which has no task to activate
+    , rtos_err_evProcWithoutTask    /// A useless event exists, which has no task to activate
     , rtos_err_badTaskFunction  /// Bad task function NULL specified
     , rtos_err_taskBudgetTooBig     /// Task budget greater than #RTOS_TI_DEADLINE_MAX_IN_US
     , rtos_err_initTaskRedefined /// Attempt to redefine an already defined initialization task
@@ -282,7 +328,7 @@ typedef struct rtos_taskDesc_t
           In the assembler code, this field is addressed to by offset O_TCONF_pFct. */
     uintptr_t addrTaskFct;
 
-    /** Time budget for the user task in ticks of the time base (i.e. TBL or STM depending
+    /** Time budget for the user task in ticks of the time base (i.e., TBL or STM depending
         on MCU derivative). This budget is granted for each activation of the task. The
         budget relates to deadline monitoring, i.e., it is a world time budget, not an
         execution time budget.\n
@@ -310,14 +356,22 @@ typedef struct rtos_taskDesc_t
  * Global prototypes
  */
 
-/** Creation of an event. The event can be cyclically triggering or software triggerd. */
-rtos_errorCode_t rtos_osCreateEvent( unsigned int *pEventId
-                                   , unsigned int tiCycleInMs
-                                   , unsigned int tiFirstActivationInMs
-                                   , unsigned int priority
-                                   , unsigned int minPIDToTriggerThisEvent
-                                   , uintptr_t taskParam
-                                   );
+/** Creation of an event processor. The event processor can use cyclic time triggering or
+    be triggerd by software. */
+rtos_errorCode_t rtos_osCreateEventProcessor( unsigned int *pEvProcId
+                                            , unsigned int tiCycleInMs
+                                            , unsigned int tiFirstActivationInMs
+                                            , unsigned int priority
+                                            , unsigned int minPIDToTriggerThisEvProc
+                                            , bool timerUsesCountableEvents
+                                            , uint32_t timerTaskTriggerParam
+                                            );
+
+/** Creation of an event processor, which is intended for software notified events only. */
+rtos_errorCode_t rtos_osCreateSwTriggeredEventProcessor( unsigned int *pEvProcId
+                                                       , unsigned int priority
+                                                       , unsigned int minPIDToTriggerThisEvProc
+                                                       );
 
 /** Task registration for user mode or operating system initialization task. */
 rtos_errorCode_t rtos_osRegisterInitTask( int32_t (*initTaskFct)(uint32_t PID)
@@ -326,17 +380,17 @@ rtos_errorCode_t rtos_osRegisterInitTask( int32_t (*initTaskFct)(uint32_t PID)
                                         );
 
 /** Task registration for scheduled user mode tasks. */
-rtos_errorCode_t rtos_osRegisterUserTask( unsigned int idEvent
+rtos_errorCode_t rtos_osRegisterUserTask( unsigned int idEventProc
                                         , int32_t (*userModeTaskFct)( uint32_t PID
-                                                                    , uintptr_t taskParam
+                                                                    , uint32_t taskParam
                                                                     )
                                         , unsigned int PID
                                         , unsigned int tiMaxInUs
                                         );
 
 /** Task registration for scheduled operating system tasks. */
-rtos_errorCode_t rtos_osRegisterOSTask( unsigned int idEvent
-                                      , void (*osTaskFct)(uintptr_t taskParam)
+rtos_errorCode_t rtos_osRegisterOSTask( unsigned int idEventProc
+                                      , void (*osTaskFct)(uint32_t taskParam)
                                       );
 
 /** Initialize the interrupt controller INTC. */
@@ -390,7 +444,15 @@ void rtos_osGrantPermissionSuspendProcess( unsigned int pidOfCallingTask
 rtos_errorCode_t rtos_osInitKernel(void);
 
 /** Software triggered task activation. Can be called from OS context (incl. interrupts). */
-bool rtos_osTriggerEvent(unsigned int idEvent, uintptr_t taskParam);
+bool rtos_osSendEvent(unsigned int idEventProc, uint32_t taskParam);
+
+/** Software triggered task activation with countable event. Can be called from OS context
+    (incl. interrupts). */
+bool rtos_osSendEventCountable(unsigned int idEventProc, uint32_t evMask);
+
+/** Software triggered task activation with more than one occurance of a countable event.
+    Can be called from OS context (incl. interrupts). */
+bool rtos_osSendEventMultiple(unsigned int idEventProc, uint32_t evMask, uint8_t count);
 
 /** Enter critical section; partially suspend task scheduling. */
 uint32_t rtos_osSuspendAllTasksByPriority(uint32_t suspendUpToThisTaskPriority);
@@ -402,9 +464,9 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  * Priority ceiling protocol, partial scheduler lock: All tasks up to the specified task
  * priority level won't be served by the CPU. This function is intended for implementing
  * mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks,
- * which should be locked, i.e. which compete for the resource or critical section to
+ * which should be locked, i.e., which compete for the resource or critical section to
  * protect. This may still lock other, not competing tasks, but at least all non competing
- * tasks of higher priority and the interrupt handlers will still be served.\n
+ * tasks of higher priority and the interrupt handlers will be served.\n
  *   To release the protected resource or to leave the critical section, call the
  * counterpart function rtos_resumeAllTasksByPriority(), which restores the original
  * task priority level.\n
@@ -558,7 +620,7 @@ _Noreturn void rtos_osSystemCallBadArgument(void);
 
 
 /** Get the current number of failed event triggers since start of the RTOS scheduler. */
-unsigned int rtos_getNoActivationLoss(unsigned int idEvent);
+unsigned int rtos_getNoActivationLoss(unsigned int idEventProc);
 
 /** Get the number of task failures counted for the given process since start of the kernel. */
 unsigned int rtos_getNoTotalTaskFailure(unsigned int PID);
@@ -576,7 +638,7 @@ void rtos_osSuspendProcess(uint32_t PID);
 bool rtos_isProcessSuspended(uint32_t PID);
 
 /**
- *   @func rtos_getIdxCore
+ *   @fn rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning
@@ -590,7 +652,7 @@ unsigned int rtos_getIdxCore(void);
 
 
 /**
- *   @func rtos_getCoreStatusRegister
+ *   @fn rtos_getCoreStatusRegister
  * Get the value of the msr. This is an entry point to C code, which can be called from
  * supervisor and user mode.
  *   @return
@@ -615,7 +677,7 @@ uint32_t rtos_getCoreStatusRegister(void);
  *   The convenience macros #RTOS_CORE_Z4A,  #RTOS_CORE_Z4B and #RTOS_CORE_Z2 can be used
  * to evaluate the function result.
  *   @remark
- * This function may be called from all supervisor contexts, i.e. OS tasks and ISRs. A call
+ * This function may be called from all supervisor contexts, i.e., OS tasks and ISRs. A call
  * from a user task will cause an exception.
  */
 static inline unsigned int rtos_osGetIdxCore(void)
@@ -667,7 +729,7 @@ static inline unsigned int rtos_osGetIdxCore(void)
  * the use of this function from any ISR with such a high priority.
  */
 static inline int32_t rtos_osRunTask( const rtos_taskDesc_t *pUserTaskConfig
-                                    , uintptr_t taskParam
+                                    , uint32_t taskParam
                                     )
 {
     /* The function is assembler implemented, the C function is just a wrapper for
@@ -710,7 +772,7 @@ static inline int32_t rtos_osRunTask( const rtos_taskDesc_t *pUserTaskConfig
  * supervisor code will lead to a crash.
  */
 static inline int32_t rtos_runTask( const rtos_taskDesc_t *pUserTaskConfig
-                                  , uintptr_t taskParam
+                                  , uint32_t taskParam
                                   )
 {
     #define RTOS_IDX_SC_RUN_TASK    4
@@ -725,7 +787,7 @@ static inline int32_t rtos_runTask( const rtos_taskDesc_t *pUserTaskConfig
  * and from any nested sub-routine. The task execution is immediately aborted. The function
  * does not return.
  *   @param taskReturnValue
- * The task can return a value to its initiator, i.e. to the context who had applied
+ * The task can return a value to its initiator, i.e., to the context who had applied
  * rtos_osRunTask() or rtos_runTask() to create the task. The value is signed and (only)
  * the sign is meaningful to the assembly code to create/abort a task:\n
  *   The requested task abortion is considered an error and counted in the owning process
@@ -903,71 +965,184 @@ static ALWAYS_INLINE void rtos_osLeaveCriticalSection(uint32_t msr)
 
 
 /**
- * Trigger an event to activate all associated tasks. A event, which had been registered
- * with cycle time zero is normally not executed. It needs to be triggered with this
- * function in order to make its associated tasks run once, i.e. to make its task functions
- * executed once as result of this call.\n
+ * Notify an event to an event processor to let it activate all associated tasks.\n
  *   This function must only be called from user tasks, which belong to a process with
  * sufficient privileges. The operation is permitted only for tasks belonging to those
  * processes, which have an ID that is greater of equal to the minimum specified for the
  * event in question. Otherwise an exception is raised, which aborts the calling task.\n
- *   If the calling task belongs to the set of tasks associated with \a idEvent, then it'll
- * have no effect but an accounted activation loss; an event can re-triggered only after
- * all associated activations have been completed. There is no activation queuing. The
- * function returns \a false in this case.\n
+ *   If the calling task belongs to the set of tasks associated with \a idEventProc, then
+ * it'll have no effect but a recorded activation loss; an event processor can re-triggered
+ * only after all associated activations have been completed. There is no activation
+ * queuing. The function returns \a false in this case.\n
  *   Note, the system respects the priorities of the activated tasks. If a task of priority
- * higher than the activating task is activated by the triggered event then the activating
- * task is immediately preempted to the advantage of the activated task. Otherwise the
- * activated task is chained and executed after the activating task.
+ * higher than the activating task is activated by the triggered event processor then the
+ * activating task is immediately preempted to the advantage of the activated task.
+ * Otherwise the activated task is chained and executed after the activating task.
  *   @return
- * There is no activation queuing. Consequently, triggering the event can fail if at least
+ * There is no activation queuing. Consequently, notifying the event can fail if at least
  * one of the associated tasks has not yet completed after the previous trigger of the
- * event. The function returns \a false and the activation loss counter of the event is
- * incremented. (See rtos_getNoActivationLoss().) In this situation, the new trigger is
- * entirely lost, i.e. none of the associated tasks will be activated by the new trigger.
- *   @param idEvent
- * The ID of the event to activate as it had been got by the creation call for that event.
- * (See rtos_osCreateEvent().)
+ * event. The function returns \a false and the activation loss counter of the event
+ * processor is incremented. (See rtos_getNoActivationLoss().) In this situation, the new
+ * trigger is entirely lost, i.e., none of the associated tasks will be activated by the
+ * event and \a the value of taskParam won't be seen by the task functions.
+ *   @param idEventProc
+ * The ID of the event processor to activate as it had been got by the creation call for
+ * that processor. (See rtos_osCreateEventProcessor() and
+ * rtos_osCreateSwTriggeredEventProcessor().)
  *   @param taskParam
  * All associated tasks will receive this value, when they are called because of this
  * trigger.\n
  *   The value is ignored if the function returns \a false.
  *   @remark
- * The function is indented to start a non cyclic task by application software trigger but
- * can be applied to cyclic tasks, too. In which case the task function of the cyclic task
- * would be invoked once additionally. Note, that an event activation loss is not unlikely
- * in this case; the cyclic task may currently be busy.
+ * The function is indented to start a non periodoc task by application software trigger
+ * but can be applied to periodic timer tasks, too. In which case the task function of the
+ * cyclic task would be invoked once additionally. Note, that an event activation loss is
+ * not unlikely in this case; the cyclic task may currently be busy. For this purpose, the
+ * use of countable events is probably the better choice. See rtos_osSendEventCountable().
+ *   @remark
+ * Events notified with this API is called "ordinary". In most situations, the use of
+ * countable events will perform better, see rtos_osSendEventCountable(). An important
+ * exception from this are timer events for ordinary periodic tasks.
  *   @remark
  * It may look like an inconsistent API design if all associated tasks receive the same
- * value \a taskParam from the triggering event. The service could easily offer an API,
- * which provides an individual value to each associated task. The only reason not to do
- * so is the additional overhead in combination with the very few imaginable use cases.
- * In most cases an explicitly triggered event will have just one associated task; events
- * with more than one task will mostly be regular timer tasks, which make rarely use of the
- * task parameter.
+ * value \a taskParam. The service could easily offer an API, which provides an individual
+ * value to each associated task. The only reason not to do so is the additional overhead
+ * in combination with the very few imaginable use cases. In most cases an explicitly
+ * triggered event will have just one associated task; events with more than one task will
+ * mostly be regular timer tasks, which make rarely use of the task parameter.
  *   @remark
- * If \a idEvent addresses a regular, time triggered event and if triggering succeeds, then
- * the regular tasks will receive the passed value from now on. (Instead of the initial
- * value specified at event creation time, see rtos_osCreateEvent().) Note, there's likely
- * no use case for this, it's just a side effect of the implementation. However, it should
- * not do any harm, because mostly regular tasks don't make use of the task parameter and
- * mostly this service is not permitted for such events. If it could be harmful, e.g. if a
- * timer event exceptionally makes use of the task parameter, then explicit triggering of
- * the event using this service needs to be inhibitted.
- *   @remark
- * It is not forbidden but useless to let a task activate itself by triggering the event it
- * is associated with. This will have no effect besides incrementing the activation loss
- * counter for that event.
+ * It is not forbidden but useless to let a task activate itself by triggering the event
+ * processor it is associated with with this API. This will have no effect besides
+ * incrementing the activation loss counter for that event processor.
  *   @remark
  * This function must be called from the user task context only. Any attempt to use it from
  * OS code will lead to a crash.
  */
-static inline bool rtos_triggerEvent(unsigned int idEvent, uintptr_t taskParam)
+static inline bool rtos_sendEvent(unsigned int idEventProc, uintptr_t taskParam)
 {
-    #define RTOS_IDX_SC_TRIGGER_EVENT   3
-    return (bool)rtos_systemCall(RTOS_IDX_SC_TRIGGER_EVENT, idEvent, taskParam);
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
+                                , idEventProc
+                                , /* noCountableTriggers */ 0u /* 0: "old style" trigger */
+                                , /* evMaskOrTaskParam */ taskParam
+                                );
+} /* End of rtos_sendEvent */
 
-} /* End of rtos_triggerEvent */
+
+/**
+ * Notify a countable event to activate all associated tasks. Event processors can be used
+ * with countable or ordinary events. Please note, the event processor as such is neither
+ * countable nor ordinary, but it can be triggered in either way. (For ordinary, see
+ * rtos_sendEvent().)\n
+ *   For countable events, the multiplicity of notification is recorded and forwarded to
+ * the associated task functions by means of their task parameter. Effectively, this is a
+ * kind of activation queing, even if it doesn't mean that an associated task is guaranteed
+ * to become activated as often as this function is called.\n
+ *   Up to a certain maximum, the number of invocations of this function is counted and
+ * stored. The stored number is handed over as task parameter to all associated tasks, when
+ * they are activated the next time. If the event processor is idle, when this function is
+ * called, then the count is one and this is what the task functions will get. If it is not
+ * idle then it depends. If the next call(s) of this function happen before the event
+ * processor becomes idle again then the stored multiplicity is 2, 3, 4, ... As soon as the
+ * event processor becomes idle, its tasks are activated and their task parameter will
+ * carry the 2, 3, 4, ..., respectively. In this example, if the event processor becomes
+ * idle after 4 calls, then the tasks will be activated not 4 times but just once with a
+ * reported multiplicity of 4 triggers. No activation loss is recorded for the event
+ * processor, as long as the counter for storing the multiplicity of the triggers doesn't
+ * overflow.\n
+ *   Using this API for triggering an event, the associated tasks will strictly know, how
+ * many notifications of the event occurred - even if the number of task activations may be
+ * lesser.\n
+ *   Note, the system respects the priorities of the activated tasks. If a task of priority
+ * higher than the activating task is activated by the notified event then the activating
+ * task is immediately preempted to the advantage of the activated task. Otherwise the
+ * activated task is chained and executed after the activating task.
+ *   @return
+ * Notifying the countable event fails if the counter for the multiplicity of the event
+ * overflows. The implementation limit of this counter is determined by the mask \a evMask.
+ * If n bits are set in \a evMask then the function may be called up to 2^n-1 times while
+ * the event processor is not idle. The 2^n-th call will be first one returning \a false
+ * and only now, an activation loss will be recorded for the event processor.\n
+ *   As long as the caller gets \a true, he can be sure that the multiplicity of all
+ * notifications so far will be properly delivered to the associated task functions.
+ *   @param idEventProc
+ * The ID of the event processor to activate as it had been got by the creation call for
+ * that processor. (See rtos_osCreateEventProcessor() and
+ * rtos_osCreateSwTriggeredEventProcessor().)
+ *   @param evMask
+ * Definition of the bit mask designating the notified event. See above for details.
+ *   @remark
+ * The function is indented to start a non periodic task by application software trigger
+ * but can be applied to periodic timer tasks, too. In which case the task function of the
+ * cyclic task would be invoked once additionally. Note, that a non-idle event processor is
+ * not unlikely in this case; \a evMask should spent a sufficient number of bits to
+ * temporarily store the multiplicity of notifications-while-non-idle.
+ *   @remark
+ * This function must be called from the user task context only. Any attempt to use it from
+ * OS code will lead to a crash.
+ */
+static inline bool rtos_sendEventCountable(unsigned int idEventProc, uint32_t evMask)
+{
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
+                                , idEventProc
+                                , /* noCountableTriggers */ 1u
+                                , /* evMaskOrTaskParam */ evMask
+                                );
+} /* rtos_sendEventCountable */
+
+
+
+/**
+ * A countable event can be notified with multiplicity greater than one. If the event
+ * processor is idle then the associated tasks are activated and they will receive the
+ * multiplicity \a count in their task parameter. If the event processor is not idle then
+ * the accumulator for the event will be incremented either by \a count or up to its
+ * implementation maximum, whatever comes first. The resulting, accumulated count will be
+ * forwarded to the task functions as soon as the processor becomes idle again.
+ *   @return
+ * Get \a false if the accumulator for the event overflows (and saturates at its maximum).
+ * Get \a true otherwise.
+ *   @param idEventProc
+ * The ID of the event processor to activate as it had been got by the creation call for
+ * that processor. (See rtos_osCreateEventProcessor() and
+ * rtos_osCreateSwTriggeredEventProcessor().)
+ *   @param evMask
+ * Definition of the bit mask designating the notified event. See rtos_sendEventCountable()
+ * for details.
+ *   @param count
+ * The notified multiplicity of the event.\n
+ *   The complexity of the operation is O(count), which means that it is intended for
+ * rather small multiplicities. To avoid undesired blocking of the function due to
+ * excessive high multiplicities, the implementation type for the argument has been chosen
+ * 8 Bit, which strictly limits the range of \a count to 1..255.\n
+ *   \a count = 0 is not allowed and caught by assertion.
+ *   @remark
+ * The behavior of this function is similar to calling rtos_sendEventCountable() for \a
+ * count times. The result of rtos_sendEventMultiple() would then be the result of the
+ * very last call of rtos_sendEventCountable().
+ *   @remark
+ * This function must be called from the user task context only. Any attempt to use it from
+ * OS code will lead to a crash.
+ */ 
+static inline bool rtos_sendEventMultiple(unsigned int idEventProc, uint32_t evMask, uint8_t count)
+{
+    /* This function must not be used with an increment of zero counts: This is useless and
+       therefore internally used as flag to say "old style" trigger, i.e., other behavior
+       and deviating interpretation of evMask.
+         Note, this situation is not caught by the system call implementation; if it
+       happens, it is a "normal" user code error but it doesn't break the safety concept.
+       The system call performs without a safety risk, only the user code's behavior will
+       be different to what's expected. */
+    assert(count > 0u);
+
+    #define RTOS_IDX_SC_SEND_EVENT   3
+    return (bool)rtos_systemCall( RTOS_IDX_SC_SEND_EVENT
+                                , idEventProc
+                                , /* noCountableTriggers */ count
+                                , /* evMaskOrTaskParam */ evMask
+                                );
+} /* rtos_sendEventMultiple */
 
 
 /**
@@ -1015,7 +1190,7 @@ static inline bool rtos_checkUserCodeReadPtr(const void *address, size_t noBytes
 
 /**
  * System call to suspend a process. All currently running tasks belonging to the process
- * are aborted and the process is stopped forever (i.e. there won't be further task starts
+ * are aborted and the process is stopped forever (i.e., there won't be further task starts
  * or I/O driver callback invocations).\n
  *   Suspending a process of PID i is permitted only to processes of PID j>i.
  *   @param PID

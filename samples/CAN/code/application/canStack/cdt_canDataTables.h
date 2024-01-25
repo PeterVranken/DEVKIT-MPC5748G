@@ -11,7 +11,7 @@
  * This file has been created with comFramework - codeGenerator version 1.11.3,
  * see http://sourceforge.net/projects/comframe/
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -104,7 +104,7 @@ typedef struct cdt_canSignal_t
     unsigned int idxMsg;
 
     /** Reference to containg CAN message: Table of Rx or Tx messages? */
-    boolean_t isReceived;
+    bool isReceived;
 
     /** Getter for signal: Has a signal independent, generic prototype and allows to read
         the signal value from the global API as uniform type \a float. */

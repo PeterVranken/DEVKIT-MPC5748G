@@ -431,7 +431,7 @@ void rtos_osRegisterInterruptHandler( const rtos_interruptServiceRoutine_t pInte
     /* Set the function pointer in the ISR Handler table. */
     rtos_INTCInterruptHandlerAry[vectorNum] = pDecoratedInterruptHandler;
 
-    /* Set priority and core in the PSR. The use case of signalling one and the same IRQ to
+    /* Set priority and core in the PSR. The use case of signaling one and the same IRQ to
        one and the same ISR on different cores at a time is supported by or'ing the core
        flags. The previous core is however dropped if it is just the initial registration of
        the dummy handler. */

@@ -26,7 +26,7 @@ delimiters "<", ">"
 // names are barely used. This is supported by a simple translation table.
 baseTypeMap ::=
 [
-    "bool_t"   : "boolean_t",
+    "bool_t"   : "bool",
     "uint8_t"  : "uint8_t",
     "uint16_t" : "uint16_t",
     "uint32_t" : "uint32_t",

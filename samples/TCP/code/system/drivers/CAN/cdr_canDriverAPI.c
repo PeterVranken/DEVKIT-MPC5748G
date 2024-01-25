@@ -7,7 +7,7 @@
  * don't conflict with the memory protection concept and which may thus be called from user
  * and OS contexts.
  *
- * Copyright (C) 2020-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -23,7 +23,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /* Module interface
- *   cdr_getRxPollingAPIBuffer
  *   cdr_scFullHdlr_makeMailboxReservation
  *   cdr_scSmplHdlr_sendMessage
  *   cdr_getRxPollingAPIBuffer
@@ -327,19 +326,19 @@ uint32_t cdr_scSmplHdlr_sendMessage( uint32_t PID
  * hindered, too.\n
  *   API buffers are dedicated to Rx mailboxes, which are configured for polling. The
  * reference stays always valid and typical client code will call this function only once
- * and save an reuse the got reference.\n
+ * and save and reuse the got reference.\n
  *   The flow to poll an Rx message will look like this:\n
  *   - The caller's initialization code will invoke cdr_makeMailboxReservation() to
  *     associate a CAN message (by CAN ID) with a particular mailbox. The chosen mailbox
  *     needs to have the required privileges for the given user process. This is a matter
- *     of driver configuration and can of course not be affected by the caller\n
+ *     of driver configuration and can of course not be affected by the caller.\n
  *   - The caller's initialization code will call this function and store the received
- *     pointer to the API buffer\n
+ *     pointer to the API buffer.\n
  *   - Cyclically, the caller will invoke cdr_readMessage() to check if new data has been
  *     received. cdr_readMessage() is invoked with the same device index and mailbox handle
- *     as this function\n
+ *     as this function.\n
  *   - Any time the reponse from cdr_readMessage() is other than cdr_errApi_rxMailboxEmpty
- *     the caller will fetch DLC, payload and Rx time stamp via the stored pointer
+ *     the caller will fetch DLC, payload and Rx time stamp via the stored pointer.
  *   @return
  * Get the address of the API buffer to use for the given mailbox. If the arguments are in
  * range and if the addressed mailbox is not obviously unusable for the purpose, the
