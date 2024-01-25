@@ -48,11 +48,20 @@
     initializer expression for an array of six integers. */
 #define NIF_MAC_ADDR_ENET1                  {0x11,0x22,0x33,0x44,0x55,0x66}
 
-/* IP addresses, etc., for Ethernet interface ENET0. */
-#define NIF_NET_IF_HAS_DHCP_ENET0           false
-#define NIF_NET_IF_HAS_AUTO_IP_ENET0        false
-#define NIF_NET_IF_IP_ADDR_ENET0            {192,168,1,200}
-#define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,255,0}
+/* IP addresses, etc., for Ethernet interface ENET0.
+     APIPA or AUTO_IP: Requires NIF_NET_IF_HAS_AUTO_IP_ENET0=true (below) and LWIP_AUTOIP=1
+   (lwipopts.h). Should be used together with DHCP, but this is not a must. If enabled then
+   the network, which the DEVKIT-MPC5748G is connected to, needs to have the network ID
+   mask 255.255.0.0 and the network ID always is 169.254. See, e.g.,
+   https://manuals.konicaminolta.eu/ineo-4000P-4700P/EN/ntwk_guide/what-is-auto-ip-topic.html
+   (visited 25.1.2023). On a Windows machine, the needed network settings can be achieved
+   by checking radio button "Obtain an IP address automatically" in the property dialog of
+   the IP4 protocol settings for the given Ethernet adapter.
+     DHCP: Requires NIF_NET_IF_HAS_DHCP_ENET0=true (below) and LWIP_DHCP=1 (lwipopts.h). */
+#define NIF_NET_IF_HAS_DHCP_ENET0           true
+#define NIF_NET_IF_HAS_AUTO_IP_ENET0        true
+#define NIF_NET_IF_IP_ADDR_ENET0            {169,254,1,200}
+#define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,0,0}
 #define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {192,168,1,1}
 
 /* IP addresses, etc., for Ethernet interface ENET1. */

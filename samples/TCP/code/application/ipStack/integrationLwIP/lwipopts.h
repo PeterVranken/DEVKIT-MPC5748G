@@ -407,7 +407,7 @@
 /**
  * LWIP_DHCP==1: Enable DHCP module.
  */
-#define LWIP_DHCP                       0
+#define LWIP_DHCP                       1
 
 /*
    ------------------------------------
