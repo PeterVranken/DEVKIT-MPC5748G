@@ -8,7 +8,7 @@
  * the external code; the integration of the component into a given, real environment will
  * require a suitable, appropriate and specific implementation.
  *
- * Copyright (C) 2021-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -222,7 +222,7 @@ typedef struct ede_mapSenderEvHandleToIdx_t
      *   Use cases: It's either the zero based index of a registered event source or the
      * zero based index of a sender's port.
      *   @remark
-     * This function is called in the system initialization phase, i.e. in a single
+     * This function is called in the system initialization phase, i.e., in a single
      * threaded, still race condition free context.
      */
     bool (*addKeyValuePair)( uintptr_t hInstance
@@ -356,7 +356,7 @@ typedef struct ede_eventSenderPort_t
      * reuse one and the same buffer space for all cycles.
      *   @return
      * The returned pointer points to some memory space, capable of holding an event with
-     * \a sizeOfPayload Bytes of payload, i.e. at least (sizeof(ede_externalEvent_t) + \a
+     * \a sizeOfPayload Bytes of payload, i.e., at least (sizeof(ede_externalEvent_t) + \a
      * sizeOfPayload) Byte of space.\n
      *   The buffer is reserved to the caller until the subsequent use of the other method
      * submitBuffer().
@@ -428,7 +428,7 @@ typedef struct ede_eventReceiverPort_t
      * of the event dispatching mechanism and depent on the intended use cases.\n
      *   The data, the returned pointer points to shall be valid for reading until the
      * other method freeBuffer() is invoked. The implementation may assume, that readBuffer()
-     * and freeBuffer() are called strictly alternatingly; it don't need to allow fetching
+     * and freeBuffer() are called strictly alternatingly; it doesn't need to allow fetching
      * several buffers before freeing the first of them.\n
      *   The method returns NULL if there is currently no event to deliver. In this case
      * freeBuffer() must not be used later.

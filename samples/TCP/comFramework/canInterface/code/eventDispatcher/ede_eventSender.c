@@ -3,7 +3,7 @@
  * Implementation of the event sender. Any number of senders can be created and they can be
  * flexibly connected to an unrelated set of dispatchers. n:m connectivity is supported.
  *
- * Copyright (C) 2021-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2021-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -20,18 +20,16 @@
  */
 /* Module interface
  *   ede_createSender
+ *   ede_getPortIndex
  *   ede_postEvent
  *   ede_postEventToPort
+ *   ede_allocEventAtPort
+ *   ede_submitEventToPort
+ *   ede_setKindOfEvent (inline)
  *   ede_getNoSenderPortBlockedEvents
  * Local functions
  */
 
-/** @todo The API of a sender port splits sending a data packet into buffer allocation and
-    submission. There are a lot of use cases, where this two-step paradigm saves us payload
-    copying. (Data can instead be directly produced inside the allocated buffer.) This
-    advantage is lost when using the sender object, which offers just the one-step "post".
-    The two-step approach should become an optionally applied additional sender API. */
-    
 /*
  * Include files
  */
@@ -141,7 +139,7 @@ typedef struct ede_eventSender_t
  * sender object.\n
  *   The memory dealt out by this pool needs to grant write-access to the context that runs
  * the event posting process, i.e., the process, which is going to regularly call
- * ede_sendEvent() for the here created sender object. All other contexts (e.g. dispatchers
+ * ede_sendEvent() for the here created sender object. All other contexts (e.g., dispatchers
  * or other senders) don't need access to the memory.
  *   @remark
  * The call of this function has to be done in a race condition free environment, prior to
@@ -203,6 +201,75 @@ bool ede_createSender( ede_handleSender_t * const pHandleSender
 
 
 
+/**
+ * Find the port of a sender object, which is associated with an event about to be posted.
+ * The association is made using the map object, which has been provided in the constructor
+ * of the sender. (At the same time the mapping, which is implicitly used by
+ * ede_postEvent().) The explicit call of this function may be useful if the two-step
+ * method for posting an event is applied, i.e., using ede_allocEventAtPort() and
+ * ede_submitEventToPort() instead of ede_postEvent() or ede_postEventToPort().
+ *   @return
+ * The port of the sender object, which is associated with the given event, is returned by
+ * zero based index. The function returns UINT_MAX if not suitable port could be
+ * identified.
+ *   @param hSender
+ * The sender object to use. Has been created before by ede_createSender().
+ *   @param kindOfEvent
+ * The kind of event. It is an enumeration, which is meaningless to the sender or
+ * dispatcher object. Which values are passed is entirely in the scope of the integration
+ * code, which defines both, the event reporting interrupts and the client code, which
+ * eventually evaluates the transmitted events. In the case of CAN communication, this will,
+ * e.g., be the CAN message reception event.
+ *   @param senderHandleEvent
+ * The event's handle as used (and issued) by the external integration code. In the case of
+ * CAN communication, this will, e.g., be the operating system's handle of a registered CAN
+ * message.
+ */
+unsigned int ede_getPortIndex( ede_eventSender_t * const hSender
+                             , ede_kindOfEvent_t kindOfEvent
+                             , ede_senderHandleEvent_t senderHandleEvent
+                             )
+{
+    if(hSender->mapSdrEvHdlToEdePortIdx.getValue != NULL)
+    {
+        /* The sender object has a map, so apply the mapping in order to find the port the
+           event is related to. */
+        unsigned int idxPort;
+        if(hSender->mapSdrEvHdlToEdePortIdx.getValue
+                                               ( hSender->mapSdrEvHdlToEdePortIdx.hInstance
+                                               , &idxPort
+                                               , kindOfEvent
+                                               , senderHandleEvent
+                                               )
+          )
+        {
+            return idxPort;
+        }
+        else
+        {
+            /* The map doesn't know the event. This is normally an implementation error in
+               the external code. */
+            return UINT_MAX;
+        }
+    }
+    else
+    {
+        /* No map: Default mapping means unconditionally using the only port of a sender. */
+        if(hSender->noPorts == 1u)
+            return 0u;
+        else
+        {
+            /* Here, we have a configuration error as the sender has more than one port but
+               no map is specified. This points to an implementation error in the external
+               code. We can't take a decision. */
+            EDE_ASSERT(false);
+            return UINT_MAX;
+        }
+    }
+} /* ede_getPortIndex */
+
+
+
 
 /**
  * An event is posted. It is sent via the associated sender's port.\n
@@ -235,11 +302,11 @@ bool ede_createSender( ede_handleSender_t * const pHandleSender
  * The kind of event. It is an enumeration, which is meaningless to the sender or
  * dispatcher object. Which values are passed is entirely in the scope of the integration
  * code, which defines both, the event reporting interrupts and the client code, which
- * eventually evaluates the transmitted events. In the case of CAN communication, this will
- * e.g. be the CAN message reception event.
+ * eventually evaluates the transmitted events. In the case of CAN communication, this will,
+ * e.g., be the CAN message reception event.
  *   @param senderHandleEvent
  * The event's handle as used (and issued) by the external integration code. In the case of
- * CAN communication, this will e.g. be the operating system's handle of a registered CAN
+ * CAN communication, this will , e.g., be the operating system's handle of a registered CAN
  * message.
  *   @param pData
  * A pointer to some event data, which is meaningless to the sender and dispatcher object.
@@ -266,41 +333,10 @@ bool ede_postEvent( ede_eventSender_t * const hSender
                   , unsigned int sizeOfData
                   )
 {
-    /* Apply the (external) mapping in order to find the frame the event is related to. */
-    unsigned int idxPort;
-    if(hSender->mapSdrEvHdlToEdePortIdx.getValue != NULL)
+    /* Apply the (external) mapping in order to find the port the event is related to. */
+    const unsigned int idxPort = ede_getPortIndex(hSender, kindOfEvent, senderHandleEvent);
+    if(idxPort != UINT_MAX)
     {
-        if(!hSender->mapSdrEvHdlToEdePortIdx.getValue
-                                                ( hSender->mapSdrEvHdlToEdePortIdx.hInstance
-                                                , &idxPort
-                                                , kindOfEvent
-                                                , senderHandleEvent
-                                                )
-          )
-        {
-            /* The external map doesn't know the event. This is normally an implementation
-               error in the external code and we could even have an assertion here.
-               However, the mapping has been specified tolerant, only the event is lost. */
-            /// @todo Should this be counted like a lost event due to buffer full?
-            //EDE_ASSERT(false);
-            return false;
-        }
-    }
-    else
-    {
-        /* Default mapping means unconditionally using the only port of a sender. */
-        idxPort = 0u;
-                                          
-        if(hSender->noPorts > 1u)
-        {
-            /* Here, we have a configuration error as the sender has more than one port but
-               no map is specified. This points to an implementation error in the external
-               code. */
-            EDE_ASSERT(false);
-            return false;
-        }
-    }
-
     return ede_postEventToPort( hSender
                               , idxPort
                               , kindOfEvent
@@ -308,6 +344,14 @@ bool ede_postEvent( ede_eventSender_t * const hSender
                               , pData
                               , sizeOfData
                               );
+    }
+    else
+    {
+        /* The sender's map doesn't know the event. This is normally an implementation
+           error in the external code and we could even have an assertion here. However,
+           the mapping has been specified tolerant and only the event is lost. */
+        return false;
+    }
 } /* ede_postEvent */
 
 
@@ -331,7 +375,7 @@ bool ede_postEvent( ede_eventSender_t * const hSender
  * dispatcher engine.
  *   @param senderHandleEvent
  * The event's handle as used (and issued) by the external integration code system. In the
- * case of CAN communication, this will e.g. be the operating system's handle of a
+ * case of CAN communication, this will , e.g., be the operating system's handle of a
  * registered CAN message.
  *   @param pData
  * A pointer to some event data. It is delivered to the dispatcher as part of the event.
@@ -348,10 +392,84 @@ bool ede_postEventToPort( ede_eventSender_t * const hSender
                         , unsigned int sizeOfData
                         )
 {
+    /* Check if there's still room in the connector element and make a reservation for an
+       event of needed size if so. */
+    ede_externalEvent_t *pEvent;
+    void * const pDest = ede_allocEventAtPort(&pEvent, hSender, idxPort, sizeOfData);
+    if(pDest != NULL)
+    {
+        /* Fill in the fields and copy the payload of the event. */
+        ede_setKindOfEvent(pEvent, kindOfEvent, senderHandleEvent);
+        memcpy(pDest, pData, sizeOfData);
+
+        /* Signal the new event to the far receiver. pEvent is invalid from now on. */
+        ede_submitEventToPort(hSender, idxPort);
+
+        return true;
+    }
+    else
+    {
+        /* Connector element is blocked this time. The error event has been counted in the
+           port object. */
+        return false;
+    }
+} /* ede_postEventToPort */
+
+
+
+/**
+ * Posting an event can be done in two steps: First the allocation or reservation of the
+ * needed memory space and later, after filling the memory appropriately, the submission of
+ * the event. The two-step approach is an alternative to the use of either ede_postEvent()
+ * or ede_postEventToPort(), which allows the implementation of zero-copy interfaces in
+ * some situations.\n
+ *   This function implements the reservation of the memory space.
+ *   @return 
+ * The address, where to put the event's payload data, is returned. Normally, this will
+ * just be the address of the event's field \a dataAry but it may be another, port decided
+ * address. (See the sender port's field \a requiresDataByReference for details.)\n
+ *   The function returns NULL if the port can't provide the needed memory. Almost
+ * always, this will be due to a temporary busy or queue-full state of the port. No event
+ * can currently be posted and the function call has no effect besides counting the failure
+ * in the port object. In particular, ede_submitEventToPort() must not be called in this
+ * case.\n
+ *   See field \a dataAry of type \a ede_externalEvent_t for details about the alignment of
+ * the returned pointer. 
+ *   @param[out] ppEvent
+ * If the function doesn't return NULL then a still empty, not yet submitted event object
+ * is returned by reference in * \a ppEvent. The ownership of the event object is now at
+ * the caller. The caller has any time to fill the event object until he submits it.\n
+ *   * \a ppEvent is undefined if the function returns NULL.
+ *   @param hSender
+ * The sender object to use. Has been created before by ede_createSender().
+ *   @param idxPort
+ * The port by zero based index, which the event is going to be posted to. This port will
+ * provide the memory space for the returned event object.\n
+ *   The specified number must not be greater or equal to argument \a noPorts of the
+ * constructor call, which yielded \a hSender.\n
+ *   Note, if applicable, the required port index could be figured out using
+ * ede_getPortIndex().
+ *   @param sizeOfData
+ * The number of payload data bytes, which the returned event needs to have at least. This
+ * number of Byte can be safely written to where the function return value points.
+ *   @remark
+ * Using the pair of ede_allocEventAtPort() and ede_submitEventToPort() has race conditions
+ * with using ede_postEvent() and ede_postEventToPort(). The three ways of doing can be
+ * used alternatingly but not in an overlapping or concurrent way. In particular, if
+ * ede_allocEventAtPort() succeeded to return an event, then ede_submitEventToPort() needs
+ * to be called for that event prior to the next use of either ede_postEvent() or
+ * ede_postEventToPort().
+ */ 
+void * ede_allocEventAtPort( ede_externalEvent_t ** const ppEvent
+                           , ede_eventSender_t * const hSender
+                           , unsigned int idxPort
+                           , unsigned int sizeOfData
+                           )
+{
     if(idxPort >= hSender->noPorts)
     {
         EDE_ASSERT(false);
-        return false;
+        return NULL;
     }
 
     ede_eventSenderPort_t const *pPort = &hSender->portAry[idxPort].port;
@@ -360,39 +478,67 @@ bool ede_postEventToPort( ede_eventSender_t * const hSender
     ede_externalEvent_t * const pEvent = pPort->allocBuffer(pPort->hInstance, sizeOfData);
     if(pEvent != NULL)
     {
-        /* Create the event by coying the data. */
-        pEvent->kindOfEvent = kindOfEvent;
-        pEvent->senderHandleEvent = senderHandleEvent;
-        
-        void *pDest = &pEvent->dataAry[0];
+        /* Get the address of the event's payload data. */
+        void *pData = &pEvent->dataAry[0];
         if(pPort->requiresDataByReference)
         {
             /* The port tells us by a pointer returned in field dataAry in the event, where
                to put the payload data. */
-            memcpy(&pDest, pDest, sizeof(pDest));
+            pData = *(void**)pData;
+            assert(pData != NULL);
         }
-        memcpy(pDest, pData, sizeOfData);
 
-        /* Signal the new event to the receiver. pEvent is invalid from now on. */
-        pPort->submitBuffer(pPort->hInstance);
-        return true;
+        *ppEvent = pEvent;
+        return pData;
     }
     else
     {
         /* Connector element is blocked this time. Count this error event. The counter is
-           specified to wrap around in order to facilitate the evaluation (e.g. error rates
+           specified to wrap around in order to facilitate the evaluation (e.g., error rates
            by regular delta calculation). */
         ++ hSender->portAry[idxPort].noErrorsPortBlocked;
-        return false;
+        return NULL;
     }
-} /* ede_postEventToPort */
+} /* ede_allocEventAtPort */
 
+
+
+/**
+ * Posting an event using the two-step approach: Submit the finalized event. See
+ * ede_allocEventAtPort() for more details.\n
+ *   Caution: The ownership of the event ends with entry into this function. The event
+ * object and none of its fields must be touched any more.
+ *   @param hSender
+ * The sender object to use. Has been created before by ede_createSender().
+ *   @param idxPort
+ * The port by zero based index, which the event is submitted to.\n
+ *   Caution: This needs to be the same port as specified in the earlier call of
+ * ede_allocEventAtPort(), when getting the event object. It would be disastrous to submit
+ * an event to another port. It would result in unpredictable behavior reaching from memory
+ * leak till corrupted memories.
+ *   @remark
+ * The function implicitly operates on the very object, which had been got with the last
+ * recent call of ede_allocEventAtPort(), which had been made for port \a idxPort.
+ */ 
+void ede_submitEventToPort(ede_eventSender_t * const hSender, unsigned int idxPort)
+{
+    /* Any kind of issue with the port index means a non-healable, fatal programming error
+       with undefined consequences. At least a memory leak but can also lead to memory
+       corruption - depends on the port implementation. We can catch only the most evident
+       problem. */
+    assert(idxPort < hSender->noPorts);
+
+    /* Signal the new event to the receiver. pEvent is invalid from now on. */
+    ede_eventSenderPort_t const *pPort = &hSender->portAry[idxPort].port;
+    pPort->submitBuffer(pPort->hInstance);
+
+} /* ede_submitEventToPort */
 
 
 
 /**
  * Get the number of recorded port-blocked events, i.e. the number of lost events due to an
- * currently unavailable port, e.g. because of an overfull queue.
+ * currently unavailable port, e.g., because of an overfull queue.
  *   @return
  * Get the number, which should should rise very slowly or not at all in case of a well
  * designed implementation of the port interface. The counter for port-blocked events wraps

@@ -8,7 +8,7 @@
  * context on the same or another core and without fearing difficult to handle race
  * conditions.
  *
- * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -1194,7 +1194,10 @@ void ede_dispatcherMain( ede_handleConstDispatcherSystem_t const hDispatcherSyst
             event.kindOfEvent = pExternalEvent->kindOfEvent;
 
             if(portProvidesDataByRef)
-                memcpy(&event.pData, &pExternalEvent->dataAry[0], sizeof(const void*));
+            {
+                const void * const * const ppV = (const void**)&pExternalEvent->dataAry[0];
+                event.pData = *ppV;
+            }
             else
                 event.pData = (const void*)&pExternalEvent->dataAry[0];
 
