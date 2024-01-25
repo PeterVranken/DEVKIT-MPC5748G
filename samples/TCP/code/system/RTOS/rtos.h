@@ -72,7 +72,7 @@
  *     rtos_getNoTaskFailure
  *     rtos_getStackReserve
  *
- * Copyright (C) 2017-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -114,7 +114,7 @@
     region descriptors in MMU and MPU. Four processes can be comfortably supported with
     enough descriptors each. Having less regions per process is possible with reduced
     programming comfort and so we could have more processes even without changing the
-    run-time code (i.e. implementation of dynamic change of regions). However, the aimed
+    run-time code (i.e., implementation of dynamic change of regions). However, the aimed
     use cases of this RTOS, applications with higher safety integrity level, can be handled
     with two or three processes so that pre-configured four should always be fine.\n
       The big advantage of having a fixed number of processes is the avoidance of
@@ -207,13 +207,11 @@
 /** Helper for data initialization: Task time budgets are internally represented in STM
     counter ticks. Using this macro one can specify it more conveniently in Milliseconds.
     The macro just converts its argument from Milliseconds to clock ticks. */
-/// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
 #define RTOS_TI_MS2TICKS(tiInMs) ((tiInMs)*80000u)
 
 /** Helper for data initialization: Task time budgets are internally represented in STM(0)
     counter ticks. Using this macro one can specify it more conveniently in Microseconds. The
     macro just converts its argument from Microseconds to clock ticks. */
-/// @todo We need a compile-time consistency check of this macro that uses a literal. The check shall compare the macro with the "official" macros in module ccl_configureClocks
 #define RTOS_TI_US2TICKS(tiInUs) ((tiInUs)*80u)
 
 /** Index of core Z4 A or value of read-only register PIR on this core and return value of
@@ -229,7 +227,7 @@
 #define RTOS_CORE_Z2    2u
 
 /** \cond Two nested macros are used to convert a constant expression to a string which can
-    be used e.g. as part of some inline assembler code.\n
+    be used, e.g., as part of some inline assembler code.\n
       If for example PI is defined to be (355/113) you could use STR(PI) instead of
     "(355/113)" in the source code. ARG2STR is not called directly. */
 #define ARG2STR(x) #x
@@ -330,7 +328,7 @@ typedef struct rtos_taskDesc_t
           In the assembler code, this field is addressed to by offset O_TCONF_pFct. */
     uintptr_t addrTaskFct;
 
-    /** Time budget for the user task in ticks of the time base (i.e. TBL or STM depending
+    /** Time budget for the user task in ticks of the time base (i.e., TBL or STM depending
         on MCU derivative). This budget is granted for each activation of the task. The
         budget relates to deadline monitoring, i.e., it is a world time budget, not an
         execution time budget.\n
@@ -466,9 +464,9 @@ void rtos_osResumeAllTasksByPriority(uint32_t resumeDownToThisTaskPriority);
  * Priority ceiling protocol, partial scheduler lock: All tasks up to the specified task
  * priority level won't be served by the CPU. This function is intended for implementing
  * mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks,
- * which should be locked, i.e. which compete for the resource or critical section to
+ * which should be locked, i.e., which compete for the resource or critical section to
  * protect. This may still lock other, not competing tasks, but at least all non competing
- * tasks of higher priority and the interrupt handlers will still be served.\n
+ * tasks of higher priority and the interrupt handlers will be served.\n
  *   To release the protected resource or to leave the critical section, call the
  * counterpart function rtos_resumeAllTasksByPriority(), which restores the original
  * task priority level.\n
@@ -640,7 +638,7 @@ void rtos_osSuspendProcess(uint32_t PID);
 bool rtos_isProcessSuspended(uint32_t PID);
 
 /**
- *   @func rtos_getIdxCore
+ *   @fn rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning
@@ -654,7 +652,7 @@ unsigned int rtos_getIdxCore(void);
 
 
 /**
- *   @func rtos_getCoreStatusRegister
+ *   @fn rtos_getCoreStatusRegister
  * Get the value of the msr. This is an entry point to C code, which can be called from
  * supervisor and user mode.
  *   @return
@@ -679,7 +677,7 @@ uint32_t rtos_getCoreStatusRegister(void);
  *   The convenience macros #RTOS_CORE_Z4A,  #RTOS_CORE_Z4B and #RTOS_CORE_Z2 can be used
  * to evaluate the function result.
  *   @remark
- * This function may be called from all supervisor contexts, i.e. OS tasks and ISRs. A call
+ * This function may be called from all supervisor contexts, i.e., OS tasks and ISRs. A call
  * from a user task will cause an exception.
  */
 static inline unsigned int rtos_osGetIdxCore(void)
@@ -789,7 +787,7 @@ static inline int32_t rtos_runTask( const rtos_taskDesc_t *pUserTaskConfig
  * and from any nested sub-routine. The task execution is immediately aborted. The function
  * does not return.
  *   @param taskReturnValue
- * The task can return a value to its initiator, i.e. to the context who had applied
+ * The task can return a value to its initiator, i.e., to the context who had applied
  * rtos_osRunTask() or rtos_runTask() to create the task. The value is signed and (only)
  * the sign is meaningful to the assembly code to create/abort a task:\n
  *   The requested task abortion is considered an error and counted in the owning process
@@ -1192,7 +1190,7 @@ static inline bool rtos_checkUserCodeReadPtr(const void *address, size_t noBytes
 
 /**
  * System call to suspend a process. All currently running tasks belonging to the process
- * are aborted and the process is stopped forever (i.e. there won't be further task starts
+ * are aborted and the process is stopped forever (i.e., there won't be further task starts
  * or I/O driver callback invocations).\n
  *   Suspending a process of PID i is permitted only to processes of PID j>i.
  *   @param PID

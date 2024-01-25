@@ -4,7 +4,7 @@
  * about the table contents is taken from dedicated header files, named *_defSysCalls.h,
  * which have to be provided by all units that offer at least one system call.
  *
- * Copyright (C) 2019-2020 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the

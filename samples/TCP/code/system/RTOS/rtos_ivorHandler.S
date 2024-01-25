@@ -187,7 +187,7 @@ rtos_endOfINTCInterruptHandlerAry:
 
 #if HWC_ENABLE_DCACHE
 /**
- *   @func rtos_initializeDCache
+ *   @fn rtos_initializeDCache
  * This function disables the D-cache, invalidates all contents and re-enables it.
  *   @remark
  * Besides altering the concerned D-cache special purpose registers, the function makes use
@@ -244,7 +244,7 @@ idc_noAbort:
 
 
 /**
- *   @func rtos_ivor1Handler
+ *   @fn rtos_ivor1Handler
  * This is the interrupt handler for the MCU trap #1, Machine Check. See Core RM, 5.1.2,
  * Table 5-3, p.164f for the association of exception types to chosen IVOR handler and
  * Core RM, 5.7.2, p. 174, for this particular handler. In the context of this software,
@@ -496,7 +496,7 @@ ivr1_testIvor8:
 
 
 /**
- *   @func rtos_ivor2Handler
+ *   @fn rtos_ivor2Handler
  * This is the interrupt handler for the MCU trap #2, Data Storage Interrupt. See Core
  * RM, 5.7.3, p. 181. This exception relates to (see CRM, 5.1.2, Table 5-3, p. 164f):
  *  - Access control.
@@ -534,7 +534,7 @@ rtos_ivor2Handler:
 
 
 /**
- *   @func rtos_ivor3Handler
+ *   @fn rtos_ivor3Handler
  * This is the interrupt handler for the MCU trap #3, Instruction Storage Interrupt. See Core
  * RM, 5.7.4, p. 181. This exception relates to (see CRM, 5.1.2, Table 5-3, p. 164f):
  *  - Access control.
@@ -575,7 +575,7 @@ rtos_ivor3Handler:
 
 
 /**
- *   @func rtos_ivor4Handler
+ *   @fn rtos_ivor4Handler
  * This is the interrupt handler for the MCU trap #4, External Interrupts. See Core RM,
  * 5.7.5, p. 183. This trap relates to interrupts controlled by the INTC (see CRM, 5.1.2,
  * Table 5-3, p. 164f). The INTC provides the vector to the appropriate service function
@@ -791,7 +791,7 @@ iv4_retToPreemptedCtxt:
 
 
 /**
- *   @func rtos_osRunUserTask
+ *   @fn rtos_osRunUserTask
  * Entry point from C source code: Function rtos_osRunUserTask.\n
  *   Some C code running in SV mode can call this function to execute a C function as
  * single-shot user task. The function is executed once in user mode and under given PID.
@@ -1151,7 +1151,7 @@ rut_noRestoreCPR:
 
 
 /**
- *   @func rtos_ivor5Handler
+ *   @fn rtos_ivor5Handler
  * This is the interrupt handler for the MCU trap #5, Alignment. See Core RM, 5.7.6,
  * p. 183. This exception relates to (see CRM, 5.1.2, Table 5-3, p. 164f):
  *   - lmw, stmw not word aligned
@@ -1188,7 +1188,7 @@ rtos_ivor5Handler:
 
 
 /**
- *   @func rtos_getInstancePtr
+ *   @fn rtos_getInstancePtr
  * All data in use by the kernel is bundled in a large struct. If the RTOS is run on an MCU
  * with several cores then each core uses its own dedicated instance of this struct. This
  * function returns the struct to use by reference.
@@ -1233,7 +1233,7 @@ gip_srr0AtUserCodeException:
 
 
 /**
- *   @func rtos_getIdxCore
+ *   @fn rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning
@@ -1269,7 +1269,7 @@ gic_srr0AtUserCodeException:
 
 
 /**
- *   @func rtos_getCoreStatusRegister
+ *   @fn rtos_getCoreStatusRegister
  * Get the value of the msr. This is an entry point to C code, which can be called from
  * supervisor and user mode.
  *   @return
@@ -1291,7 +1291,7 @@ gcs_srr0AtUserCodeException:
 
 
 /**
- *   @func rtos_ivor6Handler
+ *   @fn rtos_ivor6Handler
  * This is the interrupt handler for the MCU trap #6, Progam Interrupt. See Core RM, 5.7.7,
  * p. 184. This exception relates to (see CRM, 5.1.2, Table 5-3, p. 164f):
  *   - Illegal, privileged, trap, FP enabled, AP enabled, unimplemented operation
@@ -1362,6 +1362,7 @@ iv6_isTrueIvor6Exception:
     mfspr       r0, SPR_ESR
     se_and      r0, r3
     mtspr       SPR_ESR, r0 /* SPR 62 = ESR, exception syndrome register. Acknowledge excep. */
+
     /* MSR is in desired state: EE=PR=0, CE and ME not affected by exception */
 
     se_li       r3, RTOS_CAUSE_TASK_ABBORTION_PROGRAM_INTERRUPT
@@ -1372,7 +1373,7 @@ iv6_isTrueIvor6Exception:
 
 
 /**
- *   @func rtos_ivor7Handler
+ *   @fn rtos_ivor7Handler
  * This is the interrupt handler for the MCU trap #7, Performance Monitor interrupt. See RM
  * 59.5.5.8, p. 2906. This exception relates to performanc emonitor events, if they are not
  * re-directed to the debug interrupt #9 by setting PMGC0[UDI]=1.\n
@@ -1394,7 +1395,7 @@ rtos_ivor7Handler:
 
 
 /**
- *   @func rtos_ivor8Handler
+ *   @fn rtos_ivor8Handler
  * This is the interrupt handler for the MCU trap #8, System Call. See CRM, 5.7.9,
  * p. 184.\n
  *   In our RTOS we have a static ROM table of system call handlers.\n
@@ -1615,7 +1616,7 @@ rtos_ivr8_switchBasicToFullHandler:
 
 
 /**
- *   @func rtos_systemCall
+ *   @fn rtos_systemCall
  * General system call code, usable for all system call handlers. The system call index \a
  * idxSysCall is expected in r3, the variable function argument list in the remaining
  * volatile EABI registers r4..r10. The system call code can be invoked as C function using
@@ -1655,7 +1656,7 @@ rtos_systemCall:
 
 
 /**
- *   @func rtos_ivor9Handler
+ *   @fn rtos_ivor9Handler
  * This is the interrupt handler for the MCU trap #9, Debug Interrupt. See RM, 62.8.5.10,
  * p. 3137. This exception relates to (see CRM, 5.1.2, Table 5-3, p. 165):
  *   - Trap, instruction address compare, data address compare, instruction
@@ -1682,7 +1683,7 @@ rtos_ivor9Handler:
 
 
 /**
- *   @func rtos_ivor10And11Handler
+ *   @fn rtos_ivor10And11Handler
  * This is the interrupt handler for the MCU trap #10, EFP Floating-point Data Interrupt,
  * and at the same time for IVOR #11, EFP Floating-point Round Interrupt. See RM 59.5.5.11
  * and 59.5.5.12, p. 2909f and CRM, 5.7.19 and 5.7.20, p. 195, 6.2.5.2 and 6.2.5.3, p.

@@ -49,7 +49,7 @@
 
 #ifdef DEBUG
 /**
- *   @func assert_os_assert_func
+ *   @fn assert_os_assert_func
  * This function is the entry point into the assembly implementation of the assert
  * function, which can be used from non safe-RTOS code. The function will never be called
  * directly but it is invoked from the implementation of the C assert function

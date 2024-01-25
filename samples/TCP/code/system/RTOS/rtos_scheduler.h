@@ -4,7 +4,7 @@
  * @file rtos_scheduler.h
  * Definition of global interface of module rtos_scheduler.c
  *
- * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -169,6 +169,9 @@ typedef struct rtos_eventProcDesc_t
 static ALWAYS_INLINE unsigned int rtos_osGetCurrentInterruptPriority(void)
 {
     /* We query the INTC to find out on which interrupt level we are busy. */
+    _Static_assert( sizeof(INTC->CPR0) == (uint8_t*)&INTC->CPR1 - (uint8_t*)&INTC->CPR0
+                  , "Bad offset computation"
+                  );
     return (unsigned int)*(&INTC->CPR0 + rtos_osGetIdxCore());
 
 } /* End of rtos_osGetCurrentInterruptPriority */

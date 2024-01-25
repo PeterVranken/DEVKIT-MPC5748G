@@ -59,7 +59,7 @@
 
 
 /**
- *   @func del_delayMicroseconds
+ *   @fn del_delayMicroseconds
  * This function does nothing but consumes an exactely determined amount of CPU execution
  * time before it returns. "Consumption of CPU time" means that not the elapsed world time
  * counts; all interrupts etc. which interrupt the execution of this function won't be

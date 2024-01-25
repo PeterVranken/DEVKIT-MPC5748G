@@ -104,7 +104,7 @@
  *   More details can be found at
  * https://github.com/PeterVranken/TRK-USB-MPC5643L/tree/master/LSM/safe-RTOS-VLE#3-the-safety-concept.
  *
- * Copyright (C) 2017-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -167,6 +167,7 @@
 #include "MPC5748G.h"
 #include "typ_types.h"
 #include "ccl_configureClocks.h"
+#include "stm_systemTimer.h"
 #include "rtos_process.h"
 #include "rtos_externalInterrupt.h"
 #include "rtos_priorityCeilingProtocol.h"
@@ -254,7 +255,7 @@ void rtos_osProcessTriggeredEvProcs(rtos_eventProcDesc_t *pEvProc);
 /** A constant array holding the index of a PIT timer for each core on the chip. This is
     just the configuration data and it leaves it open, whether the core runs the RTOS and
     whether the index is used at all. */
-static const unsigned int rtos_idxRtosTimerAry[RTOS_NO_CORES] =
+static const unsigned int RODATA(rtos_idxRtosTimerAry)[RTOS_NO_CORES] =
     { [0] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0)
     , [1] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1)
     , [2] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
@@ -708,7 +709,7 @@ static ALWAYS_INLINE bool osSendEvent( rtos_eventProcDesc_t * const pEvProc
     {
         /* Counting events above must never fail entirely if the task is idle; all elder
            events should have been delivered and the accumulator should be zero, i.e., able
-           to accept a single multiplicity of the new event. */
+           to accept at least a single multiplicity of the new event. */
         assert(success);
 
         /* Operation successful. Event can be triggered. */
@@ -973,6 +974,15 @@ static void initRTOSClockTick(void)
                         != GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
                   , "If safe-RTOS runs on different cores then they need to have different"
                     " clock sources"
+                  );
+
+    /* On the MPC5748G, which doesn't have a free running counter itself, we use device
+       STM0 for measuring time spans (e.g., deadline monitoring. Public convenience macros
+       for scaling Milliseconds to ticks of this counter need to be double-checked for
+       consistency with the configuration of the STM. */
+    _Static_assert( RTOS_TI_MS2TICKS(1000u) == STM_TIMER_0_CLK
+                    &&  RTOS_TI_US2TICKS(1000u) == RTOS_TI_MS2TICKS(1u)
+                  , "Inconsistency between public API and configuration of STM found"
                   );
 
     /* Note, time PIT0 must not be used. It is occupied by the DMA channel as trigger for
@@ -1245,6 +1255,14 @@ rtos_errorCode_t rtos_osCreateEventProcessor( unsigned int *pEvProcId
  * rtos_osCreateEventProcessor() with \a tiCycleInMs=0.) Most of the function arguments of
  * rtos_osCreateEventProcessor() are meaningless for event processors triggered by software
  * only, which makes the use of this API more appropriate.
+ *   @return
+ * \a rtos_err_noError (zero) if the event processor could be created. The maximum number
+ * of event processors is limited to #RTOS_MAX_NO_EVENT_PROCESSORS. If the event processor
+ * cannot be created due to this constraint or if the function arguments are invalid or
+ * inconsistent then the function returns a non zero value from enumeration \a
+ * rtos_errorCode_t.\n
+ *   An assertion in the calling code is considered appropriate to handle the error because
+ * it'll always be a static configuration error.
  *   @param pEvProcId
  * The event processor ID is returned by reference. See rtos_osCreateEventProcessor() for
  * details. 

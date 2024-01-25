@@ -3,7 +3,7 @@
  * This module implements the process related functionality like querying the number of
  * errors, recognized and counted for a process and suspension of a (failing) process.
  *
- * Copyright (C) 2019-2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2019-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
