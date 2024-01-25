@@ -4,17 +4,17 @@
 
 safe-RTOS - A simple RTOS with safety support for MPC5748G
 
-This is not the manual. The purpose of this documentation is to be a kind
+This is not the manual! The purpose of this documentation is to be a kind
 of API browser to support the implementation of the software, which is
-going to integrate the RTOS. Get a quick overview on the user accessible API
-functions of the RTOS and the applied data
-types. Use it as a reference book while working on your embedding
-software.
+going to integrate the RTOS. Get a quick overview on the user accessible
+API functions of the RTOS and the applied data types. Use it as a
+reference book while working on your embedding software.
 
 Caution, Doxygen doesn't scan assembly files and parts of the required
 information may be missing.
 
 For everything else, please refer to the <a
+href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/doc/manual/manual.pdf">safe-RTOS manual</a> and in general to the <a
 href="https://github.com/PeterVranken/DEVKIT-MPC5748G/tree/master/samples/safe-RTOS/">safe-RTOS GitHub project</a>.
 
 */

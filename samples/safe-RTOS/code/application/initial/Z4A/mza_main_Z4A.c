@@ -11,7 +11,7 @@
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
  * parity, 1 stop bit.
  *
- * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -76,30 +76,30 @@
  * Local type definitions
  */
 
-/** The enumeration of all events, tasks and priorities, to have them as symbols in the
-    source code. Most relevant are the event IDs. Actually, these IDs are provided by the
-    RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
-    are dealt out by rtos_osCreateEvent() form the series 0, 1, 2, .... So we don't need
-    to have a dynamic storage of the IDs; we define them as constants and double-check by
-    assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
-    requires that the order of creating the events follows the order here in the
-    enumeration.\n
-      Here, we have the IDs of the created events. They occupy the index range starting
-    from zero. */
-enum
+/** The enumeration of all event processors, tasks and priorities, to have them as symbols
+    in the source code. Most relevant are the event processor IDs. Actually, these IDs are
+    provided by the RTOS at runtime, when creating the event processor. However, it is
+    guaranteed that the IDs, which are dealt out by rtos_osCreateEventProcessor() form the
+    series 0, 1, 2, .... So we don't need to have a dynamic storage of the IDs; we define
+    them as constants and double-check by assertion that we got the correct, expected IDs
+    from rtos_osCreateEventProcessor(). Note, this requires that the order of creating the
+    event processors follows the order here in the enumeration.\n
+      Here, we have the IDs of the created event processors. They occupy the index range
+    starting from zero. */
+enum idEventProcessor_t
 {
-    /** Regular timer event. */
-    idEv1ms = 0,
+    /** Event processor, which raises a regular timer event. */
+    idEvProc1ms = 0,
 
-    /** The number of tasks to register. */
-    noRegisteredEvents
+    /** The number of event processors. */
+    noRegisteredEventProcs
 };
 
 
-/** The RTOS uses constant priorities for its events, which are defined here.\n
-      Note, the priority is a property of an event rather than of a task. A task implicitly
-    inherits the priority of the event it is associated with. */
-enum
+/** The RTOS uses constant priorities for its event processors, which are defined here.\n
+      Note, the priority is a property of an event processor rather than of a task. A task
+    implicitly inherits the priority of the event processor it is associated with. */
+enum prioTask_t
 {
     prioTaskIdle = 0,            /* Prio 0 is implicit, cannot be chosen explicitly */
     prioEv1ms = 1,
@@ -110,7 +110,7 @@ enum
     relationship is defined here.\n
       Note, a process needs to be configured in the linker script (actually: assignment of
     stack space) before it can be used. */
-enum
+enum pidOfTask_t
 {
     pidOs = 0,              /* kernel always and implicitly has PID 0 */
     pidTask1ms = 1,
@@ -130,16 +130,16 @@ enum
  */
 
 /** Counter of cycles of infinite main loop. */
-volatile unsigned long SBSS_OS(mai_cntTaskIdle) = 0;
+volatile unsigned long SBSS_OS(mza_cntTaskIdle) = 0;
 
 /** Counter of cyclic 1ms user task. */
-volatile unsigned long long SBSS_P1(mai_cntTask1ms) = 0;  
+volatile unsigned long long SBSS_P1(mza_cntTask1ms) = 0;  
 
 /** Counter of cyclic 1ms OS task. */
-volatile unsigned long long SBSS_OS(mai_cntTaskOs1ms) = 0;
+volatile unsigned long long SBSS_OS(mza_cntTaskOs1ms) = 0;
 
 /** The average CPU load produced by all tasks and interrupts in tens of percent. */
-unsigned int DATA_OS(mai_cpuLoad) = 1000;
+unsigned int DATA_OS(mza_cpuLoad) = 1000;
 
 /** Interface with assembly code: Here's a variable in the assembly startup code, which
     takes the addresses of the C main function to be invoked on core Z4B. It needs to be
@@ -162,7 +162,7 @@ extern void (*volatile SECTION(.bss.startup) sup_main_Z2)(signed int, const char
 /**
  * Initialization task of process \a PID.
  *   @return
- * The function returns the Boolean descision, whether the initialization was alright and
+ * The function returns the Boolean decision, whether the initialization was alright and
  * the system can start up. "Not alright" is expressed by a negative number, which hinders
  * the RTOS to startup.
  *   @param PID
@@ -177,11 +177,6 @@ static int32_t taskInitProcess(uint32_t PID)
 {
     static unsigned int SHARED(cnt_) = 0;
     ++ cnt_;
-
-//    /* Only process 1 has access to the C lib (more precise: to those functions of the C
-//       lib, which write to lib owned data objects) and can write a status message. */
-//    if(PID == 1)
-//        iprintf("taskInitPID%lu(): %u\r\n", PID, cnt_);
 
     return cnt_ == PID? 0: -1;
 
@@ -228,7 +223,7 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ mai_cntTask1ms;
+    ++ mza_cntTask1ms;
 
 #if TASKS_PRODUCE_GROUND_LOAD == 1
     /* Produce a bit of CPU load. This call simulates some true application software. */
@@ -239,23 +234,19 @@ static int32_t task1ms(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_DBG
     if(++cntIsOn_ >= 500)
     {
         cntIsOn_ = -500;
-        printf("This is call %llu of task1ms\r\n", mai_cntTask1ms);
+        printf("This is call %llu of task1ms\r\n", mza_cntTask1ms);
     }
     lbd_setLED(lbd_led_0_DS11, /* isOn */ cntIsOn_ >= 0);
 
     /* Inject some errors. */
-    if((mai_cntTask1ms & 0x3ff) == 0)
+    if((mza_cntTask1ms & 0x3ff) == 0)
     {
         static volatile unsigned int DATA_P2(foreignData) ATTRIB_UNUSED;
-        foreignData = (unsigned int)mai_cntTask1ms;
+        foreignData = (unsigned int)mza_cntTask1ms;
     }
-    if((mai_cntTask1ms & 0x7ff) == 1)
+    if((mza_cntTask1ms & 0x7ff) == 1)
     {
-        struct rtos_kernelInstanceData_t;
-        static volatile const struct rtos_kernelInstanceData_t *pInstance ATTRIB_UNUSED;
-        extern const struct rtos_kernelInstanceData_t *rtos_getInstancePtr(void);
-        pInstance = rtos_getInstancePtr();
-        static volatile uint8_t DATA_P1(coreId) ATTRIB_UNUSED;
+        static volatile unsigned int DATA_P1(coreId) ATTRIB_UNUSED;
         coreId = rtos_osGetIdxCore();
     }
 
@@ -278,7 +269,7 @@ static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
     assert(taskParam == 0);
 
     /* Make spinning of the task observable in the debugger. */
-    ++ mai_cntTaskOs1ms;
+    ++ mza_cntTaskOs1ms;
 
     /** Regularly called step function of the I/O driver. */
     lbd_osTask1ms();
@@ -296,7 +287,7 @@ static void taskOs1ms(uint32_t taskParam ATTRIB_DBG_ONLY)
     {
         cntIsOn_ = -500;
 
-        printf("This is call %llu of taskOs1ms\r\n", mai_cntTaskOs1ms);
+        printf("This is call %llu of taskOs1ms\r\n", mza_cntTaskOs1ms);
     }
     lbd_osSetLED(lbd_led_1_DS10, /* isOn */ cntIsOn_ >= 0);
     
@@ -401,6 +392,7 @@ static void startSecondaryCore( unsigned int idxCore
  */
 int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB_DBG_ONLY)
 {
+    /* The arguments of the main function are quite useless. Just check correctness. */
     assert(noArgs == 1  && strcmp(argAry[0], "Z4A") == 0);
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
@@ -512,30 +504,31 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         initOk = false;
     }
 
-    /* Create the events that trigger application tasks at the RTOS. Note, we do not really
-       respect the ID, which is assigned to the event by the RTOS API rtos_osCreateEvent().
-       The returned value is redundant. This technique requires that we create the events
-       in the right order and this requires in practice a double-check by assertion - later
-       maintenance errors are unavoidable otherwise. */
-    unsigned int idEvent;
+    /* Create the event processors that trigger application tasks at the RTOS. Note, we do
+       not really respect the ID, which is assigned to the event processor by the RTOS API
+       rtos_osCreateEventProcessor(). The returned value is redundant. This technique
+       requires that we create the event processors in the right order and this requires in
+       practice a double-check by assertion - later maintenance errors are unavoidable
+       otherwise. */
+    unsigned int idEvProc;
     if(rtos_osCreateEventProcessor
-                ( &idEvent
+                ( &idEvProc
                 , /* tiCycleInMs */               1
                 , /* tiFirstActivationInMs */     10
                 , /* priority */                  prioEv1ms
                 , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                , /*useCountableEvents*/          false                               
+                , /* useCountableEvents */        false                               
                 , /* taskParam */                 0
                 )
        == rtos_err_noError
       )
     {
-        assert(idEvent == idEv1ms);
+        assert(idEvProc == idEvProc1ms);
 
-        if(rtos_osRegisterOSTask(idEv1ms, taskOs1ms) != rtos_err_noError)
+        if(rtos_osRegisterOSTask(idEvProc1ms, taskOs1ms) != rtos_err_noError)
             initOk = false;
 
-        if(rtos_osRegisterUserTask( idEv1ms
+        if(rtos_osRegisterUserTask( idEvProc1ms
                                   , task1ms
                                   , pidTask1ms
                                   , /* tiTaskMaxInUs */ 0
@@ -550,7 +543,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         initOk = false;
 
     /* The last check ensures that we didn't forget to register a task. */
-    assert(idEvent == noRegisteredEvents-1);
+    assert(idEvProc == noRegisteredEventProcs-1);
 
     /* Initialize the RTOS kernel. The global interrupt processing is resumed if it
        succeeds. The step involves a configuration check. We must not startup the SW if the
@@ -563,16 +556,16 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        where some background can be placed. */
     while(true)
     {
-        /* Compute the average CPU load. Note, this operation lasts about 1s and has a
+        /* Compute the average CPU load. Note, this operation lasts about 1.5s and has a
            significant impact on the cycling speed of this infinite loop. Furthermore, it
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
-        mai_cpuLoad = gsl_osGetSystemLoad();
+        mza_cpuLoad = gsl_osGetSystemLoad();
 
         char msg[128];
         const int noChar = sniprintf( msg, sizeof(msg)
                                     , "CPU load: %u%%\r\n"
-                                    , (mai_cpuLoad+5)/10
+                                    , (mza_cpuLoad+5)/10
                                     );
         assert((unsigned)noChar < sizeOfAry(msg));
         //sio_osWriteSerial(msg, (unsigned)noChar);
@@ -582,14 +575,13 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         lbd_osSetLED(lbd_led_2_DS9, isOn_ = !isOn_);
 
         /* Make spinning of the idle task observable in the debugger. */
-        ++ mai_cntTaskIdle;
+        ++ mza_cntTaskIdle;
 
         /* Supervisor code like an OS or the idle task must not use the C lib's I/O
            functions like printf because they go into a system call handler of class full,
            which is not permitted for use from supervisor code. */
-        //sio_osWriteSerial(SIO_STR(Hello World!));
-        sio_osWriteSerial("Hello World!\r\n", sizeof("Hello World!\r\n")-1);
-
+        sio_osWriteSerial(SIO_STR(Hello World!));
+        
     } /* End of inifinite idle loop of RTOS. */
 
     /* We never get here. Just to avoid a compiler warning. */

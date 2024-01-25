@@ -8,9 +8,9 @@
  * is alright.\n
  *   Progress information is permanently written into the serial output channel. A terminal
  * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
- * parity, 1 stop bit.\n
+ * parity, 1 stop bit.
  *
- * Copyright (C) 2017-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -46,6 +46,8 @@
  * Include files
  */
 
+//#include "mai_main.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -62,7 +64,6 @@
 #include "sio_serialIO.h"
 #include "rtos.h"
 #include "del_delay.h"
-//#include "mai_main.h"
 
 
 /*
@@ -124,32 +125,32 @@
  * Local type definitions
  */
 
-/** The enumeration of all events, tasks and priorities, to have them as symbols in the
-    source code. Most relevant are the event IDs. Actually, these IDs are provided by the
-    RTOS at runtime, when creating the event. However, it is guaranteed that the IDs, which
-    are dealt out by rtos_osCreateEvent() form the series 0, 1, 2, .... So we don't need
-    to have a dynamic storage of the IDs; we define them as constants and double-check by
-    assertion that we got the correct, expected IDs from rtos_osCreateEvent(). Note, this
-    requires that the order of creating the events follows the order here in the
-    enumeration.\n
-      Here, we have the IDs of the created events. They occupy the index range starting
-    from zero. */
-enum idEvent_t
+/** The enumeration of all event processors, tasks and priorities, to have them as symbols
+    in the source code. Most relevant are the event processor IDs. Actually, these IDs are
+    provided by the RTOS at runtime, when creating the event processor. However, it is
+    guaranteed that the IDs, which are dealt out by rtos_osCreateEventProcessor() form the
+    series 0, 1, 2, .... So we don't need to have a dynamic storage of the IDs; we define
+    them as constants and double-check by assertion that we got the correct, expected IDs
+    from rtos_osCreateEventProcessor(). Note, this requires that the order of creating the
+    event processors follows the order here in the enumeration.\n
+      Here, we have the IDs of the created event processors. They occupy the index range
+    starting from zero. */
+enum idEventProcessor_t
 {
-    idEvTaskA = 0,  /// Event for low priority task, which raise prio with PCP
-    idEvTaskB,      /// Event for successor task of same priority
-    idEvTaskH,      /// Event for task of higer priority, which can preempt A, B
-    idEvTaskT,      /// Event for cyclic task
-    idEvTaskS,      /// Event for cyclic supervisor task in other process
+    idEvTaskA = 0,  /// EvProc for low priority task, which raise prio with PCP
+    idEvTaskB,      /// EvProc for successor task of same priority
+    idEvTaskH,      /// EvProc for task of higer priority, which can preempt A, B
+    idEvTaskT,      /// EvProc for cyclic task
+    idEvTaskS,      /// EvProc for cyclic supervisor task in other process
 
     /** The number of tasks to register. */
-    noRegisteredEvents
+    noRegisteredEvProcs
 };
 
 
-/** The RTOS uses constant priorities for its events, which are defined here.\n
-      Note, the priority is a property of an event rather than of a task. A task implicitly
-    inherits the priority of the event it is associated with. */
+/** The RTOS uses constant priorities for its event processors, which are defined here.\n
+      Note, the priority is a property of an event processor rather than of a task. A task implicitly
+    inherits the priority of the event processor it is associated with. */
 enum prioTask_t
 {
     prioTaskIdle = 0,            /* Prio 0 is implicit, cannot be chosen explicitly */
@@ -530,7 +531,7 @@ static int32_t taskB(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam)
 
 
 /**
- * Task O, the successor of task B. O is associated with the same event as triggers B.
+ * Task O, the successor of task B. O is associated with the same event processor as triggers B.
  *   @param taskParam
  * A variable task parameter. Here not used.
  *   @param taskParam
@@ -695,9 +696,9 @@ static int32_t taskT(uint32_t PID ATTRIB_UNUSED, uint32_t taskParam ATTRIB_UNUSE
         total -= 60ull*min;
         const unsigned int sec = (unsigned int)total;
 
-        iprintf( "%3u:%02u:%02u, cycles: Task S: %llu, tasks A, B, O: %llu"
-                 ", task H: %llu, task T: %llu (%u lost activations),"
-                 "isrPit1: %llu, isrPit2: %llu, isrPit3: %llu\r\n"
+        iprintf( "%3u:%02u:%02u, cycles: Task S: %llu, tasks A, B, O: %llu,"
+                 " task H: %llu, task T: %llu (%u lost activations),"
+                 " isrPit1: %llu, isrPit2: %llu, isrPit3: %llu\r\n"
                , h, min, sec
                , mai_cntTaskS
                , mai_cntTaskA
@@ -868,6 +869,9 @@ static void osInstallInterruptServiceRoutines(void)
 
 /**
  * C entry function main. Is used for and only for the Z7_0 core.
+ *   @return
+ * Actually, the function is a _Noreturn. We don't declare it as such in order to avoid a
+ * compiler warning. 
  *   @param noArgs
  * Number of arguments in \a argAry. Is actually always equal to one.
  *   @param argAry
@@ -876,6 +880,7 @@ static void osInstallInterruptServiceRoutines(void)
  */
 int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB_DBG_ONLY)
 {
+    /* The arguments of the main function are quite useless. Just check correctness. */
     assert(noArgs == 1  && strcmp(argAry[0], "Z4A") == 0);
 
     /* Complete the core HW initialization - as far as not yet done by the assembly startup
@@ -943,7 +948,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
 #define CREATE_TASK(name, tiCycleInMs)                                                      \
     if(rtos_osCreateEventProcessor                                                          \
-                ( &idEvent                                                                  \
+                ( &idEvProc                                                                 \
                 , /* tiCycleInMs */               tiCycleInMs                               \
                 , /* tiFirstActivationInMs */     0                                         \
                 , /* priority */                  prioEv##name                              \
@@ -956,7 +961,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        == rtos_err_noError                                                                  \
       )                                                                                     \
     {                                                                                       \
-        assert(idEvent == idEvTask##name);                                                  \
+        assert(idEvProc == idEvTask##name);                                                 \
         if(rtos_osRegisterUserTask( idEvTask##name                                          \
                                   , task##name                                              \
                                   , pidTask##name                                           \
@@ -979,7 +984,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
        The returned value is redundant. This technique requires that we create the events
        in the right order and this requires in practice a double-check by assertion - later
        maintenance errors are unavoidable otherwise. */
-    unsigned int idEvent;
+    unsigned int idEvProc;
     CREATE_TASK(/* name */ A, /* tiCycleInMs */ 0)
     CREATE_TASK(/* name */ B, /* tiCycleInMs */ 0)
     CREATE_TASK(/* name */ H, /* tiCycleInMs */ 0)
@@ -991,7 +996,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         initOk = false;
 
     /* The last check ensures that we didn't forget to register a task. */
-    assert(initOk &&  idEvent == noRegisteredEvents-1);
+    assert(initOk &&  idEvProc == noRegisteredEvProcs-1);
 
     rtos_osGrantPermissionSuspendProcess( /* pidOfCallingTask */ 2 /* Supervisor */
                                         , /* targetPID */ 1        /* Tasks A, B, T, H */
@@ -1040,5 +1045,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
         ++ mai_cntTaskIdle;
         ++ mai_cntTotalOfAllTasks;
         osReleaseResource();
-    }
+
+    } /* End of inifinite idle loop of RTOS. */
+
+    /* We never get here. Just to avoid a compiler warning. */
+    return -1;
+
 } /* End of main */

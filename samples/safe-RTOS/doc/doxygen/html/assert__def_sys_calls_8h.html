@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): assert_defSysCalls.h File Reference</title>
+<title>safe-RTOS: assert_defSysCalls.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -84,13 +84,14 @@ $(document).ready(function(){initNavTree('assert__def_sys_calls_8h.html',''); in
 
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">assert_defSysCalls.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &quot;rtos.config.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="rtos_8config_8h_source.html">rtos.config.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="rtos_8h_source.html">rtos.h</a>&quot;</code><br />
 </div>
 <p><a href="assert__def_sys_calls_8h_source.html">Go to the source code of this file.</a></p>
@@ -100,6 +101,15 @@ Macros</h2></td></tr>
 <tr class="memitem:a0dcceb69937c27414c7f3fc2cc37cfff"><td class="memItemLeft" align="right" valign="top"><a id="a0dcceb69937c27414c7f3fc2cc37cfff" name="a0dcceb69937c27414c7f3fc2cc37cfff"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ASSERT_SYSCALL_ASSERT_FUNC</b>&#160;&#160;&#160;6</td></tr>
 <tr class="separator:a0dcceb69937c27414c7f3fc2cc37cfff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ecb2c2fa6382f86a8b17b7bc9ef17ec"><td class="memItemLeft" align="right" valign="top"><a id="a2ecb2c2fa6382f86a8b17b7bc9ef17ec" name="a2ecb2c2fa6382f86a8b17b7bc9ef17ec"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0006</b>&#160;&#160;&#160;                                <a class="el" href="rtos_8h.html#a7eac206295711ad1e5346d367f9ce74c">RTOS_SC_TABLE_ENTRY</a>(assert_scBscHdlr_assert_func_core0, BASIC)</td></tr>
+<tr class="separator:a2ecb2c2fa6382f86a8b17b7bc9ef17ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a042e79242b653d9c6219ae13257835c4"><td class="memItemLeft" align="right" valign="top"><a id="a042e79242b653d9c6219ae13257835c4" name="a042e79242b653d9c6219ae13257835c4"></a>
+void _Noreturn&#160;</td><td class="memItemRight" valign="bottom"><b>assert_scBscHdlr_assert_func_core0</b> (const char *fileName, int line, const char *funcName, const char *expression)</td></tr>
+<tr class="separator:a042e79242b653d9c6219ae13257835c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Definition of global interface of module assert_defSysCalls.c</p>

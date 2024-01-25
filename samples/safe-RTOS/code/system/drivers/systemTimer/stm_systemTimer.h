@@ -123,7 +123,7 @@ static inline uint32_t stm_osGetSystemTime(unsigned int idxTimer)
 void stm_osInitSystemTimers(void);
 
 /**
- *   @func stm_getSystemTime
+ *   @fn stm_getSystemTime
  * Get the counter value from one of the three free running, cyclically counting system
  * timers.
  *   @return

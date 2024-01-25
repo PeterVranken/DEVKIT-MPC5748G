@@ -28,7 +28,7 @@
 #include <stdbool.h>
 
 #include "typ_types.h"
-
+#include "rtos.config.h"
 
 /*
  * Defines

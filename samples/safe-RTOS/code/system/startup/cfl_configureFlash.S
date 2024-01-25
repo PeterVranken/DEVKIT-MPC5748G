@@ -37,7 +37,7 @@
 
 
 /**
- *   @func cfl_configureFlash
+ *   @fn cfl_configureFlash
  * Access the flash memory controller and select the optimal strategy. This affects the
  * number of wait states, port usage (data versus instruction fetches) and pre-fetch
  * strategies.\n

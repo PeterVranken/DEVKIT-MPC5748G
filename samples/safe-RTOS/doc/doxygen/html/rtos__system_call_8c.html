@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): rtos_systemCall.c File Reference</title>
+<title>safe-RTOS: rtos_systemCall.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -109,6 +109,177 @@ $(document).ready(function(){initNavTree('rtos__system_call_8c.html',''); initRe
 Macros</h2></td></tr>
 <tr class="memitem:a84aeb758bcdf0f1f3b53503464c3ae35"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a>&#160;&#160;&#160;                        <a class="el" href="rtos_8h.html#a7eac206295711ad1e5346d367f9ce74c">RTOS_SC_TABLE_ENTRY</a>(rtos_scBscHdlr_sysCallUndefined, BASIC)</td></tr>
 <tr class="separator:a84aeb758bcdf0f1f3b53503464c3ae35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a025d1347dc0cab5c12af5c54c5d9acd9"><td class="memItemLeft" align="right" valign="top"><a id="a025d1347dc0cab5c12af5c54c5d9acd9" name="a025d1347dc0cab5c12af5c54c5d9acd9"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0007</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a025d1347dc0cab5c12af5c54c5d9acd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a08a8e9bedebb68d08ef79738745ea3"><td class="memItemLeft" align="right" valign="top"><a id="a3a08a8e9bedebb68d08ef79738745ea3" name="a3a08a8e9bedebb68d08ef79738745ea3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0008</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a3a08a8e9bedebb68d08ef79738745ea3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4be2ac38326761c3137e4a8b888ad567"><td class="memItemLeft" align="right" valign="top"><a id="a4be2ac38326761c3137e4a8b888ad567" name="a4be2ac38326761c3137e4a8b888ad567"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0009</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a4be2ac38326761c3137e4a8b888ad567"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7665cc4802489c63c1ef448c3b3904f2"><td class="memItemLeft" align="right" valign="top"><a id="a7665cc4802489c63c1ef448c3b3904f2" name="a7665cc4802489c63c1ef448c3b3904f2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0010</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a7665cc4802489c63c1ef448c3b3904f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0316bfbc2ac280356fa9244e4060cd5f"><td class="memItemLeft" align="right" valign="top"><a id="a0316bfbc2ac280356fa9244e4060cd5f" name="a0316bfbc2ac280356fa9244e4060cd5f"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0011</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a0316bfbc2ac280356fa9244e4060cd5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42b266d551d75c387a97f17b52252cd5"><td class="memItemLeft" align="right" valign="top"><a id="a42b266d551d75c387a97f17b52252cd5" name="a42b266d551d75c387a97f17b52252cd5"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0012</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a42b266d551d75c387a97f17b52252cd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a182a4c14c9375025cf00ff22067e001e"><td class="memItemLeft" align="right" valign="top"><a id="a182a4c14c9375025cf00ff22067e001e" name="a182a4c14c9375025cf00ff22067e001e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0013</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a182a4c14c9375025cf00ff22067e001e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd0b3408517677f40c6b33ce2cb883fc"><td class="memItemLeft" align="right" valign="top"><a id="abd0b3408517677f40c6b33ce2cb883fc" name="abd0b3408517677f40c6b33ce2cb883fc"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0014</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:abd0b3408517677f40c6b33ce2cb883fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab00010934d01f71d2940cbb84799bf02"><td class="memItemLeft" align="right" valign="top"><a id="ab00010934d01f71d2940cbb84799bf02" name="ab00010934d01f71d2940cbb84799bf02"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0015</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ab00010934d01f71d2940cbb84799bf02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26204372d06087ab67f2aca470ab5537"><td class="memItemLeft" align="right" valign="top"><a id="a26204372d06087ab67f2aca470ab5537" name="a26204372d06087ab67f2aca470ab5537"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0016</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a26204372d06087ab67f2aca470ab5537"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ef92001bceeedf170460cfeb692ad20"><td class="memItemLeft" align="right" valign="top"><a id="a4ef92001bceeedf170460cfeb692ad20" name="a4ef92001bceeedf170460cfeb692ad20"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0017</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a4ef92001bceeedf170460cfeb692ad20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81bb32a5e31881d651be1a677071c9e0"><td class="memItemLeft" align="right" valign="top"><a id="a81bb32a5e31881d651be1a677071c9e0" name="a81bb32a5e31881d651be1a677071c9e0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0018</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a81bb32a5e31881d651be1a677071c9e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa1fc1b3a163be6fc9382c5a89fd547a"><td class="memItemLeft" align="right" valign="top"><a id="afa1fc1b3a163be6fc9382c5a89fd547a" name="afa1fc1b3a163be6fc9382c5a89fd547a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0019</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:afa1fc1b3a163be6fc9382c5a89fd547a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8594da87f1dd37bb5acaee6ac1c3e56b"><td class="memItemLeft" align="right" valign="top"><a id="a8594da87f1dd37bb5acaee6ac1c3e56b" name="a8594da87f1dd37bb5acaee6ac1c3e56b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0020</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a8594da87f1dd37bb5acaee6ac1c3e56b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2097407ae084def20f1340aba6af9ab4"><td class="memItemLeft" align="right" valign="top"><a id="a2097407ae084def20f1340aba6af9ab4" name="a2097407ae084def20f1340aba6af9ab4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0021</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a2097407ae084def20f1340aba6af9ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefae2de7646064dbac5e32eb910d371a"><td class="memItemLeft" align="right" valign="top"><a id="aefae2de7646064dbac5e32eb910d371a" name="aefae2de7646064dbac5e32eb910d371a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0022</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:aefae2de7646064dbac5e32eb910d371a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3d3a5fbc78a1be0cdcddc210ac36506"><td class="memItemLeft" align="right" valign="top"><a id="ac3d3a5fbc78a1be0cdcddc210ac36506" name="ac3d3a5fbc78a1be0cdcddc210ac36506"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0023</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ac3d3a5fbc78a1be0cdcddc210ac36506"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6284de59bde8bc2bb12a4b9190c4ed9d"><td class="memItemLeft" align="right" valign="top"><a id="a6284de59bde8bc2bb12a4b9190c4ed9d" name="a6284de59bde8bc2bb12a4b9190c4ed9d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0024</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a6284de59bde8bc2bb12a4b9190c4ed9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65477e687619d9adec3470b390d0fa6b"><td class="memItemLeft" align="right" valign="top"><a id="a65477e687619d9adec3470b390d0fa6b" name="a65477e687619d9adec3470b390d0fa6b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0025</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a65477e687619d9adec3470b390d0fa6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47765f69ed2417fe35b59ef37a0dc8ef"><td class="memItemLeft" align="right" valign="top"><a id="a47765f69ed2417fe35b59ef37a0dc8ef" name="a47765f69ed2417fe35b59ef37a0dc8ef"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0026</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a47765f69ed2417fe35b59ef37a0dc8ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abed74f4eac8f4f7dfae72f11df45bc4c"><td class="memItemLeft" align="right" valign="top"><a id="abed74f4eac8f4f7dfae72f11df45bc4c" name="abed74f4eac8f4f7dfae72f11df45bc4c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0027</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:abed74f4eac8f4f7dfae72f11df45bc4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b68e03e5c746346031112b81102d8af"><td class="memItemLeft" align="right" valign="top"><a id="a0b68e03e5c746346031112b81102d8af" name="a0b68e03e5c746346031112b81102d8af"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0028</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a0b68e03e5c746346031112b81102d8af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21542ed86265a7b7f3491a83cc97a656"><td class="memItemLeft" align="right" valign="top"><a id="a21542ed86265a7b7f3491a83cc97a656" name="a21542ed86265a7b7f3491a83cc97a656"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0029</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a21542ed86265a7b7f3491a83cc97a656"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4d9aa28d72fba79a5e6ea54d754614b"><td class="memItemLeft" align="right" valign="top"><a id="ab4d9aa28d72fba79a5e6ea54d754614b" name="ab4d9aa28d72fba79a5e6ea54d754614b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0030</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ab4d9aa28d72fba79a5e6ea54d754614b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9fbfe8164dddfc00f60fdef29e7e3c0"><td class="memItemLeft" align="right" valign="top"><a id="ac9fbfe8164dddfc00f60fdef29e7e3c0" name="ac9fbfe8164dddfc00f60fdef29e7e3c0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0031</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ac9fbfe8164dddfc00f60fdef29e7e3c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76086526a939a1f0475c79b710fedff7"><td class="memItemLeft" align="right" valign="top"><a id="a76086526a939a1f0475c79b710fedff7" name="a76086526a939a1f0475c79b710fedff7"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0032</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a76086526a939a1f0475c79b710fedff7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30c2492b8119ccaa4773269316a3a0f6"><td class="memItemLeft" align="right" valign="top"><a id="a30c2492b8119ccaa4773269316a3a0f6" name="a30c2492b8119ccaa4773269316a3a0f6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0033</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a30c2492b8119ccaa4773269316a3a0f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0594addff7321135cfdcbb236c6dcdc"><td class="memItemLeft" align="right" valign="top"><a id="aa0594addff7321135cfdcbb236c6dcdc" name="aa0594addff7321135cfdcbb236c6dcdc"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0034</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:aa0594addff7321135cfdcbb236c6dcdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68bf250850033864fad13abec9ebc9d0"><td class="memItemLeft" align="right" valign="top"><a id="a68bf250850033864fad13abec9ebc9d0" name="a68bf250850033864fad13abec9ebc9d0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0035</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a68bf250850033864fad13abec9ebc9d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe4af64b6fa5d4b9b230cc67495ad937"><td class="memItemLeft" align="right" valign="top"><a id="afe4af64b6fa5d4b9b230cc67495ad937" name="afe4af64b6fa5d4b9b230cc67495ad937"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0036</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:afe4af64b6fa5d4b9b230cc67495ad937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ddcf28a6da7c8f0201a75ba075c0874"><td class="memItemLeft" align="right" valign="top"><a id="a0ddcf28a6da7c8f0201a75ba075c0874" name="a0ddcf28a6da7c8f0201a75ba075c0874"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0037</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a0ddcf28a6da7c8f0201a75ba075c0874"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec93722dd01c71616f6b1e0c222239e2"><td class="memItemLeft" align="right" valign="top"><a id="aec93722dd01c71616f6b1e0c222239e2" name="aec93722dd01c71616f6b1e0c222239e2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0038</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:aec93722dd01c71616f6b1e0c222239e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9a7ff33bcaf4a774ad5a0821cfe77b4"><td class="memItemLeft" align="right" valign="top"><a id="ad9a7ff33bcaf4a774ad5a0821cfe77b4" name="ad9a7ff33bcaf4a774ad5a0821cfe77b4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0039</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ad9a7ff33bcaf4a774ad5a0821cfe77b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a413afd661290f1a7ac89450a39bc9574"><td class="memItemLeft" align="right" valign="top"><a id="a413afd661290f1a7ac89450a39bc9574" name="a413afd661290f1a7ac89450a39bc9574"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0040</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a413afd661290f1a7ac89450a39bc9574"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac667a793801dc490a31a330627b1883e"><td class="memItemLeft" align="right" valign="top"><a id="ac667a793801dc490a31a330627b1883e" name="ac667a793801dc490a31a330627b1883e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0041</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ac667a793801dc490a31a330627b1883e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade9271ecfe351f3153487f7c98e9b162"><td class="memItemLeft" align="right" valign="top"><a id="ade9271ecfe351f3153487f7c98e9b162" name="ade9271ecfe351f3153487f7c98e9b162"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0042</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ade9271ecfe351f3153487f7c98e9b162"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a717868a4c5188ac5ede9606f0e4d40f3"><td class="memItemLeft" align="right" valign="top"><a id="a717868a4c5188ac5ede9606f0e4d40f3" name="a717868a4c5188ac5ede9606f0e4d40f3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0043</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a717868a4c5188ac5ede9606f0e4d40f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add89811f3265a550eb721e3ffa44a408"><td class="memItemLeft" align="right" valign="top"><a id="add89811f3265a550eb721e3ffa44a408" name="add89811f3265a550eb721e3ffa44a408"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0044</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:add89811f3265a550eb721e3ffa44a408"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee5350b593321a53e4a73ab13a1e6082"><td class="memItemLeft" align="right" valign="top"><a id="aee5350b593321a53e4a73ab13a1e6082" name="aee5350b593321a53e4a73ab13a1e6082"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0045</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:aee5350b593321a53e4a73ab13a1e6082"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a1e1398fbafc85b32762678b5cba70d"><td class="memItemLeft" align="right" valign="top"><a id="a6a1e1398fbafc85b32762678b5cba70d" name="a6a1e1398fbafc85b32762678b5cba70d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0046</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a6a1e1398fbafc85b32762678b5cba70d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e1ea0529cf1d4d61731e20f4265a798"><td class="memItemLeft" align="right" valign="top"><a id="a0e1ea0529cf1d4d61731e20f4265a798" name="a0e1ea0529cf1d4d61731e20f4265a798"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0047</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a0e1ea0529cf1d4d61731e20f4265a798"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17b39742f5e7c43760d7f0300fdcc846"><td class="memItemLeft" align="right" valign="top"><a id="a17b39742f5e7c43760d7f0300fdcc846" name="a17b39742f5e7c43760d7f0300fdcc846"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0048</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a17b39742f5e7c43760d7f0300fdcc846"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a215aade13ea0e02b52305f17f4343a"><td class="memItemLeft" align="right" valign="top"><a id="a0a215aade13ea0e02b52305f17f4343a" name="a0a215aade13ea0e02b52305f17f4343a"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0049</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a0a215aade13ea0e02b52305f17f4343a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa106d5e584a76f6bb0aee912d51dc3bf"><td class="memItemLeft" align="right" valign="top"><a id="aa106d5e584a76f6bb0aee912d51dc3bf" name="aa106d5e584a76f6bb0aee912d51dc3bf"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0050</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:aa106d5e584a76f6bb0aee912d51dc3bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad957b5462e2814458711fbed540e0ca6"><td class="memItemLeft" align="right" valign="top"><a id="ad957b5462e2814458711fbed540e0ca6" name="ad957b5462e2814458711fbed540e0ca6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0051</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ad957b5462e2814458711fbed540e0ca6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d7d4c1de36740b7b9c8174b66e6a25c"><td class="memItemLeft" align="right" valign="top"><a id="a2d7d4c1de36740b7b9c8174b66e6a25c" name="a2d7d4c1de36740b7b9c8174b66e6a25c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0052</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a2d7d4c1de36740b7b9c8174b66e6a25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8c3f2411ecfb31ad28d98b31d7c7999"><td class="memItemLeft" align="right" valign="top"><a id="ad8c3f2411ecfb31ad28d98b31d7c7999" name="ad8c3f2411ecfb31ad28d98b31d7c7999"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0053</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ad8c3f2411ecfb31ad28d98b31d7c7999"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7811930d4c9535a49337ffd7a60b1ce"><td class="memItemLeft" align="right" valign="top"><a id="ae7811930d4c9535a49337ffd7a60b1ce" name="ae7811930d4c9535a49337ffd7a60b1ce"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0054</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ae7811930d4c9535a49337ffd7a60b1ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad574cf41eced51f8dcaee4986c7d1f08"><td class="memItemLeft" align="right" valign="top"><a id="ad574cf41eced51f8dcaee4986c7d1f08" name="ad574cf41eced51f8dcaee4986c7d1f08"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0055</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ad574cf41eced51f8dcaee4986c7d1f08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8205b935b4b094d700010681dc1591f1"><td class="memItemLeft" align="right" valign="top"><a id="a8205b935b4b094d700010681dc1591f1" name="a8205b935b4b094d700010681dc1591f1"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0056</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a8205b935b4b094d700010681dc1591f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0387993564deea7877ce668f91f2acd"><td class="memItemLeft" align="right" valign="top"><a id="ae0387993564deea7877ce668f91f2acd" name="ae0387993564deea7877ce668f91f2acd"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0057</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ae0387993564deea7877ce668f91f2acd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae472b39ed86c1c305b2933ae899b8631"><td class="memItemLeft" align="right" valign="top"><a id="ae472b39ed86c1c305b2933ae899b8631" name="ae472b39ed86c1c305b2933ae899b8631"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0058</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:ae472b39ed86c1c305b2933ae899b8631"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a826196d5c47c6f3a4d0dfb847bc7fe09"><td class="memItemLeft" align="right" valign="top"><a id="a826196d5c47c6f3a4d0dfb847bc7fe09" name="a826196d5c47c6f3a4d0dfb847bc7fe09"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0059</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a826196d5c47c6f3a4d0dfb847bc7fe09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74296aef707eaf846d6ff9b27037fca0"><td class="memItemLeft" align="right" valign="top"><a id="a74296aef707eaf846d6ff9b27037fca0" name="a74296aef707eaf846d6ff9b27037fca0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0060</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a74296aef707eaf846d6ff9b27037fca0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aa1087a050d22133e8609d82aef1c79"><td class="memItemLeft" align="right" valign="top"><a id="a5aa1087a050d22133e8609d82aef1c79" name="a5aa1087a050d22133e8609d82aef1c79"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0061</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a5aa1087a050d22133e8609d82aef1c79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a885fe972757969ffd3752b06161003d4"><td class="memItemLeft" align="right" valign="top"><a id="a885fe972757969ffd3752b06161003d4" name="a885fe972757969ffd3752b06161003d4"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0062</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a885fe972757969ffd3752b06161003d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30bc20f051fc2bad53cc7acd8bac3755"><td class="memItemLeft" align="right" valign="top"><a id="a30bc20f051fc2bad53cc7acd8bac3755" name="a30bc20f051fc2bad53cc7acd8bac3755"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>RTOS_CORE_0_SYSCALL_TABLE_ENTRY_0063</b>&#160;&#160;&#160;<a class="el" href="rtos__system_call_8c.html#a84aeb758bcdf0f1f3b53503464c3ae35">RTOS_SYSCALL_DUMMY_TABLE_ENTRY</a></td></tr>
+<tr class="separator:a30bc20f051fc2bad53cc7acd8bac3755"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9239be1d621d8cfd08af41e7cc85e207"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos__system_call_8c.html#a9239be1d621d8cfd08af41e7cc85e207">SYS_CALL_TABLE_DATA</a>(idxCore)</td></tr>
 <tr class="separator:a9239be1d621d8cfd08af41e7cc85e207"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -119,7 +290,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Implementation of the system call table as a const data object in ROM. The information about the table contents is taken from dedicated header files, named *_defSysCalls.h, which have to be provided by all units that offer at least one system call.</p>
-<p >Copyright (C) 2019-2020 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
+<p >Copyright (C) 2019-2024 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
 <p >You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>

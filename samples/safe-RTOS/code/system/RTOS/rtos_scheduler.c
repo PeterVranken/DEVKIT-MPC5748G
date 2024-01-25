@@ -255,7 +255,7 @@ void rtos_osProcessTriggeredEvProcs(rtos_eventProcDesc_t *pEvProc);
 /** A constant array holding the index of a PIT timer for each core on the chip. This is
     just the configuration data and it leaves it open, whether the core runs the RTOS and
     whether the index is used at all. */
-static const unsigned int rtos_idxRtosTimerAry[RTOS_NO_CORES] =
+static const unsigned int RODATA(rtos_idxRtosTimerAry)[RTOS_NO_CORES] =
     { [0] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 0)
     , [1] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 1)
     , [2] = GET_CORE_VALUE(RTOS_IDX_OF_PID_TIMER, 2)
@@ -1255,6 +1255,14 @@ rtos_errorCode_t rtos_osCreateEventProcessor( unsigned int *pEvProcId
  * rtos_osCreateEventProcessor() with \a tiCycleInMs=0.) Most of the function arguments of
  * rtos_osCreateEventProcessor() are meaningless for event processors triggered by software
  * only, which makes the use of this API more appropriate.
+ *   @return
+ * \a rtos_err_noError (zero) if the event processor could be created. The maximum number
+ * of event processors is limited to #RTOS_MAX_NO_EVENT_PROCESSORS. If the event processor
+ * cannot be created due to this constraint or if the function arguments are invalid or
+ * inconsistent then the function returns a non zero value from enumeration \a
+ * rtos_errorCode_t.\n
+ *   An assertion in the calling code is considered appropriate to handle the error because
+ * it'll always be a static configuration error.
  *   @param pEvProcId
  * The event processor ID is returned by reference. See rtos_osCreateEventProcessor() for
  * details. 

@@ -3,6 +3,7 @@ var rtos__scheduler_8c =
     [ "EVENT_PROC_ID_INIT_TASK", "rtos__scheduler_8c.html#a8ae51f00ca834b6efcc9cedaf826fc14", null ],
     [ "GET_CORE_VALUE", "rtos__scheduler_8c.html#a267ce3a89ec2f69b6a29643a33c01a28", null ],
     [ "rtos_osProcessTriggeredEvProcs", "rtos__scheduler_8c.html#a3f8edfdc590cd53f9c53002f0aaaf852", null ],
+    [ "RODATA", "rtos__scheduler_8c.html#a224f58de74e07d9586819cfb4ffc25f8", null ],
     [ "getEventProcByID", "rtos__scheduler_8c.html#ac331cc76788c654b2757642d41c06c5a", null ],
     [ "getEventProcByIdx", "rtos__scheduler_8c.html#a00d1d1e331d1c6f75aa0edc5a677b7c4", null ],
     [ "advanceEvProcToSuccesorSamePrio", "rtos__scheduler_8c.html#ad480064fc944a36ac0a601334153da24", null ],
@@ -24,6 +25,5 @@ var rtos__scheduler_8c =
     [ "rtos_osSuspendAllTasksByPriority", "rtos__scheduler_8c.html#a90505523c85decbc51c6835d425f861e", null ],
     [ "rtos_osResumeAllTasksByPriority", "rtos__scheduler_8c.html#a3edc62289271a4f7bcdbcc02b1680c8e", null ],
     [ "rtos_getNoActivationLoss", "rtos__scheduler_8c.html#ab1ec7855aa3c9d3d400011adab6c8893", null ],
-    [ "rtos_osGetTaskBasePriority", "rtos__scheduler_8c.html#a11b8aa11db60df29c343007d79157eef", null ],
-    [ "rtos_idxRtosTimerAry", "rtos__scheduler_8c.html#ac65d5369b0c6512dc46693ed73edad4d", null ]
+    [ "rtos_osGetTaskBasePriority", "rtos__scheduler_8c.html#a11b8aa11db60df29c343007d79157eef", null ]
 ];

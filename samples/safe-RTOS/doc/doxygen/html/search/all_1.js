@@ -11,8 +11,7 @@ var searchData=
   ['assert_5ffailure_5fbehavior_5fcontinue_5fsw_5fand_5fstore_5ffirst_8',['ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_FIRST',['../assert__config_8h.html#a62a13ae6f77a787c122da0979b496547',1,'assert_config.h']]],
   ['assert_5ffailure_5fbehavior_5fcontinue_5fsw_5fand_5fstore_5flast_9',['ASSERT_FAILURE_BEHAVIOR_CONTINUE_SW_AND_STORE_LAST',['../assert__config_8h.html#a026fb091a6a5685c9600ce72304dbf37',1,'assert_config.h']]],
   ['assert_5ffailure_5fbehavior_5fhalt_5fsw_10',['ASSERT_FAILURE_BEHAVIOR_HALT_SW',['../assert__config_8h.html#a772aca7ef6d6feea5d937c26d58da057',1,'assert_config.h']]],
-  ['assert_5fos_5fassert_5ffunc_11',['assert_os_assert_func',['../assert__sys_call_8h.html#a81226a3f900be50fea572cd795037974',1,'assert_sysCall.h']]],
-  ['assert_5fsyscall_2eh_12',['assert_sysCall.h',['../assert__sys_call_8h.html',1,'']]],
-  ['attrib_5fdbg_5fonly_13',['ATTRIB_DBG_ONLY',['../typ__types_8h.html#ad31010df31fe7452775431030bfcae24',1,'typ_types.h']]],
-  ['attrib_5funused_14',['ATTRIB_UNUSED',['../typ__types_8h.html#ad8f4868e801fa3e8a014ab14b790684f',1,'typ_types.h']]]
+  ['assert_5fsyscall_2eh_11',['assert_sysCall.h',['../assert__sys_call_8h.html',1,'']]],
+  ['attrib_5fdbg_5fonly_12',['ATTRIB_DBG_ONLY',['../typ__types_8h.html#ad31010df31fe7452775431030bfcae24',1,'typ_types.h']]],
+  ['attrib_5funused_13',['ATTRIB_UNUSED',['../typ__types_8h.html#ad8f4868e801fa3e8a014ab14b790684f',1,'typ_types.h']]]
 ];

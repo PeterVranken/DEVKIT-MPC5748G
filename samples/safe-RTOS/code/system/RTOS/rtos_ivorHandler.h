@@ -329,7 +329,7 @@ const rtos_kernelInstanceData_t *rtos_getInstancePtr(void);
 
 
 /**
- *   @func rtos_getIdxCore
+ *   @fn rtos_getIdxCore
  * This function returns the contents of CPU read-only register PIR.
  *   @return
  * Get the index of the core the calling code is running on. The range is 0..2, meaning
@@ -342,7 +342,7 @@ unsigned int rtos_getIdxCore(void);
 
 
 /**
- *   @func rtos_getCoreStatusRegister
+ *   @fn rtos_getCoreStatusRegister
  * Get the value of the msr. This is an entry point to C code, which can be called from
  * supervisor and user mode.
  *   @return

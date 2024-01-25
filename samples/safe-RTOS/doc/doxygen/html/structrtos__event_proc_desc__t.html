@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): rtos_eventProcDesc_t Struct Reference</title>
+<title>safe-RTOS: rtos_eventProcDesc_t Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -247,7 +247,7 @@ enum <a class="el" href="structrtos__event_proc_desc__t.html#a7846a2b6dad39b2400
       </table>
 </div><div class="memdoc">
 <p >The priority of the event (and thus of all associated user tasks, which inherit the prioritry) in the range 1..UINT_MAX. Different events can share the same priority. If they do then the execution of their associated tasks will be sequenced when they become due at same time or with overlap.<br  />
- Note, if the event has a priority above #RTOS_MAX_LOCKABLE_TASK_PRIORITY then only those tasks can be associated, which belong to the process with highest PID in use. This is a safety constraint. </p>
+ Note, if the event has a priority above <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a> then only those tasks can be associated, which belong to the process with highest PID in use. This is a safety constraint. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): rtos_kernelInstanceData.h Source File</title>
+<title>safe-RTOS: rtos_kernelInstanceData.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -116,17 +116,17 @@ $(document).ready(function(){initNavTree('rtos__kernel_instance_data_8h_source.h
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>{</div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a836e833dc035cf1fbe966fc5fbf26c09">   61</a></span>    <a class="code hl_struct" href="structrtos__process_desc__t.html">rtos_processDesc_t</a> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a836e833dc035cf1fbe966fc5fbf26c09">processAry</a>[<a class="code hl_define" href="rtos_8h.html#a18500a557ecd5ebbcefbacba22b58d7e">RTOS_NO_PROCESSES</a>];</div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a2861e3ba7d91cbeb9157f71c8b68f526">   64</a></span>    <a class="code hl_struct" href="structrtos__task_desc__t.html">rtos_taskDesc_t</a> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a2861e3ba7d91cbeb9157f71c8b68f526">taskCfgAry</a>[RTOS_MAX_NO_TASKS];</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a2861e3ba7d91cbeb9157f71c8b68f526">   64</a></span>    <a class="code hl_struct" href="structrtos__task_desc__t.html">rtos_taskDesc_t</a> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a2861e3ba7d91cbeb9157f71c8b68f526">taskCfgAry</a>[<a class="code hl_define" href="rtos_8config_8h.html#a132fbde1ccf910d5a3ba069232db0709">RTOS_MAX_NO_TASKS</a>];</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a654b3bbb842b150e0fa269f7cb305d4c">   67</a></span>    <a class="code hl_struct" href="structrtos__task_desc__t.html">rtos_taskDesc_t</a> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a654b3bbb842b150e0fa269f7cb305d4c">initTaskCfgAry</a>[1+<a class="code hl_define" href="rtos_8h.html#a18500a557ecd5ebbcefbacba22b58d7e">RTOS_NO_PROCESSES</a>];</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#aeef2b87295fd1bbb812dd4a000d989f0">   70</a></span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#aeef2b87295fd1bbb812dd4a000d989f0">noTasks</a>;</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a8804ba61eaba73f4df34eed04a47b645">   77</a></span>    <a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a8804ba61eaba73f4df34eed04a47b645">eventProcAry</a>[RTOS_MAX_NO_EVENT_PROCESSORS+1];</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a8804ba61eaba73f4df34eed04a47b645">   77</a></span>    <a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a8804ba61eaba73f4df34eed04a47b645">eventProcAry</a>[<a class="code hl_define" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a>+1];</div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#ad6538f77c55749ae0b98ec16a12214d5">   82</a></span>    <a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> *<a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#ad6538f77c55749ae0b98ec16a12214d5">mapEvProcIDToPtr</a>[RTOS_MAX_NO_EVENT_PROCESSORS];</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#ad6538f77c55749ae0b98ec16a12214d5">   82</a></span>    <a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> *<a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#ad6538f77c55749ae0b98ec16a12214d5">mapEvProcIDToPtr</a>[<a class="code hl_define" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a>];</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#afa4aaf432811fa4248c0402e3363d61f">   88</a></span>    <a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> *<a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#afa4aaf432811fa4248c0402e3363d61f">mapPrioToEvProc</a>[RTOS_MAX_TASK_PRIORITY+1];</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#afa4aaf432811fa4248c0402e3363d61f">   88</a></span>    <a class="code hl_struct" href="structrtos__event_proc_desc__t.html">rtos_eventProcDesc_t</a> *<a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#afa4aaf432811fa4248c0402e3363d61f">mapPrioToEvProc</a>[<a class="code hl_define" href="rtos_8config_8h.html#a43041ea621d7f741020ac4fca4c543c7">RTOS_MAX_TASK_PRIORITY</a>+1];</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno"><a class="line" href="structrtos__kernel_instance_data__t.html#a542cfb9739739032d28b6ecd65b431d9">   92</a></span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code hl_variable" href="structrtos__kernel_instance_data__t.html#a542cfb9739739032d28b6ecd65b431d9">noEventProcs</a>;</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
@@ -196,6 +196,9 @@ $(document).ready(function(){initNavTree('rtos__kernel_instance_data_8h_source.h
 <div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span> </div>
 <div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span> </div>
 <div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span><span class="preprocessor">#endif  </span><span class="comment">/* RTOS_KERNELINSTANCEDATA_INCLUDED */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="artos_8config_8h_html_a132fbde1ccf910d5a3ba069232db0709"><div class="ttname"><a href="rtos_8config_8h.html#a132fbde1ccf910d5a3ba069232db0709">RTOS_MAX_NO_TASKS</a></div><div class="ttdeci">#define RTOS_MAX_NO_TASKS</div><div class="ttdef"><b>Definition:</b> rtos.config.h:114</div></div>
+<div class="ttc" id="artos_8config_8h_html_a42c1961adb85fc5860c9244c45f62804"><div class="ttname"><a href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a></div><div class="ttdeci">#define RTOS_MAX_NO_EVENT_PROCESSORS</div><div class="ttdef"><b>Definition:</b> rtos.config.h:103</div></div>
+<div class="ttc" id="artos_8config_8h_html_a43041ea621d7f741020ac4fca4c543c7"><div class="ttname"><a href="rtos_8config_8h.html#a43041ea621d7f741020ac4fca4c543c7">RTOS_MAX_TASK_PRIORITY</a></div><div class="ttdeci">#define RTOS_MAX_TASK_PRIORITY</div><div class="ttdef"><b>Definition:</b> rtos.config.h:79</div></div>
 <div class="ttc" id="artos_8h_html_a18500a557ecd5ebbcefbacba22b58d7e"><div class="ttname"><a href="rtos_8h.html#a18500a557ecd5ebbcefbacba22b58d7e">RTOS_NO_PROCESSES</a></div><div class="ttdeci">#define RTOS_NO_PROCESSES</div><div class="ttdef"><b>Definition:</b> rtos.h:125</div></div>
 <div class="ttc" id="artos__kernel_instance_data_8h_html_a0346bc8aea429d62d807a2c612b94b97"><div class="ttname"><a href="rtos__kernel_instance_data_8h.html#a0346bc8aea429d62d807a2c612b94b97">rtos_osGetInstancePtr</a></div><div class="ttdeci">static rtos_kernelInstanceData_t * rtos_osGetInstancePtr(void)</div><div class="ttdef"><b>Definition:</b> rtos_kernelInstanceData.h:198</div></div>
 <div class="ttc" id="artos__kernel_instance_data_8h_html_a45152a06b62e42d556056341c8647011"><div class="ttname"><a href="rtos__kernel_instance_data_8h.html#a45152a06b62e42d556056341c8647011">rtos_getInstancePtr</a></div><div class="ttdeci">const rtos_kernelInstanceData_t * rtos_getInstancePtr(void)</div></div>

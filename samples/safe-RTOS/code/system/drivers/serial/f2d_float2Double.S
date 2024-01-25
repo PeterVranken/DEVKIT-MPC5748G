@@ -70,7 +70,7 @@
 
 
 /**
- *   @func f2d
+ *   @fn f2d
  * Convert a float value into a real 64 Bit double value.
  *   @return
  * Get the value of \a f as 64 Bit double in register pair r3/r4.

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): rtos.h File Reference</title>
+<title>safe-RTOS: rtos.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('rtos_8h.html',''); initResizable(); })
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &quot;MPC5748G.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="typ__types_8h_source.html">typ_types.h</a>&quot;</code><br />
-<code>#include &quot;rtos.config.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="rtos_8config_8h_source.html">rtos.config.h</a>&quot;</code><br />
 </div>
 <p><a href="rtos_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -114,7 +114,7 @@ Macros</h2></td></tr>
 <tr class="separator:a18500a557ecd5ebbcefbacba22b58d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab004fb06d9894fe6afdc8385f33602cb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#ab004fb06d9894fe6afdc8385f33602cb">RTOS_NO_CORES</a>&#160;&#160;&#160;3</td></tr>
 <tr class="separator:ab004fb06d9894fe6afdc8385f33602cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e59eb94bd87ab947627170aa96ba093"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a6e59eb94bd87ab947627170aa96ba093">RTOS_INVALID_EVENT_PROC_ID</a>&#160;&#160;&#160;(RTOS_MAX_NO_EVENT_PROCESSORS)</td></tr>
+<tr class="memitem:a6e59eb94bd87ab947627170aa96ba093"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a6e59eb94bd87ab947627170aa96ba093">RTOS_INVALID_EVENT_PROC_ID</a>&#160;&#160;&#160;(<a class="el" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a>)</td></tr>
 <tr class="separator:a6e59eb94bd87ab947627170aa96ba093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f387767ac5768e23a4a7aa1ef5084f7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a1f387767ac5768e23a4a7aa1ef5084f7">RTOS_TI_DEADLINE_MAX_IN_US</a>&#160;&#160;&#160;26843545</td></tr>
 <tr class="separator:a1f387767ac5768e23a4a7aa1ef5084f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -277,10 +277,10 @@ Functions</h2></td></tr>
 <tr class="separator:aeddb4b88dd8c1052eb41763e7164e7fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63296923146f8dff5b8754ca1c6003dc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a63296923146f8dff5b8754ca1c6003dc">rtos_isProcessSuspended</a> (uint32_t PID)</td></tr>
 <tr class="separator:a63296923146f8dff5b8754ca1c6003dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a966523717fe21b4addf50dc0fd42bd61"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a966523717fe21b4addf50dc0fd42bd61">rtos_getIdxCore</a> (void)</td></tr>
-<tr class="separator:a966523717fe21b4addf50dc0fd42bd61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93a57e66b8655815f7eb6d05e30c4766"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a93a57e66b8655815f7eb6d05e30c4766">rtos_getCoreStatusRegister</a> (void)</td></tr>
-<tr class="separator:a93a57e66b8655815f7eb6d05e30c4766"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a733dddf34c1ab3a828e5e2e98daa8b90"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a733dddf34c1ab3a828e5e2e98daa8b90">rtos_getIdxCore</a> (void)</td></tr>
+<tr class="separator:a733dddf34c1ab3a828e5e2e98daa8b90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa300833f2f5ca8b0ff0afa30916a0d1e"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#aa300833f2f5ca8b0ff0afa30916a0d1e">rtos_getCoreStatusRegister</a> (void)</td></tr>
+<tr class="separator:aa300833f2f5ca8b0ff0afa30916a0d1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6621923bed2b7ca031f158a305704048"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a6621923bed2b7ca031f158a305704048">rtos_osGetIdxCore</a> (void)</td></tr>
 <tr class="separator:a6621923bed2b7ca031f158a305704048"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a545491943035300af3886c05538290de"><td class="memItemLeft" align="right" valign="top">static int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtos_8h.html#a545491943035300af3886c05538290de">rtos_osRunTask</a> (const <a class="el" href="structrtos__task_desc__t.html">rtos_taskDesc_t</a> *pUserTaskConfig, uint32_t taskParam)</td></tr>
@@ -370,7 +370,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define RTOS_INVALID_EVENT_PROC_ID&#160;&#160;&#160;(RTOS_MAX_NO_EVENT_PROCESSORS)</td>
+          <td class="memname">#define RTOS_INVALID_EVENT_PROC_ID&#160;&#160;&#160;(<a class="el" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -802,9 +802,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >This enumeration collects the errors, which are recognized during system configuration and initialization. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a19304aaba258a01530cb891f69fa78dc" name="ae6a79bdc418d571b34528a8d2c9f49d1a19304aaba258a01530cb891f69fa78dc"></a>rtos_err_tooManyEventsCreated&#160;</td><td class="fielddoc"><p >Can't create no more than #RTOS_MAX_NO_EVENT_PROCESSORS events. </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a19304aaba258a01530cb891f69fa78dc" name="ae6a79bdc418d571b34528a8d2c9f49d1a19304aaba258a01530cb891f69fa78dc"></a>rtos_err_tooManyEventsCreated&#160;</td><td class="fielddoc"><p >Can't create no more than <a class="el" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a> events. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a88b39e365c36b7864305b1020d167917" name="ae6a79bdc418d571b34528a8d2c9f49d1a88b39e365c36b7864305b1020d167917"></a>rtos_err_invalidEventPrio&#160;</td><td class="fielddoc"><p >Priority needs to be in range [1; #RTOS_MAX_LOCKABLE_TASK_PRIORITY) </p>
+<tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a88b39e365c36b7864305b1020d167917" name="ae6a79bdc418d571b34528a8d2c9f49d1a88b39e365c36b7864305b1020d167917"></a>rtos_err_invalidEventPrio&#160;</td><td class="fielddoc"><p >Priority needs to be in range [1; <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a>) </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a7997aabfed01a9d3dc744a0971b21292" name="ae6a79bdc418d571b34528a8d2c9f49d1a7997aabfed01a9d3dc744a0971b21292"></a>rtos_err_badEventTiming&#160;</td><td class="fielddoc"><p >Inconsistent or bad timing configuration stated for event. </p>
 </td></tr>
@@ -818,7 +818,7 @@ Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a218ea0e64c7b0278fa114aa3aac80d60" name="ae6a79bdc418d571b34528a8d2c9f49d1a218ea0e64c7b0278fa114aa3aac80d60"></a>rtos_err_badProcessId&#160;</td><td class="fielddoc"><p >The ID of the process is invalid. No such process exists. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a385adfe034f15b8a93c11278c1d01aba" name="ae6a79bdc418d571b34528a8d2c9f49d1a385adfe034f15b8a93c11278c1d01aba"></a>rtos_err_tooManyTasksRegistered&#160;</td><td class="fielddoc"><p >More than #RTOS_MAX_NO_TASKS registered. </p>
+<tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a385adfe034f15b8a93c11278c1d01aba" name="ae6a79bdc418d571b34528a8d2c9f49d1a385adfe034f15b8a93c11278c1d01aba"></a>rtos_err_tooManyTasksRegistered&#160;</td><td class="fielddoc"><p >More than <a class="el" href="rtos_8config_8h.html#a132fbde1ccf910d5a3ba069232db0709">RTOS_MAX_NO_TASKS</a> registered. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ae6a79bdc418d571b34528a8d2c9f49d1a0a3176c426b81c3eed1a4b7cbd5ef371" name="ae6a79bdc418d571b34528a8d2c9f49d1a0a3176c426b81c3eed1a4b7cbd5ef371"></a>rtos_err_noEvOrTaskRegistered&#160;</td><td class="fielddoc"><p >No event and/or no task defined at start of system. </p>
 </td></tr>
@@ -905,7 +905,7 @@ Functions</h2></td></tr>
 <p >Creation of an event processor. The event processor can use cyclic time triggering or be triggerd by software.</p>
 <p >Creation of an event processor. The event processor can produce a periodic timer event or it can be software triggered. An event processor is needed to activate a user task. Therefore, any reasonable application will create at least one event processor.<br  />
  This function is repeatedly called by the application code for each required event processor. All calls of this function need to be done prior to the start of the kernel using <a class="el" href="rtos__scheduler_8c.html#ab24d0fa9208d5675e03cc931a08e52fd">rtos_osInitKernel()</a>.<br  />
- </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the event processor could be created. The maximum number of event processors is limited to #RTOS_MAX_NO_EVENT_PROCESSORS. If the event processor cannot be created due to this constraint or if the function arguments are invalid or inconsistent then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
+ </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the event processor could be created. The maximum number of event processors is limited to <a class="el" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a>. If the event processor cannot be created due to this constraint or if the function arguments are invalid or inconsistent then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
  An assertion in the calling code is considered appropriate to handle the error because it'll always be a static configuration error. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -916,7 +916,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">tiFirstActivationInMs</td><td>The first trigger by timer event in ms after start of kernel. The permitted range is 0..2^30-1.<br  />
  Note, this setting is useless if a cycle time zero in <em>tiCycleInMs</em> specifies a non regular event. <em>tiFirstActivationInMs</em> needs to be zero in this case, too. </td></tr>
     <tr><td class="paramname">priority</td><td>The priority of the event processor in the range 1..UINT_MAX. Different event processors can share the same priority. The priority of an event processor is the priority of all associated tasks at the same time. The execution of tasks, which share the priority will be serialized when they are activated at same time or with overlap.<br  />
- Note the safety constraint that task priorities above #RTOS_MAX_LOCKABLE_TASK_PRIORITY are available only to event processors, which solely have associated tasks that belong to the process with highest process ID in use. (Which is assumed to be the safety process.)<br  />
+ Note the safety constraint that task priorities above <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a> are available only to event processors, which solely have associated tasks that belong to the process with highest process ID in use. (Which is assumed to be the safety process.)<br  />
  Note, the order in which event processors are created can affect the priority in a certain sense. If two event processors are created with same priority and when they at runtime become due at the same OS time tick then the earlier created processor will activate its associated tasks before the later created. </td></tr>
     <tr><td class="paramname">minPIDToTriggerThisEvProc</td><td>Events can be notified by user code, e.g., using <a class="el" href="rtos_8h.html#aa32c2851008be051b3a644e081da3298">rtos_sendEvent()</a>. However, tasks belonging to less privileged processes must not generally have permission to trigger event processors that may activate tasks of higher privileged processes. Since an event processor is not process related, we make the minimum process ID, which is required to notify the event to the processor, an explicitly configured property of the processor.<br  />
  Only tasks belonging to a process with PID &gt;= <em>minPIDToTriggerThisEvProc</em> are permitted to trigger this event processor.<br  />
@@ -967,7 +967,9 @@ This function must be called by trusted code in supervisor mode only. </dd></dl>
       </table>
 </div><div class="memdoc">
 <p >Creation of an event processor, which is intended for software notified events only.</p>
-<p >A simplified call of <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> to create an event processor, which won't be triggered by timer events. (The function internally calls <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> with <em>tiCycleInMs=0</em>.) Most of the function arguments of <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> are meaningless for event processors triggered by software only, which makes the use of this API more appropriate. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >A simplified call of <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> to create an event processor, which won't be triggered by timer events. (The function internally calls <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> with <em>tiCycleInMs=0</em>.) Most of the function arguments of <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> are meaningless for event processors triggered by software only, which makes the use of this API more appropriate. </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the event processor could be created. The maximum number of event processors is limited to <a class="el" href="rtos_8config_8h.html#a42c1961adb85fc5860c9244c45f62804">RTOS_MAX_NO_EVENT_PROCESSORS</a>. If the event processor cannot be created due to this constraint or if the function arguments are invalid or inconsistent then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
+ An assertion in the calling code is considered appropriate to handle the error because it'll always be a static configuration error. </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pEvProcId</td><td>The event processor ID is returned by reference. See <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> for details. </td></tr>
     <tr><td class="paramname">priority</td><td>The priority of the event processor. See <a class="el" href="rtos__scheduler_8c.html#aae28a732a3918bcd90346b192bf46293">rtos_osCreateEventProcessor()</a> for details. </td></tr>
@@ -1073,7 +1075,7 @@ This function must be called by trusted code in supervisor mode only. </dd></dl>
 </div><div class="memdoc">
 <p >Task registration for scheduled user mode tasks.</p>
 <p >Registration of an event triggered user mode task. Normal, event activated tasks can be registered for later execution. This function is repeatedly called by the application code as often as user mode tasks are required.<br  />
- All calls of this function need to be done prior to the start of the kernel using <a class="el" href="rtos__scheduler_8c.html#ab24d0fa9208d5675e03cc931a08e52fd">rtos_osInitKernel()</a>. </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the task could be registered. The maximum number of tasks is limited to #RTOS_MAX_NO_TASKS (regardless, how they are distributed among processes). If the limit is exceeded or if the task specification is invalid then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
+ All calls of this function need to be done prior to the start of the kernel using <a class="el" href="rtos__scheduler_8c.html#ab24d0fa9208d5675e03cc931a08e52fd">rtos_osInitKernel()</a>. </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the task could be registered. The maximum number of tasks is limited to <a class="el" href="rtos_8config_8h.html#a132fbde1ccf910d5a3ba069232db0709">RTOS_MAX_NO_TASKS</a> (regardless, how they are distributed among processes). If the limit is exceeded or if the task specification is invalid then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
  An assertion in the calling code is considered appropriate to handle the error because it'll always be a static configuration error. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1124,7 +1126,7 @@ This function must be called by trusted code in supervisor mode only. </dd></dl>
 </div><div class="memdoc">
 <p >Task registration for scheduled operating system tasks.</p>
 <p >Registration of an event triggered operating system task. Event activated tasks can be registered for later execution. This function is repeatedly called by the application code as often as operating system tasks are required.<br  />
- All calls of this function need to be done prior to the start of the kernel using <a class="el" href="rtos__scheduler_8c.html#ab24d0fa9208d5675e03cc931a08e52fd">rtos_osInitKernel()</a>. </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the task could be registered. The maximum number of tasks is limited to #RTOS_MAX_NO_TASKS (regardless, how they are distributed among processes). If the limit is exceeded or if the task specification is invalid then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
+ All calls of this function need to be done prior to the start of the kernel using <a class="el" href="rtos__scheduler_8c.html#ab24d0fa9208d5675e03cc931a08e52fd">rtos_osInitKernel()</a>. </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the task could be registered. The maximum number of tasks is limited to <a class="el" href="rtos_8config_8h.html#a132fbde1ccf910d5a3ba069232db0709">RTOS_MAX_NO_TASKS</a> (regardless, how they are distributed among processes). If the limit is exceeded or if the task specification is invalid then the function returns a non zero value from enumeration <em>rtos_errorCode_t</em>.<br  />
  An assertion in the calling code is considered appropriate to handle the error because it'll always be a static configuration error. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1342,7 +1344,7 @@ This function must be called from the OS context only. It is intended for use in
 </div><div class="memdoc">
 <p >Kernel initialization.</p>
 <p >Initialization and start of the RTOS kernel.<br  />
- The function initializes a hardware device to produce a regular clock tick and connects the OS schedule function onOsTimerTick() with the interrupt raised by this timer device. After return, the RTOS is running with a regular clock tick for scheduling the tasks. Period time is #RTOS_CLOCK_TICK_IN_MS_CORE_0 (_1, _2) Milliseconds.<br  />
+ The function initializes a hardware device to produce a regular clock tick and connects the OS schedule function onOsTimerTick() with the interrupt raised by this timer device. After return, the RTOS is running with a regular clock tick for scheduling the tasks. Period time is <a class="el" href="rtos_8config_8h.html#a7bf97b46b6e438370c03ef73f06df753">RTOS_CLOCK_TICK_IN_MS_CORE_0</a> (_1, _2) Milliseconds.<br  />
  The function can be called before or after the External Interrupts are enabled at the CPU (see <a class="el" href="rtos_8h.html#ad580381efb7808b37da052d3a51a7901">rtos_osResumeAllInterrupts()</a>). Normal behavior is however, no to resume the interrupt processing before and let this be done by <a class="el" href="rtos__scheduler_8c.html#ab24d0fa9208d5675e03cc931a08e52fd">rtos_osInitKernel()</a>. </p><dl class="section return"><dt>Returns</dt><dd><em>rtos_err_noError</em> (zero) if the scheduler could be started. The function returns a non zero value from enumeration <em>rtos_errorCode_t</em> if a configuration error is detected. The software must not start up in this case. Since it is only about static configuration, the returned error may be appropriately handled by an assertion. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>The RTOS kernel applies the Periodic Interrupt Timer 0 (PIT0) as clock source. This timer is reserved to the RTOS and must not be used at all by some other code. </dd>
 <dd>
@@ -1598,10 +1600,10 @@ This function requires that msr[EE]=1 on entry. </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Priority ceiling protocol, partial scheduler lock: All tasks up to the specified task priority level won't be served by the CPU. This function is intended for implementing mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks, which should be locked, i.e., which compete for the resource or critical section to protect. This may still lock other, not competing tasks, but at least all non competing tasks of higher priority and the interrupt handlers will still be served.<br  />
+<p >Priority ceiling protocol, partial scheduler lock: All tasks up to the specified task priority level won't be served by the CPU. This function is intended for implementing mutual exclusion of sub-sets of tasks: Call it with the highest priority of all tasks, which should be locked, i.e., which compete for the resource or critical section to protect. This may still lock other, not competing tasks, but at least all non competing tasks of higher priority and the interrupt handlers will be served.<br  />
  To release the protected resource or to leave the critical section, call the counterpart function <a class="el" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority()</a>, which restores the original task priority level.<br  />
- The priority can be raised only up to #RTOS_MAX_LOCKABLE_TASK_PRIORITY. An attempt to raise it beyond this limit will lead to an <a class="el" href="rtos_8h.html#a6e76056aa81bac40477ab9beecb6c9c4">RTOS_ERR_PRC_SYS_CALL_BAD_ARG</a> exception.<br  />
- Safety rationale: A user task cannot shape a critical section with the RTOS scheduler, nor with the user task of priority above #RTOS_MAX_LOCKABLE_TASK_PRIORITY and nor with an ISR. (The attempt to shape a critical section with a task above #RTOS_MAX_LOCKABLE_TASK_PRIORITY is caught in DEBUG compilation, see <a class="el" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority()</a>.) The intention is to inhibit a task from blocking a safety task. </p><dl class="section return"><dt>Returns</dt><dd>Get the task priority level at entry into this function (and into the critical section). This priority level needs to be restored on exit from the critical section using system call <a class="el" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority()</a>. </dd></dl>
+ The priority can be raised only up to <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a>. An attempt to raise it beyond this limit will lead to an <a class="el" href="rtos_8h.html#a6e76056aa81bac40477ab9beecb6c9c4">RTOS_ERR_PRC_SYS_CALL_BAD_ARG</a> exception.<br  />
+ Safety rationale: A user task cannot shape a critical section with the RTOS scheduler, nor with the user task of priority above <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a> and nor with an ISR. (The attempt to shape a critical section with a task above <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a> is caught in DEBUG compilation, see <a class="el" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority()</a>.) The intention is to inhibit a task from blocking a safety task. </p><dl class="section return"><dt>Returns</dt><dd>Get the task priority level at entry into this function (and into the critical section). This priority level needs to be restored on exit from the critical section using system call <a class="el" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority()</a>. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">suspendUpToThisPriority</td><td><em>suspendUpToThisPriority</em> is the aimed task priority level. All tasks up to and including this priority will be locked. They won't get the CPU until the priority level is lowered again. </td></tr>
@@ -1647,7 +1649,7 @@ This function must be called from the user task context only. Any attempt to use
 </dl>
 <dl class="section remark"><dt>Remarks</dt><dd>To support the use case of nested calls of OSEK/VDX like GetResource/ReleaseResource functions, this function compares the stated prioity value to the current priority level. If <em>resumeDownToThisPriority</em> is greater than the current value then the current value is not altered. </dd>
 <dd>
-It is impossible to shape a critical section with the safety task of priority above #RTOS_MAX_LOCKABLE_TASK_PRIORITY and the attempt will always mean a functional error in the design of the application code. To support debugging, this error is caught in DEBUG compilation: Then the function throws a <a class="el" href="rtos_8h.html#a6e76056aa81bac40477ab9beecb6c9c4">RTOS_ERR_PRC_SYS_CALL_BAD_ARG</a> exception if <em>resumeDownToThisPriority</em> is greater than #RTOS_MAX_LOCKABLE_TASK_PRIORITY. In PRODUCTION compilation, we have the normal behavior of silently ignoring attempts to actually raise the priority. </dd>
+It is impossible to shape a critical section with the safety task of priority above <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a> and the attempt will always mean a functional error in the design of the application code. To support debugging, this error is caught in DEBUG compilation: Then the function throws a <a class="el" href="rtos_8h.html#a6e76056aa81bac40477ab9beecb6c9c4">RTOS_ERR_PRC_SYS_CALL_BAD_ARG</a> exception if <em>resumeDownToThisPriority</em> is greater than <a class="el" href="rtos_8config_8h.html#a7c7e477ca4efe3a5b5502f91e0568d99">RTOS_MAX_LOCKABLE_TASK_PRIORITY</a>. In PRODUCTION compilation, we have the normal behavior of silently ignoring attempts to actually raise the priority. </dd>
 <dd>
 Besides the likely unwanted impact on the scheduling, it doesn't harm if a user task calls <a class="el" href="rtos_8h.html#aa4e09fafaef05f7c20adb63eaefe0b29">rtos_suspendAllTasksByPriority()</a> to raise the priority but doesn't lower it later using this function. The effect of <a class="el" href="rtos_8h.html#aa4e09fafaef05f7c20adb63eaefe0b29">rtos_suspendAllTasksByPriority()</a> will end with the termination of the task. If a critical section is required at the end of a task function it may even be advantageous to not call <a class="el" href="rtos_8h.html#ab749e1296f04521109c29ce521ea770e">rtos_resumeAllTasksByPriority()</a> in order to save the overhead of the involved system call. </dd>
 <dd>
@@ -1956,14 +1958,14 @@ This function must be called from the OS context only. Any attempt to use it in 
 
 </div>
 </div>
-<a id="a966523717fe21b4addf50dc0fd42bd61" name="a966523717fe21b4addf50dc0fd42bd61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a966523717fe21b4addf50dc0fd42bd61">&#9670;&nbsp;</a></span>rtos_getIdxCore()</h2>
+<a id="a733dddf34c1ab3a828e5e2e98daa8b90" name="a733dddf34c1ab3a828e5e2e98daa8b90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a733dddf34c1ab3a828e5e2e98daa8b90">&#9670;&nbsp;</a></span>rtos_getIdxCore()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int rtos_getIdxCore </td>
+          <td class="memname">rtos_getIdxCore </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1971,19 +1973,19 @@ This function must be called from the OS context only. Any attempt to use it in 
         </tr>
       </table>
 </div><div class="memdoc">
-<p >@func rtos_getIdxCore This function returns the contents of CPU read-only register PIR. </p><dl class="section return"><dt>Returns</dt><dd>Get the index of the core the calling code is running on. The range is 0..2, meaning Z4A, Z4B, Z2, respectively. (The convenience macros <a class="el" href="rtos_8h.html#a83cb2901c9810c8c160a1b0d8cf7fa2b">RTOS_CORE_Z4A</a>, <a class="el" href="rtos_8h.html#a7728701da34558de9c44cad1f8ff7bda">RTOS_CORE_Z4B</a> and <a class="el" href="rtos_8h.html#a4bdfa60bad6565f0e56183f260550e60">RTOS_CORE_Z2</a> can be used.) </dd></dl>
+<p >This function returns the contents of CPU read-only register PIR. </p><dl class="section return"><dt>Returns</dt><dd>Get the index of the core the calling code is running on. The range is 0..2, meaning Z4A, Z4B, Z2, respectively. (The convenience macros <a class="el" href="rtos_8h.html#a83cb2901c9810c8c160a1b0d8cf7fa2b">RTOS_CORE_Z4A</a>, <a class="el" href="rtos_8h.html#a7728701da34558de9c44cad1f8ff7bda">RTOS_CORE_Z4B</a> and <a class="el" href="rtos_8h.html#a4bdfa60bad6565f0e56183f260550e60">RTOS_CORE_Z2</a> can be used.) </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>This function may be called from all contexts. However, OS contexts shouldn't because of the performance penalty. They should only use the intrinsic <a class="el" href="rtos_8h.html#a6621923bed2b7ca031f158a305704048">rtos_osGetIdxCore()</a> instead. </dd></dl>
 
 </div>
 </div>
-<a id="a93a57e66b8655815f7eb6d05e30c4766" name="a93a57e66b8655815f7eb6d05e30c4766"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93a57e66b8655815f7eb6d05e30c4766">&#9670;&nbsp;</a></span>rtos_getCoreStatusRegister()</h2>
+<a id="aa300833f2f5ca8b0ff0afa30916a0d1e" name="aa300833f2f5ca8b0ff0afa30916a0d1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa300833f2f5ca8b0ff0afa30916a0d1e">&#9670;&nbsp;</a></span>rtos_getCoreStatusRegister()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t rtos_getCoreStatusRegister </td>
+          <td class="memname">rtos_getCoreStatusRegister </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1991,7 +1993,7 @@ This function must be called from the OS context only. Any attempt to use it in 
         </tr>
       </table>
 </div><div class="memdoc">
-<p >@func rtos_getCoreStatusRegister Get the value of the msr. This is an entry point to C code, which can be called from supervisor and user mode. </p><dl class="section return"><dt>Returns</dt><dd>Get the current contents of CPU register MSR on the code executing core. </dd></dl>
+<p >Get the value of the msr. This is an entry point to C code, which can be called from supervisor and user mode. </p><dl class="section return"><dt>Returns</dt><dd>Get the current contents of CPU register MSR on the code executing core. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>This function can be called from OS and user code. OS code should however better use an intrinsic to read the MSR and in order to save the function call overhead. </dd></dl>
 
 </div>
@@ -2069,7 +2071,7 @@ This function must be called from the OS context only. Any attempt to use it in 
 </dl>
 <dl class="section remark"><dt>Remarks</dt><dd>This function must be called from the OS context only. Any attempt to use it in user code will lead to a privileged exception. </dd>
 <dd>
-The function is intended to implement safe user code callbacks from interrupt events. However, deadline monitoring fails for the task execution if the ISR, which makes use of this API has a priority equal to or above the kernel priority #RTOS_KERNEL_IRQ_PRIORITY_CORE_0 (or #RTOS_KERNEL_IRQ_PRIORITY_CORE_1, or #RTOS_KERNEL_IRQ_PRIORITY_CORE_2, if the RTOS is running on core 1 or 2, respectively). This would likely break the aimed safety concept; an infinite loop in the user code could make the system hang. In most situations, a reasonable safety requirement will prohibit the use of this function from any ISR with such a high priority. </dd></dl>
+The function is intended to implement safe user code callbacks from interrupt events. However, deadline monitoring fails for the task execution if the ISR, which makes use of this API has a priority equal to or above the kernel priority <a class="el" href="rtos_8config_8h.html#a924e12a1878c0bf4605df034889631dc">RTOS_KERNEL_IRQ_PRIORITY_CORE_0</a> (or #RTOS_KERNEL_IRQ_PRIORITY_CORE_1, or #RTOS_KERNEL_IRQ_PRIORITY_CORE_2, if the RTOS is running on core 1 or 2, respectively). This would likely break the aimed safety concept; an infinite loop in the user code could make the system hang. In most situations, a reasonable safety requirement will prohibit the use of this function from any ISR with such a high priority. </dd></dl>
 
 </div>
 </div>

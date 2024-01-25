@@ -8,8 +8,11 @@
  * safe-RTOS kernel on boot core Z4A. The other cores are not started.\n
  *   Most of the code in this file is executed in supervisor mode and belongs to the sphere
  * of trusted code.
+ *   Progress information is permanently written into the serial output channel. A terminal
+ * on the development host needs to use these settings: 115000 Bd, 8 Bit data word, no
+ * parity, 1 stop bit.
  *
- * Copyright (C) 2019-2021 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2017-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -38,6 +41,8 @@
  * Include files
  */
 
+#include "syc_systemConfiguration.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -57,7 +62,6 @@
 #include "prr_processReporting.h"
 #include "prf_processFailureInjection.h"
 #include "prs_processSupervisor.h"
-#include "syc_systemConfiguration.h"
 
 
 /*
@@ -345,12 +349,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     unsigned int idEvent;
     if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */               997 /* about 1s but prime to others */
-                    , /* tiFirstActivationInMs */     19
+                    , /* tiCycleInMs */               997u /* about 1s but prime to others */
+                    , /* tiFirstActivationInMs */     19u
                     , /* priority */                  syc_prioEvReporting
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                    , /* useCountableEvents */        false
-                    , /* taskParam */                 0
+                    , /* timerUsesCountableEvents */  false
+                    , /* timerTaskTriggerParam */     0u
                     )
        != rtos_err_noError
       )
@@ -362,12 +366,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */               10
-                    , /* tiFirstActivationInMs */     0
+                    , /* tiCycleInMs */               10u
+                    , /* tiFirstActivationInMs */     0u
                     , /* priority */                  syc_prioEvTest
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                    , /* useCountableEvents */        false
-                    , /* taskParam */                 0
+                    , /* timerUsesCountableEvents */  false
+                    , /* timerTaskTriggerParam */     0u
                     )
        != rtos_err_noError
       )
@@ -379,12 +383,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */               11
-                    , /* tiFirstActivationInMs */     0
+                    , /* tiCycleInMs */               11u
+                    , /* tiFirstActivationInMs */     0u
                     , /* priority */                  syc_prioEvTestCtxSw
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                    , /* useCountableEvents */        false
-                    , /* taskParam */                 0
+                    , /* timerUsesCountableEvents */  false
+                    , /* timerTaskTriggerParam */     0u
                     )
        != rtos_err_noError
       )
@@ -396,12 +400,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */               0
-                    , /* tiFirstActivationInMs */     0
+                    , /* tiCycleInMs */               0u
+                    , /* tiFirstActivationInMs */     0u
                     , /* priority */                  syc_prioEvPIT2
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                    , /* useCountableEvents */        false
-                    , /* taskParam */                 0
+                    , /* timerUsesCountableEvents */  false
+                    , /* timerTaskTriggerParam */     0u
                     )
        != rtos_err_noError
       )
@@ -413,12 +417,12 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     if(rtos_osCreateEventProcessor
                     ( &idEvent
-                    , /* tiCycleInMs */               17
-                    , /* tiFirstActivationInMs */     0
+                    , /* tiCycleInMs */               17u
+                    , /* tiFirstActivationInMs */     0u
                     , /* priority */                  syc_prioEv17ms
                     , /* minPIDToTriggerThisEvProc */ RTOS_EVENT_PROC_NOT_USER_TRIGGERABLE
-                    , /* useCountableEvents */        false
-                    , /* taskParam */                 0
+                    , /* timerUsesCountableEvents */  false
+                    , /* timerTaskTriggerParam */     0u
                     )
        != rtos_err_noError
       )
@@ -437,7 +441,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     if(rtos_osRegisterUserTask( syc_idEvReporting
                               , prr_taskReporting
                               , syc_pidReporting
-                              , /* tiTaskMaxInUs */ 1500000
+                              , /* tiTaskMaxInUs */ 1500000u
                               )
        != rtos_err_noError
       )
@@ -453,7 +457,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     if(rtos_osRegisterUserTask( syc_idEvTest
                               , prs_taskCommandError
                               , syc_pidSupervisor
-                              , /* tiTaskMaxInUs */ 1500
+                              , /* tiTaskMaxInUs */ 1500u
                               )
        != rtos_err_noError
       )
@@ -463,7 +467,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     if(rtos_osRegisterUserTask( syc_idEvTest
                               , prf_taskInjectError
                               , syc_pidFailingTasks
-                              , /* tiTaskMaxInUs */ 2500
+                              , /* tiTaskMaxInUs */ 2500u
                               )
        != rtos_err_noError
       )
@@ -473,7 +477,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
     if(rtos_osRegisterUserTask( syc_idEvTest
                               , prs_taskEvaluateError
                               , syc_pidSupervisor
-                              , /* tiTaskMaxInUs */ 1500
+                              , /* tiTaskMaxInUs */ 1500u
                               )
        != rtos_err_noError
       )
@@ -545,5 +549,10 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
            measures only the load produced by the tasks and system interrupts but not that
            of the rest of the code in the idle loop. */
         syc_cpuLoad = gsl_osGetSystemLoad();
-    }
+        
+    } /* End of inifinite idle loop of RTOS. */
+
+    /* We never get here. Just to avoid a compiler warning. */
+    return -1;
+
 } /* End of main */

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): rtos_systemMemoryProtectionUnit.c File Reference</title>
+<title>safe-RTOS: rtos_systemMemoryProtectionUnit.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -181,9 +181,9 @@ Functions</h2></td></tr>
  Each of the four user processes has three descriptors, all of them for RAM write and execute access. There's a descriptor for the initialized data and bss, one for the small data and bss and one for the small data 2 and bss 2.<br  />
  The configuration has one descriptor for a chunk of memory, which all user processes have read and write access to. This memory is meant for inter-process communication and must evidently never be used to hold data, which is essential for the health of a process and in particular for the process, that implements supervisory safety tasks.<br  />
  The static configuration of the MPU is the explanation for the fixed number of four supported processes (<a class="el" href="rtos_8h.html#a18500a557ecd5ebbcefbacba22b58d7e">RTOS_NO_PROCESSES</a>). For the partitioning of the RAM space, we need three descriptors per user process and one for the OS and we have 16 descriptors available. From the remaining three, we have spend one for shared data. Two descriptors are still available.<br  />
- CAUTION: The mentioned memory chunks or areas are puzzled by the linker. The MPU configuration makes no hard coded assumptions about memory arrangement and distribution or addresses and sizes of the chunks. It reads address and length of the memory chunks from linker provided symbols. Insofar do we have a very tight relationship between the implementation of this module and the linker script, which must be obeyed when doing maintenance work at either side.</p>
+ CAUTION: The mentioned memory chunks or areas are created by the linker. The MPU configuration makes no hard coded assumptions about memory arrangement and distribution or addresses and sizes of the chunks. It reads address and length of the memory chunks from linker provided symbols. Insofar do we have a very tight relationship between the implementation of this module and the linker script, which must be obeyed when doing maintenance work at either side.</p>
 <p >Alternative configurations, which may find their use case and do not break the safety concept:</p><ul>
-<li>The OS process doesn't necessarily need execution access for RAM. There are typically driver implementation patterns, which require RAM execution rights, but it is mostly about initialization and could be done prior to calling the MPU configuration.<br  />
+<li>The OS process doesn't necessarily need execution access for RAM. There are typical driver implementation patterns, which require RAM execution rights, but it is mostly about initialization and could be done prior to calling the MPU configuration.<br  />
 </li>
 <li>The user processes won't normally need execution rights for their RAM<br  />
 </li>
@@ -197,7 +197,7 @@ Functions</h2></td></tr>
 </li>
 <li>A difficult topic is the placing of the small data 2 and bss 2 sections. It is possible to locate them into the ROM. This is likely not fully compliant with the EABI but for all normal embedded applications alright. In which case we had four free descriptors and could implement two more processes. A similar concept for increasing the number of processes would be entirely switching off the short addressing modes. This is a matter of the compiler command line</li>
 </ul>
-<p >Copyright (C) 2018-2023 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
+<p >Copyright (C) 2018-2024 Peter Vranken (<a href="#" onclick="location.href='mai'+'lto:'+'Pet'+'er'+'_Vr'+'an'+'ken'+'@Y'+'aho'+'o.'+'de'; return false;">Peter<span class="obfuscator">.nosp@m.</span>_Vra<span class="obfuscator">.nosp@m.</span>nken@<span class="obfuscator">.nosp@m.</span>Yaho<span class="obfuscator">.nosp@m.</span>o.de</a>)</p>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
 <p >You should have received a copy of the GNU General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>

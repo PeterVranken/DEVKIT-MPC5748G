@@ -161,7 +161,7 @@ sup_bafData:
 
 
 /**
- *   @func sup_startUp
+ *   @fn sup_startUp
  * Reset address: All machine code execution starts here. The label sup_startUp is
  * specified in the BAF data block in the boot sector to make this happen after reset.
  */
@@ -431,7 +431,7 @@ su_argv_z2:
 
 
 /**
- *   @func zeroizeRegisters
+ *   @fn zeroizeRegisters
  * First step of MCU startup is to bring all relevant registers into a defined state. We
  * set all of them to zero.
  */
@@ -514,7 +514,7 @@ zeroizeRegisters:
 
 
 /**
- *   @func disableWatchdogs
+ *   @fn disableWatchdogs
  * Disable the watchdogs (external SWT and core internal, TCR). Actually, out of reset only
  * one is running and this one is disabled.
  */
@@ -547,7 +547,7 @@ disableWatchdogs:
 
 
 /**
- *   @func initExceptionHandlers
+ *   @fn initExceptionHandlers
  * Set up the MCU's interrupt table. This relates to the 12 built-in exception handlers,
  * not to the External Interrupts the application code will mainly use. (The External
  * Interrupts are one of the 12 exceptions set here.) We assign empty handlers to most
@@ -617,7 +617,7 @@ ieh_writeIVPR:
 
 
 /**
- *   @func zeroizeSRAM
+ *   @fn zeroizeSRAM
  * Zeroize all SRAM cells. All bytes from ld_memRamStart and ld_memRamStart+ld_memRamSize are
  * written to zero.\n
  *   ld_memRamStart needs to be 8 Byte aligned. ld_memRamSize is rounded downwards to a

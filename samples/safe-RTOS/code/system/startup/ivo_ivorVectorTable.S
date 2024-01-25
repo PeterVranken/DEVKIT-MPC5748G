@@ -73,7 +73,7 @@ rtos_ivorVectorTable\Core\():
 
 
 /**
- *   @func ivo_IVOR0trap\Core\()
+ *   @fn ivo_IVOR0trap\Core\()
  * Exception handler IVOR0 for the Critical Input interrupt. See RM, section 62.8.5.1
  * on page 3130.
  */
@@ -86,7 +86,7 @@ ivo_IVOR0trap\Core\():
 
 
 /**
- *   @func ivo_IVOR1trap\Core\()
+ *   @fn ivo_IVOR1trap\Core\()
  * Exception handler IVOR1 for the Machine check / (NMI) interrupt.
  */
     .global     ivo_IVOR1trap\Core\()
@@ -96,7 +96,7 @@ ivo_IVOR1trap\Core\():
 
 
 /**
- *   @func ivo_IVOR2trap\Core\()
+ *   @fn ivo_IVOR2trap\Core\()
  * Exception handler IVOR2 for the Data Storage interrupt. This trap is taken if the MMU
  * signals an unpermitted data access.
  */
@@ -107,7 +107,7 @@ ivo_IVOR2trap\Core\():
 
 
 /**
- *   @func ivo_IVOR3trap\Core\()
+ *   @fn ivo_IVOR3trap\Core\()
  * Exception handler IVOR3 for the Instruction Storage interrupt. This trap is taken if
  * the MMU signals an unpermitted instruction fetch.
  */
@@ -118,7 +118,7 @@ ivo_IVOR3trap\Core\():
 
 
 /**
- *   @func ivo_IVOR4trap\Core\()
+ *   @fn ivo_IVOR4trap\Core\()
  * Exception handler IVOR4 for the External Input interrupt. See RM, section
  * 62.8.5.5 on page 3133.
  */
@@ -130,7 +130,7 @@ ivo_IVOR4trap\Core\():
 
 
 /**
- *   @func ivo_IVOR5trap\Core\()
+ *   @fn ivo_IVOR5trap\Core\()
  * Exception handler IVOR5 for the Alignment interrupt.
  */
     .global     ivo_IVOR5trap\Core\()
@@ -140,7 +140,7 @@ ivo_IVOR5trap\Core\():
 
 
 /**
- *   @func ivo_IVOR6trap\Core\()
+ *   @fn ivo_IVOR6trap\Core\()
  * Exception handler IVOR6 for the Program interrupt.
  */
     .global     ivo_IVOR6trap\Core\()
@@ -150,7 +150,7 @@ ivo_IVOR6trap\Core\():
 
 
 /**
- *   @func ivo_IVOR7trap\Core\()
+ *   @fn ivo_IVOR7trap\Core\()
  * Exception handler IVOR7 for the Performance Monitor interrupt. See RM, section
  * 62.8.5.8.
  */
@@ -161,7 +161,7 @@ ivo_IVOR7trap\Core\():
 
 
 /**
- *   @func ivo_IVOR8trap\Core\()
+ *   @fn ivo_IVOR8trap\Core\()
  * Exception handler IVOR8 for the System Call interrupt.
  */
     .global     ivo_IVOR8trap\Core\()
@@ -171,7 +171,7 @@ ivo_IVOR8trap\Core\():
 
 
 /**
- *   @func ivo_IVOR9trap\Core\()
+ *   @fn ivo_IVOR9trap\Core\()
  * Exception handler IVOR9 for the Debug interrupt.
  */
     .global     ivo_IVOR9trap\Core\()
@@ -181,7 +181,7 @@ ivo_IVOR9trap\Core\():
 
 
 /**
- *   @func ivo_IVOR10trap\Core\()
+ *   @fn ivo_IVOR10trap\Core\()
  * Exception handler IVOR10 for the Embedded Floating-point Data interrupt. See RM
  * section 62.8.5.11.
  */
@@ -192,7 +192,7 @@ ivo_IVOR10trap\Core\():
 
 
 /**
- *   @func ivo_IVOR11trap\Core\()
+ *   @fn ivo_IVOR11trap\Core\()
  * Exception handler IVOR11 for the Embedded Floating-point Round interrupt. See RM
  * section 62.8.5.12.
  */
@@ -203,7 +203,7 @@ ivo_IVOR11trap\Core\():
 
 
 /**
- *   @func ivo_IVOR12trap\Core\()
+ *   @fn ivo_IVOR12trap\Core\()
  * Unused exception handler IVOR12.
  */
     .global     ivo_IVOR12trap\Core\()
@@ -213,7 +213,7 @@ ivo_IVOR12trap\Core\():
 
 
 /**
- *   @func ivo_IVOR13trap\Core\()
+ *   @fn ivo_IVOR13trap\Core\()
  * Unused exception handler IVOR13.
  */
     .global     ivo_IVOR13trap\Core\()
@@ -223,7 +223,7 @@ ivo_IVOR13trap\Core\():
 
 
 /**
- *   @func ivo_IVOR14trap\Core\()
+ *   @fn ivo_IVOR14trap\Core\()
  * Unused exception handler IVOR14.
  */
     .global     ivo_IVOR14trap\Core\()
@@ -233,7 +233,7 @@ ivo_IVOR14trap\Core\():
 
 
 /**
- *   @func ivo_IVOR15trap\Core\()
+ *   @fn ivo_IVOR15trap\Core\()
  * Unused exception handler IVOR15.
  */
     .global     ivo_IVOR15trap\Core\()

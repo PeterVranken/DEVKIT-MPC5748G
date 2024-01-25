@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>safe-RTOS (VLE): assert_sysCall.h File Reference</title>
+<title>safe-RTOS: assert_sysCall.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,9 +25,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">safe-RTOS (VLE)<span id="projectnumber">&#160;1.0</span>
+   <div id="projectname">safe-RTOS<span id="projectnumber">&#160;1.0</span>
    </div>
-   <div id="projectbrief">safe-RTOS (VLE) - A simple RTOS with safety support for MPC5748G</div>
+   <div id="projectbrief">safe-RTOS - A simple RTOS with safety support for MPC5748G</div>
   </td>
  </tr>
  </tbody>
@@ -95,7 +95,8 @@ $(document).ready(function(){initNavTree('assert__sys_call_8h.html',''); initRes
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a81226a3f900be50fea572cd795037974"><td class="memItemLeft" align="right" valign="top">void _Noreturn&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="assert__sys_call_8h.html#a81226a3f900be50fea572cd795037974">assert_os_assert_func</a> (const char *fileName, int line, const char *funcName, const char *expression)</td></tr>
+<tr class="memitem:a81226a3f900be50fea572cd795037974"><td class="memItemLeft" align="right" valign="top"><a id="a81226a3f900be50fea572cd795037974" name="a81226a3f900be50fea572cd795037974"></a>
+void _Noreturn&#160;</td><td class="memItemRight" valign="bottom"><b>assert_os_assert_func</b> (const char *fileName, int line, const char *funcName, const char *expression)</td></tr>
 <tr class="separator:a81226a3f900be50fea572cd795037974"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -104,64 +105,7 @@ Functions</h2></td></tr>
 <p >This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 <p >This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
 <p >You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="a81226a3f900be50fea572cd795037974" name="a81226a3f900be50fea572cd795037974"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81226a3f900be50fea572cd795037974">&#9670;&nbsp;</a></span>assert_os_assert_func()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _Noreturn assert_os_assert_func </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>fileName</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>line</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>funcName</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>expression</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >@func assert_os_assert_func This function is the entry point into the assembly implementation of the assert function, which can be used from non safe-RTOS code. The function will never be called directly but it is invoked from the implementation of the C assert function (__assert_func) if the conditions are fulfilled:<br  />
-</p><ul>
-<li>Code which runs under controle of safe-RTOS will use the system call and never get here.</li>
-<li>Bare metal applications and safe-RTOS initialization code (i.e. prior to kernel startzup and installation of system call interrupt like I/O driver initializtation) will get into this function.</li>
-<li>Code running in user mode but not under control of safe-RTOS (e.g. a bare-metal application, which has switched to user mode autonomously) cannot use the assertion mechanism. Such code would get here an cause an immediate privileged exception. It depends on the given application what that actually means. <dl class="section return"><dt>Returns</dt><dd>After rcording the fault cause information, the function halts the further SW execution. It'll never return. </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fileName</td><td><em>fileName</em> holds a pointer to the constant string with the name of source, which the failing assertion is located in. </td></tr>
-    <tr><td class="paramname">line</td><td><em>line</em> holds a pointer to the constant string with the line number, which the failing assertion is located at. </td></tr>
-    <tr><td class="paramname">funcName</td><td><em>funcName</em> holds a pointer to the constant string with the name of C function, which the failing assertion is located in. </td></tr>
-    <tr><td class="paramname">expression</td><td><em>expression</em> holds a pointer to the constant string with the failing expression in the assertion. </td></tr>
-  </table>
-  </dd>
-</dl>
-</li>
-</ul>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

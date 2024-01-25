@@ -65,7 +65,7 @@
  */
 
 /**
- *   @func rtos_scBscHdlr_suspendAllTasksByPriority
+ *   @fn rtos_scBscHdlr_suspendAllTasksByPriority
  * Change the current priority of the calling user task context, only upwards and only up
  * to a value of #RTOS_MAX_LOCKABLE_TASK_PRIORITY.\n
  *    Any attempt to change \a suspendUpToThisPriority beyond #RTOS_MAX_LOCKABLE_TASK_PRIORITY
@@ -127,7 +127,7 @@ sat_return:
 
 
 /**
- *   @func rtos_suspendAllTasksByPriority
+ *   @fn rtos_suspendAllTasksByPriority
  * System call code for rtos_scBscHdlr_suspendAllTasksByPriority(). Function details
  * can be found there.
  *   @return
@@ -205,7 +205,7 @@ rtos_osGetEvProcByPriority:
 
 
 /**
- *   @func rtos_scBscHdlr_resumeAllTasksByPriority
+ *   @fn rtos_scBscHdlr_resumeAllTasksByPriority
  * Change the current priority of the calling user task context, only downwards and only down
  * to P0, where P0 is the initial priority of the system calling user task, which had been
  * statically agreed on by task configuration.\n
@@ -340,7 +340,7 @@ rat_return:
 
 
 /**
- *   @func rtos_resumeAllTasksByPriority
+ *   @fn rtos_resumeAllTasksByPriority
  * System call code for rtos_scBscHdlr_resumeAllTasksByPriority(). Function details
  * can be found there.
  *   @param resumeDownToThisPriority

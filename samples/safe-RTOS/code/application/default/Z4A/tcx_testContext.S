@@ -73,7 +73,7 @@ tcx_waitTimePerCycleInUS:
 
 
 /**
- *   @func fillRegisters
+ *   @fn fillRegisters
  * Fill all accessible registers with the value in r3.
  */
     .section .text
@@ -149,7 +149,7 @@ fillRegisters:
 
 
 /**
- *   @func testRegisters
+ *   @fn testRegisters
  * Compare all accessible registers with the value in r3. Any deviation is reported as an
  * error. Error reporting is done by entering an infinite loop.
  */
@@ -334,7 +334,7 @@ tr_expression:
 
 
 /**
- *   @func tcx_testContext
+ *   @fn tcx_testContext
  * This function writes specific values to most accessible registers of the CPU, does busy
  * wait for a while - to let the scheduler make a context switch - and checks the register
  * contents. This is done the given number of times, the function returns after \a noCycles

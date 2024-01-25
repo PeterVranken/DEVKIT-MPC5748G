@@ -64,7 +64,7 @@
  */
 
 /**
- *   @func stm_getSystemTime
+ *   @fn stm_getSystemTime
  * Get the counter value from one of the three free running system timers.
  *   @return
  * On return, r3 contains the current counter value, which represents the system time. See
