@@ -64,5 +64,21 @@ int32_t bsw_taskEthernetInternal(uint32_t, uint32_t taskParam);
  * Global inline functions
  */
 
+/**
+ * Get the current system time of the lwIP stack. It is the time, which has elapsed for the
+ * IP protocol task since system startup. Note, the time wraps at its implementation
+ * maximum, which is after 2^32 ms (about 50 days) of continuous operation.
+ *   @return 
+ * Get the system time in Milliseconds.
+ *   @remark 
+ * This API may be called at any time from any context running on the core, which executes
+ * the IP protocol task.
+ */
+static inline uint32_t bsw_getLwIPTime(void)
+{
+    extern volatile uint32_t bsw_tiLwIP;
+    return bsw_tiLwIP;
+}
+
 
 #endif  /* BSW_TASKETHERNET_INCLUDED */

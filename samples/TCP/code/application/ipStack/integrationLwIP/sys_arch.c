@@ -3,7 +3,7 @@
  * Some basic timing functions, which are platform dependently implemented but need to be
  * provided to lwIP.
  *
- * Copyright (C) 2023 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2023-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -35,13 +35,20 @@
 #include "lwip/stats.h"
 #include "lwip/debug.h"
 #include "lwip/sys.h"
-
 #include "stm_systemTimer.h"
+#include "bsw_taskEthernet.h"
 
 /*
  * Defines
  */
 
+/** Two implementations are offered for the "current time", which is required by lwIP for
+    time out implementation. The STM implementation (value 1) yields a software
+    independent, strictly linear time, whereas a value of 0 choses for a software
+    time, which is maintained in the 10ms tick of IP protocol task. Using the SW time means
+    no jitter between time and task clock ticks. An lwIP timeout will have the strictly
+    same time base as the IP applications have. */
+#define USE_STM_FOR_LWIP_NOW    0
 
 /*
  * Local type definitions
@@ -78,7 +85,11 @@ void sys_init(void)
  */
 u32_t sys_jiffies(void)
 {
+#if USE_STM_FOR_LWIP_NOW == 0
+    return sys_now();
+#else
     return stm_getSystemTime(2u);
+#endif
 }
 
 
@@ -87,12 +98,21 @@ u32_t sys_jiffies(void)
  *   @return
  * Get the number of Milliseconds elapsed since system startup.
  *   @remark
- * The implementation is not thread-safe and must never be used from competing contexts. The
- * intended context is the lwIP task, running the IP stack. Other contexts may use it, too,
- * but only if they guarantee mutual exclusion with the lwIP task.
+ * The implementation using STM (see #USE_STM_FOR_LWIP_NOW) is not thread-safe and must
+ * never be used from competing contexts. The intended context is the lwIP task, running
+ * the IP stack. Other contexts may use it, too, but only if they guarantee mutual
+ * exclusion with the lwIP task.\n
+ *   The implementation using the BSW's system time API doesn't have this limitation. It can
+ * be called at any time by any context running on any core.
  */
 u32_t sys_now(void)
 {
+#if USE_STM_FOR_LWIP_NOW == 0
+    _Static_assert( sizeof(bsw_getLwIPTime()) == sizeof(u32_t)
+                  , "Bad type cast can lead to invalid time information"
+                  );
+    return bsw_getLwIPTime();
+#else
     const uint32_t tiNowIn3200ns = stm_getSystemTime(2u);
     static uint32_t SBSS_P1(tiConsumedIn3200ns_) = 0u;
     static uint32_t SBSS_P1(tiReportedInMs_last_) = 0u;
@@ -110,5 +130,5 @@ u32_t sys_now(void)
     tiReportedInMs_last_ = tiReportedInMs;
 
     return tiReportedInMs;
-
+#endif
 } /* sys_now */

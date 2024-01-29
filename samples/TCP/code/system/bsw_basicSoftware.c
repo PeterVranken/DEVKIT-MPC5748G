@@ -27,7 +27,7 @@
  *   bsw_osCbOnCANRx_CAN_1
  *   bsw_osCbOnCANRx_CAN_2
  *   bsw_osCbOnCANRx_CAN_3
- *   startSecondaryCore
+ *   taskOs1ms
  *   main
  * Local functions
  *   cbOnCANRx
@@ -159,6 +159,11 @@ _Static_assert( BSW_PRIO_USER_TASK_10MS == prioEv10ms
  * Data definitions
  */
 
+/** The system time, the time elapsed since system startup. Unit is Millisecond. The value
+    wraps at its implementation maximum, which is after about 50 days of continuous
+    operation. */
+volatile unsigned int UNCACHED_OS(bsw_tiSystemInMs) = 0u;
+
 /** The average CPU load produced by all tasks and interrupts in tens of percent. Can be
     read at any time by any context on any core. */
 unsigned int UNCACHED_OS(bsw_cpuLoad) = 1000;
@@ -271,6 +276,21 @@ bsw_osCbOnCANRxCanN(CAN_3)
 #undef bsw_osCbOnCANRxCanN
 
 
+/**
+ * The regular 1ms OS task. Mainly used to generate a system time with 1ms resolution.
+ *   @param taskParam
+ * The 1ms event processor, which this task is associated with, raises a countable 2 Bit
+ * event on each due time. The provided multiplicity is the number of 1ms ticks. Normally,
+ * it'll be one, only in case of an overdue task it can become more.
+ */
+static void taskOs1ms(uint32_t taskParam)
+{
+    /* The event processor raises countable events witth this mask: 0x00000003. */
+    const uint32_t noEvCounts = taskParam & 0x3u;
+    
+    bsw_tiSystemInMs += noEvCounts;
+    
+} /* bsw_taskOs1ms */
 
 
 /**
@@ -483,7 +503,7 @@ int /* _Noreturn */ main(int noArgs ATTRIB_DBG_ONLY, const char *argAry[] ATTRIB
 
     /* OS task are created first. This ensures that they will get the CPU first if the
        triggering event is shared with user tasks. */
-    //CREATE_OS_TASK(idEv1ms, bsw_taskOs1ms)
+    CREATE_OS_TASK(idEv1ms, taskOs1ms)
     //CREATE_OS_TASK(idEv10ms, bsw_taskOs10ms)
     //CREATE_OS_TASK(idEv100ms, bsw_taskOs100ms)
     //CREATE_OS_TASK(idEv1000ms, bsw_taskOs1000ms)

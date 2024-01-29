@@ -6,7 +6,7 @@
 # Help on the syntax of this makefile is got at
 # http://www.gnu.org/software/make/manual/make.pdf.
 #
-# Copyright (C) 2012-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+# Copyright (C) 2012-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
@@ -429,5 +429,5 @@ cleanDep:
 # existing files.
 .PHONY: clean
 clean:
-	-$(rm) -f $(targetDir)obj/*
+	-$(rm) -rf $(targetDir)obj
 	-$(rm) -f $(targetDir)$(target).*

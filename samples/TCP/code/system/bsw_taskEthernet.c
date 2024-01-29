@@ -139,6 +139,15 @@ volatile unsigned int SBSS_OS(bsw_noLostTaskTriggersRx) = 0u;
     indicated and registered in this counter. Here for Tx events. */
 volatile unsigned int SBSS_OS(bsw_noLostTaskTriggersTx) = 0u;
 
+/** The current time for the lwIP stack, required mainly for timeouts. It is a SW
+    maintained time, which is in sync with the regular 10ms task tick of the IP protocol
+    task. This task tick drives most of the IP applications, so there is no jitter between
+    this SW maintained time and the time, which elapses for these applications.\n
+      Unit is Millisecond, resolution is 10ms. The value wraps at the implementation
+    maximum, which is after about 50 days of continuous operation. */
+volatile uint32_t UNCACHED_P1(bsw_tiLwIP) = 0u;
+
+
 /*
  * Function implementation
  */
@@ -297,6 +306,9 @@ int32_t bsw_taskEthernetInternal(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskPara
     /* Call the actual Ethernet evaluation code in the application code space. */
     bsw_taskEthernet(noNotificationsRx, noNotificationsTx, noNotificationsTimer);
 
+    /* Update the current lwIP time. */
+    bsw_tiLwIP += 10u * noNotificationsTimer;
+    
     /* This task will never end with error. */
     return 0;
     

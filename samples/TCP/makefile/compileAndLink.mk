@@ -200,7 +200,7 @@ cFlags = $(targetFlags)                                                         
          $(cDefines) $(foreach def,$(defineList),-D$(def))
 
 # lwIP is inaccurate in using signed and unsigned integers. We need to enable the warning
-# on improper use only for file not belonging to the lwIP package.
+# on improper use only for files not belonging to the lwIP package.
 cFlags += $(if $(findstring lwip-STABLE-,$@),,-Wsign-conversion -Wstrict-overflow=4)
 
 ifeq ($(SAVE_TMP),1)

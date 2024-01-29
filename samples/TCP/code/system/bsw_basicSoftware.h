@@ -4,7 +4,7 @@
  * @file bsw_basicSoftware.h
  * Definition of global interface of module bsw_basicSoftware.c
  *
- * Copyright (C) 2020-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -173,5 +173,19 @@ extern int32_t bsw_taskSafety10ms(uint32_t PID, uint32_t taskParam);
  * Global inline functions
  */
 
+/**
+ * Get the current system time. The system time is the time, which has elapsed since system
+ * startup. Note, the system time wraps at its implementation maximum, which is after 2^32
+ * ms (about 50 days) of continuous operation.
+ *   @return 
+ * Get the system time in Milliseconds.
+ *   @remark 
+ * This API may be called at any time from any context running on any core.
+ */
+static inline unsigned int bsw_getSystemTime(void)
+{
+    extern volatile unsigned int bsw_tiSystemInMs;
+    return bsw_tiSystemInMs;
+}
 
 #endif  /* BSW_BASICSOFTWARE_INCLUDED */
