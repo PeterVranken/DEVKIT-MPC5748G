@@ -85,8 +85,9 @@ srcFileListExcl := code/system/drivers/ETH/RTM/fec_hw_access.c \
                    lwip-STABLE-2_2_0_RELEASE/src/apps/http/altcp_proxyconnect.c \
                    lwip-STABLE-2_2_0_RELEASE/src/apps/http/fs.c \
                    lwip-STABLE-2_2_0_RELEASE/contrib/examples/example_app/test.c \
-				   lwip-STABLE-2_2_0_RELEASE/contrib/examples/mdns/mdns_example.c \
-				   lwip-STABLE-2_2_0_RELEASE/contrib/examples/tftp/tftp_example.c
+                   lwip-STABLE-2_2_0_RELEASE/contrib/examples/mdns/mdns_example.c \
+                   lwip-STABLE-2_2_0_RELEASE/contrib/examples/tftp/tftp_example.c \
+                   lwip-STABLE-2_2_0_RELEASE/contrib/apps/ping/ping.c
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).
