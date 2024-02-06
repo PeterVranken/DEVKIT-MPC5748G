@@ -59,6 +59,7 @@
 #include <string.h>
 #endif /* PING_USE_SOCKETS */
 
+#include "typ_types.h"
 
 /**
  * PING_DEBUG: Enable debugging for PING.
@@ -74,7 +75,7 @@
 
 /** ping delay - in milliseconds */
 #ifndef PING_DELAY
-#define PING_DELAY     1000
+#define PING_DELAY     2000
 #endif
 
 /** ping identifier - must fit on a u16_t */
@@ -93,13 +94,14 @@
 #endif
 
 /* ping variables */
-static const ip_addr_t* ping_target;
-static u16_t ping_seq_num;
+static u16_t SBSS_P1(ping_seq_num);
 #ifdef LWIP_DEBUG
-static u32_t ping_time;
+static u32_t SBSS_P1(ping_time);
 #endif /* LWIP_DEBUG */
 #if !PING_USE_SOCKETS
-static struct raw_pcb *ping_pcb;
+static enum stPinging_t {stStopped, stClosing, stRunning} 
+                                          _stPing SECTION(.sdata.P1._stPing) = stStopped;
+static ip_addr_t DATA_P1(_pingAddr);
 #endif /* PING_USE_SOCKETS */
 
 /** Prepare a echo ICMP request */
@@ -120,14 +122,21 @@ ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
     ((char*)iecho)[sizeof(struct icmp_echo_hdr) + i] = (char)i;
   }
 
-  iecho->chksum = 0u;//inet_chksum(iecho, len);
+  /* The checksum is calculated only if explicitly requested by configuration switch; the 
+     original lwIP implementation does do this unconditionally. No longer to so is not
+     primarily decided to reduce computation effort but to enable the automatic checksum
+     calculation by HW in the MAC. Our ENET device requires the checksum filed to be zero
+     otherwise it refuses to insert the checksum. */
+#if CHECKSUM_GEN_ICMP != 0
+  iecho->chksum = inet_chksum(iecho, len);
+#endif
 }
 
 #if PING_USE_SOCKETS
 
 /* Ping using the socket ip */
 static err_t
-ping_send(int s, const ip_addr_t *addr)
+ping_send(int s, const ip_addr_t *pPingAddr)
 {
   int err;
   struct icmp_echo_hdr *iecho;
@@ -252,7 +261,7 @@ ping_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
 
 #if LWIP_IPV6
-  if(IP_IS_V4(ping_target) || ip6_addr_isipv4mappedipv6(ip_2_ip6(ping_target))) {
+  if(IP_IS_V4(&_pingAddr) || ip6_addr_isipv4mappedipv6(ip_2_ip6(&_pingAddr))) {
     s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
   } else {
     s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
@@ -269,9 +278,9 @@ ping_thread(void *arg)
   LWIP_UNUSED_ARG(ret);
 
   while (1) {
-    if (ping_send(s, ping_target) == ERR_OK) {
+    if (ping_send(s, &_pingAddr) == ERR_OK) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-      ip_addr_debug_print(PING_DEBUG, ping_target);
+      ip_addr_debug_print(PING_DEBUG, &_pingAddr);
       LWIP_DEBUGF( PING_DEBUG, ("\r\n"));
 
 #ifdef LWIP_DEBUG
@@ -280,7 +289,7 @@ ping_thread(void *arg)
       ping_recv(s);
     } else {
       LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-      ip_addr_debug_print(PING_DEBUG, ping_target);
+      ip_addr_debug_print(PING_DEBUG, &_pingAddr);
       LWIP_DEBUGF( PING_DEBUG, (" - error\r\n"));
     }
     sys_msleep(PING_DELAY);
@@ -355,46 +364,70 @@ ping_send(struct raw_pcb *raw, const ip_addr_t *addr)
 
 static void
 ping_timeout(void *arg)
-{
-  struct raw_pcb *pcb = (struct raw_pcb*)arg;
-
-  LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
-
-  ping_send(pcb, ping_target);
-
-  sys_timeout(PING_DELAY, ping_timeout, pcb);
+{   
+  struct raw_pcb * const pPcb = (struct raw_pcb*)arg;
+  LWIP_ASSERT("ping_timeout: no pcb given!", pPcb != NULL);
+  if(_stPing == stRunning)
+  {
+    ping_send(pPcb, &_pingAddr);
+    sys_timeout(PING_DELAY, ping_timeout, pPcb);
+  }
+  else
+  {
+    LWIP_ASSERT("expected state", _stPing == stClosing);
+    raw_remove(pPcb);
+    _stPing = stStopped;
+  }
 }
 
 static void
-ping_raw_init(void)
+ping_raw_init(const ip_addr_t * const pPingAddr)
 {
-  ping_pcb = raw_new(IP_PROTO_ICMP);
-  LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
-
-  raw_recv(ping_pcb, ping_recv, NULL);
-  raw_bind(ping_pcb, IP_ADDR_ANY);
-  sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
-}
-
-void
-ping_send_now(void)
-{
-  LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
-  ping_send(ping_pcb, ping_target);
+  if(_stPing == stStopped)
+  {
+    struct raw_pcb * const pPcb = raw_new(IP_PROTO_ICMP);
+    if(pPcb != NULL)
+    {
+      _stPing = stRunning;
+      _pingAddr = *pPingAddr;
+      raw_recv(pPcb, ping_recv, NULL);
+      raw_bind(pPcb, IP_ADDR_ANY);
+      sys_timeout(PING_DELAY, ping_timeout, pPcb);
+    }
+  }
 }
 
 #endif /* PING_USE_SOCKETS */
 
+/**
+ * Start regular pinging a certain IP address. The process can be stopped at any time using
+ * ping_close().
+ *   @param pPingAddr
+ * The IP address of the network node to ping by reference.
+ */
 void
-ping_init(const ip_addr_t* ping_addr)
+ping_init(const ip_addr_t * const pPingAddr)
 {
-  ping_target = ping_addr;
-
 #if PING_USE_SOCKETS
+# error The SOCKET implementation is not supported for IP application ping
   sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 #else /* PING_USE_SOCKETS */
-  ping_raw_init();
+  ping_raw_init(pPingAddr);
 #endif /* PING_USE_SOCKETS */
 }
 
+/**
+ * Stop the series of ping requests. After using this function, a new series (potentially
+ * with other target address) can be started using ping_init().
+ */
+void
+ping_close(void)
+{
+  if(_stPing == stRunning)
+    _stPing = stClosing;
+}
 #endif /* LWIP_RAW */
+
+// Local Variables:
+// tab-width: 2
+// End:

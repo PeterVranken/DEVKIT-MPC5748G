@@ -244,12 +244,8 @@ $(targetDir)obj/%.o: %.cpp
 	$(info Preprocessing C++ file $(notdir $<) to text file $(patsubst %.cpp,%$(suffix $@),$<))
 	$(gcc) $(if $(call eq,$(suffix $@),.i),-E,-S) $(filter-out -MMD,$(cFlags)) -o $(patsubst %.cpp,%$(suffix $@),$<) $<
 
-
-## A general rule enforces rebuild if one of the configuration files changes
-#$(objFileList): GNUmakefile ../shared/makefile/compileAndLink.mk                        \
-#                    ../shared/makefile/locateTools.mk ../shared/makefile/commonFunctions.mk \
-#                    ../shared/makefile/parallelJobs.mk
-
+# A general rule enforces rebuild if one of the configuration files changes
+$(objFileList): GNUmakefile makefile/compileAndLink.mk
 
 # Note, it looks as if we finally wouldn't need this any longer with Windows 10! Set
 # variable to empty value if patch should not be applied.

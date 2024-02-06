@@ -194,8 +194,16 @@ static void status_callback(struct netif *state_netif)
         /* Status callback UP */
 #if PRINTF_SUPPORT
 # if LWIP_IPV4
-        iprintf( "status_callback==UP, local interface IP is %s\r\n"
-               , ip4addr_ntoa(netif_ip4_addr(state_netif))
+        char strIpAddr[IP4ADDR_STRLEN_MAX]
+           , strSNMask[IP4ADDR_STRLEN_MAX]
+           , strGwAddr[IP4ADDR_STRLEN_MAX];
+        ip4addr_ntoa_r(netif_ip4_addr(state_netif)   , strIpAddr, IP4ADDR_STRLEN_MAX);
+        ip4addr_ntoa_r(netif_ip4_netmask(state_netif), strSNMask, IP4ADDR_STRLEN_MAX);
+        ip4addr_ntoa_r(netif_ip4_gw(state_netif)     , strGwAddr, IP4ADDR_STRLEN_MAX);
+        iprintf( "status_callback==UP, IP address: %s, subnet mask: %s, gateway: %s\r\n"
+               , strIpAddr
+               , strSNMask
+               , strGwAddr
                );
 # else   
         iprintf("status_callback==UP\r\n");
@@ -416,7 +424,16 @@ static void initLwIPStandardApps(void)
 #endif /* LWIP_CHARGEN_APP && LWIP_SOCKET */
 
 #if LWIP_PING_APP && LWIP_RAW && LWIP_ICMP
-  ping_init(&netif_default->gw);
+  const ip_addr_t pingAddr =
+  { 
+# ifdef USE_DHCP
+    .u_addr.ip4.addr = PP_HTONL(LWIP_MAKEU32(20, 49, 104, 6)) /* worldclockapi.com */,
+# else
+    .u_addr.ip4.addr = PP_HTONL(LWIP_MAKEU32(192, 168, 1, 1)),
+# endif
+    .type = IPADDR_TYPE_V4,
+  };
+  ping_init(&pingAddr);
 #endif /* LWIP_PING_APP && LWIP_RAW && LWIP_ICMP */
 
 #if LWIP_NETBIOS_APP && LWIP_UDP
@@ -539,7 +556,7 @@ static void initNetIfsAndApps(void)
         assert(idxIf == 0u);
         
         const uint8_t ip4Addr[4] = NIF_NET_IF_IP_ADDR_ENET0
-                    , ip4AddrMask[4] = NIF_NET_IF_ADDR_MASK_ENET0
+                    , ip4AddrMask[4] = NIF_NET_IF_SUBNET_MASK_ENET0
                     , ip4AddrGateway[4] = NIF_NET_IF_IP_ADDR_GATEWAY_ENET0; 
 
         const err_t stsIf = initNetIf( idxIf

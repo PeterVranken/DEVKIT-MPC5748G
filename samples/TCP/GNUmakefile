@@ -91,20 +91,9 @@ srcFileListExcl := code/system/drivers/ETH/RTM/fec_hw_access.c \
 
 # Additional include directories (besides the source directories and common, project
 # independent paths).
-incDirList := \
-    code/application/ \
-    code/application/Z4A/ \
-    code/application/ipStack/ports/netif/enetif/ \
-    code/system/drivers/ETH/RTM_include/platform/drivers/src/clock/MPC57xx \
-    code/system/drivers/ETH/RTM_include/platform/drivers/inc \
-    code/system/drivers/ETH/RTM_include/platform/devices \
-    code/system/drivers/ETH/RTM_include/platform/devices/MPC5748G/include \
-    code/system/drivers/ETH/RTM_include/platform/devices/common \
-    code/system/drivers/ETH/RTM_include/rtos/osif \
-	code/application/ipStack/config \
-    lwip-STABLE-2_2_0_RELEASE/src/include \
-	lwip-STABLE-2_2_0_RELEASE/contrib \
-    code/application/ipStack/ports/platform/generic/gcc/setting
+incDirList := lwip-STABLE-2_2_0_RELEASE/src/include \
+              lwip-STABLE-2_2_0_RELEASE/contrib
+
 # A blank separated list of C defines for compilation, with or without value.
 #   There are some macros with predefined meaning for the build process. They impact the
 # build process and they are forwarded to the compiler:
@@ -122,13 +111,18 @@ incDirList := \
 # instructions to the Z4 cores. As a matter of experience, if the Z2 doesn't do any
 # floating point operations, it's still safe to link against the Z4 libraries to the
 # benefit of the floating point performance of the two Z4 cores.
+#   USE_DHCP: If given then no IP address is assigned to the DEVKIT-MPC5748G. The software
+# assumes that the board is connected to a network with a DHCP server. You will normally
+# use this option if you connect the board and your computer both to an internet router.
+# For a point-to-point connection between board and computer USE_DHCP is unlikely to work.
 #   LINK_IN_RAM: If given, the linker will place all code and all data in RAM. The program
 # under development can be loaded by the debugger without erasing and re-programming the
 # flash, which reduces the turnaround time and which saves flash programming cycles.
 defineList := USE_NEWLIB \
               CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
               CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
-#              LINK_IN_RAM
+		      USE_DHCP \
+              LINK_IN_RAM
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

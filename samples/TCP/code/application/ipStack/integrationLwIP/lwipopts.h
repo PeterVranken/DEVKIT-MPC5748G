@@ -406,8 +406,18 @@
 */
 /**
  * LWIP_DHCP==1: Enable DHCP module.
+ *   In this sample, the setting is controlled from outside, from the root level makefile
+ * as a build option. If it is set then no IP address is configured and the DEVKIT-MPC5748G
+ * will get a network connection only if a DHCP server is up and running in the network
+ * when the DEVKIT starts up. (The implementation fails to get an IP address later if this
+ * fails at startup time.) If it is not set then the lwIP code for the DHCP client is not
+ * built and an IP address hardcoded in nif_interfaceEthToLwIP.h takes effect.
  */
-#define LWIP_DHCP                       0
+#if defined(USE_DHCP)
+# define LWIP_DHCP                      1
+#else
+# define LWIP_DHCP                      0
+#endif
 
 /*
    ------------------------------------

@@ -54,15 +54,28 @@
    the network, which the DEVKIT-MPC5748G is connected to, needs to have the network ID
    mask 255.255.0.0 and the network ID always is 169.254. See, e.g.,
    https://manuals.konicaminolta.eu/ineo-4000P-4700P/EN/ntwk_guide/what-is-auto-ip-topic.html
-   (visited 25.1.2023). On a Windows machine, the needed network settings can be achieved
+   (visited 25.1.2024). On a Windows machine, the needed network settings can be achieved
    by checking radio button "Obtain an IP address automatically" in the property dialog of
    the IP4 protocol settings for the given Ethernet adapter.
-     DHCP: Requires NIF_NET_IF_HAS_DHCP_ENET0=true (below) and LWIP_DHCP=1 (lwipopts.h). */
-#define NIF_NET_IF_HAS_DHCP_ENET0           false
-#define NIF_NET_IF_HAS_AUTO_IP_ENET0        false
-#define NIF_NET_IF_IP_ADDR_ENET0            {192,168,1,200}
-#define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,255,0}
-#define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {192,168,1,1}
+     DHCP: Requires NIF_NET_IF_HAS_DHCP_ENET0=true (below) and LWIP_DHCP=1 (lwipopts.h).
+   Consistent configuration of DHCP is under control of macro #USE_DHCP, which can be defined
+   externally in the root makefile. */
+#if defined(USE_DHCP)
+# warning IP address settings are configured for use with Internet router. Network \
+          operation will fail without a DHCP server
+# define NIF_NET_IF_HAS_DHCP_ENET0           true
+# define NIF_NET_IF_HAS_AUTO_IP_ENET0        false
+# define NIF_NET_IF_IP_ADDR_ENET0            {0,0,0,0}
+# define NIF_NET_IF_SUBNET_MASK_ENET0        {255,255,255,0}
+# define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {0,0,0,0}
+#else
+# warning IP address is hard-coded in nif_interfaceEthToLwIP.h
+# define NIF_NET_IF_HAS_DHCP_ENET0           false
+# define NIF_NET_IF_HAS_AUTO_IP_ENET0        false
+# define NIF_NET_IF_IP_ADDR_ENET0            {192,168,1,200}
+# define NIF_NET_IF_SUBNET_MASK_ENET0        {255,255,255,0}
+# define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {192,168,1,1}
+#endif
 
 /* IP addresses, etc., for Ethernet interface ENET1. */
 #define NIF_NET_IF_HAS_DHCP_ENET1           false
