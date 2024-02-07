@@ -377,6 +377,7 @@ ping_timeout(void *arg)
     LWIP_ASSERT("expected state", _stPing == stClosing);
     raw_remove(pPcb);
     _stPing = stStopped;
+    LWIP_DEBUGF(PING_DEBUG, ("Pinging stopped\r\n"));
   }
 }
 
@@ -393,6 +394,9 @@ ping_raw_init(const ip_addr_t * const pPingAddr)
       raw_recv(pPcb, ping_recv, NULL);
       raw_bind(pPcb, IP_ADDR_ANY);
       sys_timeout(PING_DELAY, ping_timeout, pPcb);
+      LWIP_DEBUGF( PING_DEBUG
+                 , ("Start pinging at %s\r\n", ip4addr_ntoa(&pPingAddr->u_addr.ip4))
+                 );
     }
   }
 }

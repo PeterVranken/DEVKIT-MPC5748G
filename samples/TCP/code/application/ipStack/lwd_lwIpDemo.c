@@ -79,6 +79,11 @@
 #include "bsw_basicSoftware.h"
 #include "lwip_lwIPMainFunction.h"
 #include "clg_canLoggerOnTCP.h"
+#include "lwipopts.h"
+#include "lwipcfg.h"
+#include "lwip/ip_addr.h"
+#include "apt_applicationTask.h"
+#include "ping.h"
 
 /*
  * Defines
@@ -189,10 +194,28 @@ void lwd_lwIpDemo_main( unsigned int noNotificationsRx
         /* The step function of the CAN logger application. */
         clg_mainFunction();
 
+#if LWIP_PING_APP && LWIP_RAW && LWIP_ICMP
+        /* The following looks crude but the state machine in the ping application makes it
+           work fine. It is ensured that the user can enable and disable ping and switch
+           the target address at any time but the latter only after disabling. */
+        const uint32_t ipAddr = apt_getPingTargetAddress();
+        if(ipAddr != 0u)
+        {
+            const ip_addr_t pingAddr =
+            { 
+                .u_addr.ip4.addr = ipAddr,
+                .type = IPADDR_TYPE_V4,
+            };
+            ping_init(&pingAddr);
+        }
+        else
+            ping_close();
+#endif /* LWIP_PING_APP && LWIP_RAW && LWIP_ICMP */
+
         static uint8_t SBSS_P1(cnt100ms_) = 0u;
         if(cnt100ms_ == 0u)
         {
-            /* Handle TCP and other LwIP timers. */
+            /* Handle LwIP timers for TCP and more. */
             lwip_onTimerTick();
 
             /* Reload timer. */

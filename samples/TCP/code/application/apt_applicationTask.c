@@ -28,6 +28,7 @@
 /* Module interface
  *   bsw_taskUserInit
  *   apt_printCurrTime
+ *   apt_getPingTargetAddress
  *   bsw_taskUser1ms
  *   bsw_taskUser10ms
  *   bsw_taskUser100ms
@@ -68,6 +69,7 @@
 #include "cmd_canCommand.h"
 #include "pwm_pwmIODriver.h"
 #include "c2p_canToPWM.h"
+#include "lwip/def.h"
 #include "lwd_lwIpDemo.h"
 
 /*
@@ -75,7 +77,7 @@
  */
 
 /** Software version */
-#define VERSION "0.7.0"
+#define VERSION "0.8.0"
 
 /** Floating point random number with more than 15 Bit resolution; taken fron
     http://www.azillionmonkeys.com/qed/random.html on Jan 23, 2017.
@@ -123,6 +125,10 @@ volatile static bool SBSS_P1(_enableDisplayPWM) = false;
 
 /** Difference between task counter and real-world time of the day. */
 static unsigned int DATA_P1(_offsetInS) = 0;
+
+/** User interface for the lwIP application ping: A single IPv4 can be pinged at a time and
+    this is either the target address or 0 when pinging should be off. */
+static uint32_t SBSS_P1(_pingAddr) = 0u;
 
 /*
  * Function implementation
@@ -325,6 +331,7 @@ static void help()
     " sending\r\n"
     "PWM n f [dc]: PWM output. n: 1 means PA1 at J3, pin 1; 2/4/5 means USR_LED2/4/5 at"
     " PA0/4/7\r\n"
+    "ping (a b c d|off): Start pinging IPv4 server a.b.c.d or turn pinging off\r\n"
     "time: Print current time once\r\n"
     "time hour min [sec]: Set current time\r\n";
 
@@ -416,6 +423,18 @@ void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime)
 
 } /* apt_printCurrTime */
 
+
+/**
+ * Interface for the lwIP sample applicatin ping: The function returns the IP target
+ * address, the user has specified for pinging.
+ *   @return
+ * Get the IPv4 target address to ping or zero if pinging should be off.
+ */
+uint32_t apt_getPingTargetAddress(void)
+{
+    return _pingAddr;
+    
+} /* apt_getPingTargetAddress */
 
 
 /**
@@ -602,6 +621,46 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
                 }
                 else
                     iprintf("Bad number of arguments for command PWM. Type `help'\r\n");
+            }
+            else if(strcmp(argV[0], "ping") == 0)
+            {
+                uint32_t ipAddr = 0u;
+                bool isAddrOk = true;
+                if(argC == 2u)
+                    isAddrOk = strcmp(argV[1], "off") == 0;
+                else
+                {
+                    isAddrOk = argC == 5u;
+                    if(isAddrOk)
+                    {
+                        for(unsigned int u=0u; u<4u; ++u)
+                        {
+                            const signed int n = atoi(argV[u+1]);
+                            if(n >= 0  && n<= 255)
+                                ipAddr = (ipAddr<<8) + (unsigned)n;
+                            else
+                                isAddrOk = false;
+                        }
+                    }
+                    if(isAddrOk)
+                        ipAddr = PP_HTONL(ipAddr);
+                }   
+                if(isAddrOk)
+                {                
+                    if(_pingAddr != 0u  &&  ipAddr != 0u)
+                    {
+                        iprintf("Can't set a new ping target while ping is running."
+                                " Type `help'\r\n");
+                    }
+                    else
+                        _pingAddr = ipAddr;
+                }
+                else
+                {
+                    iprintf("Expect four 8 Bit numbers making up an IPv4 address for"
+                            " command ping. Type `help'\r\n"
+                           );
+                }
             }
             else
             {

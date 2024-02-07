@@ -101,6 +101,7 @@ a terminal application on your development host machine, which the
 evaluation board is connected to via USB. The NXP software implements a
 virtual COM device on the host machine; open this COM channel with 115200
 Bd, 8 Bit, no parity bit, 1 stop bit. Type *help* to begin. A usage
+
 message is printed with the available commands.
 
 The principal commands are:
@@ -144,7 +145,10 @@ integrated into sample application `TCP`:
 
 . Connect the DEVKIT-MPC5748G via USB with your PC.
 . Connect the DEVKIT-MPC5748G via LAN wire with your PC. Using a switch
-  in between is possible.
+  in between is possible. Connecting both, PC and DEVKIT-MPC5748G, to an
+  Internet router is possible, too, but then the source code will need to
+  be configured for using DHCP (see below). In the following, it is
+  assumed that this is not the case.
 . Connect the DEVKIT-MPC5748G via a CAN adapter with your PC.
 . On the PC, open a serial terminal program and connect to the
   DEVKIT-MPC5748G (see above for details).
@@ -156,7 +160,7 @@ integrated into sample application `TCP`:
   Wireshark and let it log the traffic on the Ethernet plug you connected
   the DEVKIT-MPC5748G to.
 
-==== Pinging or Internet protocols ICMP and ARB
+==== Pinging the board or Internet protocols ICMP and ARB
 
 In the shell window, type:
 
@@ -173,6 +177,30 @@ The console output should resemble:
   Reply from 192.168.1.200: bytes=32 time=1ms TTL=128
   Reply from 192.168.1.200: bytes=32 time<1ms TTL=128
   Reply from 192.168.1.200: bytes=32 time<1ms TTL=128
+
+==== Ping client
+
+The DEVKIT-MPC5748G can use protocol ICMP as ping client, too. A single
+IPv4 target address can be served at a time.footnote:[LwIP's ping sample
+application supports IPv6, too. It's just the rudimentary serial console
+user interface, which imposes the limitation for IPv4.] Regularly, a ping
+request is sent to this address and the response time is displayed.
+(Nothing is displayed if no response is timely received.) Turning pinging
+on and off and setting the target address is under control of the serial
+console. In your terminal's input window, type *help* and read the
+explanation of command *ping*.
+
+In the terminal window, type:
+
+  help
+  ping 142 250 179 206
+
+to ping Google and, after a while:
+
+  ping off
+
+Note, that the example requires an Internet connection to succeed. Use the
+IPv4 address of any local node if there is no Internet connection.
 
 ==== Trivial File Transfer Protocol
 
@@ -320,16 +348,19 @@ application:
   application wants to setup a TCP connection for bi-directional data
   exchange with another node.
 
-== How to modify IP and MAC address
+== How to modify IP and MAC addresses
 
-IP and MAC address are both software defined at compile-time. The chosen
-values are:
+The MAC address is software defined at compile-time. For the IP addresses
+(board and default gateway), two modes can be chosen at compile-time:
+using a hard-coded IP address or enabling the lwIP implementation of a
+DHCP client. The chosen values are:
 
 [[tabIPAndMACAddress]]
-.IP and MAC address of DEVKIT-MPC5748G
+.IP and MAC addresses of DEVKIT-MPC5748G
 [cols="30,40", width="50%"]
 |=======
-|IP address  |192.168.1.200
+|IP address  |192.168.1.200 (if DHCP is off)
+|IP address gateway |192.168.1.1 (if DHCP is off)
 |MAC address |12-34-56-78-9A-BC
 |=======
 
@@ -347,10 +378,20 @@ macro `ETH_ENET0_MAC_ADDR`, defined in file
 #define ETH_ENET0_MAC_ADDR          {0x12,0x34,0x56,0x78,0x9A,0xBC}
 ---------------------------
 
-The IP address is defined as preprocessor macro `NIF_NET_IF_IP_ADDR_ENET0`
-in file
+The IP address mode is defined as build parameter in the master makefile
+`GNUmakefile`. See variable `defineList` for details how to enable the
+DHCP client on the DEVKIT-MPC5748G. If DHCP is enabled then the IP
+addresses of board and default gateway are initialized to all zeros. After
+power-up, the board will wait for the DHCP server to receive the addresses
+and network communication is possible only when this has succeeded.
+
+DHCP is normally the right option, if the DEVKIT-MPC5748G is connected to
+an Internet router. For a direct connection to a PC, DHCP is unlikely to
+work and the IP addresses should better be hard-coded. They are defined as
+preprocessor macros `NIF_NET_IF_IP_ADDR_ENET0` and
+`NIF_NET_IF_IP_ADDR_GATEWAY_ENET0` in file
 `code/application/ipStack/integrationLwIP/netif/nif_interfaceEthToLwIP.h`,
-ll.51ff:
+ll.72ff:
 
 [source,C++]
 ---------------------------
@@ -361,6 +402,10 @@ ll.51ff:
 #define NIF_NET_IF_ADDR_MASK_ENET0          {255,255,255,0}
 #define NIF_NET_IF_IP_ADDR_GATEWAY_ENET0    {192,168,1,1}
 ---------------------------
+
+CAUTION: If DHCP is enabled then the IP address of the board is unknown
+before operation. In particular, the IP address 192.168.1.200, which is
+mentioned throughout the documentation is not valid.
 
 == Tools
 

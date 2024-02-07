@@ -423,6 +423,8 @@ static void initLwIPStandardApps(void)
 # endif
 #endif /* LWIP_CHARGEN_APP && LWIP_SOCKET */
 
+#if 0 /* The lwIP application ping is under control of the user interface of the
+         DEVKIT-MPC5748G sample. */
 #if LWIP_PING_APP && LWIP_RAW && LWIP_ICMP
   const ip_addr_t pingAddr =
   { 
@@ -435,6 +437,7 @@ static void initLwIPStandardApps(void)
   };
   ping_init(&pingAddr);
 #endif /* LWIP_PING_APP && LWIP_RAW && LWIP_ICMP */
+#endif
 
 #if LWIP_NETBIOS_APP && LWIP_UDP
     netbiosns_init();

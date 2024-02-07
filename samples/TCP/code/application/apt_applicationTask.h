@@ -52,4 +52,7 @@
 /** Format the current time in printable format. */
 void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime);
 
+/** Interface for the lwIP sample applicatin ping. Get the target IP address to ping. */
+uint32_t apt_getPingTargetAddress(void);
+
 #endif  /* APT_APPLICATIONTASK_INCLUDED */
