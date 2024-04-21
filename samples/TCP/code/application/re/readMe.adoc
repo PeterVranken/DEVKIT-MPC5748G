@@ -1,0 +1,231 @@
+= A simple Embedded Regular Expression Matcher
+:Author:            Peter Vranken
+:Email:             mailto:Peter_Vranken@Yahoo.de
+:toc:               left
+:xrefstyle:         short
+:numbered:
+:icons:             font
+:caution-caption:   :fire:
+:important-caption: :exclamation:
+:note-caption:      :paperclip:
+:tip-caption:       :bulb:
+:warning-caption:   :warning:
+
+== Overview
+
+This files in this folder implement a simple regular expression matcher
+made for use with embedded systems. The differences to most other
+available implementations:
+
+* Independent compilation of regular expression compiler and matcher.
+* Export of compiled regular expressions as C source code snippets.
+* No recursive function calls used in the matcher.
+* Recursive function calls in the compiler are bounded.
+* No dynamic memory allocation in compiler and matcher. All needed
+  run-time memory is caller provided and can thus be tailored and
+  pre-allocated.
+
+This is the concept behind:
+
+As usual, regular expression matching is split into compilation and
+matching. In this implementation, compiler and matcher can be compiled
+independently from one another. Additionally, an optionally compiled main
+function is provided, which combines compiler and matcher into a tiny
+application, called _regExpDemo_, intended to execute on the development
+machine.
+
+The use case of allowing independent compilation of the code elements is
+running the compiler on the development machine only. There, it compiles
+all regular expressions required in the aimed embedded software. The
+matcher is compiled with the embedded software program and runs the
+pre-compiled regular expressions. In this use case, the embedded software
+would not have the compiler integrated.
+
+The application _regExpDemo_ allows exporting compiled regular expressions
+as C source code snippets, which can easily be integrated into the build
+of the embedded software program.
+
+The regular expression matcher is titled "simple" because it is barely
+optimized. It uses a backtracking algorithm with only the most evident
+pruning of alternatives. The memory consumption should be alright for most
+embedded applications and with typical regular expressions.
+
+== Supported regular expression elements
+
+. Normal, printable characters, except for special characters mentioned
+below (e.g., parenthesis, anchors, etc.), match the character itself.
+
+. Some special characters can match the character itself, if they are
+escaped with the backslash. Moreover, some escape sequences are a short
+form of commonly used character sets:
+  * `\d`: Character set `[0-9]`
+  * `\h`: Character set `[0-9a-zA-Z]`
+  * `\a`: Character set `[a-z]`
+  * `\A`: Character set `[a-zA-Z]`
+  * `\s`: Character set `[ \t\f\r]`
+  * `\f`: Character `0x0C`
+  * `\r`: Character `0x0D`
+  * `\n`: Character `0x0A`
+  * `\t`: Character `0x09`
+  * `\xHH`: Character with ASCII code `0xHH` (H being a hex digit)
+  * `\N`: Character set `[\r\n]`
+  * `\i`: Character set `[a-zA-Z_]`
+  * `\I`: Character set `[a-zA-Z_0-9]` (`\i\I*` denotes a valid identifier)
+  * `\\`: Character `\` itself
+
+. `.`: The dot matches every character but a newline.
+
+. Anchors `^`, `$`: They match at the beginning and end of the input
+stream, respectively, but they don't consume any input character.
+
+. `[abc1-9x-z]`: Character sets. All listed single characters, or the
+characters in the ranges `x-y`, both including, match. If the first
+mentioned character is `]` then it isn't the closing bracket but a
+character in the set. A valid set would be, e.g., `[]a]`, which matches
+`]` and `a`, whereas `[a]]` is not a valid set. Character sets support a
+few escape sequences to get special characters into the set. These are:
+`\f`, `\r`, `\n`, `\t`, `\xHH` and `\\`.
++
+Caution, the `]` can't be the first character of a range, i.e., `[]-}]`
+would match only three single characters but not all from `]` till `}`.
+Write `[]^-}]` instead.
+
+. `[^abc1-9x-z]`: Inverse character sets. All but the listed single
+characters and the characters in the ranges `x-y`, both including, match.
+The caret behind the opening bracket itself does not belong to the set. If
+the first mentioned character is `]` then it isn't the closing bracket but
+a character in the set. A valid set would be, e.g., `[^]a]`, which matches
+everything but `]` and `a`, whereas `[^a]]` is not a valid set.
+
+. `()`: Parenthesis can be used to define sequences, which are subject to
+repetitions or to structure OR expressions.
+
+. `?`, `*`, `+`, `{n}`, `{m,M}`: Repetition indicators. They can be
+attached to a single immediate match element (mostly the dot or a literal
+character) or to a sequence formed with parenthesis, i.e., placed behind
+the closing pararenthesis. When using the form with the braces, then the
+element, which the repetition indicator is attached to needs to match the
+input exactely n times or m..M times, both including. We have these
+constraints:
++
+  1) 1 <= n <= 254
+  2) Either 0 <= m <  M <= 255
+     or     0 <  m <= M <  255
++
+Note, M=255 doesn't mean 255 times but it is the way to state "infinite"
+or "unbounded". `?`, `*`, `+` are common abbreviations only; they stand
+for `{0,1}`, `{0,255}` and `{1,255}`, respectively. Note, the parser
+doesn't accept any white space; `{ 1, 2}`, `{1,2 }`, etc., is considered a
+syntax error.
++
+Repetition indicators must not be applied to elements, which are
+potentially empty. This would shape an inifinite number of possible match
+paths and the matcher would soon run out of memory. Expressions like
+"(.?)+", "(x*)?" or "(x?|y)+" are invalid. Note, a repetition with upper
+bounds would still be possible without out-of-memory but is nonetheless
+rejected as those constructs are anyway useless and likely not meant by
+intention.
+
+. `?`: Non-greedy match. This symbol can be attached to any of the
+repetition indicators in order to make it "non-greedy". The repeated
+element is matched against the input only as often as minimally needed to
+successfully match the entire regular expression. Note, for many use
+cases, there is no difference in the final match result but non-greedy
+matching tends to require less runtime memory for matching (on cost of a
+tendency to need more CPU time). On an embedded target, the preferred use
+of non-greedy repetitions can help to optimize RAM consumption.
+
+. `|`: OR expression. Only one of the operands needs to match. The
+operator has the lowest priority, which means that `abc|xyz` is equivalent
+to `(abc)|(xyz)` but not to `ab(c|x)yz`. More operands are allowed,
+`a|b|c` would be valid.
+
+. `<>`: Capture groups. They are the means to bring the matches of
+particular sub-expressions into the final result. They are addressed to by
+zero based index and, after matching, this index is required for fetching
+such a result. The index of capture groups is the order of appearance of
+their opening angular brackets in the regular expression. Capture groups
+form a valid pair of parenthesis, which can't overlap with other pairs of
+parenthesis. An expression like `a<b(cd>)+` or `a{3,<4}x>` is undefined,
+whereas `a<b(cd)+>` and `<a{3,4}x>` were correct (and probably meant).
++
+Capture groups can't have a repetition indicator but they may be used in
+the inner of a loop. In which case a successfully matching expression can
+have many values of the capture group in its result. However, normal use
+cases won't require this. If no capture group is inside a loop then the
+maximum number of results is bounded and known, which supports the memory
+configuration for the matcher result.
+
+== Build the software
+
+The code is not target or machine specific. Having GCC on the development
+machine, the demo application _regExpDemo_ can be built using this command
+line for the C compiler:
+
+[source,bash]
+---------------------------
+gcc -Wall -g3 -gdwarf-2 -Og -DDEBUG -DRE_REQUIRE_MAIN=1 re_charSet.c re_regExpCompiler.c re_regExpMatcher.c -o regExpDemo.exe
+---------------------------
+
+To build only the regular expression compiler, one would set macros
+`RE_REQUIRE_COMPILER` and `RE_REQUIRE_MATCHER` accordingly. Compilation of
+re_regExpMatcher.c is not required but the header file re_regExpMatcher.h
+is still needed. (Compiler and matcher share the definitions for the
+compiled regular expression.) The command line of the C compiler would
+look like:
+
+[source,bash]
+---------------------------
+gcc -Wall -g3 -gdwarf-2 -Og -DDEBUG -DRE_REQUIRE_COMPILER=1 -DRE_REQUIRE_MATCHER=0 re_charSet.c re_regExpCompiler.c myOtherSourceFile.c ... -o myAppWithCompilerOnly.exe
+---------------------------
+
+To build only the matcher, one would set macros `RE_REQUIRE_COMPILER` and
+`RE_REQUIRE_MATCHER` accordingly. Compilation of re_regExpCompiler.c is
+not required. The command line of the C compiler would look like:
+
+[source,bash]
+---------------------------
+gcc -Wall -g3 -gdwarf-2 -Og -DDEBUG -DRE_REQUIRE_COMPILER=0 -DRE_REQUIRE_MATCHER=1 re_charSet.c re_regExpMatcher.c myOtherSourceFile.c ... -o myAppWithMatcherOnly.exe
+---------------------------
+
+
+== Using demo application _regExpDemo_
+
+Usage: `regExpDemo <options> <inputStrings>`
+
+`<options>`: A combination of different options. An option is a named
+switch with a value. Boolean switches have the implcit value true, other
+switches have the next, blank separated command line argument as value.
+
+`<inputStrings>`: The first command line argument, which is not a switch and
+all further arguments are considered input strings, which are matched against
+the regular expression, that has been specified with option `-re`.
+
+Options are:
+
+* `-help`: Boolean, print the usage message.
+* `-h`: Same as `-help`.
+* `-re`: Define regular expression. Next argument is the regular
+expression. This option is mandatory unless help is requested.
+* `-file`: The successfully compiled regular expression is exported as a C
+source code snippet, which enables integration of compiled expressions
+into an embedded software program. Next argument is the file path and
+name.
+* `-append`: Boolean and useful only in combination with `-file`. If
+given, then the C source code snippet is appended to the denoted file.
+This allows collecting many compiled regular expressions in one and the
+same file by repeated runs of the application.
+* `-name`: The name of the regular expression in the exported C source
+code snippet. Using different names allows collecting many compiled
+regular expressions in one and the same file by repeated runs of the
+application.
+
+== API of compiler and matcher
+
+The API defintion of compiler and matcher can be found in the C header
+files `re_regExpCompiler.h` and `re_regExpMatcher.h`, respectively.
+
+Most of the API functions are used in the main function that implements
+demo application _regExpDemo_. Open file `re_regExpCompiler.c` in a text
+editor and goto function `main` at the end of this file to see some sample
+code of how to configure and run regular expression compiler and matcher.

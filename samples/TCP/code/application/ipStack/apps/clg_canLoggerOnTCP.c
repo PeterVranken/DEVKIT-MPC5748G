@@ -54,7 +54,6 @@
 
 #include "typ_types.h"
 #include "lwip/tcp.h"
-#include "stm_systemTimer.h"
 #include "cmd_canCommand.h"
 #include "cap_canApi.h"
 #include "f2d_float2Double.h"
@@ -85,7 +84,7 @@ struct tcpConn_t
         redundant but allows a nicer API of the main method write. */
     struct tcp_pcb *pPcb;
 
-    /** The number of charavcters, which could not be transmitted. The principal reason is
+    /** The number of characters, which could not be transmitted. The principal reason is
         the time triggered amount of data written by this application, which disregards the
         TCP flow control. Output is lost if the breceiver is not currenntly capable to
         consume it. The counter is saturated at its implementation maximum. */
@@ -187,11 +186,14 @@ static void closeConnection(struct tcpConn_t * const pConn)
  * tcp_write() and tcp_output(). It checks the return code of these functions and initiates a
  * connection abort in case of errors.
  *   @return
-#warning TBC Return value meaning has changed
- * The function normally returns \a true if the data can be written into the TCP stream. In
- * case of errors reported by the lwIP stack, the connection is aborted and the function
- * returns \a false to indicate this.\n
- *   Caution, most lwIP callback require to return ERR_ABRT if a connection abort has been
+ * The function normally returns \a true if the data can be written into the TCP stream. It
+ * returns \a true also if the data could not be written because the receiver is
+ * mementarily not able to receive it; in this particular application, which produces a
+ * fixed rate of output data, the TCP flow control doesn't help and we need to drop some
+ * data without considering this an error.\n
+ *   In case of errors reported by the lwIP stack, the connection is aborted and the
+ * function returns \a false to indicate this.\n
+ *   Caution, most lwIP callbacks require to return ERR_ABRT if a connection abort has been
  * initiated by the callback code. This needs to be obeyed by all client code of this
  * function!
  *   @param noChars
@@ -552,13 +554,11 @@ static err_t onLwIPConnectionIdle(void *arg, struct tcp_pcb *pPcb)
  *   @param len
  * The number of bytes, which are acknowledged.
  */
-static err_t onLwIPSent(void *arg, struct tcp_pcb *pPcb, u16_t len)
+static err_t onLwIPSent(void *arg, struct tcp_pcb *pPcb ATTRIB_DBG_ONLY, u16_t len)
 {
     struct tcpConn_t * const pConn = (struct tcpConn_t *)arg;
-    const unsigned int idxConn = getIdxOfConnection(pConn);
-    assert(idxConn < sizeOfAry(_tcpConnAry)  &&  pConn->stConn != stConn_closed
-           &&  pPcb != NULL
-          );
+    const unsigned int idxConn ATTRIB_DBG_ONLY = getIdxOfConnection(pConn);
+    assert(idxConn < sizeOfAry(_tcpConnAry)  &&  pPcb != NULL);
 
     if(pConn->stConn != stConn_closed)
     {
@@ -853,7 +853,7 @@ bool clg_initCanLoggerTcp(void)
     struct tcp_pcb *pPcb = tcp_new();
     if(pPcb != NULL)
     {
-        /* Bind the PCB to TCP port specified port. */
+        /* Bind the PCB to the specified TCP port. */
         tcp_bind(pPcb, IP_ADDR_ANY, CLG_TCP_PORT_CAN_LOGGER);
 
         /* Change TCP state to LISTEN. */
@@ -892,7 +892,7 @@ unsigned int clg_getNoConnections(void)
 
 
 /**
- * The step functions of the state machine handling all TCP connections. It'll be regularly
+ * The step function of the state machine handling all TCP connections. It'll be regularly
  * called from the lwIP task. It'll check the connections states and decide whether and
  * which data to send.
  */

@@ -273,7 +273,7 @@ int32_t bsw_taskEthernetInternal(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskPara
 #if LOGGING > 0u
         /* Occasionally print a status message. */
         static unsigned int cnt_ = 0u;
-        if(++cnt_ == 1000u)
+        if(++cnt_ >= 6000u)
         {
             iprintf( "bsw_taskEthernetInternal: %u/%u Rx/Tx frames\r\n"
                    , bsw_noRxNotifications

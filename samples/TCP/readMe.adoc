@@ -101,7 +101,6 @@ a terminal application on your development host machine, which the
 evaluation board is connected to via USB. The NXP software implements a
 virtual COM device on the host machine; open this COM channel with 115200
 Bd, 8 Bit, no parity bit, 1 stop bit. Type *help* to begin. A usage
-
 message is printed with the available commands.
 
 The principal commands are:

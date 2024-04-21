@@ -60,7 +60,7 @@ project := DEVKIT-MPC5748G-TCP
 # searched recursively for C/C++ and assembler source files.
 #   Caution, absolute paths are not supported. Use paths only, which relate to the path of
 # this makefile.
-srcDirList := code/application code/system code/safety \
+srcDirList := code/application/ code/system/ code/re/ code/safety/ \
               comFramework/canInterface/code/ \
               lwip-STABLE-2_2_0_RELEASE/src/core/ \
               lwip-STABLE-2_2_0_RELEASE/src/netif/ \
@@ -111,6 +111,8 @@ incDirList := lwip-STABLE-2_2_0_RELEASE/src/include \
 # instructions to the Z4 cores. As a matter of experience, if the Z2 doesn't do any
 # floating point operations, it's still safe to link against the Z4 libraries to the
 # benefit of the floating point performance of the two Z4 cores.
+#   RE_REQUIRE_COMPILER, RE_REQUIRE_MATCHER: For the demo application, we need the regular
+# expression matcher but not the compiler.
 #   USE_DHCP: If given then no IP address is assigned to the DEVKIT-MPC5748G. The software
 # assumes that the board is connected to a network with a DHCP server. You will normally
 # use this option if you connect the board and your computer both to an internet router.
@@ -119,10 +121,12 @@ incDirList := lwip-STABLE-2_2_0_RELEASE/src/include \
 # under development can be loaded by the debugger without erasing and re-programming the
 # flash, which reduces the turnaround time and which saves flash programming cycles.
 defineList := USE_NEWLIB \
+              RE_REQUIRE_COMPILER=0 \
+              RE_REQUIRE_MATCHER=1 \
               CAP_UNCONDITIONALLY_GENERATE_PACK_FCTS \
               CAP_UNCONDITIONALLY_GENERATE_UNPACK_FCTS \
-		      USE_DHCP \
-              LINK_IN_RAM
+              USE_DHCP \
+#              LINK_IN_RAM
 
 # Now go into the project independent implementation of the compile and link rules using
 # the project specific settings made above.

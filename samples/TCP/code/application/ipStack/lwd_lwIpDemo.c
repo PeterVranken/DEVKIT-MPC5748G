@@ -84,6 +84,8 @@
 #include "lwip/ip_addr.h"
 #include "apt_applicationTask.h"
 #include "ping.h"
+#include "ats_accessTimeServer.h"
+
 
 /*
  * Defines
@@ -142,6 +144,10 @@ void lwd_lwIpDemo_init(void)
                 " possible. Out of memory?\r\n"
                );
     }
+    
+    /* The initialization function of the time service application. */
+    ats_initAccessTimeService();
+
 } /* lwd_lwIpDemo_init */
 
 
@@ -193,6 +199,9 @@ void lwd_lwIpDemo_main( unsigned int noNotificationsRx
     {
         /* The step function of the CAN logger application. */
         clg_mainFunction();
+
+        /* The step function of the time service application. */
+        ats_mainFunction();
 
 #if LWIP_PING_APP && LWIP_RAW && LWIP_ICMP
         /* The following looks crude but the state machine in the ping application makes it

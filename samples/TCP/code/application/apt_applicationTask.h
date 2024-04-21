@@ -4,7 +4,7 @@
  * @file apt_applicationTask.h
  * Definition of global interface of module apt_applicationTask.c
  *
- * Copyright (C) 2015-2022 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2015-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -24,11 +24,7 @@
  * Include files
  */
 
-#include <stdatomic.h>
-
 #include "typ_types.h"
-#include "cst_canStatistics.h"
-
 
 /*
  * Defines
@@ -49,8 +45,17 @@
  * Global prototypes
  */
 
+/** Set the current time. */
+void apt_setCurrentTime(signed int hour, signed int min, signed int sec);
+
 /** Format the current time in printable format. */
 void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime);
+
+/** Control regular time display. */
+void apt_enableRegularTimeDisplay(bool enable, unsigned int tiCycleTimeInS);
+
+/** Get state of regular time display. */
+bool apt_isEnabledRegularTimeDisplay(void);
 
 /** Interface for the lwIP sample applicatin ping. Get the target IP address to ping. */
 uint32_t apt_getPingTargetAddress(void);

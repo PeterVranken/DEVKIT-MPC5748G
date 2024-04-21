@@ -40,7 +40,10 @@
  *   showC
  *   greeting
  *   help
+ *   apt_setCurrentTime
  *   printCurrTime
+ *   apt_enableRegularTimeDisplay
+ *   apt_isEnabledRegularTimeDisplay
  */
 
 
@@ -123,12 +126,19 @@ volatile static unsigned int DATA_P1(_cntTask10ms) = 0;
 /** Switch to enable/disable the continuous display of PWM measurement results. */
 volatile static bool SBSS_P1(_enableDisplayPWM) = false;
 
-/** Difference between task counter and real-world time of the day. */
+/** The difference between task counter and real-world time of the day. */
 static unsigned int DATA_P1(_offsetInS) = 0;
 
 /** User interface for the lwIP application ping: A single IPv4 can be pinged at a time and
     this is either the target address or 0 when pinging should be off. */
 static uint32_t SBSS_P1(_pingAddr) = 0u;
+
+/** Regular display of current time: Down-counter till next display. Unit is task tick. */
+static uint16_t SBSS_P1(cntPrintTime_) = 0u;
+
+/** Regular display of current time: Time between two displays. Unit is task tick. Zero
+    means no regular display. */
+static uint16_t SBSS_P1(tiCycleTimeDispInS_) = 0u;
 
 /*
  * Function implementation
@@ -226,7 +236,7 @@ static void version()
     "\r\n";
 
     fputs(version, stdout);
-    
+
 } /* End of version */
 
 
@@ -237,7 +247,7 @@ static void version()
 static void showW()
 {
     version();
-    
+
     static const char RODATA(gplShowW)[] =
     "GNU LESSER GENERAL PUBLIC LICENSE\r\n"
     "\r\n"
@@ -269,7 +279,7 @@ static void showW()
 static void showC()
 {
     version();
-    
+
     static const char RODATA(gplShowC)[] =
     "This program is free software: you can redistribute it and/or modify\r\n"
     "it under the terms of the GNU Lesser General Public License as published\r\n"
@@ -303,7 +313,7 @@ static void greeting()
     "conditions; type `show c' for details.\r\n";
 
     fputs(greeting, stdout);
-    
+
 } /* End of greeting */
 
 
@@ -341,6 +351,43 @@ static void help()
 
 
 /**
+ * Set the current time for command "time".
+ *   @param hour
+ * The hour in the range 0..23. Bad values are silently truncated.
+ *   @param min
+ * The minutes of the hour in the range 0..59. Bad values are silently truncated.
+ *   @param sec
+ * The seconds of the minute in the range 0..59. Bad values are silently truncated.
+ */
+void apt_setCurrentTime(signed int hour, signed int min, signed int sec)
+{
+    if(hour < 0)
+        hour = 0;
+    else if(hour >= 24)
+        hour = 23;
+    _offsetInS = (unsigned)hour * 3600u;
+    
+    if(min < 0)
+        min = 0;
+    else if(min >= 60)
+        min = 59;
+    _offsetInS += (unsigned)min * 60u;
+    
+    if(sec < 0)
+        sec = 0;
+    else if(sec >= 60)
+        sec = 59;
+    _offsetInS += (unsigned)sec;
+
+    assert(_offsetInS < 86400);
+    
+    /* Consider current system time, which we don't want to reset. */
+    _offsetInS -= _cntTask1ms / 1000;
+
+} /* apt_setCurrentTime */
+
+
+/**
  * Print the current time.
  */
 static void printCurrTime(void)
@@ -351,6 +398,41 @@ static void printCurrTime(void)
 
 } /* printCurrTime */
 
+/**
+ * Control of regular display of current time on the console.
+ *   @param enable
+ * \a true to begin regular display (or to start over with new period time). \a false to
+ * stop it.
+ *   @param tiCycleInS
+ * Time in Seconds between two time displays. Range is 1..655.
+ */ 
+void apt_enableRegularTimeDisplay(bool enable, unsigned int tiCycleInS)
+{
+    if(!enable)
+        tiCycleInS = 0u;
+    else if(tiCycleInS == 0u)
+        tiCycleInS = 1u;
+
+    if(tiCycleInS < UINT16_MAX / 100u)
+        tiCycleTimeDispInS_ = (uint16_t)(100*tiCycleInS);
+    else
+        tiCycleTimeDispInS_ = 65500u;
+
+    /* 1: Display at next occasion, 0: Disable regular display. */
+    cntPrintTime_ = enable? 1u: 0u;
+    
+} /* apt_enableRegularTimeDisplay */
+
+
+/**
+ * Query the state of the regular time display.
+ *   @return
+ * Get \a true if regular time display is currently active and \a false otherwise.
+ */
+bool apt_isEnabledRegularTimeDisplay()
+{
+    return cntPrintTime_ > 0u;
+}
 
 
 /**
@@ -372,17 +454,17 @@ int32_t bsw_taskUserInit(uint32_t PID ATTRIB_DBG_ONLY)
     assert(PID == bsw_pidUser);
 
     bool success = true;
-    
+
     /* Print initial hello. */
     greeting();
-    
+
     /* Run the initialization of the CAN stack. */
     if(!can_initCanStack())
         success = false;
 
     /* Initialize the lwIP stack and the applications building on top. */
     lwd_lwIpDemo_init();
-  
+
     return success? 0: -1;
 
 } /* End of bsw_taskUserInit */
@@ -418,7 +500,7 @@ void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime)
     m = s = noSec - h*3600u;
     m /= 60u;
     s -= m*60u;
-    
+
     snprintf(msgTime, sizeOfMsgTime, "%02u:%02u:%02u", h, m, s);
 
 } /* apt_printCurrTime */
@@ -433,7 +515,7 @@ void apt_printCurrTime(char msgTime[], unsigned int sizeOfMsgTime)
 uint32_t apt_getPingTargetAddress(void)
 {
     return _pingAddr;
-    
+
 } /* apt_getPingTargetAddress */
 
 
@@ -461,7 +543,7 @@ int32_t bsw_taskUser1ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam)
     /* If we lost a task activation then we can still restore the correct time. */
     _cntTask1ms += taskParam & EV_MASK_TIMER_1MS;
     #undef EV_MASK_TIMER_1MS
-    
+
     /* Call the 1ms step function of the APSW. */
     //asw_taskApsw_1ms();
 
@@ -492,21 +574,19 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
     assert(PID == bsw_pidUser);
 
     ++ _cntTask10ms;
-    
+
     /* Call the step function of the CAN interface engine for this task. */
     can_mainFunction_10ms();
 
-    static uint16_t SBSS_P1(cntPrintTime_) = 0u;
-    static uint16_t SBSS_P1(tiCycleTimeInS_) = 0u;
     if(cntPrintTime_ > 0u)
     {
         if(--cntPrintTime_ == 0u)
         {
             printCurrTime();
-            cntPrintTime_ = tiCycleTimeInS_;
+            cntPrintTime_ = tiCycleTimeDispInS_;
         }
     }
-        
+
     /* Look for possible user input through serial interface. */
     static unsigned int DATA_P1(cntIdleLoops_) = 2800;
     char inputMsg[80+1];
@@ -535,23 +615,16 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
                 {
                     /* Regular output of the current time: Omitted argument means "on",
                        value 0 (including non-nmbers) means "off". */
-                    const signed int tiCycleInS = argC == 2u? 1: atoi(argV[2]);
-                    if(tiCycleInS < 0)
-                        tiCycleTimeInS_ = 0u;
-                    else if(100*tiCycleInS <= UINT16_MAX)
-                        tiCycleTimeInS_ = (uint16_t)(100*tiCycleInS);
-                    else
-                        tiCycleTimeInS_ = 65500u;
-
-                    cntPrintTime_ = tiCycleTimeInS_ > 0u? 1u: 0u;
-                }                
+                    const unsigned int tiCycleInS = argC == 2u? 1u: (unsigned)atoi(argV[2]);
+                    apt_enableRegularTimeDisplay(/*enable*/ tiCycleInS > 0u, tiCycleInS);
+                }
             }
             else if(strcmp(argV[0], "help") == 0)
                 help();
             else if(strcmp(argV[0], "version") == 0)
                 version();
             else if(strcmp(argV[0], "CPU") == 0)
-            {   
+            {
                 const unsigned int loadTimesTen = bsw_cpuLoad
                                  , load = loadTimesTen/10
                                  , tens = loadTimesTen - load*10;
@@ -561,38 +634,13 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
             {
                 if(argC >= 3)
                 {
-                    signed int i = atoi(argV[1]);
-                    if(i < 0)
-                        i = 0;
-                    else if(i >= 24)
-                        i = 23;
-                    _offsetInS = (unsigned)i * 3600u;
-                    
-                    i = atoi(argV[2]);
-                    if(i < 0)
-                        i = 0;
-                    else if(i >= 60)
-                        i = 59;
-                    _offsetInS += (unsigned)i * 60u;
-                    
-                    /* Designation of seconds is an option only. */
-                    if(argC >= 4)
-                    {
-                        i = atoi(argV[3]);
-                        if(i < 0)
-                            i = 0;
-                        else if(i >= 60)
-                            i = 59;
-                        _offsetInS += (unsigned)i;
-                    }
-                    assert(_offsetInS < 86400);
-                    
-                    /* Consider current system, which we don't want to reset. */
-                    _offsetInS -= _cntTask1ms / 1000;
+                    const signed int h = atoi(argV[1])
+                                   , m = atoi(argV[2])
+                                   , s = (argC >= 4)? atoi(argV[3]): 0;
+                    apt_setCurrentTime(h, m, s);
                 }
-                
                 printCurrTime();
-                cntPrintTime_ = tiCycleTimeInS_;
+                cntPrintTime_ = tiCycleTimeDispInS_;
             }
             else if(strcmp(argV[0], "PWM") == 0)
             {
@@ -644,9 +692,9 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
                     }
                     if(isAddrOk)
                         ipAddr = PP_HTONL(ipAddr);
-                }   
+                }
                 if(isAddrOk)
-                {                
+                {
                     if(_pingAddr != 0u  &&  ipAddr != 0u)
                     {
                         iprintf("Can't set a new ping target while ping is running."
@@ -674,9 +722,9 @@ int32_t bsw_taskUser10ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRIB
         else
         {
             didNotUnderstand = true;
-            
+
         } /* End if(User input contains possible command) */
-        
+
         if(didNotUnderstand)
         {
             /* Echo bad user input, which could not be consumed. */
@@ -751,7 +799,7 @@ int32_t bsw_taskUser100ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTRI
             payload[0] = cntTx_ & 0xFF00u;
             payload[1] = cntTx_ & 0x00FFu;
         }
-        else    
+        else
         {
             if(errCode == cdr_errApi_txMailboxBusy)
             {
@@ -798,7 +846,7 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTR
     lbd_setLED(lbd_led_7_DS4, isOn_=!isOn_);
 
     /* Some test code of the uniform floating point signal API shaped for this sample. */
-    
+
 //    /* CAN ID 1024, Rx signal "speedOfRotation": Print current value. */
 //    const cdt_canSignal_t *pSpeedOfRotation = &cdt_canSignalAry[1];
 //    assert(pSpeedOfRotation->isReceived
@@ -847,7 +895,7 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTR
               , f2d(dutyCycle <= 1.0f? 100.0f*dutyCycle: -1.0f)
               );
     }
-    
+
     return 0;
 
 } /* End of bsw_taskUser1000ms */
@@ -868,7 +916,7 @@ int32_t bsw_taskUser1000ms(uint32_t PID ATTRIB_DBG_ONLY, uint32_t taskParam ATTR
  * buffer space available to submitted at least this number of Ethernet frames for
  * transmission.
  *   @param noNotificationsTimer
- * This number of timer events has been occurred since last activation of the task. 
+ * This number of timer events has been occurred since last activation of the task.
  */
 void bsw_taskEthernet( unsigned int noNotificationsRx
                      , unsigned int noNotificationsTx
