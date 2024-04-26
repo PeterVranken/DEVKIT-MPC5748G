@@ -43,7 +43,7 @@
  * which matches everything but ']' and 'a', whereas [^a]] is not a valid set.
  *
  * (): Parenthesis can be used to define sequences, which are subject to repetitions or to
- * structure OR expressions. 
+ * structure OR expressions.
  *
  * ?, *, +, {n}, {m,M}: Repetition indicators. They can be attached to a single immediate
  * match element (mostly the dot or a literal character) or to a sequence formed with
@@ -125,6 +125,7 @@
  *   compileSequence
  *   compileOrExpr
  *   exportCompiledExpression
+ *   usage
  */
 
 /*
@@ -1283,6 +1284,10 @@ bool re_compile( struct re_compiler_t * const pCompiler
  *   @param pRe
  * The compiler object by reference after successful compilation, so that it contains the
  * compiled regular expression to export.
+ *   @param namespc
+ * The namespace used for the the global, regular expression related elements in the
+ * exported C source code snippet. The passed string will precede the name of all of these
+ * elements.
  *   @param nameRe
  * The regular expression needs to have a (short) name; it is used to make the generated C
  * code elements specific for the given expression. This way, several regular expression
@@ -1290,17 +1295,19 @@ bool re_compile( struct re_compiler_t * const pCompiler
  */
 void exportCompiledExpression( FILE *file
                              , const struct re_compiler_t * const pCompiler
+                             , const char *namespc
                              , const char *nameRe
                              )
 {
     fprintf( file
            , "/** The instruction stream of compiled regular expression %s. The regular\n"
              "    expression is:\\n\n"
-             "    \"%s\" */\n"
-             "static const uint8_t re_%s_iStream[%u] =\n"
+             "    %s */\n"
+             "static const uint8_t %s%s_iStream[%u] =\n"
              "{\n"
            , nameRe
            , pCompiler->cStream
+           , namespc
            , nameRe
            , (unsigned)(pCompiler->re.lenIStream
                         + pCompiler->re.noCharSets*sizeof(re_charSet_t)
@@ -1311,8 +1318,8 @@ void exportCompiledExpression( FILE *file
            , "};\n"
              "\n"
              "/** The compiled regular expression %s:\\n\n"
-             "    \"%s\" */\n"
-             "static const struct re_compiledRegExp_t re_%s =\n"
+             "    %s */\n"
+             "static const struct re_compiledRegExp_t %s%s =\n"
              "{\n"
              "    .iStream       = (uint8_t*)&re_%s_iStream[0],\n"
              "    .lenIStream    = %uu,\n"
@@ -1323,6 +1330,7 @@ void exportCompiledExpression( FILE *file
              "\n"
            , nameRe
            , pCompiler->cStream
+           , namespc
            , nameRe
            , nameRe
            , pCompiler->re.lenIStream
@@ -1355,13 +1363,18 @@ static void usage(void)
       "  -file: The successfully compiled regular expression is exported as a C source\n"
       "code snippet, which enables integration of compiled expressions into an\n"
       "embedded software program. Next argument is the file path and name.\n"
+      "  Note, the compilation of the exported code snippet requires the preceding\n"
+      "inclusion of header file \"re_regExpMatcher.h\".\n"
       "  -append: Boolean and useful only in combination with -file. If given, then the\n"
       "C source code snippet is appended to the denoted file. This allows collecting many\n"
       "compiled regular expressions in one and the same file by repeated runs of the\n"
       "application.\n"
-      "  -name: The name of the regular expression in the exported C source code\n"
-      "snippet. Using different names allows collecting many compiled regular\n"
-      "expressions in one and the same file by repeated runs of the application.\n";
+      "  -name: Next argument is the name of the regular expression in the exported C\n"
+      "source code snippet. Using different names allows collecting many compiled regular\n"
+      "expressions in one and the same file by repeated runs of the application.\n"
+      "  -namespc: Next argument is the namespace used for the global, regular expression\n"
+      "related elements in the exported C source code snippet. The passed string will\n"
+      "precede the name of all of these elements. Optional, default is the empty string.\n";
 
     puts(usageMsg);
 
@@ -1394,6 +1407,7 @@ int main(int noArgs, const char * const * pArgStr)
     const char * const * pAStr = pArgStr;
     const char *regExpStr = NULL
              , *regExpName = NULL
+             , *regExpNamespc = NULL
              , *codeFileName = NULL;
     bool appendToCodeFile = false
        , help = false;
@@ -1420,6 +1434,11 @@ int main(int noArgs, const char * const * pArgStr)
             regExpName = * ++pAStr;
             idxArg += 2u;
         }
+        else if(idxArg+1 < noArgs  &&  strcmp(arg, "-namespc") == 0)
+        {
+            regExpNamespc = * ++pAStr;
+            idxArg += 2u;
+        }
         else if(idxArg < noArgs  &&  strcmp(arg, "-append") == 0)
         {
             appendToCodeFile = true;
@@ -1436,7 +1455,26 @@ int main(int noArgs, const char * const * pArgStr)
             break;
         }
     }
-    if(help ||  regExpStr == NULL)
+
+    /* The regular expression is a mandatory argument. */
+    if(regExpStr == NULL)
+    {
+        printf("No regular expression is given on the command line.\n");
+        help = true;
+    }
+    
+    /* File name and regular expression name are both optional but not independently from
+       one another. */
+    if((codeFileName == NULL) != (regExpName == NULL))
+    {
+        printf("If a file name is specified for export of the compiled regular expression\n"
+               "then the name of the regular expression needs to be specified, too, and\n"
+               "vice versa.\n"
+              );
+        help = true;
+    }
+
+    if(help)
     {
         usage();
         return -1;
@@ -1496,10 +1534,11 @@ int main(int noArgs, const char * const * pArgStr)
 
         if(codeFileName != NULL  &&  regExpName != NULL)
         {
+            const char * const namespc = regExpNamespc != NULL? regExpNamespc: "";
             FILE *file = fopen(codeFileName, appendToCodeFile? "a": "w");
             if(file != NULL)
             {
-                exportCompiledExpression(file, &compiler, regExpName);
+                exportCompiledExpression(file, &compiler, namespc, regExpName);
                 fclose(file);
                 printf( "The compiled regular expression has been exported to file %s\n"
                       , codeFileName
@@ -1610,7 +1649,7 @@ int main(int noArgs, const char * const * pArgStr)
                                   );
                         } /* For(All matches of the given group) */
                         #undef MAX_SHOWN_MATCH_CHARS
-                        
+
                     } /* for(All capture groups in the regular expression) */
                 }
              }

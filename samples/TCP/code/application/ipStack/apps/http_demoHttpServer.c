@@ -42,6 +42,7 @@
 #include "lwip/tcp.h"
 #include "stm_systemTimer.h"
 #include "apt_applicationTask.h"
+#include "ats_accessTimeServer.h"
 
 /*
  * Defines
@@ -73,11 +74,16 @@ static const char RODATA(htmlPage0)[] =
     "Content-type: text/html\r\n"
     "\r\n"
     "<html>"
-      "<head><title>Hello from DEVKIT-MPC5748G</title></head>"
+      "<head>"
+        "<title>Hello from DEVKIT-MPC5748G</title>"
+        "<meta http-equiv=\"refresh\" content=\"10\">" /* Reload page every X s. */
+      "</head>"
       "<body>"
         "This is a small test page brought to you by DEVKIT-MPC5748G";
 static const char RODATA(htmlPage1)[] =
-        " at %s (%u)";
+        " at %s (%u)<p>"
+        "No. successful accesses of time service:\t%u<p>"
+        "No. failing accesses of time service:\t%u<p>";
 static const char RODATA(htmlPage2)[] =
       "</body>"
     "</html>";
@@ -145,9 +151,16 @@ static err_t http_recv( void *arg ATTRIB_UNUSED
 
             char msgTime[9];
             apt_printCurrTime(msgTime, sizeof(msgTime));
-            char response[30];
+            char response[sizeof(htmlPage1)+30];
             static unsigned int SBSS_P1(cnt_) = 0u;
-            snprintf(response, sizeof(response), htmlPage1, msgTime, ++cnt_);
+            snprintf( response
+                    , sizeof(response)
+                    , htmlPage1
+                    , msgTime
+                    , ++cnt_ 
+                    , ats_noSyncWithTimeServer
+                    , ats_noSyncWithHTTPHeader
+                    );
             noChars = strlen(response);
             assert(tcp_sndbuf(pcb) >= noChars);
             rc = tcp_write( pcb

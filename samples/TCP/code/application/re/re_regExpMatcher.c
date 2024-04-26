@@ -585,10 +585,10 @@ static bool pruneAlternative( struct re_matcher_t *pMatcher
 {
     const uint8_t * const pEndI = pMatcher->pRe->iStream + pMatcher->pRe->lenIStream;
 
-    /* We may advance pI over I_CAP, I_CAPEND.
-         2: Length of both the skipped instructions. */
+    /* We may advance pI over I_CAP, I_CAPEND. */
+    _Static_assert(LEN_I_CAP == LEN_I_CAPEND, "Implementation can't combine instructions");
     while(pI < pEndI  &&  (*pI == OP_CAP  ||  *pI == OP_CAPEND))
-        pI += 2u;
+        pI += LEN_I_CAP;
 
     bool doPrune = false;
     if(pI < pEndI)

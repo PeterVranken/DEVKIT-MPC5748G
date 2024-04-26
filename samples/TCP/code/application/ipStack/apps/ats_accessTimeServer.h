@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "typ_types.h"
 
 /*
  * Defines
@@ -41,6 +42,15 @@
 /*
  * Global data declarations
  */
+
+/** Number of fully successful synchronization events with time server. A positive HTTP
+    response was received and could be evaluated. */
+extern unsigned int DATA_P1(ats_noSyncWithTimeServer);
+
+/** Number of time synchronization events with time information picked from the HTTP header
+    of the time server response. A negative HTTP response was received and only the header
+    could be evaluated. */
+extern unsigned int DATA_P1(ats_noSyncWithHTTPHeader);
 
 
 /*

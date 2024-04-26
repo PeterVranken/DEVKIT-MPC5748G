@@ -126,12 +126,12 @@ static struct tcpConn_t DATA_P1(_tcpConn);
 
 /** Number of fully successful synchronization events with time server. A positive HTTP
     response was received and could be evaluated. */
-static unsigned int DATA_P1(ats_noSyncWithTimeServer) = 0u;
+unsigned int DATA_P1(ats_noSyncWithTimeServer) = 0u;
 
 /** Number of time synchronization events with time information picked from the HTTP header
     of the time server response. A negative HTTP response was received and only the header
     could be evaluated. */
-static unsigned int DATA_P1(ats_noSyncWithHTTPHeader) = 0u;
+unsigned int DATA_P1(ats_noSyncWithHTTPHeader) = 0u;
 
 /*
  * Function implementation
