@@ -256,7 +256,7 @@ by elaboration of the source code in file
 Please note, as an alternative, and maybe more suitable for testing, you
 may type this in the shell window:
 
-  curl http://192.168.1.136/get -o -
+  curl http://192.168.1.200/get -o -
 
 or:
 
