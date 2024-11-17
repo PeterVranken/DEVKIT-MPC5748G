@@ -369,7 +369,7 @@ for software safety.
   PDF^]. (Click on download icon at the top-right corner of the web-view of
   the file.
 - The API documentation is available as
-  https://petervranken.github.io/DEVKIT-MPC5748G/samples/safe-RTOS/doc/doxygen/[Doxygen
+  https://petervranken.github.io/DEVKIT-MPC5748G/samples/safe-RTOS/doc/doxygen/html/index.html[Doxygen
   online help^].
 
 == Tools
