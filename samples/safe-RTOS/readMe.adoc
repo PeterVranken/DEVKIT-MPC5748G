@@ -362,14 +362,14 @@ for software safety.
 
 == Documentation
 
-- https://petervranken.github.io/MPC5748GAtGitHub/samples/safe-RTOS/doc/manual/manual.html[The
+- https://petervranken.github.io/DEVKIT-MPC5748G/samples/safe-RTOS/doc/manual/manual.html[The
   online manual of safe-RTOS^].
 - The manual as
   https://github.com/PeterVranken/DEVKIT-MPC5748G/blob/master/samples/safe-RTOS/doc/manual/manual.pdf[downloadable
   PDF^]. (Click on download icon at the top-right corner of the web-view of
   the file.
 - The API documentation is available as
-  https://petervranken.github.io/MPC5748GAtGitHub/samples/safe-RTOS/doc/doxygen/[Doxygen
+  https://petervranken.github.io/DEVKIT-MPC5748G/samples/safe-RTOS/doc/doxygen/[Doxygen
   online help^].
 
 == Tools
