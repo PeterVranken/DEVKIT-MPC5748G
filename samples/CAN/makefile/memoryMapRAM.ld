@@ -10,7 +10,7 @@
    hardcoded distribution of both, 75% for code, 25% for data.
      Some makefile conditional code decides whether this file or the "normal" memory map
    definition memoryMapROM.ld is read by the linker. */
-ASSERT(ld_linkInRAM == 1, "This memory map is intended for build in ROM only")
+ASSERT(ld_linkInRAM == 1, "This memory map is intended for build in RAM only")
 ld_textSegStartAddr = 0x40000000 ;
 ld_textSegSize      = 2*256k ;
 ld_dataSegStartAddr = ld_textSegStartAddr + ld_textSegSize ;
