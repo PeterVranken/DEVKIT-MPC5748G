@@ -7,8 +7,12 @@ safe-RTOS - A simple RTOS with safety support for MPC5748G
 This is not the manual! The purpose of this documentation is to be a kind
 of API browser to support the implementation of the software, which is
 going to integrate the RTOS. Get a quick overview on the user accessible
-API functions of the RTOS and the applied data types. Use it as a
-reference book while working on your embedding software.
+API functions of the RTOS and the applied <a href="annotated.html">data
+types</a>. Use it as a reference book while working on your embedding
+software.
+
+Being on page <a href="globals_func.html">API functions</a>, advance to
+character *r*: All public API functions start with `rtos_`.
 
 Caution, Doxygen doesn't scan assembly files and parts of the required
 information may be missing.
