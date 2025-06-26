@@ -484,7 +484,7 @@ the events.
 ==== Some more remarks on events
 
 . A countable event with 1 Bit is nearly the same as an ordinary event.
-but not exactly. The event processor can be re-triggered once, while the
+But not exactly. The event processor can be re-triggered once, while the
 associated tasks are still ready or active.
 +
 If a timer is used with an ordinary event then a task overflow is
