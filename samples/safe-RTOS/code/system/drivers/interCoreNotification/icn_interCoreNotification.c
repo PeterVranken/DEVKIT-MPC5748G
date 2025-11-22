@@ -18,7 +18,7 @@
  * implemented.
  *   @remark
  * The service is not considered an element of the kernel itself. safe-RTOS implements a
- * simple BCC scheduling, which doesn't support voluntary suspension of threads. An
+ * simple BCC scheduling, which doesn't support voluntary suspension of threads. A
  * beneficial integration of the service with the kernel is therefore not possible. It
  * would, e.g., be possible to let the notifier wait until the notified acknowledges -- but
  * not without busy wait and the busy wait -- if considered appropriate -- can be
@@ -33,7 +33,7 @@
  * expensive RAM. In this driver, we use a C implementation file for configuration. Each
  * application needs to have its individual implementation file.
  *
- * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2025 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
