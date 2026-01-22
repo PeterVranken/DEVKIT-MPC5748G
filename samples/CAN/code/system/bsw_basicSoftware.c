@@ -7,7 +7,7 @@
  * supervisor mode and has the highest quality assurance level defined for the parts of the
  * aimed software.
  *
- * Copyright (C) 2020-2024 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
+ * Copyright (C) 2020-2026 Peter Vranken (mailto:Peter_Vranken@Yahoo.de)
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -179,7 +179,7 @@ static void cbOnCANRx( unsigned int idxCanBus
                      , const uint8_t payload[8]
                      )
 {
-    /* The callback into a user process can take only a single (pojnter) argument. We need
+    /* The callback into a user process can take only a single (pointer) argument. We need
        to pack all information into a struct so that we can provide its address to the user
        code. This pointer operation is uncritical with respect to our safety concept since
        the user code only needs read access. We can simply put the stuct here on our

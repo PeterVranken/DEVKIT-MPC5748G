@@ -1850,7 +1850,7 @@ Here's the API to notify such an event. Use cases are inter-process
 communication and deferred interrupt handling. This service is available
 to ISRs, OS and user tasks and system call handlers of full
 conformance class. System call handlers of lower conformance class must
-not use it. To notify an odinary event, use:
+not use it. To notify an ordinary event, use:
 
     #include "rtos.h"
     bool rtos_osSendEvent(unsigned int idEvent, uintptr_t taskParam);

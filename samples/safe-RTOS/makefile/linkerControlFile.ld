@@ -51,10 +51,11 @@ ld_stackSizeP4Core2 = 0;
    script and depending on the build target, RAM or flash ROM. */
 MEMORY
 {
-    /* RM, sec. 3.2: f8c000 is the first inspected boot sector. However, this area
-       is marked "Small HSM Code Block". According to RM, 3.3, table 3-2, f90000 is the
-       beginning of the generally usable flash ROM and it's at the same time the second
-       boot sector. */
+    /* RM, sec. 3.2: f8c000 is the first inspected boot sector. However, this area is
+       marked "Small HSM Code Block". According to RM, 3.3, table 3-2, f90000 is the
+       beginning of the generally usable flash ROM and it's a boot sector at the same time.
+       The list of all possible boot sector location is found as RM, 57.1.3, table 57-3,
+       p.2840. */
     memBoot(rx):  org = ld_textSegStartAddr, len = 0x18
     memFlash(rx): org = ld_textSegStartAddr + LENGTH(memBoot),
                         len = ld_textSegSize - LENGTH(memBoot)

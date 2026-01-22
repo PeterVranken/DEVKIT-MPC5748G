@@ -46,8 +46,8 @@ safe-RTOS. Features:
     have its own interrupt - processed by the same or individual handlers,
     having same or different interrupt priority, processed on the same or
     on different cores
-* Mailboxes have their individual privileges configuration. A mailbox can
-  e.g. be dedicated to the safety process only. If so, a task from the QM
+* Mailboxes have their individual privileges configuration. A mailbox can,
+  e.g., be dedicated to the safety process only. If so, a task from the QM
   process would neither be able to see the interrupt notification (if any)
   nor to use the polling or transmission APIs
 * Configuration with compile-time expressions. Applying C99's designated
@@ -70,14 +70,9 @@ without some built-in buffering strategies may even be insufficient for
 the client code. Such a strategy would mean a significant increase of the
 required lines of code.
 
-This CAN driver has been developed to operate not only on the MPC5748G but
-it has been made also for the MPC5775B/E. This derivative has CAN devices,
-which don't offer CAN FD at all.
-
-Last but not least, we simply lack the experience with CAN FD. Having
-never seen a true life CAN FD application so far (and nor an according
-network configuration or DBC file) it's even more difficult to invent a
-generic API for this use case.
+Last but not least, this CAN driver has been developed to operate not only
+on the MPC5748G but it has been made also for the MPC5775B/E. This
+derivative has FlexCAN devices, which don't offer CAN FD at all.
 
 == How to use
 
@@ -119,13 +114,13 @@ This task is strongly facilitated by source code comments on the different
 fields and by using C99's designated initializer expressions.
 
 The principal element in configuration file cdr_canDriver.config.inc is
-the list of #defines to enable one or more of the physically available CAN
-devices; see e.g. #CDR_ENABLE_USE_OF_CAN_0. (Most applications won't use
-all of them.) By means of preprocessor switches, the driver configuration
-is produced only for the enabled set of devices (and alike for some
-runtime data objects). Disabled CAN devices are not touched at all by the
-driver and remain in reset state and nor do they consume ROM space for
-configuration data.
+the list of #defines to enable one or more of the physically available
+FlexCAN devices; see, e.g., #CDR_ENABLE_USE_OF_CAN_0. (Most applications
+won't use all of them.) By means of preprocessor switches, the driver
+configuration is produced only for the enabled set of devices (and alike
+for some runtime data objects). Disabled CAN devices are not touched at
+all by the driver and remain in reset state and nor do they consume ROM
+space for configuration data.
 
 Your application won't directly use the configuration file
 cdr_canDriver.config.inc. Don't include it, don't compile it. Indirectly,
